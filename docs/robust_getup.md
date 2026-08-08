@@ -18,7 +18,15 @@ Checkpoint lineage used for this experiment:
 | --- | --- | --- |
 | v1 | `tabletennis/smp/hqzmfkkg` | trained from scratch |
 | v2 | `tabletennis/smp/si4gfklo` | v1 `model_29999.pt` |
-| v3 | recorded after launch | latest validated v2 checkpoint |
+| v3 | `tabletennis/smp/rr9sxcmu` | v2 `model_38000.pt` |
+
+Formal v3 training was launched on 2026-08-08 on `dsw-lyd2` from branch
+`codex/robust-getup-smooth-v3`, commit `62e89c5`.
+
+- W&B: <https://wandb.ai/tabletennis/smp/runs/rr9sxcmu>
+- Remote GPU: physical GPU 1
+- Launcher / Python PID at launch: `42448` / `42451`
+- Captured stdout: `/tmp/smp_getup_smooth_v3_train.log`
 
 The get-up diffusion prior is still
 `datasets/pretrain_ckpt/pretrained_getup_f2s2.pt`. No new motion dataset is
@@ -99,14 +107,14 @@ CUDA_VISIBLE_DEVICES=1 uv run scripts/train.py Smp-Getup-Robust-Smooth-G1 \
   --env.scene.num-envs=4096 \
   --agent.resume True \
   --wandb-run-path tabletennis/smp/si4gfklo \
-  --wandb-checkpoint-name model_37500.pt \
+  --wandb-checkpoint-name model_38000.pt \
   --agent.max-iterations=10000 \
   --agent.save-interval=250
 ```
 
 `max-iterations` is additional when resuming. For example, starting from
-`model_37500.pt` and running 10,000 iterations produces checkpoints through
-approximately `model_47500.pt`.
+`model_38000.pt` and running 10,000 iterations produces checkpoints through
+approximately `model_48000.pt`.
 
 ## Play
 
