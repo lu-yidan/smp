@@ -208,6 +208,33 @@ On 2026-08-09, a local 32-environment, 2-iteration tensorboard smoke completed
 were 120 and 123 dimensions, respectively. This verifies runtime wiring only;
 the reported early rewards are not evidence of expert quality.
 
+### Formal Stage 0 run
+
+Formal candidate 003 training was launched on 2026-08-09:
+
+| Field | Value |
+| --- | --- |
+| code branch / commit | `repro/firm-g1` / `6af66fb` |
+| server workspace | `/mnt/workspace/user/luyidan/smp-firm` |
+| device | physical GPU 2, NVIDIA RTX PRO 5000 72GB Blackwell |
+| environments | 4096 |
+| iterations / checkpoint interval | 30,000 / 500 |
+| W&B run | [`tabletennis/smp/j0q8fell`](https://wandb.ai/tabletennis/smp/runs/j0q8fell) |
+| run name | `firm_keyframe_g1_c003_stage0` |
+| launcher / uv PID at launch | `45906` / `45907` |
+| captured stdout | `/tmp/firm_keyframe_g1_c003_stage0_train.log` |
+| motion NPZ SHA256 | `27657fe40642245b3c1d0362895c4f5a04988a6d59e05e7c0c29ab41b0f9fb1f` |
+
+The server clone was created independently from `smp-robust`, and the
+git-ignored NPZ was copied separately and checksum-verified. A 4096-environment
+capacity smoke completed 98,304 steps without broadphase overflow or unsafe
+velocity termination before the formal launch.
+
+At iteration 19, the formal run reached approximately 168k steps/s, mean reward
+4.73, mean episode length 474.5, and zero unsafe-velocity terminations. These
+startup values confirm health only; checkpoint selection will use full-episode
+tracking metrics and visual playback rather than reward alone.
+
 ## Planned task stages
 
 ### Rollout dataset
