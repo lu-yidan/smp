@@ -74,7 +74,7 @@ def _write_state(
   sim: Simulation,
   scene: Scene,
   robot: Entity,
-  joint_indexes: torch.Tensor,
+  joint_indexes: list[int],
   root_pos: torch.Tensor,
   root_quat: torch.Tensor,
   root_lin_vel: torch.Tensor,
@@ -203,6 +203,8 @@ def main(args: Args) -> None:
   body_quat: list[np.ndarray] = []
   body_lin_vel: list[np.ndarray] = []
   body_ang_vel: list[np.ndarray] = []
+  sim_joint_pos: list[np.ndarray] = []
+  sim_joint_vel: list[np.ndarray] = []
   aligned_lowest_body_z: list[float] = []
   images: list[np.ndarray] = []
 
@@ -224,6 +226,8 @@ def main(args: Args) -> None:
     body_quat.append(robot.data.body_link_quat_w[0].cpu().numpy().copy())
     body_lin_vel.append(robot.data.body_link_lin_vel_w[0].cpu().numpy().copy())
     body_ang_vel.append(robot.data.body_link_ang_vel_w[0].cpu().numpy().copy())
+    sim_joint_pos.append(robot.data.joint_pos[0].cpu().numpy().copy())
+    sim_joint_vel.append(robot.data.joint_vel[0].cpu().numpy().copy())
     aligned_lowest_body_z.append(
       float(robot.data.body_link_pos_w[0, :, 2].min().item())
     )
@@ -235,6 +239,8 @@ def main(args: Args) -> None:
   body_quat_array = np.stack(body_quat)
   body_lin_vel_array = np.stack(body_lin_vel)
   body_ang_vel_array = np.stack(body_ang_vel)
+  sim_joint_pos_array = np.stack(sim_joint_pos)
+  sim_joint_vel_array = np.stack(sim_joint_vel)
   joint_pos = motion.motion_dof_poss
   joint_vel = motion.motion_dof_vels
   joint_acc = torch.gradient(joint_vel, spacing=output_dt, dim=0)[0]
@@ -260,8 +266,8 @@ def main(args: Args) -> None:
     root_quat_wxyz=motion.motion_base_rots.cpu().numpy().astype(np.float32),
     root_lin_vel=aligned_root_lin_vel.cpu().numpy().astype(np.float32),
     root_ang_vel=motion.motion_base_ang_vels.cpu().numpy().astype(np.float32),
-    joint_pos=joint_pos.cpu().numpy().astype(np.float32),
-    joint_vel=joint_vel.cpu().numpy().astype(np.float32),
+    joint_pos=sim_joint_pos_array.astype(np.float32),
+    joint_vel=sim_joint_vel_array.astype(np.float32),
     body_pos_w=body_pos_array.astype(np.float32),
     body_quat_w=body_quat_array.astype(np.float32),
     body_lin_vel_w=body_lin_vel_array.astype(np.float32),
@@ -287,6 +293,9 @@ def main(args: Args) -> None:
     "duration_s": motion.duration,
     "num_keyframes": len(keyframe_indices),
     "direction": candidate["direction"],
+    "csv_joint_names": list(G1_JOINT_NAMES),
+    "sim_joint_names": list(robot.joint_names),
+    "csv_to_sim_joint_indexes": joint_indexes,
     "max_joint_limit_violation_rad": float(violation.max().item()),
     "joint_limit_violation_samples": int((violation > 1e-6).sum().item()),
     "max_abs_joint_speed_rad_s": float(joint_vel.abs().max().item()),
