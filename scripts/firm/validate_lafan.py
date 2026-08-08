@@ -39,6 +39,7 @@ class Args:
   )
   output_fps: int = 50
   ground_clearance: float = 0.05
+  stand_start_source_frame: int = 1597
   device: str = ""
   render_contact_sheet: bool = True
 
@@ -175,14 +176,30 @@ def main(args: Args) -> None:
   output_dt = 1.0 / args.output_fps
   aligned_root_lin_vel = torch.gradient(aligned_root_pos, spacing=output_dt, dim=0)[0]
 
-  keyframe_indices = torch.round(
+  if not frame_start < args.stand_start_source_frame < frame_end:
+    msg = (
+      "stand_start_source_frame must lie inside the selected clip, got "
+      f"{args.stand_start_source_frame} for [{frame_start}, {frame_end})"
+    )
+    raise ValueError(msg)
+  motion_keyframe_count = int(manifest["num_keyframes"]) - 1
+  motion_keyframe_end = round(
+    (args.stand_start_source_frame - frame_start)
+    / int(manifest["fps"])
+    * args.output_fps
+  )
+  motion_keyframe_end = min(motion_keyframe_end, motion.output_frames - 2)
+  motion_keyframes = torch.round(
     torch.linspace(
       0,
-      motion.output_frames - 1,
-      int(manifest["num_keyframes"]),
+      motion_keyframe_end,
+      motion_keyframe_count,
       device=device,
     )
   ).long()
+  keyframe_indices = torch.cat(
+    [motion_keyframes, motion_keyframes.new_tensor([motion.output_frames - 1])]
+  )
   keyframe_set = set(keyframe_indices.cpu().tolist())
 
   renderer = None
@@ -251,9 +268,10 @@ def main(args: Args) -> None:
     torch.clamp(joint_pos - limits[:, 1], min=0.0),
   )
   shift_velocity = torch.gradient(shift, spacing=output_dt, dim=0)[0]
-  source_keyframes = np.rint(
-    np.linspace(frame_start, frame_end - 1, len(keyframe_indices))
+  source_keyframes = frame_start + np.rint(
+    keyframe_indices.cpu().numpy() / args.output_fps * int(manifest["fps"])
   ).astype(np.int64)
+  source_keyframes = np.clip(source_keyframes, frame_start, frame_end - 1)
 
   args.artifact_dir.mkdir(parents=True, exist_ok=True)
   stem = f"{source.stem}_candidate_{int(candidate['candidate_id']):03d}_validated"
@@ -292,6 +310,12 @@ def main(args: Args) -> None:
     "output_frames": motion.output_frames,
     "duration_s": motion.duration,
     "num_keyframes": len(keyframe_indices),
+    "motion_keyframe_count": motion_keyframe_count,
+    "motion_keyframe_end_output_frame": motion_keyframe_end,
+    "stand_start_source_frame": args.stand_start_source_frame,
+    "keyframe_output_indices": keyframe_indices.cpu().tolist(),
+    "keyframe_source_indices": source_keyframes.tolist(),
+    "artifact_sha256": _sha256(artifact_file),
     "direction": candidate["direction"],
     "csv_joint_names": list(G1_JOINT_NAMES),
     "sim_joint_names": list(robot.joint_names),

@@ -110,15 +110,105 @@ tracking. The sparse expert will therefore use the aligned poses only as
 occasional posture anchors, and will append one final default-standing anchor
 instead of assigning multiple keyframes to the repeated standing tail.
 
+The accepted schedule contains 25 targets: 24 recovery anchors from output
+frames 0 through 405, followed by one final stable-standing anchor at output
+frame 486. Source frame 1597 is the manually reviewed start of the stable tail.
+The choice and the generated frame indices are recorded in the validation JSON.
+
+## Sparse-keyframe expert
+
+The first task is `Firm-Keyframe-G1`. At reset, each environment samples a
+dense frame uniformly from the validated 50 Hz motion and writes that physical
+state to the simulator with small pose, velocity, and joint perturbations. The
+command then exposes the next strictly later sparse keyframe; after the final
+anchor it holds the stable-standing target.
+
+The policy runs at 50 Hz. Its actor observation has 120 dimensions:
+
+| Term | Dimension |
+| --- | ---: |
+| root angular velocity | 3 |
+| joint position | 29 |
+| joint velocity | 29 |
+| previous action | 29 |
+| current joint position minus next-keyframe position | 29 |
+| normalized motion phase | 1 |
+
+The asymmetric critic additionally observes root linear velocity and therefore
+has 123 dimensions. The actor and critic MLPs use hidden sizes 512 and 256.
+
+The main tracking reward weights follow the FIRM paper:
+
+| Term | Weight |
+| --- | ---: |
+| rigid-body position | 1.25 |
+| rigid-body orientation | 0.5 |
+| rigid-body linear velocity | 0.125 |
+| rigid-body angular velocity | 0.125 |
+| joint position | 0.5 |
+| joint velocity | 0.125 |
+| joint-position limit | -10 |
+| joint-velocity limit | -5 |
+| action rate | -0.001 |
+| torque | -1e-6 |
+| joint acceleration | -2.5e-7 |
+| self collision | -1e-7 |
+
+This first runnable version is explicitly **Stage 0**. It keeps startup mass,
+encoder-bias, and friction randomization, but disables automatic pushes and
+actuator dropout. Rough terrain, momentum/yank penalties, the 0.04--1.0 second
+actuator-disable curriculum, and physical disturbances will be introduced as
+separate ablations only after the clean expert learns. This staging makes it
+possible to attribute a failure to one change instead of several simultaneous
+curricula.
+
+The only non-timeout termination is a numerical safety guard for extreme joint,
+root-linear, or root-angular velocity. Playback starts from the first frame,
+disables observation corruption, and has no automatic disturbance in Stage 0.
+
+### Build the local motion artifact
+
+```bash
+uv run scripts/firm/prepare_lafan.py
+uv run scripts/firm/validate_lafan.py
+```
+
+The generated NPZ and contact sheet stay under the ignored
+`datasets/firm/lafan/` directory. They must be copied to a training host
+separately from Git.
+
+### Train
+
+```bash
+uv run scripts/train.py Firm-Keyframe-G1 \
+  --env.scene.num-envs=4096 \
+  --agent.max-iterations=30000 \
+  --agent.save-interval=500
+```
+
+The installed MJLab training wrapper passes a tracking-only `registry_name`
+keyword that its own base runner version does not accept. This task registers a
+small compatibility runner that discards the keyword only after the wrapper has
+already resolved the local motion file. No third-party package is patched.
+
+### Play
+
+```bash
+uv run scripts/play.py Firm-Keyframe-G1 \
+  --checkpoint-file logs/rsl_rl/firm_keyframe_g1_c003/<run>/model_<iteration>.pt \
+  --num-envs 1 \
+  --viewer native \
+  --no-terminations True
+```
+
+### Smoke record
+
+On 2026-08-09, a local 32-environment, 2-iteration tensorboard smoke completed
+1,536 simulation steps and both PPO updates. The constructed actor and critic
+were 120 and 123 dimensions, respectively. This verifies runtime wiring only;
+the reported early rewards are not evidence of expert quality.
+
 ## Planned task stages
-
-### Sparse-keyframe expert
-
-The first task will be `Firm-Keyframe-G1`. It will use a 10-second episode,
-random dense-frame initialization, small state perturbations, and a random
-0.04--1.0 second actuator-disable interval. The actor observes root angular
-velocity, joint position/velocity, last action, joint-position error to the next
-keyframe, and phase. Only velocity-limit safety terminations are used.
 
 ### Rollout dataset
 
@@ -145,7 +235,8 @@ retrieved keyframe goal every five control steps.
 - [x] Isolate work on branch `repro/firm-g1`.
 - [x] Add deterministic candidate detection and manifest generation.
 - [x] Visually inspect and physically replay candidate 003.
-- [ ] Train one sparse-keyframe expert.
+- [x] Implement and smoke-test one sparse-keyframe expert.
+- [ ] Train and evaluate the Stage 0 candidate 003 expert.
 - [ ] Scale to five directional experts.
 - [ ] Collect and validate the pilot rollout dataset.
 - [ ] Train action diffusion without adapter.
