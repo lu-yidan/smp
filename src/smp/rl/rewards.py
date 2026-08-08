@@ -87,4 +87,9 @@ def task_smp_product(
   a tuple of ``(func, weight, kwargs)``.  Calls ``smp_guidance_reward`` once (the
   sole SMP-buffer update), so it must be the task's only SMP reward term."""
   task = sum(w * func(env, **kw) for func, w, kw in task_terms)
-  return task * smp_guidance_reward(env, fixed_timesteps=fixed_timesteps, ws=ws)
+  smp = smp_guidance_reward(env, fixed_timesteps=fixed_timesteps, ws=ws)
+  product = task * smp
+  env._smp_task_score = task  # type: ignore[attr-defined]
+  env._smp_score = smp  # type: ignore[attr-defined]
+  env._smp_product_score = product  # type: ignore[attr-defined]
+  return product

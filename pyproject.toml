@@ -16,6 +16,8 @@ dependencies = [
   "wandb>=0.19",
   "tyro>=0.9",
   "scikit-learn>=1.6",
+  # mjlab's pinned commit references an ephemeral nightly; use stable PyPI.
+  "mujoco==3.8.1",
 ]
 
 [dependency-groups]

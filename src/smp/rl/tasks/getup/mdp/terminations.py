@@ -13,16 +13,26 @@ def stood_up(
   head_height: float = 1.2,
   max_speed: float = 0.5,
   hold_steps: int = 10,
+  min_upright: float = 0.0,
+  max_angular_speed: float = float("inf"),
 ) -> torch.Tensor:
-  """Truncate once STABLY standing (success): head ≥ ``head_height`` and base
-  speed < ``max_speed`` for ``hold_steps`` consecutive steps (counter zeroed by
-  ``reset_stand_counter``).  Wire ``time_out=True`` so it's a TRUNCATION — the
-  value bootstraps from the standing state, else standing looks worthless."""
+  """Truncate once a stable standing condition holds for consecutive steps.
+
+  The optional upright and angular-speed checks let robust tasks reject tall but
+  tilted or visibly shaking poses. Defaults preserve the baseline task behavior.
+  """
   robot = env.scene["robot"]
   head_idx = robot.find_sites(["head"], preserve_order=True)[0][0]
   z = robot.data.site_pos_w[:, head_idx, 2]
   speed = torch.linalg.norm(robot.data.root_link_lin_vel_w, dim=-1)
-  is_standing = (z >= head_height) & (speed < max_speed)
+  angular_speed = torch.linalg.norm(robot.data.root_link_ang_vel_w, dim=-1)
+  upright = torch.clamp(-robot.data.projected_gravity_b[:, 2], 0.0, 1.0)
+  is_standing = (
+    (z >= head_height)
+    & (speed < max_speed)
+    & (upright >= min_upright)
+    & (angular_speed < max_angular_speed)
+  )
   cnt = getattr(env, "_getup_stand_count", None)
   if cnt is None:
     cnt = torch.zeros(env.num_envs, dtype=torch.long, device=env.device)
