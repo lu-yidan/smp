@@ -31,7 +31,7 @@ points its `init_smp_state` event at the right one, so no setup is needed:
 | -------------------------------- | --------------------- | -------------------------------- |
 | `pretrained_loco.pt`             | walk / jog / run      | `Smp-Forward-G1`                 |
 | `pretrained_lafan_run.pt`        | LAFAN run subset      | `Smp-Steering-G1`, `Smp-Location-G1` |
-| `pretrained_getup_f2s2.pt`       | get-up (fall→stand)   | `Smp-Getup-G1`                   |
+| `pretrained_getup_f2s2.pt`       | get-up (fall→stand)   | `Smp-Getup-*` tasks              |
 
 ## Setup
 
@@ -158,7 +158,7 @@ uv run scripts/pretrain.py --data-dir datasets/npz/forward/ --num-layers 2 --no-
 
 ## RL
 
-Four downstream tasks are registered with `mjlab.tasks.registry` (importing
+Six downstream tasks are registered with `mjlab.tasks.registry` (importing
 `smp.rl.tasks` self-registers them):
 
 | Task              | Demo | Description                              |
@@ -167,6 +167,8 @@ Four downstream tasks are registered with `mjlab.tasks.registry` (importing
 | `Smp-Steering-G1` | <img src="https://raw.githubusercontent.com/SUZ-tsinghua/smp/assets/steering.gif" width="200"/> | track a commanded velocity + facing direction |
 | `Smp-Location-G1` | <img src="https://raw.githubusercontent.com/SUZ-tsinghua/smp/assets/location.gif" width="200"/> | walk to a world-frame xy goal |
 | `Smp-Getup-G1`    | <img src="https://raw.githubusercontent.com/SUZ-tsinghua/smp/assets/getup.gif" width="200"/> | stand up from a fallen pose |
+| `Smp-Getup-Robust-G1` | — | recover from mixed falls and physical pushes |
+| `Smp-Getup-Robust-Smooth-G1` | — | robust get-up with slower motion and quieter standing |
 
 ### Train / play
 
@@ -178,8 +180,11 @@ uv run scripts/train.py Smp-Forward-G1 --env.scene.num-envs=4096
 uv run scripts/play.py Smp-Forward-G1 --wandb-run-path <org>/<project>/<run> --num-envs 4
 ```
 
-Swap the task id for any of the four. Because the priors are shipped and already
+Swap the task id for any registered task. Because the priors are shipped and already
 wired into each env config, no editing is required before training.
+
+The robust task lineage, disturbance switch, exact v3 reward weights, resume
+commands, and evaluation checklist are recorded in [`docs/robust_getup.md`](docs/robust_getup.md).
 
 ### Reward design: `task × SMP`
 
@@ -225,8 +230,10 @@ Per-task `taskᵢ` components (each weighted, summed, then gated by `r_smp`):
   `max(face_dir · heading, 0)`; randomized target direction + facing, speed 0.5–2 m/s.
 - **Location** — position tracking only: `exp(−s·‖xy_goal − xy_robot‖)` toward a
   periodically resampled world-frame goal (uses `ws=4`).
-- **Get-up** — `0.7·` upward head velocity `+ 0.3·` head-height tracking, each
+- **Get-up baseline** — `0.7·` upward head velocity `+ 0.3·` head-height tracking, each
   `exp(−s·max(target − ·, 0)²)`, from a fallen GSI start.
+- **Robust / smooth get-up** — mixed fall resets, finite physical wrenches, and
+  quiet-standing objectives; see [the experiment notes](docs/robust_getup.md).
 
 ### Generative State Initialization (GSI)
 

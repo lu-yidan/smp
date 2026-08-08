@@ -55,6 +55,7 @@ def mixed_fall_reset(
   # Clear any active wrench and reschedule the next push for reset environments.
   if hasattr(env, "_robust_push_active"):
     env._robust_push_active[env_ids] = 0  # type: ignore[attr-defined]
+    env._robust_push_recovery[env_ids] = 0  # type: ignore[attr-defined]
     env._robust_push_wait[env_ids] = torch.randint(  # type: ignore[attr-defined]
       50, 151, (env_ids.numel(),), device=env.device
     )
@@ -123,6 +124,7 @@ def random_body_wrench(
   body_names: tuple[str, ...] = ("pelvis", "torso_link"),
   interval_steps: tuple[int, int] = (50, 150),
   duration_steps: tuple[int, int] = (5, 15),
+  recovery_steps: int = 40,
   force_range: tuple[float, float] = (40.0, 250.0),
   torque_range: tuple[float, float] = (4.0, 30.0),
   curriculum_steps: int = 150_000,
@@ -150,6 +152,9 @@ def random_body_wrench(
     env._robust_push_active = torch.zeros(  # type: ignore[attr-defined]
       env.num_envs, dtype=torch.long, device=env.device
     )
+    env._robust_push_recovery = torch.zeros(  # type: ignore[attr-defined]
+      env.num_envs, dtype=torch.long, device=env.device
+    )
     env._robust_forces = torch.zeros(  # type: ignore[attr-defined]
       env.num_envs, num_bodies, 3, device=env.device
     )
@@ -159,10 +164,13 @@ def random_body_wrench(
 
   wait = env._robust_push_wait  # type: ignore[attr-defined]
   active = env._robust_push_active  # type: ignore[attr-defined]
+  recovery = env._robust_push_recovery  # type: ignore[attr-defined]
   forces = env._robust_forces  # type: ignore[attr-defined]
   torques = env._robust_torques  # type: ignore[attr-defined]
   body_ids = env._robust_force_body_ids  # type: ignore[attr-defined]
 
+  recovering = recovery[env_ids] > 0
+  recovery[env_ids[recovering]] -= 1
   inactive = active[env_ids] <= 0
   wait[env_ids[inactive]] -= 1
   start_ids = env_ids[(wait[env_ids] <= 0) & (active[env_ids] <= 0)]
@@ -180,12 +188,14 @@ def random_body_wrench(
     torques[start_ids] = 0.0
     forces[start_ids, chosen] = force_vec
     torques[start_ids, chosen] = torque_vec
-    active[start_ids] = torch.randint(
+    durations = torch.randint(
       duration_steps[0],
       duration_steps[1] + 1,
       (start_ids.numel(),),
       device=env.device,
     )
+    active[start_ids] = durations
+    recovery[start_ids] = durations + recovery_steps
 
   active_ids = env_ids[active[env_ids] > 0]
   inactive_ids = env_ids[active[env_ids] <= 0]
