@@ -235,6 +235,63 @@ At iteration 19, the formal run reached approximately 168k steps/s, mean reward
 startup values confirm health only; checkpoint selection will use full-episode
 tracking metrics and visual playback rather than reward alone.
 
+## Stage 0 evaluation and rollout capture
+
+`scripts/firm/evaluate_expert.py` evaluates the expert from 25 evenly spaced
+dense reference frames rather than replaying only frame zero. Each frame is
+replicated across independently randomized environments. An episode succeeds
+only if it reaches the time limit without the numerical safety termination and
+ends with 25 consecutive stable-standing control steps.
+
+The evaluator reports both tracking and safety quantities:
+
+- success, timeout, and unsafe-termination rates overall and per start frame;
+- world and root-relative MPKPE;
+- joint-position RMSE and action-rate RMS;
+- peak joint speed, joint acceleration, actuator force, and root vertical speed.
+
+Use the local validated motion explicitly; the Stage 0 W&B run did not upload a
+motion artifact.
+
+```bash
+uv run scripts/firm/evaluate_expert.py \
+  --wandb-run-path tabletennis/smp/j0q8fell \
+  --wandb-checkpoint-name model_29999.pt \
+  --motion-file datasets/firm/lafan/fallAndGetUp2_subject2_candidate_003_validated.npz \
+  --num-start-frames 25 \
+  --episodes-per-frame 32 \
+  --output-file datasets/firm/evaluation/c003_stage0_model_29999.json
+```
+
+The pilot recorder uses the same fixed-start protocol. With 25 starts, eight
+replicas, and 500 steps, it writes at most 100,000 transitions:
+
+```bash
+uv run scripts/firm/collect_rollouts.py \
+  --wandb-run-path tabletennis/smp/j0q8fell \
+  --wandb-checkpoint-name model_29999.pt \
+  --motion-file datasets/firm/lafan/fallAndGetUp2_subject2_candidate_003_validated.npz \
+  --num-start-frames 25 \
+  --episodes-per-frame 8 \
+  --output-dir datasets/firm/rollouts/c003_stage0_model_29999_pilot
+```
+
+Rollout shards are compressed NPZ files with:
+
+| Field | Shape | Meaning |
+| --- | ---: | --- |
+| `observation` | 90 | root angular velocity, joint position/velocity, previous action |
+| `goal` | 29 | target sparse-keyframe joint position |
+| `action` | 29 | clipped expert policy action |
+| `episode_id`, `episode_step` | scalar | sequence and history boundaries |
+| `start_frame`, `motion_frame`, `goal_frame` | scalar | reference provenance |
+| `done`, `unsafe`, `timeout` | scalar | transition outcome |
+
+`manifest.json` records checkpoint and motion SHA256 values, field layout,
+per-episode success, and each shard's checksum. Failed episodes remain in the
+pilot dataset but are explicitly labeled; downstream diffusion training must
+filter or deliberately weight them.
+
 ## Planned task stages
 
 ### Rollout dataset
@@ -263,7 +320,8 @@ retrieved keyframe goal every five control steps.
 - [x] Add deterministic candidate detection and manifest generation.
 - [x] Visually inspect and physically replay candidate 003.
 - [x] Implement and smoke-test one sparse-keyframe expert.
-- [ ] Train and evaluate the Stage 0 candidate 003 expert.
+- [x] Train the Stage 0 candidate 003 expert.
+- [ ] Quantitatively evaluate the Stage 0 candidate 003 expert.
 - [ ] Scale to five directional experts.
 - [ ] Collect and validate the pilot rollout dataset.
 - [ ] Train action diffusion without adapter.
