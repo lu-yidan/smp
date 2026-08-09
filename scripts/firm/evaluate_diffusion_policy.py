@@ -53,6 +53,8 @@ class EvaluateDiffusionPolicyConfig:
   root_angular_speed_threshold: float = 0.50
   observation_corruption: bool = True
   use_ema: bool = True
+  action_execution_steps: int = 1
+  """Number of sampled horizon actions executed before replanning."""
   seed: int = 42
   device: str | None = None
   output_file: str | None = None
@@ -87,6 +89,9 @@ def run_evaluation(cfg: EvaluateDiffusionPolicyConfig) -> dict:
     device,
     use_ema=cfg.use_ema,
   )
+  if not 1 <= cfg.action_execution_steps <= model.horizon:
+    env.close()
+    raise ValueError(f"action_execution_steps must be in [1, {model.horizon}]")
   n = env.num_envs
 
   active_steps = torch.zeros(n, dtype=torch.long, device=device)
@@ -106,6 +111,7 @@ def run_evaluation(cfg: EvaluateDiffusionPolicyConfig) -> dict:
   previous_action = torch.zeros(n, env.num_actions, device=device)
   sampling_seconds = 0.0
   sampled_windows = 0
+  normalized_horizon: torch.Tensor | None = None
 
   obs = env.get_observations()
   try:
@@ -114,21 +120,28 @@ def run_evaluation(cfg: EvaluateDiffusionPolicyConfig) -> dict:
       if not active.any():
         break
 
-      state_observation = actor_base_observation(obs)
-      normalized_observation, current_joint, normalized_goal = (
-        normalize_action_condition(state_observation, command.joint_pos, statistics)
-      )
-      sample_start = time.perf_counter()
-      normalized_horizon = sample_action_horizon(
-        model,
-        scheduler,
-        normalized_observation,
-        current_joint,
-        normalized_goal,
-      )
-      sampling_seconds += time.perf_counter() - sample_start
-      sampled_windows += n
-      actions = denormalize_actions(normalized_horizon[:, 0], statistics)
+      action_index = step % cfg.action_execution_steps
+      if action_index == 0:
+        state_observation = actor_base_observation(obs)
+        normalized_observation, current_joint, normalized_goal = (
+          normalize_action_condition(state_observation, command.joint_pos, statistics)
+        )
+        if device.type == "cuda":
+          torch.cuda.synchronize(device)
+        sample_start = time.perf_counter()
+        normalized_horizon = sample_action_horizon(
+          model,
+          scheduler,
+          normalized_observation,
+          current_joint,
+          normalized_goal,
+        )
+        if device.type == "cuda":
+          torch.cuda.synchronize(device)
+        sampling_seconds += time.perf_counter() - sample_start
+        sampled_windows += n
+      assert normalized_horizon is not None
+      actions = denormalize_actions(normalized_horizon[:, action_index], statistics)
       if env.clip_actions is not None:
         actions = actions.clamp(-env.clip_actions, env.clip_actions)
 
@@ -214,7 +227,7 @@ def run_evaluation(cfg: EvaluateDiffusionPolicyConfig) -> dict:
   result = {
     "format_version": 1,
     "task_id": TASK_ID,
-    "policy": "firm_action_diffusion_receding_horizon_first_action",
+    "policy": "firm_action_diffusion_action_chunking",
     "config": asdict(cfg),
     "artifacts": {
       **runtime_metadata(runtime),
@@ -228,7 +241,7 @@ def run_evaluation(cfg: EvaluateDiffusionPolicyConfig) -> dict:
       "sampling_seconds": sampling_seconds,
       "windows_per_second": sampled_windows / max(sampling_seconds, 1.0e-9),
       "ddpm_steps_per_window": scheduler.num_timesteps,
-      "executed_actions_per_window": 1,
+      "executed_actions_per_window": cfg.action_execution_steps,
     },
     **aggregates,
   }
