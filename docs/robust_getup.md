@@ -207,6 +207,30 @@ branch `codex/robust-getup-smooth-v4-staged`, code commit `03e6488`.
 - Console log: `run_control/v4_train.log` (W&B's `files/output.log` is
   unbuffered and is preferred for live progress)
 
+The run completed normally after 6,000 refinement iterations. Seven checkpoints
+were retained, for approximately 74 MiB total:
+
+```text
+model_48000.pt
+model_49000.pt
+model_50000.pt
+model_51000.pt
+model_52000.pt
+model_53000.pt
+model_53998.pt
+```
+
+The final training-window snapshot at iteration 53998 reported task score
+0.6613, product score 0.2444, upright 0.9282, head vertical overspeed 0.0068,
+mean foot speed 0.2675, max joint speed 3.9095, joint-acceleration RMS 83.36,
+and action-rate RMS 0.4976. Recovery-stage completion averaged 0.2163 over the
+mixed reset and disturbance window.
+
+These aggregate training metrics show that vertical overspeed fell during
+refinement, but they do not establish prone recovery success or prove the
+ordered motion is visually natural. Checkpoint selection still requires the
+evaluation below, starting with `model_49000.pt` and `model_53998.pt`.
+
 ## Evaluation checklist
 
 Compare v2 and v3 from the same reset seeds, first with disturbances off and
