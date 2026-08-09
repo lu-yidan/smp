@@ -18,6 +18,7 @@ from smp.firm.expert_runtime import (
   sha256_file,
 )
 from smp.rl.tasks.firm.keyframe_env_cfg import MOTION_FILE
+from smp.rl.tasks.getup.mdp.events import random_body_wrench
 
 TASK_ID = "Firm-Keyframe-G1"
 
@@ -42,6 +43,17 @@ class CollectRolloutsConfig:
   root_linear_speed_threshold: float = 0.50
   root_angular_speed_threshold: float = 0.50
   observation_corruption: bool = True
+  physical_disturbances: bool = False
+  """Apply finite-duration torso wrenches while the expert acts."""
+  disturbance_interval_steps: tuple[int, int] = (50, 150)
+  disturbance_duration_steps: tuple[int, int] = (5, 10)
+  disturbance_recovery_steps: int = 40
+  disturbance_force_range: tuple[float, float] = (20.0, 80.0)
+  disturbance_torque_range: tuple[float, float] = (2.0, 10.0)
+  """Ranges ramp from the first to second value during a long training run.
+
+  Corrective rollout capture uses the upper value after its first interval.
+  """
   seed: int = 42
   device: str | None = None
   output_dir: str = "datasets/firm/rollouts/c003_stage0_pilot"
@@ -120,6 +132,16 @@ def run_collection(cfg: CollectRolloutsConfig) -> dict:
   """Collect sequential expert transitions and write a reproducible manifest."""
   if cfg.max_steps <= 0 or cfg.standing_hold_steps <= 0:
     raise ValueError("max_steps and standing_hold_steps must be positive")
+  if cfg.physical_disturbances:
+    integer_ranges = {
+      "disturbance_interval_steps": cfg.disturbance_interval_steps,
+      "disturbance_duration_steps": cfg.disturbance_duration_steps,
+    }
+    for name, bounds in integer_ranges.items():
+      if bounds[0] <= 0 or bounds[0] > bounds[1]:
+        raise ValueError(f"{name} must be positive and ordered, got {bounds}")
+    if cfg.disturbance_recovery_steps < 0:
+      raise ValueError("disturbance_recovery_steps must be non-negative")
   output_dir = Path(cfg.output_dir)
   _prepare_output(output_dir)
 
@@ -143,6 +165,7 @@ def run_collection(cfg: CollectRolloutsConfig) -> dict:
   n = env.num_envs
   device = env.device
   writer = ShardWriter(output_dir, cfg.shard_size)
+  disturbed_transitions = torch.zeros((), dtype=torch.long, device=device)
 
   done = torch.zeros(n, dtype=torch.bool, device=device)
   success = torch.zeros_like(done)
@@ -180,6 +203,24 @@ def run_collection(cfg: CollectRolloutsConfig) -> dict:
       )
       stable_hold = torch.where(active & stable, stable_hold + 1, 0)
 
+      transition_disturbed = torch.zeros(n, dtype=torch.bool, device=device)
+      if cfg.physical_disturbances:
+        random_body_wrench(
+          raw_env,
+          env_ids=active_ids,
+          interval_steps=cfg.disturbance_interval_steps,
+          duration_steps=cfg.disturbance_duration_steps,
+          recovery_steps=cfg.disturbance_recovery_steps,
+          force_range=cfg.disturbance_force_range,
+          torque_range=cfg.disturbance_torque_range,
+          curriculum_steps=1,
+        )
+        applied_forces = raw_env._robust_forces  # type: ignore[attr-defined]
+        transition_disturbed[active_ids] = (
+          applied_forces[active_ids].abs().amax(dim=(1, 2)) > 0.0
+        )
+      disturbed_transitions += transition_disturbed.sum()
+
       next_obs, _, dones, _ = env.step(actions)
       terminated = raw_env.termination_manager.terminated.bool()
       timeouts = raw_env.termination_manager.time_outs.bool()
@@ -199,6 +240,7 @@ def run_collection(cfg: CollectRolloutsConfig) -> dict:
           "start_frame": _cpu(runtime.env_start_frames[ids], torch.int32),
           "motion_frame": _cpu(motion_frames[ids], torch.int32),
           "goal_frame": _cpu(goal_frames[ids], torch.int32),
+          "transition_disturbed": _cpu(transition_disturbed[ids], torch.bool),
           "done": _cpu(transition_done[ids], torch.bool),
           "unsafe": _cpu(transition_unsafe[ids], torch.bool),
           "timeout": _cpu(transition_timeout[ids], torch.bool),
@@ -257,9 +299,14 @@ def run_collection(cfg: CollectRolloutsConfig) -> dict:
       },
       "goal": {"shape": [29], "description": "target keyframe joint position"},
       "action": {"shape": [29], "description": "clipped expert policy action"},
+      "transition_disturbed": {
+        "shape": [],
+        "description": "wrench applied during this transition",
+      },
       "ordering": "step-major; use episode_id and episode_step for sequences",
     },
     "total_samples": writer.total,
+    "disturbed_transitions": int(disturbed_transitions.item()),
     "episodes": n,
     "successful_episodes": int(success.sum().item()),
     "unsafe_episodes": int(unsafe.sum().item()),
