@@ -403,7 +403,7 @@ commit `c366440`.
 | epoch 0 train / validation L1 | 0.35799 / 0.87668 |
 | epoch 50 train / validation L1 | 0.15022 / 0.14491 |
 | epoch 99 train / validation L1 | 0.14678 / 0.14326 |
-| checkpoint disk use | 121 MiB |
+| peak checkpoint disk use | 121 MiB |
 
 The final optimizer-free checkpoint is:
 
@@ -417,6 +417,11 @@ Its SHA256 is
 The checkpoint embeds the pilot manifest SHA256
 `edbb6fbb10a473600285187539572ba422b7e6dde175cbc7b37c8aea2c159a1c`,
 the train-only normalization tensors, and the online and EMA weights.
+
+After W&B reported all three files as uploaded, the local epoch-0 and epoch-50
+copies were deleted when the shared CPFS filled. The server retains the 40 MiB
+final model; both intermediate checkpoints remain recoverable from W&B run
+`o0koto4w`.
 
 The denoising loss converged without a train/validation gap. This accepts the
 offline conditional-imitation pipeline, not the policy: DDPM sampling quality,
