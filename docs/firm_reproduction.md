@@ -539,6 +539,84 @@ epoch 0 and the final checkpoint. Artifacts are written below
 Acceptance requires evaluation on both original and corrective held-out
 episodes followed by the unchanged 100-episode closed-loop gate.
 
+Fine-tuning v1 completed at epoch 49 with train/validation L1
+`0.14540 / 0.14699`; its W&B run is
+[`w9aneczd`](https://wandb.ai/tabletennis/smp/runs/w9aneczd), and the final
+checkpoint SHA256 is
+`04ea0eb4bfb7194b54c1d86b51c002135180f5d89b3137c6e1532c6dcd8f12bd`.
+It reduced original held-out first-action RMSE from 0.0759 to 0.0648 without
+changing the 12-step RMSE, but improved closed-loop success only from 31% to
+36%. Four-sample action averaging reduced action rate and acceleration but
+reached 35%, showing that sampling variance was not the primary failure mode.
+
+The second corrective pass targets only the 17 failed early/middle start frames
+from 0 through 324. It uses 24 replicas per frame and the same sparse wrench:
+
+| Field | Result |
+| --- | ---: |
+| total transitions | 204,000 |
+| episodes / successful | 408 / 359 |
+| unsafe episodes | 0 |
+| directly forced transitions | 5,592 (2.741%) |
+| valid successful 12-step windows | 120,681 |
+| train / validation windows | 108,834 / 11,847 |
+| dataset size | 88 MiB |
+
+The targeted dataset lives at
+`/root/workspace/smp-firm-artifacts/c003_earlymid_corrective_force40_seed42`.
+Its manifest SHA256 is
+`3b9fe74897c7707818f524a30ebd604b3634e64a7f78e059688c190c1182d88f`;
+the five shard hashes are:
+
+| Shard | SHA256 |
+| --- | --- |
+| `shard_0000.npz` | `231f5362c66f6e59c7635bd527a6e3012cd47c64eba081db44bdd8de759bacb6` |
+| `shard_0001.npz` | `fa890e6ec4282f4b6886d1e7ce984cd16720d3b625b23aadcd8950d2b082527c` |
+| `shard_0002.npz` | `d265a8f728fcbad29e3f05a1a044befb738fd248924bea345de3c47835d2770a` |
+| `shard_0003.npz` | `e02faf84cf386e5c1e72a14e9b7e3d374229a155ef2e4d0f20d097ac90873f85` |
+| `shard_0004.npz` | `adc5d1ee134a3949a5cebb2ea09b68fe0e6eddaad7e17a8153f1d8fd31dfcd41` |
+
+Fine-tuning v2 warm-started from v1, used the same optimizer settings for 50
+epochs, and ended at train/validation L1 `0.14586 / 0.14589`. Its W&B run is
+[`pfv50i6w`](https://wandb.ai/tabletennis/smp/runs/pfv50i6w). The final
+checkpoint is
+`/root/workspace/smp-firm-artifacts/training/firm_action_diffusion_c003_earlymid_ft_v2/2026-08-09_22-56-46/firm_action_diffusion.pt`
+with SHA256
+`ed1ef872eae8e00fecd9be975f9d56ecbf3753ee744009e76dc10122cdf900f4`.
+
+V2 retained the original distribution: original held-out first-action RMSE
+improved to 0.0597 and 12-step RMSE remained 0.1792. On the targeted held-out
+set its first-action and 12-step RMSE were 0.0691 and 0.1829.
+
+The unchanged 100-episode closed-loop comparison is:
+
+| Metric | Pilot | V1 | V2 | V2 ensemble-4 |
+| --- | ---: | ---: | ---: | ---: |
+| success rate | 31% | 36% | 54% | **55%** |
+| unsafe termination rate | 0% | 0% | 1% | **0%** |
+| mean MPKPE (m) | 0.342 | 0.301 | 0.217 | **0.213** |
+| joint-position RMSE (rad) | 0.131 | 0.121 | 0.115 | **0.114** |
+| action-rate RMS | 0.272 | 0.282 | 0.278 | **0.266** |
+| p95 peak joint speed (rad/s) | 22.46 | 23.29 | 22.73 | **22.56** |
+| p95 peak acceleration (rad/s2) | 3731 | 4540 | 4441 | **3803** |
+| p95 peak root vertical speed (m/s) | 3.07 | 3.04 | 3.09 | **2.99** |
+
+Four-sample averaging is therefore a useful safety ablation, not the source of
+the recovery gain. V2 establishes that targeted corrective data materially
+helps, but 55% remains far below the 99% expert and four-sample inference is
+costlier. Additional offline expert rollouts now have diminishing returns. The
+next stage should collect states visited by the diffusion policy itself and
+attach corrective expert labels (DAgger-style or state cloning), then train an
+adapter or residual policy on those true failure states.
+
+The V2 result JSON hashes are:
+
+| Evaluation | SHA256 |
+| --- | --- |
+| targeted held-out | `9feafe6e356ed19c8045a46fbda1eb69357b5b7e730ac9e7a14c091c05af4697` |
+| original held-out | `1ac72be4bb9aee1f2bb747e30cb901fc686f5ecb53915d66c29f2d3e28581fba` |
+| closed-loop single | `6a7e6ab9916c78a9cdbea64acbb8d155faff2c1a76db0c18ee1d480275c94a9c` |
+| closed-loop ensemble-4 | `820731d268a20e7457f3159e6ad93b72e4f07d5f1127887c917984aebe65e8c6` |
 ## Reproduction milestones
 
 - [x] Isolate work on branch `repro/firm-g1`.
@@ -553,5 +631,6 @@ episodes followed by the unchanged 100-episode closed-loop gate.
 - [x] Evaluate full DDPM held-out sampling.
 - [x] Establish the first closed-loop diffusion baseline.
 - [x] Aggregate perturbed corrective expert data.
-- [ ] Fine-tune on corrective data and close the policy gap.
+- [x] Fine-tune v1/v2 on corrective expert data.
+- [ ] Aggregate on-policy diffusion failure states and close the policy gap.
 - [ ] Train the adapter and evaluate full FIRM-R.
