@@ -9,7 +9,9 @@ from mjlab.utils.lab_api.math import quat_from_euler_xyz, quat_mul
 __all__ = [
   "mixed_fall_reset",
   "random_body_wrench",
+  "reset_recovery_stage",
   "reset_stand_counter",
+  "update_recovery_stage",
 ]
 
 
@@ -33,6 +35,7 @@ def mixed_fall_reset(
   procedural_probability: float = 0.5,
   root_height_range: tuple[float, float] = (0.48, 0.62),
   joint_noise: float = 0.12,
+  mode_weights: tuple[float, float, float, float] | None = None,
 ) -> None:
   """Mix GSI resets with four physically plausible procedural lying poses.
 
@@ -45,6 +48,13 @@ def mixed_fall_reset(
     env_ids = torch.arange(env.num_envs, device=env.device)
   if env_ids.numel() == 0:
     return
+
+  if mode_weights is not None:
+    weights = torch.tensor(mode_weights, dtype=torch.float, device=env.device)
+    if weights.shape != (4,) or torch.any(weights < 0.0) or weights.sum() <= 0.0:
+      msg = "mode_weights must contain four non-negative values with positive sum"
+      raise ValueError(msg)
+    weights /= weights.sum()
 
   reset_types = getattr(env, "_robust_reset_type", None)
   if reset_types is None:
@@ -69,7 +79,10 @@ def mixed_fall_reset(
 
   robot = env.scene["robot"]
   n = fall_ids.numel()
-  modes = torch.randint(0, 4, (n,), device=env.device)
+  if mode_weights is None:
+    modes = torch.randint(0, 4, (n,), device=env.device)
+  else:
+    modes = torch.multinomial(weights, n, replacement=True)
   roll = torch.zeros(n, device=env.device)
   pitch = torch.zeros(n, device=env.device)
   roll = torch.where(modes == 2, torch.full_like(roll, torch.pi / 2), roll)
@@ -115,6 +128,121 @@ def mixed_fall_reset(
     robot.data.joint_vel[fall_ids][:, None, :].expand(-1, window_size, -1),
   )
   reset_types[fall_ids] = modes + 1
+
+
+def _head_height_and_upright(
+  env: ManagerBasedRlEnv,
+  env_ids: torch.Tensor,
+) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
+  robot = env.scene["robot"]
+  head_idx = robot.find_sites(["head"], preserve_order=True)[0][0]
+  knee_ids = robot.find_joints(
+    ["left_knee_joint", "right_knee_joint"], preserve_order=True
+  )[0]
+  head_z = robot.data.site_pos_w[env_ids, head_idx, 2]
+  head_vz = robot.data.site_lin_vel_w[env_ids, head_idx, 2]
+  upright = torch.clamp(-robot.data.projected_gravity_b[env_ids, 2], 0.0, 1.0)
+  knee_flexion = robot.data.joint_pos[env_ids][:, knee_ids].mean(dim=-1)
+  return head_z, head_vz, upright, knee_flexion
+
+
+@torch.no_grad()
+def reset_recovery_stage(
+  env: ManagerBasedRlEnv,
+  env_ids: torch.Tensor | None = None,
+) -> None:
+  """Initialize the ordered seated-crouched-standing recovery stage."""
+  if env_ids is None:
+    env_ids = torch.arange(env.num_envs, device=env.device)
+  if env_ids.numel() == 0:
+    return
+
+  if not hasattr(env, "_v4_recovery_stage"):
+    env._v4_recovery_stage = torch.zeros(  # type: ignore[attr-defined]
+      env.num_envs, dtype=torch.long, device=env.device
+    )
+    env._v4_stage_hold = torch.zeros(  # type: ignore[attr-defined]
+      env.num_envs, dtype=torch.long, device=env.device
+    )
+
+  head_z, _, upright, knee_flexion = _head_height_and_upright(env, env_ids)
+  stage = torch.zeros(env_ids.numel(), dtype=torch.long, device=env.device)
+  stage = torch.where(
+    (head_z >= 0.55) & (upright >= 0.55) & (knee_flexion >= 1.00),
+    torch.ones_like(stage),
+    stage,
+  )
+  stage = torch.where(
+    (head_z >= 0.78) & (upright >= 0.72) & (knee_flexion >= 0.80),
+    torch.full_like(stage, 2),
+    stage,
+  )
+  stage = torch.where(
+    (head_z >= 1.08) & (upright >= 0.85), torch.full_like(stage, 3), stage
+  )
+  env._v4_recovery_stage[env_ids] = stage  # type: ignore[attr-defined]
+  env._v4_stage_hold[env_ids] = 0  # type: ignore[attr-defined]
+
+
+@torch.no_grad()
+def update_recovery_stage(
+  env: ManagerBasedRlEnv,
+  env_ids: torch.Tensor | None = None,
+  seated_hold_steps: int = 10,
+  crouched_hold_steps: int = 10,
+  standing_hold_steps: int = 25,
+) -> None:
+  """Advance recovery only after stable seated, crouched, and standing holds."""
+  if env_ids is None:
+    env_ids = torch.arange(env.num_envs, device=env.device)
+  if env_ids.numel() == 0:
+    return
+  if not hasattr(env, "_v4_recovery_stage"):
+    reset_recovery_stage(env, env_ids)
+
+  stage = env._v4_recovery_stage  # type: ignore[attr-defined]
+  hold = env._v4_stage_hold  # type: ignore[attr-defined]
+  head_z, head_vz, upright, knee_flexion = _head_height_and_upright(env, env_ids)
+  local_stage = stage[env_ids]
+
+  # A new substantial fall restarts the ordered recovery sequence.
+  fallen = (head_z < 0.65) & (upright < 0.45)
+  fallen_ids = env_ids[fallen & (local_stage > 0)]
+  stage[fallen_ids] = 0
+  hold[fallen_ids] = 0
+  local_stage = stage[env_ids]
+
+  seated = (
+    (local_stage == 0)
+    & (head_z >= 0.55)
+    & (upright >= 0.55)
+    & (knee_flexion >= 1.00)
+    & (torch.abs(head_vz) <= 0.16)
+  )
+  crouched = (
+    (local_stage == 1)
+    & (head_z >= 0.78)
+    & (upright >= 0.72)
+    & (knee_flexion >= 0.80)
+    & (torch.abs(head_vz) <= 0.18)
+  )
+  standing = (
+    (local_stage == 2)
+    & (head_z >= 1.08)
+    & (upright >= 0.85)
+    & (torch.abs(head_vz) <= 0.12)
+  )
+  satisfied = seated | crouched | standing
+  hold[env_ids] = torch.where(satisfied, hold[env_ids] + 1, 0)
+
+  advance_seated = env_ids[seated & (hold[env_ids] >= seated_hold_steps)]
+  advance_crouched = env_ids[crouched & (hold[env_ids] >= crouched_hold_steps)]
+  advance_standing = env_ids[standing & (hold[env_ids] >= standing_hold_steps)]
+  stage[advance_seated] = 1
+  stage[advance_crouched] = 2
+  stage[advance_standing] = 3
+  advanced = torch.cat([advance_seated, advance_crouched, advance_standing])
+  hold[advanced] = 0
 
 
 @torch.no_grad()

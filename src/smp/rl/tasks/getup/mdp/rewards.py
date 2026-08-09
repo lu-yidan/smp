@@ -19,14 +19,21 @@ __all__ = [
   "cached_task_score",
   "feet_stationary_when_upright",
   "head_vertical_speed_metric",
+  "head_vertical_overspeed_l2",
   "joint_acc_rms_metric",
   "low_base_angular_velocity",
   "low_joint_velocity",
   "max_joint_speed_metric",
   "mean_foot_speed_metric",
+  "mean_knee_flexion_metric",
+  "prone_reset_metric",
   "procedural_reset_metric",
   "quiet_stance_gate",
+  "recovery_stage_complete_metric",
+  "recovery_stage_metric",
   "smooth_action",
+  "staged_head_velocity_profile",
+  "staged_recovery_pose",
   "stable_stand_metric",
   "track_head_height",
   "track_head_velocity_profile",
@@ -98,6 +105,81 @@ def track_head_velocity_profile(
   return torch.exp(-scale * torch.square(head_vz - target_vz)) * torch.exp(
     -overspeed_scale * torch.square(excess_speed)
   )
+
+
+def _recovery_stage(env: ManagerBasedRlEnv) -> torch.Tensor:
+  stage = getattr(env, "_v4_recovery_stage", None)
+  if stage is None:
+    return torch.zeros(env.num_envs, dtype=torch.long, device=env.device)
+  return stage
+
+
+def staged_recovery_pose(
+  env: ManagerBasedRlEnv,
+  height_scale: float = 8.0,
+  upright_scale: float = 6.0,
+  knee_scale: float = 5.0,
+) -> torch.Tensor:
+  """Reward the current seated, crouched, or standing waypoint.
+
+  Height, uprightness, and knee-flexion shortfalls are penalized. The stage
+  event requires each waypoint to be held at low vertical speed before exposing
+  the next target.
+  """
+  robot = env.scene["robot"]
+  head_idx = robot.find_sites(["head"], preserve_order=True)[0][0]
+  knee_ids = robot.find_joints(
+    ["left_knee_joint", "right_knee_joint"], preserve_order=True
+  )[0]
+  head_z = robot.data.site_pos_w[:, head_idx, 2]
+  knee_flexion = robot.data.joint_pos[:, knee_ids].mean(dim=-1)
+  upright = upright_posture(env, power=1.0)
+  stage = _recovery_stage(env)
+  target_height = head_z.new_tensor((0.62, 0.86, 1.15, 1.15))[stage]
+  target_upright = upright.new_tensor((0.60, 0.76, 0.90, 0.90))[stage]
+  target_knee = knee_flexion.new_tensor((1.00, 0.80, 0.0, 0.0))[stage]
+  height_shortfall = torch.clamp(target_height - head_z, min=0.0)
+  upright_shortfall = torch.clamp(target_upright - upright, min=0.0)
+  knee_shortfall = torch.clamp(target_knee - knee_flexion, min=0.0)
+  return torch.exp(
+    -height_scale * torch.square(height_shortfall)
+    - upright_scale * torch.square(upright_shortfall)
+    - knee_scale * torch.square(knee_shortfall)
+  )
+
+
+def staged_head_velocity_profile(
+  env: ManagerBasedRlEnv,
+  scale: float = 45.0,
+  overspeed_scale: float = 140.0,
+) -> torch.Tensor:
+  """Track a deliberately slow vertical speed for each recovery waypoint."""
+  robot = env.scene["robot"]
+  head_idx = robot.find_sites(["head"], preserve_order=True)[0][0]
+  head_z = robot.data.site_pos_w[:, head_idx, 2]
+  head_vz = robot.data.site_lin_vel_w[:, head_idx, 2]
+  stage = _recovery_stage(env)
+  target_height = head_z.new_tensor((0.62, 0.86, 1.15, 1.15))[stage]
+  max_velocity = head_z.new_tensor((0.06, 0.08, 0.10, 0.0))[stage]
+  speed_limit = head_z.new_tensor((0.16, 0.18, 0.18, 0.12))[stage]
+  remaining = torch.clamp((target_height - head_z) / 0.20, 0.0, 1.0)
+  target_vz = max_velocity * remaining
+  excess_speed = torch.clamp(torch.abs(head_vz) - speed_limit, min=0.0)
+  return torch.exp(-scale * torch.square(head_vz - target_vz)) * torch.exp(
+    -overspeed_scale * torch.square(excess_speed)
+  )
+
+
+def head_vertical_overspeed_l2(
+  env: ManagerBasedRlEnv,
+  speed_limit: float = 0.20,
+) -> torch.Tensor:
+  """Penalize upward or downward head speed beyond a conservative soft limit."""
+  robot = env.scene["robot"]
+  head_idx = robot.find_sites(["head"], preserve_order=True)[0][0]
+  head_vz = robot.data.site_lin_vel_w[:, head_idx, 2]
+  excess = torch.clamp(torch.abs(head_vz) - speed_limit, min=0.0)
+  return torch.square(excess)
 
 
 def upright_posture(env: ManagerBasedRlEnv, power: float = 2.0) -> torch.Tensor:
@@ -207,6 +289,33 @@ def procedural_reset_metric(env: ManagerBasedRlEnv) -> torch.Tensor:
   if reset_type is None:
     return torch.zeros(env.num_envs, device=env.device)
   return (reset_type > 0).float()
+
+
+def prone_reset_metric(env: ManagerBasedRlEnv) -> torch.Tensor:
+  """Return one for the procedural prone reset mode."""
+  reset_type = getattr(env, "_robust_reset_type", None)
+  if reset_type is None:
+    return torch.zeros(env.num_envs, device=env.device)
+  return (reset_type == 2).float()
+
+
+def recovery_stage_metric(env: ManagerBasedRlEnv) -> torch.Tensor:
+  """Normalized ordered recovery stage: lying=0 through standing=1."""
+  return _recovery_stage(env).float() / 3.0
+
+
+def recovery_stage_complete_metric(env: ManagerBasedRlEnv) -> torch.Tensor:
+  """Return one after the stable standing waypoint has been held."""
+  return (_recovery_stage(env) == 3).float()
+
+
+def mean_knee_flexion_metric(env: ManagerBasedRlEnv) -> torch.Tensor:
+  """Mean left/right knee flexion in radians."""
+  robot = env.scene["robot"]
+  knee_ids = robot.find_joints(
+    ["left_knee_joint", "right_knee_joint"], preserve_order=True
+  )[0]
+  return robot.data.joint_pos[:, knee_ids].mean(dim=-1)
 
 
 def stable_stand_metric(

@@ -11,6 +11,7 @@ criteria for the robust and smooth get-up policies. The baseline
 | v1 | `Smp-Getup-G1` | GSI only | Original fall-to-stand baseline |
 | v2 | `Smp-Getup-Robust-G1` | 50% GSI, 50% procedural falls | Recover from arbitrary falls and physical pushes |
 | v3 | `Smp-Getup-Robust-Smooth-G1` | Same as v2 | Slower rising, quieter feet, and lower joint/action acceleration |
+| v4 | `Smp-Getup-Robust-Smooth-V4-G1` | 40% GSI, 30% prone, 10% each other fall | Ordered seated-crouched-standing recovery without vertical launch |
 
 Checkpoint lineage used for this experiment:
 
@@ -19,6 +20,7 @@ Checkpoint lineage used for this experiment:
 | v1 | `tabletennis/smp/hqzmfkkg` | trained from scratch |
 | v2 | `tabletennis/smp/si4gfklo` | v1 `model_29999.pt` |
 | v3 | `tabletennis/smp/rr9sxcmu` | v2 `model_38000.pt` |
+| v4 | pending | v3 `model_47999.pt` |
 
 Formal v3 training was launched on 2026-08-08 on `dsw-lyd2` from branch
 `codex/robust-getup-smooth-v3`, commit `62e89c5`.
@@ -147,6 +149,53 @@ than wall time, use the viewer's real-time synchronization controls; changing
 the control timestep would change policy behavior and is not an evaluation-only
 speed adjustment.
 
+## v4 staged prone recovery
+
+Manual evaluation found that v2 recovers reliably but can be violent, while v3
+substantially reduces small corrective steps but sometimes fails from prone.
+v4 preserves v3's continuous smoothing penalties and adds an ordered recovery
+state; it does not simply remove low-height safety constraints.
+
+The state machine exposes one waypoint at a time:
+
+| Stage | Head | Upright | Mean knee flexion | Target vertical speed | Hold |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| seated / kneeling support | 0.62 m | 0.60 | >= 1.00 rad | 0.06 m/s | 0.20 s |
+| crouched support | 0.86 m | 0.76 | >= 0.80 rad | 0.08 m/s | 0.20 s |
+| standing | 1.15 m | 0.90 | no minimum | 0.10 m/s | 0.50 s |
+
+The next waypoint is unavailable until the current pose is held below its
+vertical-speed threshold. A separate reward penalty begins above 0.20 m/s head
+vertical speed. Action rate, action acceleration, joint acceleration, joint
+limits, and actuator effort remain penalized in every stage. This is intended to
+discourage using the feet and knees as a simultaneous ballistic launch.
+
+The initial reset distribution is deliberately prone-heavy:
+
+```text
+40% GSI
+10% supine
+30% prone
+10% left side
+10% right side
+```
+
+Training keeps moderate physical disturbances but reduces their maximum during
+focused prone refinement. Checkpoints are saved every 1,000 iterations to limit
+disk and W&B storage.
+
+```bash
+CUDA_VISIBLE_DEVICES=0 uv run scripts/train.py \
+  Smp-Getup-Robust-Smooth-V4-G1 \
+  --env.scene.num-envs=4096 \
+  --agent.resume True \
+  --wandb-run-path tabletennis/smp/rr9sxcmu \
+  --wandb-checkpoint-name model_47999.pt \
+  --agent.max-iterations=6000 \
+  --agent.save-interval=1000 \
+  --agent.run-name=smp_getup_robust_smooth_v4_from_47999
+```
+
 ## Evaluation checklist
 
 Compare v2 and v3 from the same reset seeds, first with disturbances off and
@@ -160,3 +209,12 @@ then on. Do not select a checkpoint from total reward alone.
 - Visually check all five reset sources and both disturbance modes.
 - Prefer the earliest checkpoint that meets the behavior targets; excessive
   smoothing can eventually make recovery passive or too slow.
+
+For v4, additionally require:
+
+- prone recovery success no more than five percentage points below v2;
+- ordered recovery without skipping the seated and crouched holds;
+- head vertical speed normally below 0.20 m/s;
+- no material regression in supine or side recovery;
+- max joint speed and action-rate RMS remain near v3 rather than v2;
+- visually reject knee/foot launch even if final standing succeeds.
