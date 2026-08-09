@@ -389,6 +389,39 @@ manifest checksum, and window counts. This stage validates conditional
 imitation only; closed-loop simulator recovery and autonomous keyframe
 selection are separate acceptance gates.
 
+### Pilot action diffusion record
+
+Training completed on 2026-08-09 on `dsw-lyd2`, physical GPU 2, from code
+commit `c366440`.
+
+| Field | Result |
+| --- | --- |
+| W&B | [`tabletennis/smp/o0koto4w`](https://wandb.ai/tabletennis/smp/runs/o0koto4w) |
+| model parameters | 5,237,842 |
+| valid 12-step windows | 76,216 |
+| train / validation windows | 68,316 / 7,900 |
+| epoch 0 train / validation L1 | 0.35799 / 0.87668 |
+| epoch 50 train / validation L1 | 0.15022 / 0.14491 |
+| epoch 99 train / validation L1 | 0.14678 / 0.14326 |
+| checkpoint disk use | 121 MiB |
+
+The final optimizer-free checkpoint is:
+
+```text
+logs/firm_action_diffusion/firm_action_diffusion_c003_pilot/
+  2026-08-09_21-48-33/firm_action_diffusion.pt
+```
+
+Its SHA256 is
+`715623b036a379e1049fff358ac01fd3e620edee3957c57387d293999e316aba`.
+The checkpoint embeds the pilot manifest SHA256
+`edbb6fbb10a473600285187539572ba422b7e6dde175cbc7b37c8aea2c159a1c`,
+the train-only normalization tensors, and the online and EMA weights.
+
+The denoising loss converged without a train/validation gap. This accepts the
+offline conditional-imitation pipeline, not the policy: DDPM sampling quality,
+first-action error, and closed-loop recovery remain to be evaluated.
+
 ## Reproduction milestones
 
 - [x] Isolate work on branch `repro/firm-g1`.
@@ -399,5 +432,6 @@ selection are separate acceptance gates.
 - [x] Quantitatively evaluate the Stage 0 candidate 003 expert.
 - [ ] Scale to five directional experts.
 - [x] Collect and validate the pilot rollout dataset.
-- [ ] Train action diffusion without adapter.
+- [x] Train action diffusion without adapter.
+- [ ] Evaluate action diffusion sampling and closed-loop recovery.
 - [ ] Train the adapter and evaluate full FIRM-R.
