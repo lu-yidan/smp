@@ -12,6 +12,7 @@ from torch.utils.data import Dataset
 
 from smp.firm.expert_runtime import sha256_file
 from smp.pretrain.model import DiffusionDenoiser
+from smp.pretrain.scheduler import DDPMScheduler
 
 OBSERVATION_DIM = 90
 JOINT_DIM = 29
@@ -233,3 +234,92 @@ class FirmActionDiffusion(nn.Module):
     state = self.observation_encoder(observation)
     condition = self.condition_encoder(torch.cat([state, relative_goal], dim=-1))
     return self.denoiser(noisy_actions, timesteps, condition)
+
+
+def load_action_diffusion_checkpoint(
+  checkpoint_file: str | Path,
+  device: str | torch.device,
+  *,
+  use_ema: bool = True,
+) -> tuple[
+  FirmActionDiffusion,
+  DDPMScheduler,
+  dict[str, torch.Tensor],
+  dict,
+]:
+  """Load a trained action model, scheduler, and normalization tensors."""
+  checkpoint_path = Path(checkpoint_file).expanduser().resolve()
+  if not checkpoint_path.is_file():
+    raise FileNotFoundError(checkpoint_path)
+  resolved_device = torch.device(device)
+  payload = torch.load(
+    checkpoint_path, map_location=resolved_device, weights_only=False
+  )
+  config = payload["config"]
+  model = FirmActionDiffusion(
+    horizon=int(config["horizon"]),
+    goal_latent_dim=int(config["goal_latent_dim"]),
+    d_model=int(config["d_model"]),
+    nhead=int(config["nhead"]),
+    num_layers=int(config["num_layers"]),
+    dropout=float(config["dropout"]),
+  ).to(resolved_device)
+  state_name = "model_ema" if use_ema else "model"
+  model.load_state_dict(payload[state_name], strict=True)
+  model.eval()
+  scheduler = DDPMScheduler(int(config["num_timesteps"])).to(resolved_device)
+  normalization = {
+    name: value.to(resolved_device) for name, value in payload["normalization"].items()
+  }
+  return model, scheduler, normalization, payload
+
+
+def normalize_action_condition(
+  observation: torch.Tensor,
+  goal: torch.Tensor,
+  statistics: dict[str, torch.Tensor],
+) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+  """Normalize state, current joints, and goal with training-only statistics."""
+  current_joint = observation[:, 3:32]
+  normalized_observation = (observation - statistics["observation_mean"]) / statistics[
+    "observation_std"
+  ]
+  normalized_current_joint = (current_joint - statistics["joint_mean"]) / statistics[
+    "joint_std"
+  ]
+  normalized_goal = (goal - statistics["joint_mean"]) / statistics["joint_std"]
+  return normalized_observation, normalized_current_joint, normalized_goal
+
+
+@torch.no_grad()
+def sample_action_horizon(
+  model: FirmActionDiffusion,
+  scheduler: DDPMScheduler,
+  observation: torch.Tensor,
+  current_joint: torch.Tensor,
+  goal: torch.Tensor,
+) -> torch.Tensor:
+  """Run every ancestral DDPM step and return a normalized action horizon."""
+  batch_size = observation.shape[0]
+  actions = torch.randn(
+    batch_size,
+    model.horizon,
+    model.action_dim,
+    device=observation.device,
+    dtype=observation.dtype,
+  )
+  for step in reversed(range(scheduler.num_timesteps)):
+    timesteps = torch.full(
+      (batch_size,), step, dtype=torch.long, device=observation.device
+    )
+    predicted_noise = model(actions, timesteps, observation, current_joint, goal)
+    actions = scheduler.step(predicted_noise, actions, step)
+  return actions
+
+
+def denormalize_actions(
+  normalized_actions: torch.Tensor,
+  statistics: dict[str, torch.Tensor],
+) -> torch.Tensor:
+  """Map normalized action samples back to expert-policy action units."""
+  return normalized_actions * statistics["action_std"] + statistics["action_mean"]
