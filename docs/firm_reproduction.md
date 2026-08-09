@@ -292,6 +292,49 @@ per-episode success, and each shard's checksum. Failed episodes remain in the
 pilot dataset but are explicitly labeled; downstream diffusion training must
 filter or deliberately weight them.
 
+### Formal Stage 0 evaluation record
+
+The 800-episode evaluation (25 dense starts x 32 replicas, seed 42, observation
+corruption enabled) completed on 2026-08-09:
+
+| Metric | Result |
+| --- | ---: |
+| success rate | 99.00% |
+| unsafe termination rate | 0.00% |
+| mean MPKPE | 0.0351 m |
+| mean root-relative MPKPE | 0.0715 m |
+| mean joint-position RMSE | 0.0940 rad |
+| mean action-rate RMS | 0.2707 |
+| p95 peak joint speed | 22.80 rad/s |
+| maximum joint speed | 24.49 rad/s |
+| p95 peak root vertical speed | 1.40 m/s |
+
+Frame 162 was the weakest dense start at 93.75% success. Frames 0, 81, 324,
+364, 405, and 446 each reached 96.875%; every other sampled start reached
+100%. Candidate 003 is therefore accepted as a functional pilot teacher, but
+not as the final safety teacher: its peak joint and root speeds are too high for
+a claim of gentle recovery.
+
+The ignored evaluation JSON is stored at
+`datasets/firm/evaluation/c003_stage0_model_29999.json` on `dsw-lyd2`;
+its SHA256 is
+`9624209fd13710a81b89f896e0eac34b902c21f69f65011359b79f33c42cdf31`.
+
+### Pilot rollout record
+
+The pilot capture contains 100,000 transitions from 200 completed episodes.
+All 200 episodes met the stable-standing criterion and none reached the unsafe
+termination. Two 50,000-transition shards occupy 43 MiB:
+
+| Artifact | SHA256 |
+| --- | --- |
+| `manifest.json` | `edbb6fbb10a473600285187539572ba422b7e6dde175cbc7b37c8aea2c159a1c` |
+| `shard_0000.npz` | `eaeaecf9f3f1270806fe8063d92bdacc7a654c65252c655c03bebd9141f6898d` |
+| `shard_0001.npz` | `c23e6b53e0fc8d19b9a38b5c9a3056dcdb8137fd5d63d1cfe0ef5152e4e2ce22` |
+
+The dataset remains local to
+`/mnt/workspace/user/luyidan/smp-firm/datasets/firm/rollouts/c003_stage0_model_29999_pilot`.
+
 ## Planned task stages
 
 ### Rollout dataset
@@ -321,8 +364,8 @@ retrieved keyframe goal every five control steps.
 - [x] Visually inspect and physically replay candidate 003.
 - [x] Implement and smoke-test one sparse-keyframe expert.
 - [x] Train the Stage 0 candidate 003 expert.
-- [ ] Quantitatively evaluate the Stage 0 candidate 003 expert.
+- [x] Quantitatively evaluate the Stage 0 candidate 003 expert.
 - [ ] Scale to five directional experts.
-- [ ] Collect and validate the pilot rollout dataset.
+- [x] Collect and validate the pilot rollout dataset.
 - [ ] Train action diffusion without adapter.
 - [ ] Train the adapter and evaluate full FIRM-R.
