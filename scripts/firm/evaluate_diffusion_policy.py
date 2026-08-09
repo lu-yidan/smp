@@ -55,6 +55,8 @@ class EvaluateDiffusionPolicyConfig:
   use_ema: bool = True
   action_execution_steps: int = 1
   """Number of sampled horizon actions executed before replanning."""
+  num_action_samples: int = 1
+  """Independent DDPM horizons averaged at each replanning step."""
   seed: int = 42
   device: str | None = None
   output_file: str | None = None
@@ -65,6 +67,8 @@ def run_evaluation(cfg: EvaluateDiffusionPolicyConfig) -> dict:
   """Run receding-horizon diffusion inference, executing its first action."""
   if cfg.max_steps <= 0 or cfg.standing_hold_steps <= 0:
     raise ValueError("max_steps and standing_hold_steps must be positive")
+  if cfg.num_action_samples <= 0:
+    raise ValueError("num_action_samples must be positive")
 
   runtime = create_expert_runtime(
     task_id=TASK_ID,
@@ -128,6 +132,14 @@ def run_evaluation(cfg: EvaluateDiffusionPolicyConfig) -> dict:
         )
         if device.type == "cuda":
           torch.cuda.synchronize(device)
+        if cfg.num_action_samples > 1:
+          normalized_observation = normalized_observation.repeat_interleave(
+            cfg.num_action_samples, dim=0
+          )
+          current_joint = current_joint.repeat_interleave(cfg.num_action_samples, dim=0)
+          normalized_goal = normalized_goal.repeat_interleave(
+            cfg.num_action_samples, dim=0
+          )
         sample_start = time.perf_counter()
         normalized_horizon = sample_action_horizon(
           model,
@@ -139,7 +151,14 @@ def run_evaluation(cfg: EvaluateDiffusionPolicyConfig) -> dict:
         if device.type == "cuda":
           torch.cuda.synchronize(device)
         sampling_seconds += time.perf_counter() - sample_start
-        sampled_windows += n
+        sampled_windows += n * cfg.num_action_samples
+        if cfg.num_action_samples > 1:
+          normalized_horizon = normalized_horizon.view(
+            n,
+            cfg.num_action_samples,
+            model.horizon,
+            model.action_dim,
+          ).mean(dim=1)
       assert normalized_horizon is not None
       actions = denormalize_actions(normalized_horizon[:, action_index], statistics)
       if env.clip_actions is not None:
@@ -242,6 +261,7 @@ def run_evaluation(cfg: EvaluateDiffusionPolicyConfig) -> dict:
       "windows_per_second": sampled_windows / max(sampling_seconds, 1.0e-9),
       "ddpm_steps_per_window": scheduler.num_timesteps,
       "executed_actions_per_window": cfg.action_execution_steps,
+      "averaged_action_samples": cfg.num_action_samples,
     },
     **aggregates,
   }
