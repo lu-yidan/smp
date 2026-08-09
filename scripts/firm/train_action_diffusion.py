@@ -31,6 +31,12 @@ class TrainActionDiffusionConfig:
   verify_checksums: bool = True
   train_fraction: float = 0.90
 
+  initial_checkpoint_file: str | None = None
+  """Optional action-diffusion checkpoint used to warm-start training."""
+  initial_weights: str = "ema"
+  """Warm-start from 'ema' or 'online' weights."""
+  reuse_initial_normalization: bool = True
+
   d_model: int = 256
   nhead: int = 4
   num_layers: int = 4
@@ -153,6 +159,7 @@ def _save_checkpoint(
   train_windows: int,
   validation_windows: int,
   validation_loss: float,
+  initial_checkpoint: dict[str, Any] | None,
 ) -> None:
   payload: dict[str, Any] = {
     "format_version": 1,
@@ -167,6 +174,8 @@ def _save_checkpoint(
     "validation_windows": validation_windows,
     "validation_loss": validation_loss,
   }
+  if initial_checkpoint is not None:
+    payload["initial_checkpoint"] = initial_checkpoint
   if optimizer is not None:
     payload["optimizer"] = optimizer.state_dict()
   torch.save(payload, path)
@@ -180,6 +189,26 @@ def train(cfg: TrainActionDiffusionConfig) -> Path:
     raise ValueError("save_interval and log_interval must be positive")
   _seed_everything(cfg.seed)
   device = torch.device(cfg.device)
+  if cfg.initial_weights not in {"ema", "online"}:
+    raise ValueError("initial_weights must be 'ema' or 'online'")
+
+  initial_payload: dict[str, Any] | None = None
+  initial_metadata: dict[str, Any] | None = None
+  if cfg.initial_checkpoint_file is not None:
+    initial_path = Path(cfg.initial_checkpoint_file).expanduser().resolve()
+    if not initial_path.is_file():
+      raise FileNotFoundError(initial_path)
+    initial_payload = torch.load(
+      initial_path,
+      map_location=device,
+      weights_only=False,
+    )
+    initial_metadata = {
+      "path": str(initial_path),
+      "sha256": sha256_file(initial_path),
+      "epoch": int(initial_payload["epoch"]),
+      "weights": cfg.initial_weights,
+    }
 
   dataset = FirmRolloutWindowDataset(
     cfg.manifest_file,
@@ -188,10 +217,15 @@ def train(cfg: TrainActionDiffusionConfig) -> Path:
     verify_checksums=cfg.verify_checksums,
   )
   train_ids, validation_ids = dataset.split_window_indices(cfg.train_fraction, cfg.seed)
-  statistics = {
-    name: value.to(device)
-    for name, value in dataset.normalization_stats(train_ids).items()
-  }
+  if initial_payload is not None and cfg.reuse_initial_normalization:
+    statistics = {
+      name: value.to(device) for name, value in initial_payload["normalization"].items()
+    }
+  else:
+    statistics = {
+      name: value.to(device)
+      for name, value in dataset.normalization_stats(train_ids).items()
+    }
   pin_memory = device.type == "cuda"
   train_loader = DataLoader(
     Subset(dataset, train_ids.tolist()),
@@ -221,6 +255,14 @@ def train(cfg: TrainActionDiffusionConfig) -> Path:
     weight_decay=cfg.weight_decay,
   )
   ema = _Ema(model, cfg.ema_decay)
+  if initial_payload is not None:
+    state_name = "model_ema" if cfg.initial_weights == "ema" else "model"
+    model.load_state_dict(initial_payload[state_name], strict=True)
+    ema.shadow.load_state_dict(initial_payload[state_name], strict=True)
+    print(
+      f"[INFO] warm-started {state_name} from "
+      f"{initial_metadata['path']} (epoch {initial_metadata['epoch']})"
+    )
   parameter_count = sum(parameter.numel() for parameter in model.parameters())
   print(
     f"[INFO] dataset={len(dataset)} windows, train={len(train_ids)}, "
@@ -295,6 +337,7 @@ def train(cfg: TrainActionDiffusionConfig) -> Path:
         train_windows=len(train_ids),
         validation_windows=len(validation_ids),
         validation_loss=last_validation_loss,
+        initial_checkpoint=initial_metadata,
       )
       if wandb_run is not None:
         wandb_run.save(str(checkpoint_path), base_path=str(run_dir))
@@ -312,6 +355,7 @@ def train(cfg: TrainActionDiffusionConfig) -> Path:
     train_windows=len(train_ids),
     validation_windows=len(validation_ids),
     validation_loss=last_validation_loss,
+    initial_checkpoint=initial_metadata,
   )
   print(f"[INFO] final checkpoint: {final_path}")
   if wandb_run is not None:
