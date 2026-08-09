@@ -357,6 +357,38 @@ action. A Siamese goal/current-joint encoder produces a 64-dimensional relative
 goal latent. The online adapter consumes 50 observation steps and refreshes the
 retrieved keyframe goal every five control steps.
 
+The pilot action model is implemented before the adapter. It uses:
+
+- a 12-action prediction horizon;
+- a shared 29-to-64 joint encoder for the current and goal poses;
+- the difference between goal and current embeddings as the relative-goal
+  latent;
+- a separate 90-D state encoder;
+- a conditional DiT epsilon-prediction denoiser with a 50-step cosine schedule.
+
+Windows never cross episode boundaries and are retained only when the same
+sparse-keyframe goal is valid for all 12 actions. Train/validation splitting is
+performed by episode rather than by window. Normalization statistics are
+computed from training episodes only.
+
+```bash
+CUDA_VISIBLE_DEVICES=2 uv run scripts/firm/train_action_diffusion.py \
+  --manifest-file datasets/firm/rollouts/c003_stage0_model_29999_pilot/manifest.json \
+  --horizon 12 \
+  --batch-size 512 \
+  --num-epochs 100 \
+  --save-interval 50 \
+  --run-name firm_action_diffusion_c003_pilot
+```
+
+Checkpoints are saved at epoch 0 and every 50 epochs, plus one final model; the
+Adam optimizer state is intentionally omitted. With the default 5.24M-parameter
+model this keeps the three expected files near 120 MiB total. Each contains the
+online and EMA models, train-only normalization statistics, the dataset
+manifest checksum, and window counts. This stage validates conditional
+imitation only; closed-loop simulator recovery and autonomous keyframe
+selection are separate acceptance gates.
+
 ## Reproduction milestones
 
 - [x] Isolate work on branch `repro/firm-g1`.

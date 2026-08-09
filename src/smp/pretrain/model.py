@@ -179,6 +179,7 @@ class DiffusionDenoiser(nn.Module):
     num_layers: int = 2,
     dropout: float = 0.0,
     head_dim: int | None = None,
+    condition_dim: int | None = None,
   ) -> None:
     super().__init__()
     self.feature_dim = feature_dim
@@ -205,6 +206,11 @@ class DiffusionDenoiser(nn.Module):
     self.preprocess_conv = nn.Conv1d(feature_dim, feature_dim, 1, bias=False)
     self.proj_in = nn.Linear(feature_dim, self.inner_dim, bias=False)
     self.adaln_single = _AdaLayerNormSingle(self.inner_dim)
+    self.condition_proj = (
+      nn.Linear(condition_dim, 6 * self.inner_dim, bias=True)
+      if condition_dim is not None
+      else None
+    )
     self.sequence_pos_encoder = _SinusoidalPositionalEmbedding(
       self.inner_dim, max_seq_length=max(window_size, 32)
     )
@@ -222,13 +228,27 @@ class DiffusionDenoiser(nn.Module):
     self.proj_out = nn.Linear(self.inner_dim, feature_dim, bias=False)
     self.postprocess_conv = nn.Conv1d(feature_dim, feature_dim, 1, bias=False)
 
-  def forward(self, x_t: torch.Tensor, t: torch.Tensor) -> torch.Tensor:
+  def forward(
+    self,
+    x_t: torch.Tensor,
+    t: torch.Tensor,
+    condition: torch.Tensor | None = None,
+  ) -> torch.Tensor:
     h = x_t.transpose(1, 2)
     h = self.preprocess_conv(h) + h
     h = h.transpose(1, 2)
 
     h = self.proj_in(h)
     time_hidden_states = self.adaln_single(t)
+    if self.condition_proj is None:
+      if condition is not None:
+        raise ValueError("condition was provided to an unconditional denoiser")
+    else:
+      if condition is None:
+        raise ValueError("condition is required by this conditional denoiser")
+      time_hidden_states = time_hidden_states + self.condition_proj(
+        condition
+      ).unsqueeze(1)
     h = self.sequence_pos_encoder(h)
 
     for block in self.blocks:
