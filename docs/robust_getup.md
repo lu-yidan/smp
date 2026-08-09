@@ -20,7 +20,7 @@ Checkpoint lineage used for this experiment:
 | v1 | `tabletennis/smp/hqzmfkkg` | trained from scratch |
 | v2 | `tabletennis/smp/si4gfklo` | v1 `model_29999.pt` |
 | v3 | `tabletennis/smp/rr9sxcmu` | v2 `model_38000.pt` |
-| v4 | pending | v3 `model_47999.pt` |
+| v4 | `tabletennis/smp/65x7bde7` | v3 `model_47999.pt` |
 
 Formal v3 training was launched on 2026-08-08 on `dsw-lyd2` from branch
 `codex/robust-getup-smooth-v3`, commit `62e89c5`.
@@ -195,6 +195,17 @@ CUDA_VISIBLE_DEVICES=0 uv run scripts/train.py \
   --agent.save-interval=1000 \
   --agent.run-name=smp_getup_robust_smooth_v4_from_47999
 ```
+
+Formal v4 training was launched on 2026-08-09 on `dsw-lyd2`, GPU 0, from
+branch `codex/robust-getup-smooth-v4-staged`, code commit `03e6488`.
+
+- W&B: `tabletennis/smp/65x7bde7`
+- Server worktree: `/mnt/workspace/user/luyidan/smp-v4`
+- Run directory:
+  `logs/rsl_rl/smp_getup_robust_smooth_v4_g1/2026-08-09_16-31-47_smp_getup_robust_smooth_v4_from_47999`
+- Process record: `run_control/v4_train.pid`
+- Console log: `run_control/v4_train.log` (W&B's `files/output.log` is
+  unbuffered and is preferred for live progress)
 
 ## Evaluation checklist
 
