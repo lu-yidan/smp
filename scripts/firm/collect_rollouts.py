@@ -34,6 +34,8 @@ class CollectRolloutsConfig:
   wandb_checkpoint_name: str | None = None
   motion_file: str = MOTION_FILE
   num_start_frames: int = 25
+  start_frame_range: tuple[int, int] | None = None
+  """Optional inclusive dense-start range; defaults to the complete motion."""
   episodes_per_frame: int = 8
   """Eight replicas produce at most 100,000 transitions over 500 steps."""
   max_steps: int = 500
@@ -157,6 +159,7 @@ def run_collection(cfg: CollectRolloutsConfig) -> dict:
     seed=cfg.seed,
     device=cfg.device,
     observation_corruption=cfg.observation_corruption,
+    start_frame_range=cfg.start_frame_range,
   )
   env = runtime.env
   raw_env = env.unwrapped

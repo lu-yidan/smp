@@ -76,15 +76,30 @@ def resolve_checkpoint(
   return checkpoint_path
 
 
-def dense_start_frames(total_frames: int, count: int) -> np.ndarray:
-  """Choose unique, evenly spaced dense reference frames including both ends."""
+def dense_start_frames(
+  total_frames: int,
+  count: int,
+  frame_range: tuple[int, int] | None = None,
+) -> np.ndarray:
+  """Choose unique, evenly spaced reference frames over an inclusive range."""
   if count < 2:
     msg = f"num_start_frames must be at least 2, got {count}"
     raise ValueError(msg)
-  if count > total_frames:
-    msg = f"num_start_frames={count} exceeds total motion frames={total_frames}"
+  lower, upper = (0, total_frames - 1) if frame_range is None else frame_range
+  if lower < 0 or upper < lower or upper >= total_frames:
+    msg = (
+      f"start_frame_range must satisfy 0 <= lower <= upper < {total_frames}, "
+      f"got {(lower, upper)}"
+    )
     raise ValueError(msg)
-  frames = np.rint(np.linspace(0, total_frames - 1, count)).astype(np.int64)
+  available = upper - lower + 1
+  if count > available:
+    msg = (
+      f"num_start_frames={count} exceeds selected frame count={available} "
+      f"for range {(lower, upper)}"
+    )
+    raise ValueError(msg)
+  frames = np.rint(np.linspace(lower, upper, count)).astype(np.int64)
   if len(np.unique(frames)) != count:
     msg = "dense start-frame schedule contains duplicates"
     raise RuntimeError(msg)
@@ -125,6 +140,7 @@ def create_expert_runtime(
   seed: int,
   device: str | None,
   observation_corruption: bool,
+  start_frame_range: tuple[int, int] | None = None,
 ) -> ExpertRuntime:
   """Build a trained FIRM expert over a deterministic dense-frame schedule."""
   if episodes_per_frame <= 0:
@@ -174,7 +190,11 @@ def create_expert_runtime(
     SparseKeyframeCommand, env.unwrapped.command_manager.get_term("motion")
   )
 
-  start_frames = dense_start_frames(command.motion.time_step_total, num_start_frames)
+  start_frames = dense_start_frames(
+    command.motion.time_step_total,
+    num_start_frames,
+    start_frame_range,
+  )
   env_start_frames = _reset_to_start_schedule(
     env, command, start_frames, episodes_per_frame
   )
