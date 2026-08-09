@@ -489,19 +489,55 @@ replanning reduced success to 0% and increased peak acceleration, so action
 chunking is retained only as an ablation and the default remains one-step
 receding-horizon execution.
 
-The large gap between held-out imitation and closed-loop recovery is evidence
-of state-distribution shift, not insufficient fitting of the original dataset.
-The next dataset must therefore add corrective expert trajectories from
-perturbed/off-expert recovery states, especially early and middle fall phases.
-The immediate next experiment is:
+### Corrective expert rollout and fine-tuning
 
-1. add controlled state/impulse perturbations while the Stage 0 expert acts;
-2. collect a second checksummed corrective rollout dataset under the same
-   25-frame schedule;
-3. fine-tune the action diffusion model on a balanced mixture of original and
-   corrective windows;
-4. rerun the 100-episode closed-loop gate before implementing the online
-   keyframe adapter.
+The large offline/closed-loop gap is state-distribution shift, not insufficient
+fitting of the original dataset. `scripts/firm/collect_rollouts.py` therefore
+supports an opt-in contact-mediated torso wrench while the Stage 0 expert acts.
+It records whether each transition was directly forced; the following states
+contain the expert's corrective response.
+
+The selected setting applies a 3--5 control-step wrench every 100--150 steps,
+with up to 40 N per world-frame force component and 5 N m per torque component,
+followed by a 40-step recovery period. A more frequent 20--40-step smoke reached
+only 60% expert success and was rejected. The selected sparse setting reached
+90% on its 10-episode smoke and was scaled to the same 25 x 8 schedule as the
+pilot:
+
+| Field | Result |
+| --- | ---: |
+| total transitions | 100,000 |
+| episodes / successful | 200 / 187 |
+| unsafe episodes | 0 |
+| directly forced transitions | 2,617 (2.617%) |
+| valid successful 12-step windows | 71,563 |
+| train / validation windows | 64,338 / 7,225 |
+| dataset size | 43 MiB |
+
+The dataset is stored at
+`/root/workspace/smp-firm-artifacts/c003_stage0_model_29999_corrective_force40_seed42`.
+Its immutable hashes are:
+
+| Artifact | SHA256 |
+| --- | --- |
+| `manifest.json` | `1e9918bc0349926a096a5ef180772e9be09a92198985b5faa953c9ed93225c9c` |
+| `shard_0000.npz` | `f48c900f0e95dbaf0e82dbed10807930667cc0c0c37eff6f9e5d17040594bf08` |
+| `shard_0001.npz` | `a3d0e4e99ac63de722a1fc998309f78dfdd11ca49abae3b3c70e8cb849c3a982` |
+
+The corrective dataset already includes nominal motion between disturbances and
+approximately 40 feedback steps after each wrench. Fine-tuning therefore starts
+from the pilot EMA weights rather than duplicating the original nominal windows.
+The trainer reuses the pilot normalization tensors exactly and writes the
+source checkpoint path, epoch, weight type, and SHA256 into every new
+checkpoint.
+
+Corrective fine-tuning v1 launched from code commit `1eafb21` with 50 epochs,
+batch size 512, learning rate `1e-4`, and EMA. `save_interval=100` keeps only
+epoch 0 and the final checkpoint. Artifacts are written below
+`/root/workspace/smp-firm-artifacts/training`; the W&B run is
+[`tabletennis/smp/w9aneczd`](https://wandb.ai/tabletennis/smp/runs/w9aneczd).
+Acceptance requires evaluation on both original and corrective held-out
+episodes followed by the unchanged 100-episode closed-loop gate.
 
 ## Reproduction milestones
 
@@ -516,5 +552,6 @@ The immediate next experiment is:
 - [x] Train action diffusion without adapter.
 - [x] Evaluate full DDPM held-out sampling.
 - [x] Establish the first closed-loop diffusion baseline.
-- [ ] Aggregate perturbed corrective expert data and close the policy gap.
+- [x] Aggregate perturbed corrective expert data.
+- [ ] Fine-tune on corrective data and close the policy gap.
 - [ ] Train the adapter and evaluate full FIRM-R.
