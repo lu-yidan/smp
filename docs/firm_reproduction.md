@@ -332,8 +332,16 @@ termination. Two 50,000-transition shards occupy 43 MiB:
 | `shard_0000.npz` | `eaeaecf9f3f1270806fe8063d92bdacc7a654c65252c655c03bebd9141f6898d` |
 | `shard_0001.npz` | `c23e6b53e0fc8d19b9a38b5c9a3056dcdb8137fd5d63d1cfe0ef5152e4e2ce22` |
 
-The dataset remains local to
-`/mnt/workspace/user/luyidan/smp-firm/datasets/firm/rollouts/c003_stage0_model_29999_pilot`.
+Because the shared CPFS reached capacity, the durable working copies for later
+stages were moved to the default-login root filesystem:
+
+- rollout: `/root/workspace/smp-firm-artifacts/c003_stage0_model_29999_pilot`;
+- final action model:
+  `/root/workspace/smp-firm-artifacts/checkpoints/firm_action_diffusion_c003_pilot.pt`;
+- evaluation results: `/root/workspace/smp-firm-artifacts/evaluation`.
+
+The directory occupies 83 MiB; the root filesystem had 62 GiB free after the
+move. File hashes match the original CPFS copies.
 
 ## Planned task stages
 
@@ -425,7 +433,75 @@ final model; both intermediate checkpoints remain recoverable from W&B run
 
 The denoising loss converged without a train/validation gap. This accepts the
 offline conditional-imitation pipeline, not the policy: DDPM sampling quality,
-first-action error, and closed-loop recovery remain to be evaluated.
+first-action error, and closed-loop recovery are separate gates.
+
+### Full DDPM sampling record
+
+`scripts/firm/evaluate_action_diffusion.py` reconstructs the episode-level
+held-out split, performs all 50 ancestral DDPM steps using EMA weights, and
+compares sampled 12-step actions with expert targets. The complete 7,900-window
+evaluation produced:
+
+| Metric | Result |
+| --- | ---: |
+| finite-window rate | 100.00% |
+| first-action RMSE / MAE | 0.0759 / 0.0401 |
+| first-action per-window p50 / p95 RMSE | 0.0411 / 0.1447 |
+| 12-step action RMSE / MAE | 0.1797 / 0.1144 |
+| normalized 12-step RMSE | 0.2852 |
+| target / predicted action RMS | 1.3675 / 1.3661 |
+| target / predicted action-rate RMS | 0.1921 / 0.1742 |
+
+The output is
+`/root/workspace/smp-firm-artifacts/evaluation/action_diffusion_heldout_full.json`
+with SHA256
+`b404757d003d58b77fc7411f314c62368aeaa17f75f4e9e0ebb10bcf25ef4863`.
+The matched action magnitude and lower predicted rate accept offline sampling
+and rule out numerical scheduler instability for the trained checkpoint.
+
+### Closed-loop action-policy record
+
+`scripts/firm/evaluate_diffusion_policy.py` uses exactly the Stage 0 fixed-start
+environment and metrics, samples a horizon from the current 90-D observation and
+goal, and executes the first action before replanning. A 100-episode baseline
+(25 dense starts x 4 replicas) produced:
+
+| Metric | Expert | Diffusion |
+| --- | ---: | ---: |
+| episodes | 800 | 100 |
+| success rate | 99.00% | 31.00% |
+| unsafe termination rate | 0.00% | 0.00% |
+| mean MPKPE | 0.0351 m | 0.3422 m |
+| mean joint-position RMSE | 0.0940 rad | 0.1308 rad |
+| mean action-rate RMS | 0.2707 | 0.2724 |
+| p95 peak joint speed | 22.80 rad/s | 22.46 rad/s |
+| p95 peak root vertical speed | 1.40 m/s | 3.07 m/s |
+
+The diffusion result is
+`/root/workspace/smp-firm-artifacts/evaluation/diffusion_policy_closed_loop_100ep.json`
+with SHA256
+`dfb49ba6027c97700a2c35152d774b3424b613bbdded87000afa14f914a373c2`.
+
+A 20-episode diagnostic over frames 0, 122, 243, 364, and 486 reached 40%
+success: all late-stage replicas at frames 364 and 486 succeeded, while every
+early/middle recovery replica failed. Executing four sampled actions before
+replanning reduced success to 0% and increased peak acceleration, so action
+chunking is retained only as an ablation and the default remains one-step
+receding-horizon execution.
+
+The large gap between held-out imitation and closed-loop recovery is evidence
+of state-distribution shift, not insufficient fitting of the original dataset.
+The next dataset must therefore add corrective expert trajectories from
+perturbed/off-expert recovery states, especially early and middle fall phases.
+The immediate next experiment is:
+
+1. add controlled state/impulse perturbations while the Stage 0 expert acts;
+2. collect a second checksummed corrective rollout dataset under the same
+   25-frame schedule;
+3. fine-tune the action diffusion model on a balanced mixture of original and
+   corrective windows;
+4. rerun the 100-episode closed-loop gate before implementing the online
+   keyframe adapter.
 
 ## Reproduction milestones
 
@@ -438,5 +514,7 @@ first-action error, and closed-loop recovery remain to be evaluated.
 - [ ] Scale to five directional experts.
 - [x] Collect and validate the pilot rollout dataset.
 - [x] Train action diffusion without adapter.
-- [ ] Evaluate action diffusion sampling and closed-loop recovery.
+- [x] Evaluate full DDPM held-out sampling.
+- [x] Establish the first closed-loop diffusion baseline.
+- [ ] Aggregate perturbed corrective expert data and close the policy gap.
 - [ ] Train the adapter and evaluate full FIRM-R.
