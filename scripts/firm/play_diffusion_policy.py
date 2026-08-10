@@ -143,9 +143,9 @@ def _resolve_action_checkpoint(cfg: PlayDiffusionPolicyConfig) -> Path:
       f"{cfg.action_wandb_checkpoint_name!r} is absent from {cfg.action_wandb_run_path}"
     )
   cache_dir.mkdir(parents=True, exist_ok=True)
-  downloaded = Path(remote_file.download(root=str(cache_dir), replace=True))
-  if downloaded.is_dir():
-    downloaded = downloaded / cfg.action_wandb_checkpoint_name
+  download_stream = remote_file.download(root=str(cache_dir), replace=True)
+  download_stream.close()
+  downloaded = target
   if not downloaded.is_file():
     raise FileNotFoundError(downloaded)
   print(f"[INFO] Action-diffusion W&B checkpoint downloaded: {downloaded}")
