@@ -82,8 +82,8 @@ def dense_start_frames(
   frame_range: tuple[int, int] | None = None,
 ) -> np.ndarray:
   """Choose unique, evenly spaced reference frames over an inclusive range."""
-  if count < 2:
-    msg = f"num_start_frames must be at least 2, got {count}"
+  if count <= 0:
+    msg = f"num_start_frames must be positive, got {count}"
     raise ValueError(msg)
   lower, upper = (0, total_frames - 1) if frame_range is None else frame_range
   if lower < 0 or upper < lower or upper >= total_frames:
@@ -99,6 +99,8 @@ def dense_start_frames(
       f"for range {(lower, upper)}"
     )
     raise ValueError(msg)
+  if count == 1:
+    return np.asarray([lower], dtype=np.int64)
   frames = np.rint(np.linspace(lower, upper, count)).astype(np.int64)
   if len(np.unique(frames)) != count:
     msg = "dense start-frame schedule contains duplicates"
@@ -141,6 +143,9 @@ def create_expert_runtime(
   device: str | None,
   observation_corruption: bool,
   start_frame_range: tuple[int, int] | None = None,
+  play: bool = False,
+  debug_vis: bool = False,
+  disable_terminations: bool = False,
 ) -> ExpertRuntime:
   """Build a trained FIRM expert over a deterministic dense-frame schedule."""
   if episodes_per_frame <= 0:
@@ -153,7 +158,9 @@ def create_expert_runtime(
   if not motion_path.is_file():
     raise FileNotFoundError(motion_path)
 
-  env_cfg = load_env_cfg(task_id, play=False)
+  env_cfg = load_env_cfg(task_id, play=play)
+  if disable_terminations:
+    env_cfg.terminations = {}
   agent_cfg = load_rl_cfg(task_id)
   env_cfg.seed = seed
   env_cfg.scene.num_envs = num_start_frames * episodes_per_frame
@@ -165,7 +172,7 @@ def create_expert_runtime(
     raise TypeError(msg)
   motion_cfg.motion_file = str(motion_path)
   motion_cfg.sampling_mode = "start"
-  motion_cfg.debug_vis = False
+  motion_cfg.debug_vis = debug_vis
 
   checkpoint_path = resolve_checkpoint(
     experiment_name=agent_cfg.experiment_name,
