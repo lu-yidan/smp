@@ -18,7 +18,11 @@ from smp.firm.action_diffusion import (
   normalize_action_condition,
   sample_action_horizon,
 )
-from smp.firm.expert_runtime import actor_base_observation, create_expert_runtime
+from smp.firm.expert_runtime import (
+  actor_base_observation,
+  create_expert_runtime,
+  resolve_checkpoint,
+)
 from smp.pretrain.scheduler import DDPMScheduler
 from smp.rl.tasks.firm.keyframe_env_cfg import MOTION_FILE
 
@@ -29,7 +33,11 @@ TASK_ID = "Firm-Keyframe-G1"
 class PlayDiffusionPolicyConfig:
   """Interactive FIRM diffusion-policy viewer configuration."""
 
-  action_checkpoint_file: str
+  action_checkpoint_file: str | None = None
+  action_wandb_run_path: str | None = None
+  action_wandb_checkpoint_name: str | None = "firm_action_diffusion.pt"
+  """Action-diffusion checkpoint name within the W&B run."""
+  action_log_root: str = "logs/firm_action_diffusion"
   expert_checkpoint_file: str | None = None
   expert_wandb_run_path: str | None = None
   expert_wandb_checkpoint_name: str | None = None
@@ -133,8 +141,15 @@ def run_play(cfg: PlayDiffusionPolicyConfig) -> None:
   )
   env = runtime.env
   device = torch.device(env.device)
+  action_checkpoint = resolve_checkpoint(
+    experiment_name="firm_action_diffusion",
+    checkpoint_file=cfg.action_checkpoint_file,
+    wandb_run_path=cfg.action_wandb_run_path,
+    wandb_checkpoint_name=cfg.action_wandb_checkpoint_name,
+    log_root=cfg.action_log_root,
+  )
   model, scheduler, statistics, _ = load_action_diffusion_checkpoint(
-    cfg.action_checkpoint_file,
+    action_checkpoint,
     device,
     use_ema=cfg.use_ema,
   )

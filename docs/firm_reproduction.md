@@ -739,10 +739,95 @@ The V2/V3 on-policy and V3 evaluation JSON hashes are:
 | V3 closed-loop single | `5ebfb6d0878a91cb1c8ab948fb14f5f183747ec9b7c0c8f102962e03c8430c6e` |
 | V3 closed-loop ensemble-4 | `c1cb0c85e3191609bbbdb3141dec0928f7e00b91c4bd7ed76c7fa6033fa14e86` |
 
-Code commits `373bd1f` and `97ee153` respectively add the intervention
-collector and multi-manifest refinement. The next gate should target the last
-11% failures with a second aggregation seed and then evaluate the adapter
-architecture, rather than increasing nominal expert rollouts again.
+### Targeted on-policy V4
+
+The second aggregation round uses V3 on unseen seeds 43 and 44 and only the
+three dense starts 284, 304, and 324. Both datasets use 64 replicas per start,
+the same `0.12` disagreement threshold, and 20-step cooldown:
+
+| Seed | windows / transitions | by start (284 / 304 / 324) | manifest SHA256 |
+| ---: | ---: | ---: | --- |
+| 43 | 616 / 7,392 | 181 / 139 / 296 | `9a285cc171236653084bae96c4dd13f52fdab18f9ff24083b48ef0fa056f1d75` |
+| 44 | 653 / 7,836 | 195 / 142 / 316 | `cf8fed54008b07f44cfeb29512a463c0d92c505390da1dcd633a1fb875a5bcb2` |
+
+Neither collection discarded a partial intervention. Their shard hashes are
+`4c96266ce6f120b58e4d357193d252324736b41afb41a7ca6984153478905355`
+and
+`b65e0454baba7ea8838d403c32815a95e3dfa5b58c8075d2c91a1a332cb8b5ec`.
+Together they occupy 2.5 MiB.
+
+V4 warm-starts from V3 and trains on 142,474 effective windows. The base,
+round-1, seed-43, and seed-44 datasets use repeats 1, 10, 20, and 20,
+respectively. It uses 20 epochs, batch size 512, learning rate `5e-5`, and
+EMA. W&B run
+[`zif8zf4w`](https://wandb.ai/tabletennis/smp/runs/zif8zf4w) completed at
+train/validation L1 `0.15560 / 0.14801`.
+
+The final checkpoint is
+`/root/workspace/smp-firm-artifacts/training/firm_action_diffusion_c003_targeted_onpolicy_ft_v4/2026-08-10_09-53-38/firm_action_diffusion.pt`
+with SHA256
+`bd9e9a3f3d6d58042bca72310b2636a4f28ce7a82c145255a4b161267af15755`.
+Only this 40 MiB final checkpoint is stored locally.
+
+The unchanged ensemble-4 closed-loop evaluation is:
+
+| Seed | V3 success / unsafe | V4 success / unsafe |
+| ---: | ---: | ---: |
+| 42 | 89% / 0% | **94% / 0%** |
+| 43 | 90% / 0% | **91% / 0%** |
+| 44 | 84% / 0% | **91% / 0%** |
+| 300-episode aggregate | 87.7% / 0% | **92.0% / 0%** |
+
+V4 preserves the original and early/middle held-out distributions:
+
+| Held-out set | V3 first / horizon RMSE | V4 first / horizon RMSE |
+| --- | ---: | ---: |
+| original | 0.0580 / 0.1788 | 0.0581 / 0.1791 |
+| targeted early/middle | 0.0613 / 0.1815 | **0.0596 / 0.1816** |
+| round-1 on-policy | **0.1079 / 0.2330** | 0.1105 / 0.2545 |
+| new seed 43 | 0.3010 / 0.4163 | **0.1558 / 0.3174** |
+| new seed 44 | 0.2523 / 0.4173 | **0.1423 / 0.3232** |
+
+The new data fixes start 284 from 6/12 to 12/12 and start 304 from 4/12 to
+6/12 across three seeds, but start 324 remains 0/12. Repeating the same labels
+again is unlikely to solve that structural failure. Frame 324 is the focused
+case for the FIRM adapter/residual stage.
+
+The V4 result hashes are:
+
+| Evaluation | SHA256 |
+| --- | --- |
+| closed-loop seed 42 | `5c1fb487dd562d74fe9c56fdab3c9ed499b0494f89578edca5e0d7f00a73d8bf` |
+| closed-loop seed 43 | `a7f2c53e72d1be969e735ac326bc6501455d2959594df2e3ccf5911c560f3bef` |
+| closed-loop seed 44 | `cbccdda7fdb270925e54d42c87df293ce7dcece1b808918b53af97dda8296a8f` |
+| original held-out | `a9c02364366d3c8d6166037aa130240a8fdde8497ad38d6557705beb89d53ae7` |
+| targeted held-out | `4710f4cefed4a4b602d8c6ed6619302918232058aa09acd517e1973797b53bb5` |
+| round-1 on-policy held-out | `cc83b1668ec9242c259b604f827be38e8e1d13b238992665e2e96b341dd9aa96` |
+| seed-43 correction held-out | `4cf67136576ac3f72aa1352cad288809595fcdbf387fdabc8cf97446a221a1d8` |
+| seed-44 correction held-out | `ec7baa01154b82f908f43bf9f76c15328621a83c4c0a245427d9cda56a813dbc` |
+
+### Interactive diffusion playback
+
+`scripts/firm/play_diffusion_policy.py` loads action and expert checkpoints
+locally or from W&B, preserves the final standing goal after the reference
+ends, shows the sparse-goal ghost, and supports native mouse perturbations.
+Terminations are disabled by default so a dragged robot can continue trying to
+recover. To inspect V4's remaining frame-324 failure locally:
+
+```bash
+uv run scripts/firm/play_diffusion_policy.py \
+  --action-wandb-run-path tabletennis/smp/zif8zf4w \
+  --action-wandb-checkpoint-name firm_action_diffusion.pt \
+  --expert-wandb-run-path tabletennis/smp/j0q8fell \
+  --expert-wandb-checkpoint-name model_29999.pt \
+  --start-frame 324 \
+  --num-action-samples 4 \
+  --viewer native
+```
+
+The viewer was smoke-tested with one Viser environment at frame 324. Native
+play defaults to real-time 1x playback and allows the robot to be dragged after
+the reference reaches its last standing goal.
 
 ## Reproduction milestones
 
