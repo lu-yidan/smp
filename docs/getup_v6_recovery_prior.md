@@ -97,3 +97,21 @@ After training, copy the final checkpoint to a new immutable name such as
 from V5 `model_61997.pt` with this new prior. Reset expansion, failure-state
 replay, and stratified pushes are separate PPO changes and should be ablated
 against the prior-only change.
+
+## Formal run
+
+The formal prior run was launched on 2026-08-10:
+
+- W&B: <https://wandb.ai/tabletennis/smp/runs/1bui8qxw>
+- branch: `codex/getup-v6-lafan-recovery-prior`
+- launch commit: `82f39c5`
+- server: `dsw-lyd2`, physical GPU 0 (RTX PRO 5000 72 GB)
+- worktree: `/mnt/workspace/user/luyidan/smp-v6-prior`
+- launcher / Python PID at launch: `76259` / `76263`
+- process record: `run_control/v6_prior_train.pid`
+- console log: `run_control/v6_prior_train.log`
+
+The server independently verified all 176 NPZ files, 55,010 windows, no
+non-finite values, and CUDA availability before launch. Epoch 0 reported train
+loss 0.756864 and validation loss 0.607092; epoch 10 reported 0.228779 and
+0.232373. These are startup health checks, not final checkpoint selection.
