@@ -724,6 +724,10 @@ and V2/V3 seed 44
 `7644f4b76be078619e5c53287e412da17fb3f07fb7066af11626489ec2ee99d7` /
 `32aba8aaee27c153822e6052a8a260fdfe3c46ec46713a07bbb21b991747bd46`.
 
+Across the three V3 seeds, starts 284, 304, and 324 succeed in 6/12, 4/12,
+and 0/12 episodes respectively; every other start succeeds in at least 10/12.
+The next aggregation pass should therefore focus on frames 284--324.
+
 The V2/V3 on-policy and V3 evaluation JSON hashes are:
 
 | Evaluation | SHA256 |
