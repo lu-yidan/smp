@@ -8,6 +8,7 @@ from mjlab.utils.lab_api.math import quat_from_euler_xyz, quat_mul
 
 __all__ = [
   "mixed_fall_reset",
+  "post_stand_body_wrench",
   "random_body_wrench",
   "reset_recovery_stage",
   "reset_stand_counter",
@@ -71,6 +72,16 @@ def mixed_fall_reset(
     )
     env._robust_forces[env_ids] = 0.0  # type: ignore[attr-defined]
     env._robust_torques[env_ids] = 0.0  # type: ignore[attr-defined]
+
+  # V5 applies at most one targeted knockdown after a stable stand. Reset its
+  # scheduler and any residual wrench when a new episode begins.
+  if hasattr(env, "_v5_knockdown_active"):
+    env._v5_knockdown_active[env_ids] = 0  # type: ignore[attr-defined]
+    env._v5_knockdown_recovery[env_ids] = 0  # type: ignore[attr-defined]
+    env._v5_knockdown_wait[env_ids] = -1  # type: ignore[attr-defined]
+    env._v5_knockdown_done[env_ids] = False  # type: ignore[attr-defined]
+    env._v5_knockdown_forces[env_ids] = 0.0  # type: ignore[attr-defined]
+    env._v5_knockdown_torques[env_ids] = 0.0  # type: ignore[attr-defined]
 
   choose = torch.rand(env_ids.numel(), device=env.device) < procedural_probability
   fall_ids = env_ids[choose]
@@ -343,3 +354,123 @@ def random_body_wrench(
         (finished.numel(),),
         device=env.device,
       )
+
+
+@torch.no_grad()
+def post_stand_body_wrench(
+  env: ManagerBasedRlEnv,
+  env_ids: torch.Tensor | None = None,
+  body_names: tuple[str, ...] = ("pelvis", "torso_link"),
+  delay_steps: tuple[int, int] = (20, 60),
+  duration_steps: tuple[int, int] = (10, 18),
+  recovery_steps: int = 100,
+  force_range: tuple[float, float] = (90.0, 190.0),
+  torque_range: tuple[float, float] = (4.0, 14.0),
+  curriculum_steps: int = 250_000,
+) -> None:
+  """Knock down each robot once after it reaches a stable standing stage.
+
+  The event deliberately creates a second recovery within the same episode.
+  This covers the state distribution produced by a real fall instead of only
+  teleporting the robot into a static reset pose. Playback stays clean unless
+  the existing auto-disturbances option explicitly enables this event.
+  """
+  if env_ids is None:
+    env_ids = torch.arange(env.num_envs, device=env.device)
+  if env_ids.numel() == 0:
+    return
+  robot = env.scene["robot"]
+
+  if not hasattr(env, "_v5_knockdown_body_ids"):
+    body_ids = robot.find_bodies(list(body_names), preserve_order=True)[0]
+    env._v5_knockdown_body_ids = body_ids  # type: ignore[attr-defined]
+    num_bodies = len(body_ids)
+    env._v5_knockdown_wait = torch.full(  # type: ignore[attr-defined]
+      (env.num_envs,), -1, dtype=torch.long, device=env.device
+    )
+    env._v5_knockdown_active = torch.zeros(  # type: ignore[attr-defined]
+      env.num_envs, dtype=torch.long, device=env.device
+    )
+    env._v5_knockdown_recovery = torch.zeros(  # type: ignore[attr-defined]
+      env.num_envs, dtype=torch.long, device=env.device
+    )
+    env._v5_knockdown_done = torch.zeros(  # type: ignore[attr-defined]
+      env.num_envs, dtype=torch.bool, device=env.device
+    )
+    env._v5_knockdown_forces = torch.zeros(  # type: ignore[attr-defined]
+      env.num_envs, num_bodies, 3, device=env.device
+    )
+    env._v5_knockdown_torques = torch.zeros_like(  # type: ignore[attr-defined]
+      env._v5_knockdown_forces  # type: ignore[attr-defined]
+    )
+
+  wait = env._v5_knockdown_wait  # type: ignore[attr-defined]
+  active = env._v5_knockdown_active  # type: ignore[attr-defined]
+  recovery = env._v5_knockdown_recovery  # type: ignore[attr-defined]
+  done = env._v5_knockdown_done  # type: ignore[attr-defined]
+  forces = env._v5_knockdown_forces  # type: ignore[attr-defined]
+  torques = env._v5_knockdown_torques  # type: ignore[attr-defined]
+  body_ids = env._v5_knockdown_body_ids  # type: ignore[attr-defined]
+  stage = getattr(env, "_v4_recovery_stage", None)
+  if stage is None:
+    return
+
+  recovering = recovery[env_ids] > 0
+  recovery[env_ids[recovering]] -= 1
+
+  newly_standing = env_ids[
+    (stage[env_ids] == 3)
+    & (~done[env_ids])
+    & (wait[env_ids] < 0)
+    & (active[env_ids] <= 0)
+  ]
+  if newly_standing.numel() > 0:
+    wait[newly_standing] = torch.randint(
+      delay_steps[0],
+      delay_steps[1] + 1,
+      (newly_standing.numel(),),
+      device=env.device,
+    )
+
+  waiting = env_ids[(wait[env_ids] > 0) & (~done[env_ids])]
+  wait[waiting] -= 1
+  start_ids = env_ids[(wait[env_ids] == 0) & (~done[env_ids]) & (active[env_ids] <= 0)]
+  if start_ids.numel() > 0:
+    progress = min(float(env.common_step_counter) / max(curriculum_steps, 1), 1.0)
+    force_amp = force_range[0] + progress * (force_range[1] - force_range[0])
+    torque_amp = torque_range[0] + progress * (torque_range[1] - torque_range[0])
+    chosen = torch.randint(0, len(body_ids), (start_ids.numel(),), device=env.device)
+    angle = torch.empty(start_ids.numel(), device=env.device).uniform_(
+      -torch.pi, torch.pi
+    )
+    magnitude = torch.empty(start_ids.numel(), device=env.device).uniform_(
+      0.75 * force_amp, force_amp
+    )
+    force_vec = torch.stack(
+      (magnitude * torch.cos(angle), magnitude * torch.sin(angle), 0.0 * angle),
+      dim=-1,
+    )
+    torque_vec = torch.empty_like(force_vec).uniform_(-torque_amp, torque_amp)
+    torque_vec[:, 2] *= 0.35
+    forces[start_ids] = 0.0
+    torques[start_ids] = 0.0
+    forces[start_ids, chosen] = force_vec
+    torques[start_ids, chosen] = torque_vec
+    active[start_ids] = torch.randint(
+      duration_steps[0],
+      duration_steps[1] + 1,
+      (start_ids.numel(),),
+      device=env.device,
+    )
+    recovery[start_ids] = active[start_ids] + recovery_steps
+    done[start_ids] = True
+
+  active_ids = env_ids[active[env_ids] > 0]
+  inactive_ids = env_ids[active[env_ids] <= 0]
+  forces[inactive_ids] = 0.0
+  torques[inactive_ids] = 0.0
+  robot.write_external_wrench_to_sim(
+    forces[env_ids], torques[env_ids], env_ids=env_ids, body_ids=body_ids
+  )
+  if active_ids.numel() > 0:
+    active[active_ids] -= 1

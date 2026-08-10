@@ -12,6 +12,7 @@ criteria for the robust and smooth get-up policies. The baseline
 | v2 | `Smp-Getup-Robust-G1` | 50% GSI, 50% procedural falls | Recover from arbitrary falls and physical pushes |
 | v3 | `Smp-Getup-Robust-Smooth-G1` | Same as v2 | Slower rising, quieter feet, and lower joint/action acceleration |
 | v4 | `Smp-Getup-Robust-Smooth-V4-G1` | 40% GSI, 30% prone, 10% each other fall | Ordered seated-crouched-standing recovery without vertical launch |
+| v5 | `Smp-Getup-Robust-Smooth-V5-G1` | 30% GSI, 35% prone, 15% supine, 10% each side | Preserve V4 smoothness while recovering from a second dynamic fall |
 
 Checkpoint lineage used for this experiment:
 
@@ -21,6 +22,7 @@ Checkpoint lineage used for this experiment:
 | v2 | `tabletennis/smp/si4gfklo` | v1 `model_29999.pt` |
 | v3 | `tabletennis/smp/rr9sxcmu` | v2 `model_38000.pt` |
 | v4 | `tabletennis/smp/65x7bde7` | v3 `model_47999.pt` |
+| v5 | pending | v4 `model_53998.pt` |
 
 Formal v3 training was launched on 2026-08-08 on `dsw-lyd2` from branch
 `codex/robust-getup-smooth-v3`, commit `62e89c5`.
@@ -231,6 +233,71 @@ refinement, but they do not establish prone recovery success or prove the
 ordered motion is visually natural. Checkpoint selection still requires the
 evaluation below, starting with `model_49000.pt` and `model_53998.pt`.
 
+## v5 recoverability and effort design
+
+V4 visually improved the crouch-to-stand phase, but manual tests exposed two
+coverage gaps: some prone or supine states never reached the seated waypoint,
+and falling again after standing was less reliable than a reset-time fall. V5
+addresses those gaps without restoring V2's ballistic knee/foot launch.
+
+The safety objective is not implemented as a very low joint-speed cap. Turning
+over from a contact-rich prone pose sometimes needs moderate joint speed, while
+high static support torque can be necessary at the knee. The task instead uses
+several complementary controls:
+
+| Control | Lying | Seated | Crouched | Standing |
+| --- | ---: | ---: | ---: | ---: |
+| action-rate/acceleration multiplier | 0.30 | 0.60 | 1.00 | 1.00 |
+| joint-acceleration multiplier | 0.35 | 0.65 | 1.00 | 1.00 |
+| torque-cost multiplier | 0.50 | 0.75 | 1.00 | 1.00 |
+| joint-speed soft limit | 6.0 | 5.0 | 4.0 | 3.5 rad/s |
+| per-joint power soft limit | 140 | 110 | 90 | 75 W |
+
+All actuator effort limits are also physically derated to 90% of the stock G1
+simulation limits: 22.5 N m for arms, 79.2 N m for the 88 N m hip group,
+125.1 N m for hip-roll/knees, 4.5 N m for wrists, and 45 N m for waist/ankles.
+The configuration is deep-copied before derating so constructing V5 cannot
+mutate V2-V4 or compound the reduction across repeated builds.
+
+The distinction is important:
+
+- effort limits cap peak actuator force;
+- power limits penalize large force applied at large joint speed;
+- joint-speed limits catch flailing and impacts;
+- head vertical overspeed directly suppresses whole-body launch;
+- stage-dependent smoothing leaves enough low-pose authority to begin recovery
+  and becomes strict again during crouch-to-stand.
+
+A small ungated recovery-initiation reward based on head height and uprightness
+prevents a low-SMP prone state from making lying still optimal. It does not
+reward vertical velocity and therefore does not directly encourage launch.
+
+V5 replaces periodic generic pushes with one targeted knockdown after the robot
+has held the stable-standing waypoint. The horizontal torso/pelvis wrench lasts
+10--18 control steps, ramps from 90 to 190 N, and is followed by a 100-step
+recovery window. This creates a second fall and recovery in the same episode,
+including impact velocity and contact history. As in earlier versions, playback
+is clean by default and `--auto-disturbances True` enables the event.
+
+The implementation smoke test used 8 environments and one PPO iteration on an
+RTX 4090. Environment construction, a 192-transition rollout, reward/metric
+evaluation, and the PPO update all completed successfully. Checkpoints remain
+spaced every 1,000 iterations.
+
+Planned formal refinement command:
+
+```bash
+CUDA_VISIBLE_DEVICES=0 uv run scripts/train.py \
+  Smp-Getup-Robust-Smooth-V5-G1 \
+  --env.scene.num-envs=4096 \
+  --agent.resume True \
+  --wandb-run-path tabletennis/smp/65x7bde7 \
+  --wandb-checkpoint-name model_53998.pt \
+  --agent.max-iterations=8000 \
+  --agent.save-interval=1000 \
+  --agent.run-name=smp_getup_robust_smooth_v5_from_53998
+```
+
 ## Evaluation checklist
 
 Compare v2 and v3 from the same reset seeds, first with disturbances off and
@@ -253,3 +320,16 @@ For v4, additionally require:
 - no material regression in supine or side recovery;
 - max joint speed and action-rate RMS remain near v3 rather than v2;
 - visually reject knee/foot launch even if final standing succeeds.
+
+For v5, evaluate both the first recovery and the post-standing knockdown:
+
+- report success separately for GSI, prone, supine, left side, and right side;
+- report first-recovery and second-recovery success instead of only aggregate
+  reward;
+- keep second-recovery success within five percentage points of first-recovery
+  success;
+- compare peak joint torque, peak joint power, max joint speed, head overspeed,
+  and action-rate RMS against V2 and V4;
+- reject a checkpoint that succeeds by simultaneous foot/knee launch;
+- reject a checkpoint that stays down, even if its smoothness metrics improve;
+- select the earliest checkpoint meeting recovery and safety constraints.

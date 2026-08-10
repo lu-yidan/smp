@@ -15,6 +15,7 @@ __all__ = [
   "base_stationary_when_upright",
   "cached_product_score",
   "cached_raw_smp_score",
+  "recovery_initiation_progress",
   "cached_smp_score",
   "cached_task_score",
   "feet_stationary_when_upright",
@@ -24,14 +25,23 @@ __all__ = [
   "low_base_angular_velocity",
   "low_joint_velocity",
   "max_joint_speed_metric",
+  "max_joint_power_metric",
+  "max_joint_torque_metric",
   "mean_foot_speed_metric",
   "mean_knee_flexion_metric",
+  "post_stand_knockdown_metric",
   "prone_reset_metric",
   "procedural_reset_metric",
   "quiet_stance_gate",
   "recovery_stage_complete_metric",
   "recovery_stage_metric",
   "smooth_action",
+  "staged_action_acc_l2",
+  "staged_action_rate_l2",
+  "staged_joint_acc_l2",
+  "staged_joint_power_excess_l2",
+  "staged_joint_speed_excess_l2",
+  "staged_joint_torques_l2",
   "staged_head_velocity_profile",
   "staged_recovery_pose",
   "stable_stand_metric",
@@ -112,6 +122,90 @@ def _recovery_stage(env: ManagerBasedRlEnv) -> torch.Tensor:
   if stage is None:
     return torch.zeros(env.num_envs, dtype=torch.long, device=env.device)
   return stage
+
+
+def _stage_multiplier(
+  env: ManagerBasedRlEnv,
+  multipliers: tuple[float, float, float, float],
+) -> torch.Tensor:
+  return env.scene["robot"].data.joint_pos.new_tensor(multipliers)[_recovery_stage(env)]
+
+
+def staged_action_rate_l2(
+  env: ManagerBasedRlEnv,
+  multipliers: tuple[float, float, float, float] = (0.30, 0.60, 1.0, 1.0),
+) -> torch.Tensor:
+  """Action-rate cost relaxed while lying and restored near standing."""
+  delta = env.action_manager.action - env.action_manager.prev_action
+  return _stage_multiplier(env, multipliers) * torch.sum(delta * delta, dim=-1)
+
+
+def staged_action_acc_l2(
+  env: ManagerBasedRlEnv,
+  multipliers: tuple[float, float, float, float] = (0.30, 0.60, 1.0, 1.0),
+) -> torch.Tensor:
+  """Action-acceleration cost relaxed only for low-pose recovery."""
+  acc = (
+    env.action_manager.action
+    - 2.0 * env.action_manager.prev_action
+    + env.action_manager.prev_prev_action
+  )
+  return _stage_multiplier(env, multipliers) * torch.sum(acc * acc, dim=-1)
+
+
+def staged_joint_acc_l2(
+  env: ManagerBasedRlEnv,
+  multipliers: tuple[float, float, float, float] = (0.35, 0.65, 1.0, 1.0),
+) -> torch.Tensor:
+  """Joint-acceleration cost with enough freedom to initiate a prone roll."""
+  joint_acc = env.scene["robot"].data.joint_acc
+  return _stage_multiplier(env, multipliers) * torch.sum(
+    torch.square(joint_acc), dim=-1
+  )
+
+
+def staged_joint_torques_l2(
+  env: ManagerBasedRlEnv,
+  multipliers: tuple[float, float, float, float] = (0.50, 0.75, 1.0, 1.0),
+) -> torch.Tensor:
+  """Effort cost that does not over-constrain contact-rich low poses."""
+  force = env.scene["robot"].data.actuator_force
+  return _stage_multiplier(env, multipliers) * torch.sum(torch.square(force), dim=-1)
+
+
+def staged_joint_speed_excess_l2(
+  env: ManagerBasedRlEnv,
+  speed_limits: tuple[float, float, float, float] = (6.0, 5.0, 4.0, 3.5),
+) -> torch.Tensor:
+  """Penalize only joint speed above a stage-specific soft safety limit."""
+  speed = torch.abs(env.scene["robot"].data.joint_vel)
+  limit = speed.new_tensor(speed_limits)[_recovery_stage(env), None]
+  return torch.sum(torch.square(torch.clamp(speed - limit, min=0.0)), dim=-1)
+
+
+def staged_joint_power_excess_l2(
+  env: ManagerBasedRlEnv,
+  power_limits: tuple[float, float, float, float] = (140.0, 110.0, 90.0, 75.0),
+) -> torch.Tensor:
+  """Penalize burst mechanical power without suppressing static support torque."""
+  robot = env.scene["robot"]
+  power = torch.abs(robot.data.actuator_force * robot.data.joint_vel)
+  limit = power.new_tensor(power_limits)[_recovery_stage(env), None]
+  return torch.mean(torch.square(torch.clamp(power - limit, min=0.0)), dim=-1)
+
+
+def recovery_initiation_progress(env: ManagerBasedRlEnv) -> torch.Tensor:
+  """Bounded, ungated progress reward that prevents a stay-down local optimum."""
+  robot = env.scene["robot"]
+  head_idx = robot.find_sites(["head"], preserve_order=True)[0][0]
+  head_z = robot.data.site_pos_w[:, head_idx, 2]
+  upright = upright_posture(env, power=1.0)
+  height_progress = torch.clamp((head_z - 0.35) / 0.27, 0.0, 1.0)
+  upright_progress = torch.clamp(upright / 0.60, 0.0, 1.0)
+  lying_progress = 0.55 * height_progress + 0.45 * upright_progress
+  return torch.where(
+    _recovery_stage(env) == 0, lying_progress, torch.ones_like(lying_progress)
+  )
 
 
 def staged_recovery_pose(
@@ -225,10 +319,16 @@ def quiet_stance_gate(
   height_gate = torch.clamp((head_z - head_height_start) / height_width, 0.0, 1.0)
   upright_gate = torch.clamp((upright - upright_start) / upright_width, 0.0, 1.0)
   recovery = getattr(env, "_robust_push_recovery", None)
-  if recovery is None:
+  knockdown_recovery = getattr(env, "_v5_knockdown_recovery", None)
+  if recovery is None and knockdown_recovery is None:
     quiet = torch.ones(env.num_envs, device=env.device)
   else:
-    quiet = (recovery <= 0).float()
+    quiet = torch.ones(env.num_envs, device=env.device, dtype=torch.bool)
+    if recovery is not None:
+      quiet &= recovery <= 0
+    if knockdown_recovery is not None:
+      quiet &= knockdown_recovery <= 0
+    quiet = quiet.float()
   return height_gate * upright_gate * quiet
 
 
@@ -347,6 +447,14 @@ def active_wrench_metric(env: ManagerBasedRlEnv) -> torch.Tensor:
   return (active > 0).float()
 
 
+def post_stand_knockdown_metric(env: ManagerBasedRlEnv) -> torch.Tensor:
+  """Return one while the targeted V5 knockdown wrench is active."""
+  active = getattr(env, "_v5_knockdown_active", None)
+  if active is None:
+    return torch.zeros(env.num_envs, device=env.device)
+  return (active > 0).float()
+
+
 def head_vertical_speed_metric(env: ManagerBasedRlEnv) -> torch.Tensor:
   """Signed world-frame vertical speed of the head site."""
   robot = env.scene["robot"]
@@ -365,6 +473,19 @@ def mean_foot_speed_metric(
 def max_joint_speed_metric(env: ManagerBasedRlEnv) -> torch.Tensor:
   """Maximum absolute joint speed in each environment."""
   return torch.max(torch.abs(env.scene["robot"].data.joint_vel), dim=-1).values
+
+
+def max_joint_torque_metric(env: ManagerBasedRlEnv) -> torch.Tensor:
+  """Maximum absolute actuator torque in each environment."""
+  force = env.scene["robot"].data.actuator_force
+  return torch.max(torch.abs(force), dim=-1).values
+
+
+def max_joint_power_metric(env: ManagerBasedRlEnv) -> torch.Tensor:
+  """Maximum absolute mechanical joint power in each environment."""
+  robot = env.scene["robot"]
+  power = robot.data.actuator_force * robot.data.joint_vel
+  return torch.max(torch.abs(power), dim=-1).values
 
 
 def joint_acc_rms_metric(env: ManagerBasedRlEnv) -> torch.Tensor:
