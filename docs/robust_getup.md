@@ -316,6 +316,41 @@ joint torque 21.28 N m, mean max joint power 39.03 W, head overspeed cost
 not checkpoint-selection results; the policy must adapt to the harder reset and
 second-fall distribution before evaluation.
 
+The run completed normally at iteration 61997 after 2 h 48 min, covering
+786,432,000 environment transitions at roughly 77.5k steps/s. W&B reports the
+run state as `finished`, and all nine checkpoints are uploaded:
+`model_54000.pt`, every 1,000 iterations through `model_61000.pt`, and
+`model_61997.pt`. Each checkpoint is approximately 10.5 MiB.
+
+Training-window metrics at selected checkpoints are:
+
+| Checkpoint | Task | Product | Recovery stage complete | Foot speed | Max joint speed | Joint acceleration | Action rate |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| v4 53998 | 0.661 | 0.244 | 0.216 | 0.268 | 3.91 | 83.36 | 0.498 |
+| v5 55000 | 0.721 | 0.349 | 0.172 | 0.188 | 3.55 | 77.70 | 0.492 |
+| v5 60000 | 0.728 | 0.344 | 0.153 | 0.184 | 3.48 | 78.68 | 0.498 |
+| v5 61997 | 0.718 | 0.336 | 0.147 | 0.184 | 3.54 | 77.90 | 0.499 |
+
+At `model_55000.pt`, compared with the final v4 training window, mean foot
+speed is about 30% lower, max joint speed 9% lower, joint-acceleration RMS 7%
+lower, task score 9% higher, and product score 43% higher. Mean max actuator
+torque/power are 21.77 N m and 35.61 W. Head-overspeed cost is 0.0085 versus
+0.0068 for v4, so vertical launch must still be checked visually.
+
+Recovery-stage completion is lower than v4 in these aggregate windows. The
+values are not directly comparable because v5 contains a larger procedural-fall
+share, more prone resets, and a second post-standing knockdown. They also do not
+separate first recovery from second recovery. Checkpoint selection therefore
+requires the categorized success evaluation below.
+
+The initial manual-test order is:
+
+1. `model_55000.pt`: best aggregate recovery/smoothness tradeoff.
+2. `model_60000.pt`: lowest saved-checkpoint joint-speed metric while retaining
+   good task/product scores.
+3. `model_61997.pt`: final policy, used to check whether later refinement
+   improved motion quality or overfit smoothness.
+
 ## Evaluation checklist
 
 Compare v2 and v3 from the same reset seeds, first with disturbances off and
