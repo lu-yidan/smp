@@ -617,6 +617,110 @@ The V2 result JSON hashes are:
 | original held-out | `1ac72be4bb9aee1f2bb747e30cb901fc686f5ecb53915d66c29f2d3e28581fba` |
 | closed-loop single | `6a7e6ab9916c78a9cdbea64acbb8d155faff2c1a76db0c18ee1d480275c94a9c` |
 | closed-loop ensemble-4 | `820731d268a20e7457f3159e6ad93b72e4f07d5f1127887c917984aebe65e8c6` |
+
+### On-policy expert interventions
+
+`scripts/firm/collect_onpolicy_corrections.py` implements the next
+SafeDAgger-style aggregation stage. The diffusion policy controls each live
+environment while the expert is queried on the same observation. When their
+clipped actions differ by at least the configured joint-action RMSE, and the
+current sparse goal remains valid for a complete horizon, the expert controls
+that environment for exactly 12 steps. The collector saves the trigger
+observation and goal with that coherent 12-action expert correction, then
+returns control to diffusion after a 20-step cooldown. Interventions truncated
+by termination are rejected.
+
+This design avoids an approximate simulator clone: physical randomization,
+sensor corruption, previous-action history, command phase, and contact state
+remain those of the actual diffusion rollout. Each accepted intervention is an
+independent 12-step episode and is directly compatible with
+`FirmRolloutWindowDataset`.
+
+The formal collection uses V2 EMA actions, 17 start frames from 0 through 324,
+16 replicas per frame, a disagreement threshold of `0.12`, and a cap of 1,200
+corrections:
+
+| Field | Result |
+| --- | ---: |
+| environments | 272 |
+| saved / started interventions | 1,200 / 1,200 |
+| discarded partial interventions | 0 |
+| action transitions | 14,400 |
+| trigger RMSE p50 / p95 / max | 0.319 / 1.080 / 2.405 |
+| dataset size | 2.4 MiB |
+
+The dataset is
+`/root/workspace/smp-firm-artifacts/c003_onpolicy_corrections_v2_t012`.
+Its manifest SHA256 is
+`38f14600c12408f83221980fae56c70d91460cc4722f3cfeeebde1b24e1912c7`;
+`shard_0000.npz` is
+`47bce608c0428171bd7758e4eda3b868e3bb4af5b2609147e9a8a3f98a24cbea`.
+A 100-window smoke dataset remains at
+`/root/workspace/smp-firm-artifacts/onpolicy_corrections_smoke_v2_t012`
+with manifest SHA256
+`739007cd369fe33dced7a3ebf1f9f37707d5471cecad69cb35889bbcd028207a`.
+
+The trainer accepts additional manifests and repeats only their training
+partitions. V3 warm-starts from V2 and mixes the 108,834 base training windows
+with 1,080 correction windows repeated 30 times: a 77.1% / 22.9% nominal-to-
+correction ratio. Validation partitions are never repeated, and V2
+normalization is reused exactly. V3 uses 30 epochs, batch size 512, learning
+rate `1e-4`, EMA, and no intermediate checkpoint; W&B run
+[`bs422dbv`](https://wandb.ai/tabletennis/smp/runs/bs422dbv) records the
+training.
+
+V3 completed at epoch 29 with 141,234 effective training windows, 11,967
+unrepeated validation windows, and train/validation L1
+`0.15164 / 0.14845`. Its final checkpoint is
+`/root/workspace/smp-firm-artifacts/training/firm_action_diffusion_c003_onpolicy_ft_v3/2026-08-10_09-27-06/firm_action_diffusion.pt`
+with SHA256
+`1ddda0d9d717c42c85f0267cfd09822fbfe900eaed07d50ceb8703e62292a1c3`.
+The redundant epoch-0 local checkpoint was removed after W&B synchronization,
+leaving only the 40 MiB final checkpoint.
+
+Offline evaluation confirms that the gain is specific to the missing
+on-policy states without forgetting the previous distributions:
+
+| Held-out set | V2 first / horizon RMSE | V3 first / horizon RMSE |
+| --- | ---: | ---: |
+| original | 0.0597 / 0.1792 | **0.0580 / 0.1788** |
+| targeted early/middle | 0.0691 / 0.1829 | **0.0613 / 0.1815** |
+| on-policy corrections | 0.5197 / 0.6040 | **0.1079 / 0.2330** |
+
+The unchanged 100-episode closed-loop gate produced:
+
+| Metric | V2 single | V3 single | V3 ensemble-4 |
+| --- | ---: | ---: | ---: |
+| success rate | 54% | 86% | **89%** |
+| unsafe termination rate | 1% | 1% | **0%** |
+| mean MPKPE (m) | 0.217 | 0.099 | **0.092** |
+| joint-position RMSE (rad) | 0.115 | 0.101 | **0.100** |
+| action-rate RMS | 0.278 | 0.285 | **0.276** |
+| p95 peak joint speed (rad/s) | 22.73 | **22.72** | 22.91 |
+| p95 peak acceleration (rad/s2) | 4441 | 3875 | **3525** |
+| p95 peak root vertical speed (m/s) | 3.09 | **2.78** | 2.78 |
+
+This accepts on-policy aggregation as the main source of the recovery gain.
+Four-sample inference is retained as the safety setting because it removes the
+remaining unsafe termination and reduces action rate and acceleration, at
+roughly four times the DDPM sampling work.
+
+The V2/V3 on-policy and V3 evaluation JSON hashes are:
+
+| Evaluation | SHA256 |
+| --- | --- |
+| V2 on-policy held-out | `30e342afe24ee9e23fcdc435c4d941b9878ac4b6e356c5c1add889be4cc19989` |
+| V3 original held-out | `007a4d90db1a8d22c92137c9214174fa69eb4e3fd89533656238d6a81f2fff59` |
+| V3 targeted held-out | `06fd5481bf09ac2d4a41d7e99642fdc83a7c9bcabb766f734dea166bfb95765d` |
+| V3 on-policy held-out | `9bce85bf1be5e455da71c9ccaa7c7d829a7a9aeb3244446dd80b73aed2f2017d` |
+| V3 closed-loop single | `5ebfb6d0878a91cb1c8ab948fb14f5f183747ec9b7c0c8f102962e03c8430c6e` |
+| V3 closed-loop ensemble-4 | `c1cb0c85e3191609bbbdb3141dec0928f7e00b91c4bd7ed76c7fa6033fa14e86` |
+
+Code commits `373bd1f` and `97ee153` respectively add the intervention
+collector and multi-manifest refinement. The next gate should target the last
+11% failures with a second aggregation seed and then evaluate the adapter
+architecture, rather than increasing nominal expert rollouts again.
+
 ## Reproduction milestones
 
 - [x] Isolate work on branch `repro/firm-g1`.
@@ -632,5 +736,6 @@ The V2 result JSON hashes are:
 - [x] Establish the first closed-loop diffusion baseline.
 - [x] Aggregate perturbed corrective expert data.
 - [x] Fine-tune v1/v2 on corrective expert data.
-- [ ] Aggregate on-policy diffusion failure states and close the policy gap.
+- [x] Aggregate on-policy diffusion failure states.
+- [ ] Close the on-policy diffusion policy gap.
 - [ ] Train the adapter and evaluate full FIRM-R.

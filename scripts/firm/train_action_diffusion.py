@@ -380,7 +380,7 @@ def train(cfg: TrainActionDiffusionConfig) -> Path:
           }
         )
 
-    should_save = epoch % cfg.save_interval == 0 and epoch != cfg.num_epochs - 1
+    should_save = (epoch + 1) % cfg.save_interval == 0 and epoch != cfg.num_epochs - 1
     if should_save:
       checkpoint_path = run_dir / f"checkpoint_{epoch:04d}.pt"
       _save_checkpoint(
