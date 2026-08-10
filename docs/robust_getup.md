@@ -13,6 +13,10 @@ criteria for the robust and smooth get-up policies. The baseline
 | v3 | `Smp-Getup-Robust-Smooth-G1` | Same as v2 | Slower rising, quieter feet, and lower joint/action acceleration |
 | v4 | `Smp-Getup-Robust-Smooth-V4-G1` | 40% GSI, 30% prone, 10% each other fall | Ordered seated-crouched-standing recovery without vertical launch |
 | v5 | `Smp-Getup-Robust-Smooth-V5-G1` | 30% GSI, 35% prone, 15% supine, 10% each side | Preserve V4 smoothness while recovering from a second dynamic fall |
+| v6 | planned | Expanded LAFAN prior plus failure-state replay | Broaden natural prone/side recovery while preserving V5 safety |
+
+V6 data and prior training are recorded in
+[`getup_v6_recovery_prior.md`](getup_v6_recovery_prior.md).
 
 Checkpoint lineage used for this experiment:
 
