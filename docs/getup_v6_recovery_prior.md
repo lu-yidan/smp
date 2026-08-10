@@ -115,3 +115,75 @@ The server independently verified all 176 NPZ files, 55,010 windows, no
 non-finite values, and CUDA availability before launch. Epoch 0 reported train
 loss 0.756864 and validation loss 0.607092; epoch 10 reported 0.228779 and
 0.232373. These are startup health checks, not final checkpoint selection.
+
+## PPO ablation tasks
+
+Two registered tasks isolate the contribution of the new prior from the harder
+state distribution:
+
+| Task | Change from V5 |
+| --- | --- |
+| `Smp-Getup-Robust-Smooth-V6-Prior-G1` | only replace the F2S2 prior with the LAFAN6 prior |
+| `Smp-Getup-Robust-Smooth-V6-G1` | new prior plus expanded resets, failure replay, and stratified pushes |
+
+Full V6 uses a 20 s episode. Before replay warms up, resets are 35% GSI from
+the new prior and 65% procedural. Procedural poses retain the four semantic
+front/back/side modes but add up to 0.40 rad noise on both roll and pitch,
+0.38--0.64 m root height, 0.24 rad joint noise, 0.18 m XY offsets, 0.25 m/s root
+linear velocity, and 0.60 rad/s root angular velocity. This creates continuous
+oblique contact states instead of only four exact 90-degree orientations.
+
+The training-only failure recorder stores up to 8,192 GPU-resident simulator
+states after recovery progress stagnates for 75 control steps (1.5 s). Once 128
+states exist, 20% of resets are replaced by replay samples. The replay ring
+persists across episodes; per-environment stagnation counters do not. Playback
+does not record or sample the ring.
+
+Pushes are assigned per episode rather than uniformly:
+
+- 25% clean: no automatic knockdown;
+- 50% standard: at most one 80--170 N post-stand knockdown;
+- 25% intensive: up to three 120--230 N post-recovery knockdowns.
+
+The existing `--auto-disturbances` playback switch still controls these events.
+Metrics separately report replay resets, replay-ring fill, push cohort, active
+wrench, and push count.
+
+The implementation passed three local checks with the known-good old prior as
+a temporary placeholder:
+
+- 8 environments completed one full PPO rollout/update;
+- 1,024 environments completed six iterations, populated 3.76% of the 8,192
+  replay slots, and exercised the push scheduler without NaN/Inf;
+- a targeted 256-environment test recorded and replayed all 256 hard states,
+  verified finite robot state, and scheduled a second intensive-cohort push in
+  every environment.
+
+The one-epoch new-prior smoke checkpoint was intentionally not used for these
+physics checks: it produced unstable GSI samples and actor-observation NaNs.
+Formal V6 PPO must wait for the converged prior and pass a GSI smoke test first.
+
+After the prior passes validation, launch both ablations from exactly the same
+V5 `model_61997.pt` with a lower refinement learning rate:
+
+```bash
+CUDA_VISIBLE_DEVICES=1 uv run scripts/train.py \
+  Smp-Getup-Robust-Smooth-V6-Prior-G1 \
+  --env.scene.num-envs=4096 \
+  --agent.resume True \
+  --wandb-run-path tabletennis/smp/pkduffcs \
+  --wandb-checkpoint-name model_61997.pt \
+  --agent.algorithm.learning-rate=3e-4 \
+  --agent.max-iterations=4000 \
+  --agent.save-interval=1000
+
+CUDA_VISIBLE_DEVICES=2 uv run scripts/train.py \
+  Smp-Getup-Robust-Smooth-V6-G1 \
+  --env.scene.num-envs=4096 \
+  --agent.resume True \
+  --wandb-run-path tabletennis/smp/pkduffcs \
+  --wandb-checkpoint-name model_61997.pt \
+  --agent.algorithm.learning-rate=3e-4 \
+  --agent.max-iterations=4000 \
+  --agent.save-interval=1000
+```

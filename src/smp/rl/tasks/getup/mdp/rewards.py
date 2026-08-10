@@ -15,6 +15,8 @@ __all__ = [
   "base_stationary_when_upright",
   "cached_product_score",
   "cached_raw_smp_score",
+  "failure_buffer_fill_metric",
+  "failure_replay_reset_metric",
   "recovery_initiation_progress",
   "cached_smp_score",
   "cached_task_score",
@@ -49,6 +51,9 @@ __all__ = [
   "track_head_velocity_profile",
   "upright_posture",
   "upward_velocity",
+  "v6_active_wrench_metric",
+  "v6_push_cohort_metric",
+  "v6_push_count_metric",
 ]
 
 
@@ -388,7 +393,7 @@ def procedural_reset_metric(env: ManagerBasedRlEnv) -> torch.Tensor:
   reset_type = getattr(env, "_robust_reset_type", None)
   if reset_type is None:
     return torch.zeros(env.num_envs, device=env.device)
-  return (reset_type > 0).float()
+  return ((reset_type >= 1) & (reset_type <= 4)).float()
 
 
 def prone_reset_metric(env: ManagerBasedRlEnv) -> torch.Tensor:
@@ -498,3 +503,41 @@ def action_rate_rms_metric(env: ManagerBasedRlEnv) -> torch.Tensor:
   """RMS change between consecutive policy actions."""
   delta = env.action_manager.action - env.action_manager.prev_action
   return torch.sqrt(torch.mean(torch.square(delta), dim=-1))
+
+
+def failure_replay_reset_metric(env: ManagerBasedRlEnv) -> torch.Tensor:
+  """Return one for resets sampled from the V6 hard-state replay ring."""
+  reset_type = getattr(env, "_robust_reset_type", None)
+  if reset_type is None:
+    return torch.zeros(env.num_envs, device=env.device)
+  return (reset_type == 5).float()
+
+
+def failure_buffer_fill_metric(
+  env: ManagerBasedRlEnv, capacity: int = 8192
+) -> torch.Tensor:
+  """Fraction of the V6 hard-state replay ring currently populated."""
+  fill = float(getattr(env, "_v6_failure_size", 0)) / max(capacity, 1)
+  return torch.full((env.num_envs,), fill, device=env.device)
+
+
+def v6_active_wrench_metric(env: ManagerBasedRlEnv) -> torch.Tensor:
+  active = getattr(env, "_v6_push_active", None)
+  if active is None:
+    return torch.zeros(env.num_envs, device=env.device)
+  return (active > 0).float()
+
+
+def v6_push_cohort_metric(env: ManagerBasedRlEnv) -> torch.Tensor:
+  """Normalized cohort: clean=0, standard=0.5, intensive=1."""
+  cohort = getattr(env, "_v6_push_cohort", None)
+  if cohort is None:
+    return torch.zeros(env.num_envs, device=env.device)
+  return cohort.float() / 2.0
+
+
+def v6_push_count_metric(env: ManagerBasedRlEnv) -> torch.Tensor:
+  count = getattr(env, "_v6_push_count", None)
+  if count is None:
+    return torch.zeros(env.num_envs, device=env.device)
+  return count.float()

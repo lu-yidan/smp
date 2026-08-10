@@ -7,11 +7,14 @@ from mjlab.envs import ManagerBasedRlEnv
 from mjlab.utils.lab_api.math import quat_from_euler_xyz, quat_mul
 
 __all__ = [
+  "failure_state_replay_reset",
   "mixed_fall_reset",
   "post_stand_body_wrench",
   "random_body_wrench",
+  "record_failure_states",
   "reset_recovery_stage",
   "reset_stand_counter",
+  "stratified_post_stand_wrench",
   "update_recovery_stage",
 ]
 
@@ -36,6 +39,10 @@ def mixed_fall_reset(
   procedural_probability: float = 0.5,
   root_height_range: tuple[float, float] = (0.48, 0.62),
   joint_noise: float = 0.12,
+  orientation_noise: float = 0.0,
+  root_xy_range: float = 0.1,
+  root_linear_velocity: float = 0.1,
+  root_angular_velocity: float = 0.2,
   mode_weights: tuple[float, float, float, float] | None = None,
 ) -> None:
   """Mix GSI resets with four physically plausible procedural lying poses.
@@ -83,6 +90,26 @@ def mixed_fall_reset(
     env._v5_knockdown_forces[env_ids] = 0.0  # type: ignore[attr-defined]
     env._v5_knockdown_torques[env_ids] = 0.0  # type: ignore[attr-defined]
 
+  # V6 assigns clean, standard-push, and intensive-push cohorts per episode.
+  if hasattr(env, "_v6_push_active"):
+    env._v6_push_active[env_ids] = 0  # type: ignore[attr-defined]
+    env._v6_push_recovery[env_ids] = 0  # type: ignore[attr-defined]
+    env._v6_push_wait[env_ids] = -1  # type: ignore[attr-defined]
+    env._v6_push_count[env_ids] = 0  # type: ignore[attr-defined]
+    env._v6_push_forces[env_ids] = 0.0  # type: ignore[attr-defined]
+    env._v6_push_torques[env_ids] = 0.0  # type: ignore[attr-defined]
+    cohort_weights = env._v6_push_cohort_weights  # type: ignore[attr-defined]
+    env._v6_push_cohort[env_ids] = torch.multinomial(  # type: ignore[attr-defined]
+      cohort_weights, env_ids.numel(), replacement=True
+    )
+
+  # Per-environment stagnation trackers reset, while the global replay ring
+  # deliberately persists across episodes.
+  if hasattr(env, "_v6_failure_stagnant"):
+    env._v6_failure_stagnant[env_ids] = 0  # type: ignore[attr-defined]
+    env._v6_failure_best[env_ids] = 0.0  # type: ignore[attr-defined]
+    env._v6_failure_prev_stage[env_ids] = 0  # type: ignore[attr-defined]
+
   choose = torch.rand(env_ids.numel(), device=env.device) < procedural_probability
   fall_ids = env_ids[choose]
   if fall_ids.numel() == 0:
@@ -100,17 +127,25 @@ def mixed_fall_reset(
   roll = torch.where(modes == 3, torch.full_like(roll, -torch.pi / 2), roll)
   pitch = torch.where(modes == 0, torch.full_like(pitch, torch.pi / 2), pitch)
   pitch = torch.where(modes == 1, torch.full_like(pitch, -torch.pi / 2), pitch)
+  if orientation_noise > 0.0:
+    # Noise on both axes creates continuous oblique front/back/side contacts.
+    roll += torch.empty_like(roll).uniform_(-orientation_noise, orientation_noise)
+    pitch += torch.empty_like(pitch).uniform_(-orientation_noise, orientation_noise)
   yaw = torch.empty(n, device=env.device).uniform_(-torch.pi, torch.pi)
 
   default_root = robot.data.default_root_state[fall_ids].clone()
   delta_quat = quat_from_euler_xyz(roll, pitch, yaw)
   quat = quat_mul(default_root[:, 3:7], delta_quat)
   origins = env.scene.env_origins[fall_ids]
-  xy = torch.empty(n, 2, device=env.device).uniform_(-0.1, 0.1)
+  xy = torch.empty(n, 2, device=env.device).uniform_(-root_xy_range, root_xy_range)
   height = torch.empty(n, 1, device=env.device).uniform_(*root_height_range)
   pos = torch.cat([xy, height], dim=-1) + origins
-  lin_vel = torch.empty(n, 3, device=env.device).uniform_(-0.1, 0.1)
-  ang_vel = torch.empty(n, 3, device=env.device).uniform_(-0.2, 0.2)
+  lin_vel = torch.empty(n, 3, device=env.device).uniform_(
+    -root_linear_velocity, root_linear_velocity
+  )
+  ang_vel = torch.empty(n, 3, device=env.device).uniform_(
+    -root_angular_velocity, root_angular_velocity
+  )
   robot.write_root_state_to_sim(
     torch.cat([pos, quat, lin_vel, ang_vel], dim=-1), env_ids=fall_ids
   )
@@ -474,3 +509,301 @@ def post_stand_body_wrench(
   )
   if active_ids.numel() > 0:
     active[active_ids] -= 1
+
+
+def _prime_static_smp_history(env: ManagerBasedRlEnv, env_ids: torch.Tensor) -> None:
+  """Prime SMP history from the simulator state after a non-GSI reset."""
+  robot = env.scene["robot"]
+  origins = env.scene.env_origins[env_ids]
+  buffer = env._smp_buffer  # type: ignore[attr-defined]
+  window_size = buffer.window_size
+  ee_indexes = env._smp_ee_indexes  # type: ignore[attr-defined]
+  root_pos = robot.data.root_link_pos_w[env_ids] - origins
+  ee_pos = robot.data.body_link_pos_w[env_ids][:, ee_indexes] - origins[:, None, :]
+  buffer.reset(
+    env_ids,
+    root_pos[:, None, :].expand(-1, window_size, -1),
+    robot.data.root_link_quat_w[env_ids][:, None, :].expand(-1, window_size, -1),
+    robot.data.root_link_lin_vel_w[env_ids][:, None, :].expand(-1, window_size, -1),
+    robot.data.root_link_ang_vel_w[env_ids][:, None, :].expand(-1, window_size, -1),
+    ee_pos[:, None, :, :].expand(-1, window_size, -1, -1),
+    robot.data.joint_pos[env_ids][:, None, :].expand(-1, window_size, -1),
+    robot.data.joint_vel[env_ids][:, None, :].expand(-1, window_size, -1),
+  )
+
+
+def _ensure_failure_state_buffer(env: ManagerBasedRlEnv, capacity: int) -> None:
+  if hasattr(env, "_v6_failure_root"):
+    return
+  robot = env.scene["robot"]
+  num_joints = robot.data.joint_pos.shape[1]
+  env._v6_failure_root = torch.zeros(  # type: ignore[attr-defined]
+    capacity, 13, device=env.device
+  )
+  env._v6_failure_joint_pos = torch.zeros(  # type: ignore[attr-defined]
+    capacity, num_joints, device=env.device
+  )
+  env._v6_failure_joint_vel = torch.zeros_like(  # type: ignore[attr-defined]
+    env._v6_failure_joint_pos  # type: ignore[attr-defined]
+  )
+  env._v6_failure_size = 0  # type: ignore[attr-defined]
+  env._v6_failure_head = 0  # type: ignore[attr-defined]
+  env._v6_failure_best = torch.zeros(  # type: ignore[attr-defined]
+    env.num_envs, device=env.device
+  )
+  env._v6_failure_stagnant = torch.zeros(  # type: ignore[attr-defined]
+    env.num_envs, dtype=torch.long, device=env.device
+  )
+  env._v6_failure_prev_stage = torch.zeros(  # type: ignore[attr-defined]
+    env.num_envs, dtype=torch.long, device=env.device
+  )
+
+
+@torch.no_grad()
+def record_failure_states(
+  env: ManagerBasedRlEnv,
+  env_ids: torch.Tensor | None = None,
+  capacity: int = 8192,
+  stagnation_steps: int = 75,
+  progress_epsilon: float = 0.02,
+  record_probability: float = 0.25,
+  max_records_per_step: int = 64,
+) -> None:
+  """Store contact-rich states where recovery progress has stagnated.
+
+  The ring is deliberately small and GPU-resident. It stores state snapshots,
+  not trajectories, and is sampled only by the V6 replay reset event.
+  """
+  if env_ids is None:
+    env_ids = torch.arange(env.num_envs, device=env.device)
+  if env_ids.numel() == 0:
+    return
+  _ensure_failure_state_buffer(env, capacity)
+  robot = env.scene["robot"]
+  head_idx = robot.find_sites(["head"], preserve_order=True)[0][0]
+  head_z = robot.data.site_pos_w[env_ids, head_idx, 2]
+  upright = torch.clamp(-robot.data.projected_gravity_b[env_ids, 2], 0.0, 1.0)
+  progress = 0.55 * torch.clamp((head_z - 0.35) / 0.85, 0.0, 1.0) + 0.45 * upright
+
+  best = env._v6_failure_best  # type: ignore[attr-defined]
+  stagnant = env._v6_failure_stagnant  # type: ignore[attr-defined]
+  prev_stage = env._v6_failure_prev_stage  # type: ignore[attr-defined]
+  stage = getattr(env, "_v4_recovery_stage", None)
+  if stage is not None:
+    # A post-stand fall starts a new progress attempt. Without this reset, the
+    # previous standing maximum would make even a steadily improving second
+    # recovery look stagnant for 1.5 seconds.
+    new_fall = (prev_stage[env_ids] == 3) & (stage[env_ids] < 3)
+    best[env_ids[new_fall]] = progress[new_fall]
+    stagnant[env_ids[new_fall]] = 0
+    prev_stage[env_ids] = stage[env_ids]
+  improved = progress > best[env_ids] + progress_epsilon
+  best[env_ids] = torch.where(improved, progress, best[env_ids])
+  stagnant[env_ids] = torch.where(improved, 0, stagnant[env_ids] + 1)
+  stable = (head_z > 1.12) & (upright > 0.85)
+  stagnant[env_ids[stable]] = 0
+
+  candidate_mask = (
+    (stagnant[env_ids] >= stagnation_steps)
+    & (head_z < 1.05)
+    & (upright < 0.80)
+    & (torch.rand(env_ids.numel(), device=env.device) < record_probability)
+  )
+  record_ids = env_ids[candidate_mask][:max_records_per_step]
+  if record_ids.numel() == 0:
+    return
+
+  count = record_ids.numel()
+  slots = (
+    torch.arange(count, device=env.device) + env._v6_failure_head  # type: ignore[attr-defined]
+  ) % capacity
+  root = torch.cat(
+    (
+      robot.data.root_link_pos_w[record_ids],
+      robot.data.root_link_quat_w[record_ids],
+      robot.data.root_link_lin_vel_w[record_ids],
+      robot.data.root_link_ang_vel_w[record_ids],
+    ),
+    dim=-1,
+  ).clone()
+  root[:, :3] -= env.scene.env_origins[record_ids]
+  env._v6_failure_root[slots] = root  # type: ignore[attr-defined]
+  env._v6_failure_joint_pos[slots] = robot.data.joint_pos[record_ids]  # type: ignore[attr-defined]
+  env._v6_failure_joint_vel[slots] = robot.data.joint_vel[record_ids]  # type: ignore[attr-defined]
+  env._v6_failure_head = int(  # type: ignore[attr-defined]
+    (env._v6_failure_head + count) % capacity  # type: ignore[attr-defined]
+  )
+  env._v6_failure_size = min(  # type: ignore[attr-defined]
+    capacity,
+    env._v6_failure_size + count,  # type: ignore[attr-defined]
+  )
+  stagnant[record_ids] = 0
+  best[record_ids] = progress[candidate_mask][:max_records_per_step]
+
+
+@torch.no_grad()
+def failure_state_replay_reset(
+  env: ManagerBasedRlEnv,
+  env_ids: torch.Tensor | None = None,
+  replay_probability: float = 0.20,
+  minimum_buffer_size: int = 256,
+) -> None:
+  """Replace a subset of resets with recently recorded hard recovery states."""
+  if env_ids is None:
+    env_ids = torch.arange(env.num_envs, device=env.device)
+  size = int(getattr(env, "_v6_failure_size", 0))
+  if env_ids.numel() == 0 or size < minimum_buffer_size:
+    return
+  replay_ids = env_ids[
+    torch.rand(env_ids.numel(), device=env.device) < replay_probability
+  ]
+  if replay_ids.numel() == 0:
+    return
+
+  sample = torch.randint(0, size, (replay_ids.numel(),), device=env.device)
+  root = env._v6_failure_root[sample].clone()  # type: ignore[attr-defined]
+  root[:, :3] += env.scene.env_origins[replay_ids]
+  robot = env.scene["robot"]
+  robot.write_root_state_to_sim(root, env_ids=replay_ids)
+  robot.write_joint_state_to_sim(
+    env._v6_failure_joint_pos[sample],  # type: ignore[attr-defined]
+    env._v6_failure_joint_vel[sample],  # type: ignore[attr-defined]
+    env_ids=replay_ids,
+  )
+  env.sim.forward()
+  _prime_static_smp_history(env, replay_ids)
+  if hasattr(env, "_robust_reset_type"):
+    env._robust_reset_type[replay_ids] = 5  # type: ignore[attr-defined]
+  reset_recovery_stage(env, replay_ids)
+
+
+@torch.no_grad()
+def stratified_post_stand_wrench(
+  env: ManagerBasedRlEnv,
+  env_ids: torch.Tensor | None = None,
+  body_names: tuple[str, ...] = ("pelvis", "torso_link"),
+  cohort_weights: tuple[float, float, float] = (0.25, 0.50, 0.25),
+  delay_steps: tuple[int, int] = (20, 60),
+  duration_steps: tuple[int, int] = (10, 18),
+  recovery_steps: int = 100,
+  standard_force_range: tuple[float, float] = (80.0, 170.0),
+  intensive_force_range: tuple[float, float] = (120.0, 230.0),
+  torque_range: tuple[float, float] = (4.0, 16.0),
+  standard_max_pushes: int = 1,
+  intensive_max_pushes: int = 3,
+  curriculum_steps: int = 300_000,
+) -> None:
+  """Apply no, one, or repeated post-stand knockdowns by environment cohort."""
+  if env_ids is None:
+    env_ids = torch.arange(env.num_envs, device=env.device)
+  if env_ids.numel() == 0:
+    return
+  robot = env.scene["robot"]
+
+  if not hasattr(env, "_v6_push_active"):
+    weights = torch.tensor(cohort_weights, device=env.device, dtype=torch.float)
+    if weights.shape != (3,) or torch.any(weights < 0) or weights.sum() <= 0:
+      raise ValueError("cohort_weights must be three non-negative values")
+    weights /= weights.sum()
+    body_ids = robot.find_bodies(list(body_names), preserve_order=True)[0]
+    env._v6_push_body_ids = body_ids  # type: ignore[attr-defined]
+    env._v6_push_cohort_weights = weights  # type: ignore[attr-defined]
+    env._v6_push_cohort = torch.multinomial(  # type: ignore[attr-defined]
+      weights, env.num_envs, replacement=True
+    )
+    env._v6_push_wait = torch.full(  # type: ignore[attr-defined]
+      (env.num_envs,), -1, dtype=torch.long, device=env.device
+    )
+    env._v6_push_active = torch.zeros_like(env._v6_push_wait)  # type: ignore[attr-defined]
+    env._v6_push_recovery = torch.zeros_like(env._v6_push_wait)  # type: ignore[attr-defined]
+    env._v6_push_count = torch.zeros_like(env._v6_push_wait)  # type: ignore[attr-defined]
+    shape = (env.num_envs, len(body_ids), 3)
+    env._v6_push_forces = torch.zeros(shape, device=env.device)  # type: ignore[attr-defined]
+    env._v6_push_torques = torch.zeros(shape, device=env.device)  # type: ignore[attr-defined]
+
+  stage = getattr(env, "_v4_recovery_stage", None)
+  if stage is None:
+    return
+  cohort = env._v6_push_cohort  # type: ignore[attr-defined]
+  wait = env._v6_push_wait  # type: ignore[attr-defined]
+  active = env._v6_push_active  # type: ignore[attr-defined]
+  recovery = env._v6_push_recovery  # type: ignore[attr-defined]
+  count = env._v6_push_count  # type: ignore[attr-defined]
+  forces = env._v6_push_forces  # type: ignore[attr-defined]
+  torques = env._v6_push_torques  # type: ignore[attr-defined]
+  body_ids = env._v6_push_body_ids  # type: ignore[attr-defined]
+
+  recovering = recovery[env_ids] > 0
+  recovery[env_ids[recovering]] -= 1
+  fell = (wait[env_ids] == -2) & (stage[env_ids] < 3)
+  wait[env_ids[fell]] = -1
+  max_pushes = torch.zeros_like(count[env_ids])
+  max_pushes = torch.where(
+    cohort[env_ids] == 1, torch.full_like(max_pushes, standard_max_pushes), max_pushes
+  )
+  max_pushes = torch.where(
+    cohort[env_ids] == 2, torch.full_like(max_pushes, intensive_max_pushes), max_pushes
+  )
+  newly_standing = env_ids[
+    (stage[env_ids] == 3)
+    & (wait[env_ids] == -1)
+    & (active[env_ids] <= 0)
+    & (count[env_ids] < max_pushes)
+  ]
+  if newly_standing.numel() > 0:
+    wait[newly_standing] = torch.randint(
+      delay_steps[0], delay_steps[1] + 1, (newly_standing.numel(),), device=env.device
+    )
+  waiting = env_ids[wait[env_ids] > 0]
+  wait[waiting] -= 1
+  start_ids = env_ids[(wait[env_ids] == 0) & (active[env_ids] <= 0)]
+  if start_ids.numel() > 0:
+    progress = min(float(env.common_step_counter) / max(curriculum_steps, 1), 1.0)
+    std_amp = standard_force_range[0] + progress * (
+      standard_force_range[1] - standard_force_range[0]
+    )
+    hard_amp = intensive_force_range[0] + progress * (
+      intensive_force_range[1] - intensive_force_range[0]
+    )
+    amp = torch.where(
+      cohort[start_ids] == 2,
+      torch.full((start_ids.numel(),), hard_amp, device=env.device),
+      torch.full((start_ids.numel(),), std_amp, device=env.device),
+    )
+    angle = torch.empty(start_ids.numel(), device=env.device).uniform_(
+      -torch.pi, torch.pi
+    )
+    magnitude = amp * torch.empty_like(amp).uniform_(0.75, 1.0)
+    force_vec = torch.stack(
+      (
+        magnitude * torch.cos(angle),
+        magnitude * torch.sin(angle),
+        torch.zeros_like(angle),
+      ),
+      dim=-1,
+    )
+    torque_amp = torque_range[0] + progress * (torque_range[1] - torque_range[0])
+    torque_vec = torch.empty_like(force_vec).uniform_(-torque_amp, torque_amp)
+    torque_vec[:, 2] *= 0.35
+    chosen = torch.randint(0, len(body_ids), (start_ids.numel(),), device=env.device)
+    forces[start_ids] = 0.0
+    torques[start_ids] = 0.0
+    forces[start_ids, chosen] = force_vec
+    torques[start_ids, chosen] = torque_vec
+    active[start_ids] = torch.randint(
+      duration_steps[0], duration_steps[1] + 1, (start_ids.numel(),), device=env.device
+    )
+    recovery[start_ids] = active[start_ids] + recovery_steps
+    count[start_ids] += 1
+
+  active_ids = env_ids[active[env_ids] > 0]
+  inactive_ids = env_ids[active[env_ids] <= 0]
+  forces[inactive_ids] = 0.0
+  torques[inactive_ids] = 0.0
+  robot.write_external_wrench_to_sim(
+    forces[env_ids], torques[env_ids], env_ids=env_ids, body_ids=body_ids
+  )
+  if active_ids.numel() > 0:
+    active[active_ids] -= 1
+    finished = active_ids[active[active_ids] == 0]
+    wait[finished] = -2
