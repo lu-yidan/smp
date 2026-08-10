@@ -12,7 +12,7 @@ import numpy as np
 import torch
 import torch.nn.functional as F
 import tyro
-from torch.utils.data import DataLoader, Subset
+from torch.utils.data import ConcatDataset, DataLoader, Subset
 
 from smp.firm.action_diffusion import FirmActionDiffusion, FirmRolloutWindowDataset
 from smp.firm.expert_runtime import sha256_file
@@ -26,6 +26,13 @@ class TrainActionDiffusionConfig:
   manifest_file: str = (
     "datasets/firm/rollouts/c003_stage0_model_29999_pilot/manifest.json"
   )
+  additional_manifest_files: tuple[str, ...] = ()
+  """Extra rollout datasets mixed into warm-start refinement."""
+  additional_dataset_repeats: tuple[int, ...] = ()
+  """Training repeats for each additional dataset; empty means one each.
+
+  Validation windows are never repeated.
+  """
   horizon: int = 12
   successful_only: bool = True
   verify_checksums: bool = True
@@ -155,7 +162,7 @@ def _save_checkpoint(
   optimizer: torch.optim.Optimizer | None,
   stats: dict[str, torch.Tensor],
   cfg: TrainActionDiffusionConfig,
-  dataset: FirmRolloutWindowDataset,
+  datasets: list[FirmRolloutWindowDataset],
   train_windows: int,
   validation_windows: int,
   validation_loss: float,
@@ -168,8 +175,15 @@ def _save_checkpoint(
     "model_ema": ema.shadow.state_dict(),
     "normalization": {name: value.cpu() for name, value in stats.items()},
     "config": asdict(cfg),
-    "manifest_file": str(dataset.manifest_path),
-    "manifest_sha256": sha256_file(dataset.manifest_path),
+    "manifest_file": str(datasets[0].manifest_path),
+    "manifest_sha256": sha256_file(datasets[0].manifest_path),
+    "manifests": [
+      {
+        "path": str(dataset.manifest_path),
+        "sha256": sha256_file(dataset.manifest_path),
+      }
+      for dataset in datasets
+    ],
     "train_windows": train_windows,
     "validation_windows": validation_windows,
     "validation_loss": validation_loss,
@@ -210,13 +224,50 @@ def train(cfg: TrainActionDiffusionConfig) -> Path:
       "weights": cfg.initial_weights,
     }
 
-  dataset = FirmRolloutWindowDataset(
-    cfg.manifest_file,
-    horizon=cfg.horizon,
-    successful_only=cfg.successful_only,
-    verify_checksums=cfg.verify_checksums,
+  if cfg.additional_manifest_files and (
+    initial_payload is None or not cfg.reuse_initial_normalization
+  ):
+    raise ValueError(
+      "additional_manifest_files requires an initial checkpoint with "
+      "reuse_initial_normalization enabled"
+    )
+  repeats = cfg.additional_dataset_repeats or (1,) * len(cfg.additional_manifest_files)
+  if len(repeats) != len(cfg.additional_manifest_files):
+    raise ValueError("additional_dataset_repeats must match additional_manifest_files")
+  if any(repeat <= 0 for repeat in repeats):
+    raise ValueError("additional_dataset_repeats must all be positive")
+
+  manifest_files = (cfg.manifest_file, *cfg.additional_manifest_files)
+  datasets = [
+    FirmRolloutWindowDataset(
+      manifest_file,
+      horizon=cfg.horizon,
+      successful_only=cfg.successful_only,
+      verify_checksums=cfg.verify_checksums,
+    )
+    for manifest_file in manifest_files
+  ]
+  splits = [
+    dataset.split_window_indices(cfg.train_fraction, cfg.seed + index)
+    for index, dataset in enumerate(datasets)
+  ]
+  train_parts = [Subset(datasets[0], splits[0][0].tolist())]
+  for dataset, (train_ids, _), repeat in zip(
+    datasets[1:], splits[1:], repeats, strict=True
+  ):
+    train_parts.extend([Subset(dataset, train_ids.tolist())] * repeat)
+  validation_parts = [
+    Subset(dataset, validation_ids.tolist())
+    for dataset, (_, validation_ids) in zip(datasets, splits, strict=True)
+  ]
+  train_dataset = (
+    train_parts[0] if len(train_parts) == 1 else ConcatDataset(train_parts)
   )
-  train_ids, validation_ids = dataset.split_window_indices(cfg.train_fraction, cfg.seed)
+  validation_dataset = (
+    validation_parts[0]
+    if len(validation_parts) == 1
+    else ConcatDataset(validation_parts)
+  )
   if initial_payload is not None and cfg.reuse_initial_normalization:
     statistics = {
       name: value.to(device) for name, value in initial_payload["normalization"].items()
@@ -224,17 +275,17 @@ def train(cfg: TrainActionDiffusionConfig) -> Path:
   else:
     statistics = {
       name: value.to(device)
-      for name, value in dataset.normalization_stats(train_ids).items()
+      for name, value in datasets[0].normalization_stats(splits[0][0]).items()
     }
   pin_memory = device.type == "cuda"
   train_loader = DataLoader(
-    Subset(dataset, train_ids.tolist()),
+    train_dataset,
     batch_size=cfg.batch_size,
     shuffle=True,
     pin_memory=pin_memory,
   )
   validation_loader = DataLoader(
-    Subset(dataset, validation_ids.tolist()),
+    validation_dataset,
     batch_size=cfg.batch_size,
     shuffle=False,
     pin_memory=pin_memory,
@@ -264,11 +315,18 @@ def train(cfg: TrainActionDiffusionConfig) -> Path:
       f"{initial_metadata['path']} (epoch {initial_metadata['epoch']})"
     )
   parameter_count = sum(parameter.numel() for parameter in model.parameters())
+  train_windows = len(train_dataset)
+  validation_windows = len(validation_dataset)
   print(
-    f"[INFO] dataset={len(dataset)} windows, train={len(train_ids)}, "
-    f"validation={len(validation_ids)}, episodes="
-    f"{len(np.unique(dataset.window_episode_ids))}"
+    f"[INFO] datasets={len(datasets)}, train={train_windows}, "
+    f"validation={validation_windows}"
   )
+  for index, dataset in enumerate(datasets):
+    repeat = 1 if index == 0 else repeats[index - 1]
+    print(
+      f"[INFO] dataset[{index}]={dataset.manifest_path}: {len(dataset)} windows, "
+      f"{len(np.unique(dataset.window_episode_ids))} episodes, train_repeat={repeat}"
+    )
   print(f"[INFO] conditional action denoiser parameters={parameter_count:,}")
 
   run_dir = (
@@ -333,9 +391,9 @@ def train(cfg: TrainActionDiffusionConfig) -> Path:
         optimizer=None,
         stats=statistics,
         cfg=cfg,
-        dataset=dataset,
-        train_windows=len(train_ids),
-        validation_windows=len(validation_ids),
+        datasets=datasets,
+        train_windows=train_windows,
+        validation_windows=validation_windows,
         validation_loss=last_validation_loss,
         initial_checkpoint=initial_metadata,
       )
@@ -351,9 +409,9 @@ def train(cfg: TrainActionDiffusionConfig) -> Path:
     optimizer=None,
     stats=statistics,
     cfg=cfg,
-    dataset=dataset,
-    train_windows=len(train_ids),
-    validation_windows=len(validation_ids),
+    datasets=datasets,
+    train_windows=train_windows,
+    validation_windows=validation_windows,
     validation_loss=last_validation_loss,
     initial_checkpoint=initial_metadata,
   )
