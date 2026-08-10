@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import os
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Literal
 
 import torch
@@ -18,11 +19,7 @@ from smp.firm.action_diffusion import (
   normalize_action_condition,
   sample_action_horizon,
 )
-from smp.firm.expert_runtime import (
-  actor_base_observation,
-  create_expert_runtime,
-  resolve_checkpoint,
-)
+from smp.firm.expert_runtime import actor_base_observation, create_expert_runtime
 from smp.pretrain.scheduler import DDPMScheduler
 from smp.rl.tasks.firm.keyframe_env_cfg import MOTION_FILE
 
@@ -113,6 +110,48 @@ class _DiffusionPolicy:
     return actions
 
 
+def _resolve_action_checkpoint(cfg: PlayDiffusionPolicyConfig) -> Path:
+  if (cfg.action_checkpoint_file is None) == (cfg.action_wandb_run_path is None):
+    raise ValueError(
+      "provide exactly one of action_checkpoint_file or action_wandb_run_path"
+    )
+  if cfg.action_checkpoint_file is not None:
+    path = Path(cfg.action_checkpoint_file).expanduser().resolve()
+    if not path.is_file():
+      raise FileNotFoundError(path)
+    return path
+
+  if cfg.action_wandb_checkpoint_name is None:
+    raise ValueError("action_wandb_checkpoint_name is required for a W&B run")
+  assert cfg.action_wandb_run_path is not None
+  cache_dir = (
+    (Path(cfg.action_log_root) / Path(cfg.action_wandb_run_path).name)
+    .expanduser()
+    .resolve()
+  )
+  target = cache_dir / cfg.action_wandb_checkpoint_name
+  if target.is_file():
+    print(f"[INFO] Action-diffusion W&B checkpoint cached: {target}")
+    return target
+
+  import wandb
+
+  run = wandb.Api().run(cfg.action_wandb_run_path)
+  remote_file = run.file(cfg.action_wandb_checkpoint_name)
+  if remote_file is None:
+    raise FileNotFoundError(
+      f"{cfg.action_wandb_checkpoint_name!r} is absent from {cfg.action_wandb_run_path}"
+    )
+  cache_dir.mkdir(parents=True, exist_ok=True)
+  downloaded = Path(remote_file.download(root=str(cache_dir), replace=True))
+  if downloaded.is_dir():
+    downloaded = downloaded / cfg.action_wandb_checkpoint_name
+  if not downloaded.is_file():
+    raise FileNotFoundError(downloaded)
+  print(f"[INFO] Action-diffusion W&B checkpoint downloaded: {downloaded}")
+  return downloaded
+
+
 def run_play(cfg: PlayDiffusionPolicyConfig) -> None:
   """Build the matched FIRM environment and launch an interactive viewer."""
   if cfg.start_frame < 0:
@@ -141,13 +180,7 @@ def run_play(cfg: PlayDiffusionPolicyConfig) -> None:
   )
   env = runtime.env
   device = torch.device(env.device)
-  action_checkpoint = resolve_checkpoint(
-    experiment_name="firm_action_diffusion",
-    checkpoint_file=cfg.action_checkpoint_file,
-    wandb_run_path=cfg.action_wandb_run_path,
-    wandb_checkpoint_name=cfg.action_wandb_checkpoint_name,
-    log_root=cfg.action_log_root,
-  )
+  action_checkpoint = _resolve_action_checkpoint(cfg)
   model, scheduler, statistics, _ = load_action_diffusion_checkpoint(
     action_checkpoint,
     device,
