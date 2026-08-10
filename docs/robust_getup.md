@@ -22,7 +22,7 @@ Checkpoint lineage used for this experiment:
 | v2 | `tabletennis/smp/si4gfklo` | v1 `model_29999.pt` |
 | v3 | `tabletennis/smp/rr9sxcmu` | v2 `model_38000.pt` |
 | v4 | `tabletennis/smp/65x7bde7` | v3 `model_47999.pt` |
-| v5 | pending | v4 `model_53998.pt` |
+| v5 | `tabletennis/smp/pkduffcs` | v4 `model_53998.pt` |
 
 Formal v3 training was launched on 2026-08-08 on `dsw-lyd2` from branch
 `codex/robust-getup-smooth-v3`, commit `62e89c5`.
@@ -284,7 +284,7 @@ RTX 4090. Environment construction, a 192-transition rollout, reward/metric
 evaluation, and the PPO update all completed successfully. Checkpoints remain
 spaced every 1,000 iterations.
 
-Planned formal refinement command:
+Formal refinement command:
 
 ```bash
 CUDA_VISIBLE_DEVICES=0 uv run scripts/train.py \
@@ -297,6 +297,24 @@ CUDA_VISIBLE_DEVICES=0 uv run scripts/train.py \
   --agent.save-interval=1000 \
   --agent.run-name=smp_getup_robust_smooth_v5_from_53998
 ```
+
+Formal v5 training was launched on 2026-08-10 on `dsw-lyd2`, GPU 0, from
+branch `codex/robust-getup-smooth-v5-knockdown`, code commit `95444b3`.
+
+- W&B: <https://wandb.ai/tabletennis/smp/runs/pkduffcs>
+- Server worktree: `/mnt/workspace/user/luyidan/smp-v5`
+- Run directory: `logs/rsl_rl/smp_getup_robust_smooth_v5_g1/2026-08-10_11-30-05_smp_getup_robust_smooth_v5_from_53998`
+- Launcher / Python PID at launch: `73209` / `73212`
+- Process record: `run_control/v5_train.pid`
+- Console log: `run_control/v5_train.log`; W&B's
+  `wandb/run-20260810_113024-pkduffcs/files/output.log` is unbuffered.
+
+At iteration 54035 the run was healthy at about 78k environment steps/s. The
+first distribution-shift window reported max joint speed 3.81 rad/s, mean max
+joint torque 21.28 N m, mean max joint power 39.03 W, head overspeed cost
+0.0137, and recovery-stage completion 0.1583. These are startup diagnostics,
+not checkpoint-selection results; the policy must adapt to the harder reset and
+second-fall distribution before evaluation.
 
 ## Evaluation checklist
 
