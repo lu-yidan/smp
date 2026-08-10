@@ -705,6 +705,25 @@ Four-sample inference is retained as the safety setting because it removes the
 remaining unsafe termination and reduces action rate and acceleration, at
 roughly four times the DDPM sampling work.
 
+Because seed 42 was also used to collect corrections, the ensemble comparison
+was repeated on unseen physical/sensor randomization seeds 43 and 44:
+
+| Seed | V2 success / unsafe | V3 success / unsafe |
+| ---: | ---: | ---: |
+| 42 | 55% / 0% | **89% / 0%** |
+| 43 | 49% / 0% | **90% / 0%** |
+| 44 | 51% / 0% | **84% / 0%** |
+| 300-episode aggregate | 51.7% / 0% | **87.7% / 0%** |
+
+The 36-point aggregate improvement persists outside the collection seed. This
+is the primary generalization result; the seed-42-only number should not be
+reported in isolation. The additional JSON hashes are V2/V3 seed 43
+`8bc8867ba4b7c3f7431b6b90f97b6a26b292269d4b8400352398f52b660c4c7f` /
+`a9f271546e13f5760e3723ad3bb62d2601fc285090aa8f9b4f3459057e5a2695`,
+and V2/V3 seed 44
+`7644f4b76be078619e5c53287e412da17fb3f07fb7066af11626489ec2ee99d7` /
+`32aba8aaee27c153822e6052a8a260fdfe3c46ec46713a07bbb21b991747bd46`.
+
 The V2/V3 on-policy and V3 evaluation JSON hashes are:
 
 | Evaluation | SHA256 |
