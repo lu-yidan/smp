@@ -2,6 +2,9 @@
 
 This note records the data and training plan for the V6 recovery prior. It is
 separate from the V5 PPO policy so the old baseline remains reproducible.
+For a practical explanation of raw CSV trajectories, NPZ windows, the prior,
+and interactive MuJoCo data playback, see
+[`motion_data_and_prior.md`](motion_data_and_prior.md).
 
 ## What the prior does
 
