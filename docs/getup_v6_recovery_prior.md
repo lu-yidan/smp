@@ -187,3 +187,32 @@ CUDA_VISIBLE_DEVICES=2 uv run scripts/train.py \
   --agent.max-iterations=4000 \
   --agent.save-interval=1000
 ```
+
+## Completed prior and V6 PPO launch
+
+The formal LAFAN6 prior completed all 1,600 epochs on 2026-08-10. The final
+checkpoint is stored on `dsw-lyd2` at
+`logs/pretrain/pretrain-getup-lafan6-v6/20260810_171406/pretrained.pt` and was
+copied to the immutable V6 runtime path
+`datasets/pretrain_ckpt/pretrained_getup_lafan6_v6.pt`. Both files have SHA-256
+`909360b5d8ede4370292facd95a657fb758eaeacfb4458f85637f998a91b61f3`.
+The last periodic W&B point (epoch 1,590) reported train loss 0.120836 and
+validation loss 0.121656. The final `checkpoint_01599.pt` was also saved.
+
+A 64-environment, two-iteration `Smp-Getup-Robust-Smooth-V6-G1` smoke test
+completed without NaN/Inf before the formal PPO runs were launched. Its local
+run directory is
+`logs/rsl_rl/smp_getup_v6_g1/2026-08-11_17-02-51_v6_final_prior_smoke2`.
+
+Both 4,096-environment ablations were launched from commit `d514668` and the
+same V5 `model_61997.pt` checkpoint on 2026-08-11:
+
+| Task | GPU | W&B run | Runtime log |
+| --- | --- | --- | --- |
+| prior-only | 4 | [xxo9ip1o](https://wandb.ai/tabletennis/smp/runs/xxo9ip1o) | `run_control/v6_prior_ppo.log` |
+| full V6 | 5 | [5n0d2i06](https://wandb.ai/tabletennis/smp/runs/5n0d2i06) | `run_control/v6_full_ppo.log` |
+
+The full run entered iteration 61,997 normally. Its failure replay buffer is
+expected to start at zero and warm up from stagnating recovery states; the
+stratified push counter was already non-zero by iteration 61,998. Checkpoints
+are saved every 1,000 iterations to limit disk use.
