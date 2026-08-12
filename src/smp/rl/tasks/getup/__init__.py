@@ -12,6 +12,7 @@ from smp.rl.tasks.getup.v6_env_cfg import (
   g1_getup_v6_prior_smp_env_cfg,
   g1_getup_v6_smp_env_cfg,
 )
+from smp.rl.tasks.getup.v7_env_cfg import g1_getup_v7_route_smp_env_cfg
 
 _getup_rl = unitree_g1_smp_ppo_runner_cfg()
 _getup_rl.experiment_name = "smp_getup_g1"
@@ -94,6 +95,18 @@ register_mjlab_task(
   rl_cfg=_v6_getup_rl,
 )
 
+_v7_route_getup_rl = unitree_g1_smp_ppo_runner_cfg()
+_v7_route_getup_rl.experiment_name = "smp_getup_v7_route_g1"
+_v7_route_getup_rl.run_name = "smp_getup_v7_route_g1"
+_v7_route_getup_rl.save_interval = 1000
+
+register_mjlab_task(
+  task_id="Smp-Getup-Robust-Smooth-V7-Route-G1",
+  env_cfg=g1_getup_v7_route_smp_env_cfg(play=False),
+  play_env_cfg=g1_getup_v7_route_smp_env_cfg(play=True),
+  rl_cfg=_v7_route_getup_rl,
+)
+
 __all__ = [
   "g1_getup_robust_smp_env_cfg",
   "g1_getup_robust_safe_smp_env_cfg",
@@ -102,4 +115,5 @@ __all__ = [
   "g1_getup_smp_env_cfg",
   "g1_getup_v6_prior_smp_env_cfg",
   "g1_getup_v6_smp_env_cfg",
+  "g1_getup_v7_route_smp_env_cfg",
 ]

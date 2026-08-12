@@ -103,3 +103,71 @@ noise at every evaluation. It is not used for checkpoint selection.
   `val/loss_route=0.141733`.
 - Epoch 5: `val/loss_general=0.121731`,
   `val/loss_route=0.141651`.
+
+## Checkpoint selection
+
+All saved checkpoints were re-evaluated with the same fixed validation noise.
+Epoch 150 is selected instead of the final epoch:
+
+| Checkpoint | General loss | Route loss | Mixed loss |
+| --- | ---: | ---: | ---: |
+| epoch 0 | 0.121798 | 0.141733 | 0.126781 |
+| epoch 50 | 0.121275 | 0.140998 | 0.126206 |
+| epoch 100 | 0.121031 | 0.140618 | 0.125928 |
+| **epoch 150** | **0.120966** | **0.140498** | **0.125849** |
+| epoch 199 | 0.121004 | 0.140545 | 0.125889 |
+
+The selected EMA weights are exported without optimizer state to:
+
+`datasets/pretrain_ckpt/pretrained_getup_lafan_route_v7.pt`
+
+The runtime file retains selection metadata pointing to W&B run
+[08x2i674](https://wandb.ai/tabletennis/smp/runs/08x2i674) and source
+`checkpoint_00150.pt`. Record its SHA-256 here after the runtime file is
+materialized on both the workstation and training host.
+
+## Controlled PPO task
+
+`Smp-Getup-Robust-Smooth-V7-Route-G1` inherits the complete V6 task and
+changes exactly one environment field:
+
+`events.init_smp_state.params.ckpt_path`
+
+It therefore retains V6's 20-second episodes, procedural-reset distribution,
+failure-state replay, push cohorts, rewards, observations, terminations, and
+1000-iteration checkpoint interval. The word “Route” in the task name means
+“route-prior replacement relative to full V6”; it does not mean the weaker
+V6 prior-only environment ablation.
+
+The PPO pilot resumes the complete V6 policy
+[5n0d2i06](https://wandb.ai/tabletennis/smp/runs/5n0d2i06) from
+`model_65996.pt`. First run a two-iteration, 64-environment smoke test:
+
+```bash
+uv run scripts/train.py Smp-Getup-Robust-Smooth-V7-Route-G1 \
+  --env.scene.num-envs=64 \
+  --agent.resume True \
+  --wandb-run-path tabletennis/smp/5n0d2i06 \
+  --wandb-checkpoint-name model_65996.pt \
+  --agent.max-iterations=2 \
+  --agent.save-interval=1000 \
+  --logger tensorboard \
+  --run-name v7_route_prior_smoke
+```
+
+After the smoke test passes, run a 4,000-iteration continuation:
+
+```bash
+uv run scripts/train.py Smp-Getup-Robust-Smooth-V7-Route-G1 \
+  --env.scene.num-envs=4096 \
+  --agent.resume True \
+  --wandb-run-path tabletennis/smp/5n0d2i06 \
+  --wandb-checkpoint-name model_65996.pt \
+  --agent.algorithm.learning-rate=3e-4 \
+  --agent.max-iterations=4000 \
+  --agent.save-interval=1000 \
+  --run-name smp_getup_v7_route_from_v6_65996
+```
+
+Do not add phase-aware rewards or observations to this run. Those changes form
+a separate V7+phase ablation after the prior-only replacement is evaluated.
