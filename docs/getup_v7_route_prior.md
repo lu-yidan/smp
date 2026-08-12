@@ -76,3 +76,14 @@ The two primary ablations are:
 
 A later phase-aware PPO change should be evaluated as a separate factor so the
 effect of prior fine-tuning remains identifiable.
+
+## Run record
+
+- Git commit: `0f0c2f2`.
+- Host/worktree: `dsw-lyd2:/mnt/workspace/user/luyidan/smp-v6-prior`.
+- W&B: <https://wandb.ai/tabletennis/smp/runs/gwn0p6j9>.
+- Run ID: `gwn0p6j9`.
+- Log: `run_control/v7_route_prior.log`.
+- PID file: `run_control/v7_route_prior.pid`.
+- Initial held-out metrics at epoch 0:
+  `val/loss_general=0.121206`, `val/loss_route=0.142104`.
