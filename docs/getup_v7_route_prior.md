@@ -48,7 +48,7 @@ uv run scripts/pretrain.py \
   --use-ema \
   --log-interval 5 \
   --save-interval 50 \
-  --name pretrain-getup-lafan-route-v7 \
+  --name pretrain-getup-lafan-route-v7-deterministic \
   --wandb-project smp \
   --device cuda
 ```
@@ -90,3 +90,16 @@ effect of prior fine-tuning remains identifiable.
 
 This run was stopped after discovering that validation sampled fresh diffusion
 noise at every evaluation. It is not used for checkpoint selection.
+
+## Deterministic formal run
+
+- Git commit: `eeccf90`.
+- W&B: <https://wandb.ai/tabletennis/smp/runs/08x2i674>.
+- Run ID: `08x2i674`.
+- Log: `run_control/v7_route_prior_deterministic.log`.
+- PID file: `run_control/v7_route_prior_deterministic.pid`.
+- Validation uses the same fixed diffusion timesteps and noise on every pass.
+- Epoch 0: `val/loss_general=0.121798`,
+  `val/loss_route=0.141733`.
+- Epoch 5: `val/loss_general=0.121731`,
+  `val/loss_route=0.141651`.
