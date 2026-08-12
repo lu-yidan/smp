@@ -1,0 +1,18 @@
+{
+  "format_version": 1,
+  "dataset_name": "getup_lafan_prone_routes_v7",
+  "reviewed_on": "2026-08-12",
+  "review_status": "approved",
+  "review_note": "Six distinct prone recovery routes were visually reviewed; mirrored copies are included automatically. Standing locomotion tails are cropped.",
+  "input_fps": 30,
+  "post_stand_s": 0.4,
+  "include_mirrors": true,
+  "approved_base_stems": [
+    "fallAndGetUp1_subject1__recovery_006",
+    "fallAndGetUp1_subject1__recovery_017",
+    "fallAndGetUp1_subject5__recovery_001",
+    "fallAndGetUp1_subject5__recovery_009",
+    "fallAndGetUp1_subject5__recovery_014",
+    "fallAndGetUp2_subject2__recovery_010"
+  ]
+}

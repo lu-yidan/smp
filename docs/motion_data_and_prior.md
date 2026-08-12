@@ -61,6 +61,39 @@ mirrors), `manifest.json`, and one flat `review.jsonl` record per clip. The
 manifest deliberately contains `"approved_for_training": false`; automatic
 stage labels are only navigation hints until the clips have been watched.
 
+The visual review accepted six distinct routes and their six sagittal mirrors.
+That decision is versioned in:
+
+```text
+configs/data/getup_lafan_prone_routes_v7.json
+```
+
+The training-ready route subset is generated separately:
+
+```text
+datasets/csv/getup_lafan_prone_routes_v7/
+datasets/npz/getup_lafan_prone_routes_v7/
+```
+
+Each accepted CSV ends 0.4 seconds after sustained standing, excluding later
+running steps. The resulting dataset contains 12 clips, 1,272 frames at 30 Hz,
+and 1,994 finite NPZ windows of shape `(10, 59)`. Because there are only six
+independent routes, this subset should be used for route oversampling or a
+gated/fine-tuned prior, not as a from-scratch replacement for the general V6
+prior.
+
+Rebuild the reviewed CSV and NPZ data with:
+
+```bash
+uv run scripts/build_reviewed_route_dataset.py
+uv run scripts/csv_to_npz.py \
+  --input-dir datasets/csv/getup_lafan_prone_routes_v7 \
+  --output-dir datasets/npz/getup_lafan_prone_routes_v7
+```
+
+Both builders write to separate directories and preserve the candidate and V6
+source data.
+
 Regenerate the candidate directory from the immutable V6 data with:
 
 ```bash
