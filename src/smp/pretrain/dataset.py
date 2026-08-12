@@ -27,6 +27,8 @@ class MotionWindowDataset(Dataset[torch.Tensor]):
       raise FileNotFoundError(msg)
 
     chunks: list[np.ndarray] = []
+    file_spans: list[tuple[str, int, int]] = []
+    offset = 0
     expected_shape: tuple[int, int] | None = None
     for npz_file in npz_files:
       with np.load(npz_file, allow_pickle=False) as npz:
@@ -45,9 +47,12 @@ class MotionWindowDataset(Dataset[torch.Tensor]):
         )
         raise ValueError(msg)
       chunks.append(windows)
+      file_spans.append((npz_file.stem, offset, offset + len(windows)))
+      offset += len(windows)
 
     assert expected_shape is not None
     self.window_size, self.feature_dim = expected_shape
+    self.file_spans = tuple(file_spans)
 
     data = np.concatenate(chunks, axis=0)
 

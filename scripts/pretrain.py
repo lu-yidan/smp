@@ -7,10 +7,18 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
+import numpy as np
 import torch
 import torch.nn.functional as F
 import tyro
-from torch.utils.data import DataLoader, random_split
+from torch.utils.data import (
+  ConcatDataset,
+  DataLoader,
+  Dataset,
+  Subset,
+  WeightedRandomSampler,
+  random_split,
+)
 
 from smp.pretrain.dataset import MotionWindowDataset
 from smp.pretrain.model import DiffusionDenoiser
@@ -95,6 +103,180 @@ def _save_checkpoint(
   torch.save(data, path)
 
 
+def _split_dataset(
+  dataset: Dataset[torch.Tensor],
+  train_split: float,
+  seed: int,
+) -> tuple[Dataset[torch.Tensor], Dataset[torch.Tensor]]:
+  n_train = int(len(dataset) * train_split)
+  n_val = len(dataset) - n_train
+  if n_train == 0 or n_val == 0:
+    raise ValueError(
+      f"dataset split is empty: total={len(dataset)} train={n_train} val={n_val}"
+    )
+  generator = torch.Generator().manual_seed(seed)
+  return random_split(dataset, [n_train, n_val], generator=generator)
+
+
+def _split_route_dataset(
+  dataset: MotionWindowDataset,
+  train_split: float,
+  seed: int,
+) -> tuple[Subset[torch.Tensor], Subset[torch.Tensor], list[str], list[str]]:
+  grouped_indices: dict[str, list[int]] = {}
+  for stem, start, end in dataset.file_spans:
+    base_stem = stem.removesuffix("__mirror")
+    grouped_indices.setdefault(base_stem, []).extend(range(start, end))
+  group_names = sorted(grouped_indices)
+  if len(group_names) < 2:
+    raise ValueError("route validation requires at least two independent motions")
+
+  generator = torch.Generator().manual_seed(seed)
+  permutation = torch.randperm(len(group_names), generator=generator).tolist()
+  shuffled = [group_names[index] for index in permutation]
+  n_train_groups = min(
+    max(round(len(shuffled) * train_split), 1),
+    len(shuffled) - 1,
+  )
+  train_groups = sorted(shuffled[:n_train_groups])
+  val_groups = sorted(shuffled[n_train_groups:])
+  train_indices = [index for group in train_groups for index in grouped_indices[group]]
+  val_indices = [index for group in val_groups for index in grouped_indices[group]]
+  return (
+    Subset(dataset, train_indices),
+    Subset(dataset, val_indices),
+    train_groups,
+    val_groups,
+  )
+
+
+def _build_loaders(
+  general_dataset: MotionWindowDataset,
+  route_dataset: MotionWindowDataset | None,
+  cfg: PretrainCfg,
+  pin_memory: bool,
+) -> tuple[DataLoader[torch.Tensor], dict[str, DataLoader[torch.Tensor]]]:
+  general_train, general_val = _split_dataset(
+    general_dataset, cfg.train_split, cfg.seed
+  )
+  val_loaders = {
+    "general": DataLoader(
+      general_val,
+      batch_size=cfg.batch_size,
+      shuffle=False,
+      pin_memory=pin_memory,
+    )
+  }
+
+  if route_dataset is None:
+    train_loader = DataLoader(
+      general_train,
+      batch_size=cfg.batch_size,
+      shuffle=True,
+      pin_memory=pin_memory,
+    )
+    print(
+      f"General dataset: {len(general_dataset)} windows, "
+      f"train={len(general_train)}, val={len(general_val)}"
+    )
+    return train_loader, val_loaders
+
+  if (
+    route_dataset.window_size != general_dataset.window_size
+    or route_dataset.feature_dim != general_dataset.feature_dim
+  ):
+    raise ValueError("route and general datasets have incompatible window shapes")
+  if not np.array_equal(
+    route_dataset.q_low, general_dataset.q_low
+  ) or not np.array_equal(route_dataset.q_high, general_dataset.q_high):
+    raise ValueError("route and general datasets must use identical normalization")
+
+  route_train, route_val, route_train_groups, route_val_groups = _split_route_dataset(
+    route_dataset, cfg.train_split, cfg.seed + 1
+  )
+  combined_train = ConcatDataset([general_train, route_train])
+  general_weight = (1.0 - cfg.route_train_fraction) / len(general_train)
+  route_weight = cfg.route_train_fraction / len(route_train)
+  sample_weights = torch.cat(
+    [
+      torch.full((len(general_train),), general_weight, dtype=torch.double),
+      torch.full((len(route_train),), route_weight, dtype=torch.double),
+    ]
+  )
+  samples_per_epoch = cfg.samples_per_epoch or len(combined_train)
+  sampler = WeightedRandomSampler(
+    sample_weights,
+    num_samples=samples_per_epoch,
+    replacement=True,
+    generator=torch.Generator().manual_seed(cfg.seed + 2),
+  )
+  train_loader = DataLoader(
+    combined_train,
+    batch_size=cfg.batch_size,
+    sampler=sampler,
+    pin_memory=pin_memory,
+  )
+  val_loaders["route"] = DataLoader(
+    route_val,
+    batch_size=cfg.batch_size,
+    shuffle=False,
+    pin_memory=pin_memory,
+  )
+  print(
+    f"General dataset: {len(general_dataset)} windows, "
+    f"train={len(general_train)}, val={len(general_val)}"
+  )
+  print(
+    f"Route dataset: {len(route_dataset)} windows, "
+    f"train={len(route_train)}, val={len(route_val)}"
+  )
+  print(
+    f"Route groups: train={route_train_groups}, held_out_validation={route_val_groups}"
+  )
+  print(
+    f"Weighted training: route_fraction={cfg.route_train_fraction:.3f}, "
+    f"samples_per_epoch={samples_per_epoch}"
+  )
+  return train_loader, val_loaders
+
+
+def _initialize_from_checkpoint(
+  model: DiffusionDenoiser,
+  dataset: MotionWindowDataset,
+  cfg: PretrainCfg,
+) -> None:
+  if not cfg.init_checkpoint:
+    return
+  checkpoint_path = Path(cfg.init_checkpoint).expanduser().resolve()
+  checkpoint = torch.load(checkpoint_path, map_location="cpu", weights_only=False)
+  checkpoint_cfg = checkpoint.get("cfg", {})
+  expected = {
+    "feature_dim": dataset.feature_dim,
+    "window_size": dataset.window_size,
+    "d_model": cfg.d_model,
+    "nhead": cfg.nhead,
+    "num_layers": cfg.num_layers,
+  }
+  mismatches = {
+    key: (checkpoint_cfg.get(key), value)
+    for key, value in expected.items()
+    if checkpoint_cfg.get(key) != value
+  }
+  if mismatches:
+    raise ValueError(f"initial checkpoint architecture mismatch: {mismatches}")
+  if not np.array_equal(checkpoint["q_low"], dataset.q_low) or not np.array_equal(
+    checkpoint["q_high"], dataset.q_high
+  ):
+    raise ValueError("initial checkpoint normalization differs from the dataset")
+
+  state_key = "model_ema" if cfg.init_use_ema and "model_ema" in checkpoint else "model"
+  model.load_state_dict(checkpoint[state_key], strict=True)
+  print(
+    f"Initialized from {checkpoint_path} [{state_key}] "
+    f"at source epoch {checkpoint.get('epoch', 'unknown')}"
+  )
+
+
 def pretrain(cfg: PretrainCfg) -> Path:
   """Run diffusion pretraining."""
   seed_everything(cfg.seed)
@@ -102,27 +284,16 @@ def pretrain(cfg: PretrainCfg) -> Path:
   device = torch.device(cfg.device)
 
   dataset = MotionWindowDataset(cfg.data_dir, norm_stats_file=cfg.norm_stats_file)
+  route_dataset = (
+    MotionWindowDataset(cfg.route_data_dir, norm_stats_file=cfg.norm_stats_file)
+    if cfg.route_data_dir
+    else None
+  )
   feature_dim = dataset.feature_dim
   window_size = dataset.window_size
-
-  n_train = int(len(dataset) * cfg.train_split)
-  n_val = len(dataset) - n_train
-  print(
-    f"Dataset: {len(dataset)} windows, n_train={n_train}, n_val={n_val}, "
-    f"feature_dim={feature_dim}, window_size={window_size}"
-  )
-
-  train_set, val_set = random_split(dataset, [n_train, n_val])
   pin_memory = device.type == "cuda"
-  train_loader = DataLoader(
-    train_set,
-    batch_size=cfg.batch_size,
-    shuffle=True,
-    pin_memory=pin_memory,
-  )
-  val_loader = DataLoader(
-    val_set, batch_size=cfg.batch_size, shuffle=False, pin_memory=pin_memory
-  )
+  train_loader, val_loaders = _build_loaders(dataset, route_dataset, cfg, pin_memory)
+  print(f"Feature dim={feature_dim}, window size={window_size}")
 
   model = DiffusionDenoiser(
     feature_dim=feature_dim,
@@ -132,6 +303,7 @@ def pretrain(cfg: PretrainCfg) -> Path:
     num_layers=cfg.num_layers,
     dropout=cfg.dropout,
   ).to(device)
+  _initialize_from_checkpoint(model, dataset, cfg)
   scheduler = DDPMScheduler(
     num_timesteps=cfg.num_timesteps,
   ).to(device)
@@ -179,12 +351,28 @@ def pretrain(cfg: PretrainCfg) -> Path:
 
     if epoch % cfg.log_interval == 0:
       eval_model = ema.shadow if ema is not None else model
-      val_loss = _validate(
-        eval_model, scheduler, val_loader, device, pin_memory, cfg.num_noise_samples
+      val_losses = {
+        name: _validate(
+          eval_model, scheduler, loader, device, pin_memory, cfg.num_noise_samples
+        )
+        for name, loader in val_loaders.items()
+      }
+      mixed_val_loss = (
+        (1.0 - cfg.route_train_fraction) * val_losses["general"]
+        + cfg.route_train_fraction * val_losses["route"]
+        if "route" in val_losses
+        else val_losses["general"]
       )
-      print(f"Epoch {epoch:4d} | train={avg_loss:.6f} | val={val_loss:.6f}")
+      metrics = {
+        "epoch": epoch,
+        "train/loss": avg_loss,
+        "val/loss": mixed_val_loss,
+        **{f"val/loss_{name}": loss for name, loss in val_losses.items()},
+      }
+      val_text = " ".join(f"val_{name}={loss:.6f}" for name, loss in val_losses.items())
+      print(f"Epoch {epoch:4d} | train={avg_loss:.6f} | {val_text}")
       if wandb_run is not None:
-        wandb_run.log({"epoch": epoch, "train/loss": avg_loss, "val/loss": val_loss})
+        wandb_run.log(metrics)
 
     if epoch % cfg.save_interval == 0 or epoch == cfg.num_epochs - 1:
       ckpt_path = save_dir / f"checkpoint_{epoch:05d}.pt"
