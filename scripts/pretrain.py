@@ -351,12 +351,17 @@ def pretrain(cfg: PretrainCfg) -> Path:
 
     if epoch % cfg.log_interval == 0:
       eval_model = ema.shadow if ema is not None else model
-      val_losses = {
-        name: _validate(
-          eval_model, scheduler, loader, device, pin_memory, cfg.num_noise_samples
+      val_losses = {}
+      for val_index, (name, loader) in enumerate(val_loaders.items()):
+        val_losses[name] = _validate(
+          eval_model,
+          scheduler,
+          loader,
+          device,
+          pin_memory,
+          cfg.num_noise_samples,
+          seed=cfg.seed + 1000 + val_index,
         )
-        for name, loader in val_loaders.items()
-      }
       mixed_val_loss = (
         (1.0 - cfg.route_train_fraction) * val_losses["general"]
         + cfg.route_train_fraction * val_losses["route"]
@@ -403,14 +408,18 @@ def _validate(
   device: torch.device,
   pin_memory: bool,
   num_noise_samples: int,
+  seed: int,
 ) -> float:
   model.eval()
-  total = torch.zeros((), device=device)
-  n = 0
-  for batch in val_loader:
-    x_0 = batch.to(device, non_blocking=pin_memory)
-    total += _diffusion_loss(model, scheduler, x_0, num_noise_samples)
-    n += 1
+  fork_devices = [device] if device.type == "cuda" else []
+  with torch.random.fork_rng(devices=fork_devices):
+    torch.manual_seed(seed)
+    total = torch.zeros((), device=device)
+    n = 0
+    for batch in val_loader:
+      x_0 = batch.to(device, non_blocking=pin_memory)
+      total += _diffusion_loss(model, scheduler, x_0, num_noise_samples)
+      n += 1
   return (total / max(n, 1)).item()
 
 
