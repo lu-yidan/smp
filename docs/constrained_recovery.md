@@ -109,3 +109,25 @@ jerk, contact impulse, slip, energy, and post-stand stability with matched seeds
   1000. W&B: <https://wandb.ai/tabletennis/smp/runs/fiykfruo>.
 - Server log/PID: `run_control/constrained_v1_ppo.log` and
   `run_control/constrained_v1_ppo.pid`.
+
+The continuation completed at `model_73994.pt` after 1 h 33 min. W&B contains
+all five intended checkpoints (`70000`, `71000`, `72000`, `73000`, and
+`73994`). At the final iteration, mean task/SMP/product scores were
+`0.7015/0.3484/0.2601`; recovery-stage completion was `0.1173`. The sampled
+constraint load averaged `75.37 N`, and constraints were active for `0.1772`
+of episode samples. Peak-per-episode joint speed, torque, and power metrics
+averaged `3.419 rad/s`, `20.98 Nm`, and `33.77 W`. These aggregate training
+metrics are only a health check: they do not establish conditional recovery
+success and must be followed by stratified recovery-envelope evaluation.
+
+Visualize the final policy with the automatic sustained constraint enabled:
+
+```bash
+uv run scripts/play.py Smp-Getup-Constrained-G1 \
+  --wandb-run-path tabletennis/smp/fiykfruo \
+  --wandb-checkpoint-name model_73994.pt \
+  --num-envs 1 \
+  --viewer native \
+  --no-terminations True \
+  --auto-disturbances True
+```
