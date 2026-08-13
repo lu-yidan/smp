@@ -846,7 +846,7 @@ the reference reaches its last standing goal.
 - [x] Fine-tune v1/v2 on corrective expert data.
 - [x] Aggregate on-policy diffusion failure states.
 - [ ] Close the on-policy diffusion policy gap.
-- [ ] Train the adapter and evaluate full FIRM-R.
+- [x] Train the adapter and evaluate full FIRM-R.
 
 ### Online goal adapter implementation
 
@@ -974,3 +974,45 @@ basin. The planned collector triggers on diffusion/expert disagreement, lets
 the expert control until stable recovery or timeout, and saves rolling
 constant-goal action windows. Only after this action-policy gate improves
 should another learned online adapter be accepted.
+### Frame-324 rescue boundary and rejected V5/V6 refinements
+
+A controlled takeover sweep isolates the remaining failure. From exact start
+frame 324, the Stage-0 expert succeeds in 4/4 episodes when it acts immediately
+or after one or two V4 actions. Success falls to 2/4 after three V4 actions and
+0/4 after four or more. The critical error is therefore at the beginning of the
+action sequence, not at the end of the recovery.
+
+Six trimmed expert-rescue datasets cover zero-, one-, and two-action diffusion
+prefixes over seeds 45 and 46. Each retained episode ends shortly after stable
+standing; the collections contain 59--64 successful replicas and roughly
+3,000--3,400 valid 12-step windows apiece. V5 emphasizes prefix-1/2 rescues.
+V6 additionally emphasizes immediate prefix-0 expert actions. Both warm-start
+from V4 and fit their held-out rescue actions, but neither passes the unchanged
+frame-324 gate:
+
+| Model | W&B | frame-324 success | unsafe |
+| --- | --- | ---: | ---: |
+| V4 baseline | `zif8zf4w` | 0/12 | 0/12 |
+| V5 prefix-1/2 rescue | `soqwcg9a` | 0/12 | 1/12 |
+| V6 initial rescue | `7j1cb090` | 0/12 | 2/12 |
+
+A 64-environment first-action diagnostic explains why more DDPM samples are not
+the answer. For V4, averaging 1 versus 32 samples changes normalized
+expert-action RMSE only from 0.571 to 0.558. At 32 samples, V5 and V6 are worse
+at 0.586 and 0.597. Their low offline rescue loss does not transfer to the exact
+closed-loop reset distribution, and their safety regression rejects them.
+
+The next diagnostic is a deterministic one-step actor using the same normalized
+90-D observation, current 29-D joint pose, and relative sparse goal. It directly
+regresses the next expert action with Smooth L1 loss. This is intentionally an
+ablation, not a replacement claimed to be FIRM. If it passes frame 324, the
+remaining defect is the stochastic 12-step diffusion objective or sampler. If
+it fails, the next change must target observation/goal representation or expert
+coverage rather than another diffusion data-repeat sweep.
+
+Training uses `scripts/firm/train_deterministic_actor.py`. Closed-loop
+evaluation uses the existing evaluator with
+`--deterministic-checkpoint-file`; exactly one of that flag and
+`--action-checkpoint-file` is allowed. V4 remains the accepted FIRM baseline
+until the diagnostic passes both frame 324 and the full three-seed regression
+gate.

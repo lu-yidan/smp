@@ -22,6 +22,7 @@ from smp.firm.action_diffusion import (
   normalize_action_condition,
   sample_action_horizon,
 )
+from smp.firm.deterministic_actor import load_deterministic_actor_checkpoint
 from smp.firm.expert_runtime import (
   actor_base_observation,
   create_expert_runtime,
@@ -42,7 +43,8 @@ TASK_ID = "Firm-Keyframe-G1"
 class EvaluateDiffusionPolicyConfig:
   """Fixed-start closed-loop diffusion-policy evaluation configuration."""
 
-  action_checkpoint_file: str
+  action_checkpoint_file: str | None = None
+  deterministic_checkpoint_file: str | None = None
   adapter_checkpoint_file: str | None = None
   adapter_goal_refresh_steps: int = 5
   """Retrieve a codebook goal every N control steps when an adapter is used."""
@@ -83,6 +85,17 @@ def run_evaluation(cfg: EvaluateDiffusionPolicyConfig) -> dict:
     raise ValueError("num_action_samples must be positive")
   if cfg.adapter_goal_refresh_steps <= 0:
     raise ValueError("adapter_goal_refresh_steps must be positive")
+  if (cfg.action_checkpoint_file is None) == (
+    cfg.deterministic_checkpoint_file is None
+  ):
+    raise ValueError("provide exactly one action or deterministic checkpoint")
+  deterministic = cfg.deterministic_checkpoint_file is not None
+  if deterministic and (
+    cfg.adapter_checkpoint_file is not None
+    or cfg.action_execution_steps != 1
+    or cfg.num_action_samples != 1
+  ):
+    raise ValueError("deterministic evaluation requires fixed goal and one action")
   if cfg.nearest_route_lookahead is not None:
     if cfg.nearest_route_lookahead < 0:
       raise ValueError("nearest_route_lookahead must be non-negative")
@@ -117,15 +130,28 @@ def run_evaluation(cfg: EvaluateDiffusionPolicyConfig) -> dict:
   robot = raw_env.scene["robot"]
   command = runtime.command
   device = torch.device(env.device)
-  model, scheduler, statistics, action_checkpoint = load_action_diffusion_checkpoint(
-    cfg.action_checkpoint_file,
-    device,
-    use_ema=cfg.use_ema,
-  )
-  if not 1 <= cfg.action_execution_steps <= model.horizon:
+  scheduler = None
+  if deterministic:
+    assert cfg.deterministic_checkpoint_file is not None
+    model, statistics, action_checkpoint = load_deterministic_actor_checkpoint(
+      cfg.deterministic_checkpoint_file, device
+    )
+    model_horizon = 1
+    action_path = Path(cfg.deterministic_checkpoint_file).expanduser().resolve()
+  else:
+    assert cfg.action_checkpoint_file is not None
+    model, scheduler, statistics, action_checkpoint = (
+      load_action_diffusion_checkpoint(
+        cfg.action_checkpoint_file,
+        device,
+        use_ema=cfg.use_ema,
+      )
+    )
+    model_horizon = model.horizon
+    action_path = Path(cfg.action_checkpoint_file).expanduser().resolve()
+  if not 1 <= cfg.action_execution_steps <= model_horizon:
     env.close()
-    raise ValueError(f"action_execution_steps must be in [1, {model.horizon}]")
-  action_path = Path(cfg.action_checkpoint_file).expanduser().resolve()
+    raise ValueError(f"action_execution_steps must be in [1, {model_horizon}]")
   adapter = None
   adapter_payload = None
   if cfg.adapter_checkpoint_file is not None:
@@ -243,33 +269,41 @@ def run_evaluation(cfg: EvaluateDiffusionPolicyConfig) -> dict:
         )
         if device.type == "cuda":
           torch.cuda.synchronize(device)
-        if cfg.num_action_samples > 1:
-          normalized_observation = normalized_observation.repeat_interleave(
-            cfg.num_action_samples, dim=0
-          )
-          current_joint = current_joint.repeat_interleave(cfg.num_action_samples, dim=0)
-          normalized_goal = normalized_goal.repeat_interleave(
-            cfg.num_action_samples, dim=0
-          )
         sample_start = time.perf_counter()
-        normalized_horizon = sample_action_horizon(
-          model,
-          scheduler,
-          normalized_observation,
-          current_joint,
-          normalized_goal,
-        )
+        if deterministic:
+          normalized_horizon = model(
+            normalized_observation, current_joint, normalized_goal
+          )[:, None, :]
+        else:
+          assert scheduler is not None
+          if cfg.num_action_samples > 1:
+            normalized_observation = normalized_observation.repeat_interleave(
+              cfg.num_action_samples, dim=0
+            )
+            current_joint = current_joint.repeat_interleave(
+              cfg.num_action_samples, dim=0
+            )
+            normalized_goal = normalized_goal.repeat_interleave(
+              cfg.num_action_samples, dim=0
+            )
+          normalized_horizon = sample_action_horizon(
+            model,
+            scheduler,
+            normalized_observation,
+            current_joint,
+            normalized_goal,
+          )
+          if cfg.num_action_samples > 1:
+            normalized_horizon = normalized_horizon.view(
+              n,
+              cfg.num_action_samples,
+              model_horizon,
+              model.action_dim,
+            ).mean(dim=1)
         if device.type == "cuda":
           torch.cuda.synchronize(device)
         sampling_seconds += time.perf_counter() - sample_start
         sampled_windows += n * cfg.num_action_samples
-        if cfg.num_action_samples > 1:
-          normalized_horizon = normalized_horizon.view(
-            n,
-            cfg.num_action_samples,
-            model.horizon,
-            model.action_dim,
-          ).mean(dim=1)
       assert normalized_horizon is not None
       actions = denormalize_actions(normalized_horizon[:, action_index], statistics)
       if env.clip_actions is not None:
@@ -356,7 +390,11 @@ def run_evaluation(cfg: EvaluateDiffusionPolicyConfig) -> dict:
   result = {
     "format_version": 1,
     "task_id": TASK_ID,
-    "policy": "firm_action_diffusion_action_chunking",
+    "policy": (
+      "firm_deterministic_actor"
+      if deterministic
+      else "firm_action_diffusion_action_chunking"
+    ),
     "config": asdict(cfg),
     "artifacts": {
       **runtime_metadata(runtime),
@@ -389,7 +427,7 @@ def run_evaluation(cfg: EvaluateDiffusionPolicyConfig) -> dict:
       "sampled_windows": sampled_windows,
       "sampling_seconds": sampling_seconds,
       "windows_per_second": sampled_windows / max(sampling_seconds, 1.0e-9),
-      "ddpm_steps_per_window": scheduler.num_timesteps,
+      "ddpm_steps_per_window": None if scheduler is None else scheduler.num_timesteps,
       "executed_actions_per_window": cfg.action_execution_steps,
       "averaged_action_samples": cfg.num_action_samples,
     },
