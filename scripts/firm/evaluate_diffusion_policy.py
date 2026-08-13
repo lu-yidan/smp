@@ -18,6 +18,7 @@ from mjlab.tasks.tracking.mdp.metrics import (
 import smp.rl.tasks  # noqa: F401
 from smp.firm.action_diffusion import (
   denormalize_actions,
+  joint_position_slice,
   load_action_diffusion_checkpoint,
   normalize_action_condition,
   sample_action_horizon,
@@ -36,13 +37,14 @@ from smp.firm.goal_adapter import (
 )
 from smp.rl.tasks.firm.keyframe_env_cfg import MOTION_FILE
 
-TASK_ID = "Firm-Keyframe-G1"
+DEFAULT_TASK_ID = "Firm-Keyframe-G1"
 
 
 @dataclass(frozen=True)
 class EvaluateDiffusionPolicyConfig:
   """Fixed-start closed-loop diffusion-policy evaluation configuration."""
 
+  task_id: str = DEFAULT_TASK_ID
   action_checkpoint_file: str | None = None
   deterministic_checkpoint_file: str | None = None
   hybrid_disagreement_threshold: float = 0.25
@@ -78,8 +80,8 @@ class EvaluateDiffusionPolicyConfig:
   output_file: str | None = None
   log_root: str = "logs/rsl_rl"
 
-@torch.inference_mode()
 
+@torch.inference_mode()
 def run_evaluation(cfg: EvaluateDiffusionPolicyConfig) -> dict:
   """Run receding-horizon diffusion inference, executing its first action."""
   if cfg.max_steps <= 0 or cfg.standing_hold_steps <= 0:
@@ -91,7 +93,9 @@ def run_evaluation(cfg: EvaluateDiffusionPolicyConfig) -> dict:
   has_diffusion = cfg.action_checkpoint_file is not None
   has_deterministic = cfg.deterministic_checkpoint_file is not None
   if not has_diffusion and not has_deterministic:
-    raise ValueError("provide an action checkpoint, a deterministic checkpoint, or both")
+    raise ValueError(
+      "provide an action checkpoint, a deterministic checkpoint, or both"
+    )
   hybrid = has_diffusion and has_deterministic
   if cfg.hybrid_disagreement_threshold < 0:
     raise ValueError("hybrid_disagreement_threshold must be non-negative")
@@ -100,16 +104,16 @@ def run_evaluation(cfg: EvaluateDiffusionPolicyConfig) -> dict:
     or cfg.nearest_route_lookahead is not None
     or cfg.action_execution_steps != 1
   ):
-    raise ValueError("deterministic and hybrid evaluation require a fixed one-step goal")
+    raise ValueError(
+      "deterministic and hybrid evaluation require a fixed one-step goal"
+    )
   if has_deterministic and not has_diffusion and cfg.num_action_samples != 1:
     raise ValueError("deterministic-only evaluation requires num_action_samples=1")
   if cfg.nearest_route_lookahead is not None:
     if cfg.nearest_route_lookahead < 0:
       raise ValueError("nearest_route_lookahead must be non-negative")
     if cfg.adapter_checkpoint_file is not None:
-      raise ValueError(
-        "nearest_route_lookahead is mutually exclusive with an adapter"
-      )
+      raise ValueError("nearest_route_lookahead is mutually exclusive with an adapter")
   if cfg.start_frame is not None:
     if cfg.start_frame < 0:
       raise ValueError("start_frame must be non-negative")
@@ -117,7 +121,7 @@ def run_evaluation(cfg: EvaluateDiffusionPolicyConfig) -> dict:
       raise ValueError("an exact start_frame requires num_start_frames=1")
 
   runtime = create_expert_runtime(
-    task_id=TASK_ID,
+    task_id=cfg.task_id,
     motion_file=cfg.motion_file,
     checkpoint_file=cfg.expert_checkpoint_file,
     wandb_run_path=cfg.expert_wandb_run_path,
@@ -162,9 +166,7 @@ def run_evaluation(cfg: EvaluateDiffusionPolicyConfig) -> dict:
     deterministic_model, deterministic_statistics, deterministic_checkpoint = (
       load_deterministic_actor_checkpoint(cfg.deterministic_checkpoint_file, device)
     )
-    deterministic_path = (
-      Path(cfg.deterministic_checkpoint_file).expanduser().resolve()
-    )
+    deterministic_path = Path(cfg.deterministic_checkpoint_file).expanduser().resolve()
     if statistics is None:
       statistics = deterministic_statistics
     elif any(
@@ -183,9 +185,7 @@ def run_evaluation(cfg: EvaluateDiffusionPolicyConfig) -> dict:
     adapter, adapter_payload = load_goal_adapter_checkpoint(
       cfg.adapter_checkpoint_file, device
     )
-    expected_action_hash = adapter_payload["artifacts"][
-      "action_checkpoint_sha256"
-    ]
+    expected_action_hash = adapter_payload["artifacts"]["action_checkpoint_sha256"]
     assert diffusion_path is not None
     actual_action_hash = sha256_file(diffusion_path)
     if expected_action_hash != actual_action_hash:
@@ -198,8 +198,11 @@ def run_evaluation(cfg: EvaluateDiffusionPolicyConfig) -> dict:
   if cfg.nearest_route_lookahead is not None:
     route_goals = command.motion.joint_pos[command.keyframe_indices].clone()
   selector_size = (
-    len(adapter_payload["codebook_goals"]) if adapter_payload is not None
-    else 0 if route_goals is None else len(route_goals)
+    len(adapter_payload["codebook_goals"])
+    if adapter_payload is not None
+    else 0
+    if route_goals is None
+    else len(route_goals)
   )
   n = env.num_envs
 
@@ -247,9 +250,9 @@ def run_evaluation(cfg: EvaluateDiffusionPolicyConfig) -> dict:
       state_observation = actor_base_observation(obs)
       if observation_history is None:
         history_steps = 50 if adapter is None else adapter.history_steps
-        observation_history = state_observation[:, None, :].expand(
-          -1, history_steps, -1
-        ).clone()
+        observation_history = (
+          state_observation[:, None, :].expand(-1, history_steps, -1).clone()
+        )
       else:
         observation_history = torch.roll(observation_history, shifts=-1, dims=1)
         observation_history[:, -1] = state_observation
@@ -266,13 +269,10 @@ def run_evaluation(cfg: EvaluateDiffusionPolicyConfig) -> dict:
         retrieval_score_sum += torch.where(active, similarity, 0.0)
         retrieval_count += active.long()
         retrieval_histogram.scatter_add_(0, new_index, active.long())
-      elif (
-        route_goals is not None
-        and step % cfg.adapter_goal_refresh_steps == 0
-      ):
+      elif route_goals is not None and step % cfg.adapter_goal_refresh_steps == 0:
         assert cfg.nearest_route_lookahead is not None
         new_goal, new_index, similarity = retrieve_nearest_route_goal(
-          state_observation[:, 3:32],
+          state_observation[:, joint_position_slice(state_observation.shape[-1])],
           route_goals,
           statistics["joint_mean"],
           statistics["joint_std"],
@@ -448,7 +448,7 @@ def run_evaluation(cfg: EvaluateDiffusionPolicyConfig) -> dict:
   )
   result = {
     "format_version": 1,
-    "task_id": TASK_ID,
+    "task_id": cfg.task_id,
     "policy": (
       "firm_diffusion_deterministic_gate"
       if hybrid
@@ -471,8 +471,7 @@ def run_evaluation(cfg: EvaluateDiffusionPolicyConfig) -> dict:
         None if diffusion_checkpoint is None else int(diffusion_checkpoint["epoch"])
       ),
       "action_weights": (
-        None if diffusion_checkpoint is None
-        else "ema" if cfg.use_ema else "online"
+        None if diffusion_checkpoint is None else "ema" if cfg.use_ema else "online"
       ),
       "deterministic_checkpoint_file": (
         None if deterministic_path is None else str(deterministic_path)
@@ -491,7 +490,9 @@ def run_evaluation(cfg: EvaluateDiffusionPolicyConfig) -> dict:
       "mode": (
         "adapter"
         if adapter is not None
-        else "nearest_route" if route_goals is not None else "fixed"
+        else "nearest_route"
+        if route_goals is not None
+        else "fixed"
       ),
       "checkpoint_file": cfg.adapter_checkpoint_file,
       "checkpoint_sha256": (

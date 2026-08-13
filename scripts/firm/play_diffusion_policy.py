@@ -36,13 +36,14 @@ from smp.firm.goal_adapter import (
 from smp.pretrain.scheduler import DDPMScheduler
 from smp.rl.tasks.firm.keyframe_env_cfg import MOTION_FILE
 
-TASK_ID = "Firm-Keyframe-G1"
+DEFAULT_TASK_ID = "Firm-Keyframe-G1"
 
 
 @dataclass(frozen=True)
 class PlayDiffusionPolicyConfig:
   """Interactive FIRM diffusion-policy viewer configuration."""
 
+  task_id: str = DEFAULT_TASK_ID
   action_checkpoint_file: str | None = None
   action_wandb_run_path: str | None = None
   action_wandb_checkpoint_name: str = "firm_action_diffusion.pt"
@@ -112,18 +113,13 @@ class _DiffusionPolicy:
     observation = actor_base_observation(obs)
     if self.observation_history is None:
       history_steps = 50 if self.adapter is None else self.adapter.history_steps
-      self.observation_history = observation[:, None, :].expand(
-        -1, history_steps, -1
-      ).clone()
-    else:
-      self.observation_history = torch.roll(
-        self.observation_history, shifts=-1, dims=1
+      self.observation_history = (
+        observation[:, None, :].expand(-1, history_steps, -1).clone()
       )
+    else:
+      self.observation_history = torch.roll(self.observation_history, shifts=-1, dims=1)
       self.observation_history[:, -1] = observation
-    if (
-      self.adapter is not None
-      and self.step % self.adapter_goal_refresh_steps == 0
-    ):
+    if self.adapter is not None and self.step % self.adapter_goal_refresh_steps == 0:
       assert self.adapter_payload is not None
       self.retrieved_goal, _, _ = retrieve_adapter_goal(
         self.adapter,
@@ -131,9 +127,7 @@ class _DiffusionPolicy:
         self.adapter_payload,
       )
     conditioning_goal = (
-      self.retrieved_goal
-      if self.retrieved_goal is not None
-      else self.command.joint_pos
+      self.retrieved_goal if self.retrieved_goal is not None else self.command.joint_pos
     )
     normalized_observation, current_joint, normalized_goal = normalize_action_condition(
       observation,
@@ -248,7 +242,7 @@ def run_play(cfg: PlayDiffusionPolicyConfig) -> None:
     raise ValueError("adapter_goal_refresh_steps must be positive")
 
   runtime = create_expert_runtime(
-    task_id=TASK_ID,
+    task_id=cfg.task_id,
     motion_file=cfg.motion_file,
     checkpoint_file=cfg.expert_checkpoint_file,
     wandb_run_path=cfg.expert_wandb_run_path,
@@ -323,9 +317,7 @@ def run_play(cfg: PlayDiffusionPolicyConfig) -> None:
     adapter, adapter_payload = load_goal_adapter_checkpoint(
       cfg.adapter_checkpoint_file, device
     )
-    expected_action_hash = adapter_payload["artifacts"][
-      "action_checkpoint_sha256"
-    ]
+    expected_action_hash = adapter_payload["artifacts"]["action_checkpoint_sha256"]
     assert action_checkpoint is not None
     actual_action_hash = sha256_file(action_checkpoint)
     if expected_action_hash != actual_action_hash:

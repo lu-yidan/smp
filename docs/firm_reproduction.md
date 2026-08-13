@@ -1066,3 +1066,45 @@ uv run scripts/firm/play_diffusion_policy.py \
 For the deterministic-only ablation, omit the two action-diffusion flags and
 set `--num-action-samples 1`. Native perturbations and disabled terminations
 remain enabled by default.
+
+### Deployable orientation observation
+
+Interactive arbitrary-pose tests exposed an observation defect in the original
+reproduction: the actor saw angular velocity, joints, and its previous action,
+but did not see gravity orientation. The new task
+`Firm-Keyframe-Deployable-G1` adds three-dimensional projected gravity. MJLab
+computes this as the world gravity vector expressed in the robot base frame; on
+hardware the corresponding signal must come from the IMU orientation/state
+estimator.
+
+The physical-state prefix used by downstream action models is therefore 93-D:
+
+| Term | Slice | Hardware source |
+| --- | --- | --- |
+| base angular velocity | 0:3 | IMU gyroscope |
+| projected gravity | 3:6 | IMU orientation estimate |
+| joint position | 6:35 | joint encoders |
+| joint velocity | 35:64 | encoder-derived velocity |
+| previous action | 64:93 | controller memory |
+
+The full expert actor is 123-D after appending 29-D sparse-goal joint error and
+one phase value. No root height, world-frame base velocity, ground-truth contact,
+or simulator-only body pose is added to the actor. The critic remains asymmetric
+and may use extra training-only information; it is not exported for deployment.
+
+The legacy `Firm-Keyframe-G1` stays at 120/123 actor/critic dimensions and its
+checkpoints remain valid. The new task constructs 123/126 dimensions, so it
+requires a fresh expert checkpoint. Rollout manifests and action-model loaders
+accept either the legacy 90-D state prefix or the gravity-aware 93-D prefix, but
+datasets with different layouts cannot be mixed in one training job.
+
+Train the gravity-aware Stage-0 expert with sparse checkpointing:
+
+```bash
+uv run scripts/train.py Firm-Keyframe-Deployable-G1 \
+  --env.scene.num-envs=4096 \
+  --agent.max-iterations=30000 \
+  --agent.save-interval=1000
+```
+
+This observation repair alone is not claimed to solve arbitrary mouse-drag

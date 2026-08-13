@@ -21,13 +21,14 @@ from smp.firm.expert_runtime import (
 )
 from smp.rl.tasks.firm.keyframe_env_cfg import MOTION_FILE
 
-TASK_ID = "Firm-Keyframe-G1"
+DEFAULT_TASK_ID = "Firm-Keyframe-G1"
 
 
 @dataclass(frozen=True)
 class EvaluateExpertConfig:
   """Fixed-start evaluation configuration."""
 
+  task_id: str = DEFAULT_TASK_ID
   checkpoint_file: str | None = None
   """Local model checkpoint. Mutually exclusive with wandb_run_path."""
   wandb_run_path: str | None = None
@@ -126,7 +127,7 @@ def run_evaluation(cfg: EvaluateExpertConfig) -> dict:
     raise ValueError("max_steps and standing_hold_steps must be positive")
 
   runtime = create_expert_runtime(
-    task_id=TASK_ID,
+    task_id=cfg.task_id,
     motion_file=cfg.motion_file,
     checkpoint_file=cfg.checkpoint_file,
     wandb_run_path=cfg.wandb_run_path,
@@ -254,7 +255,7 @@ def run_evaluation(cfg: EvaluateExpertConfig) -> dict:
   )
   result = {
     "format_version": 1,
-    "task_id": TASK_ID,
+    "task_id": cfg.task_id,
     "config": asdict(cfg),
     "artifacts": runtime_metadata(runtime),
     **aggregates,

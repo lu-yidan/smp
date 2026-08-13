@@ -35,6 +35,7 @@ class FirmDeterministicActor(nn.Module):
     hidden_dims: tuple[int, ...] = (512, 512, 256),
   ) -> None:
     super().__init__()
+    self.observation_dim = observation_dim
     self.action_dim = action_dim
     self.observation_encoder = _Encoder(observation_dim, observation_latent_dim)
     self.goal_encoder = _Encoder(JOINT_DIM, goal_latent_dim)
@@ -72,6 +73,11 @@ def load_deterministic_actor_checkpoint(
   )
   config = payload["config"]
   model = FirmDeterministicActor(
+    observation_dim=int(
+      config.get(
+        "observation_dim", payload["normalization"]["observation_mean"].numel()
+      )
+    ),
     observation_latent_dim=int(config["observation_latent_dim"]),
     goal_latent_dim=int(config["goal_latent_dim"]),
     hidden_dims=tuple(config["hidden_dims"]),

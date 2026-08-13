@@ -22,32 +22,45 @@ from smp.rl.tasks.firm import mdp
 MOTION_FILE = "datasets/firm/lafan/fallAndGetUp2_subject2_candidate_003_validated.npz"
 
 
-def _firm_observations(play: bool) -> dict[str, ObservationGroupCfg]:
+def _firm_observations(
+  play: bool,
+  *,
+  include_projected_gravity: bool = False,
+) -> dict[str, ObservationGroupCfg]:
   actor_terms = {
     "base_ang_vel": ObservationTermCfg(
       func=env_mdp.builtin_sensor,
       params={"sensor_name": "robot/imu_ang_vel"},
       noise=Unoise(n_min=-0.2, n_max=0.2),
     ),
-    "joint_pos": ObservationTermCfg(
-      func=mdp.joint_pos,
-      noise=Unoise(n_min=-0.01, n_max=0.01),
-    ),
-    "joint_vel": ObservationTermCfg(
-      func=mdp.joint_vel,
-      noise=Unoise(n_min=-0.5, n_max=0.5),
-    ),
-    "actions": ObservationTermCfg(func=env_mdp.last_action),
-    "keyframe_joint_error": ObservationTermCfg(
-      func=mdp.keyframe_joint_error,
-      params={"command_name": "motion"},
-      noise=Unoise(n_min=-0.01, n_max=0.01),
-    ),
-    "phase": ObservationTermCfg(
-      func=mdp.motion_phase,
-      params={"command_name": "motion"},
-    ),
   }
+  if include_projected_gravity:
+    actor_terms["projected_gravity"] = ObservationTermCfg(
+      func=env_mdp.projected_gravity,
+      noise=Unoise(n_min=-0.05, n_max=0.05),
+    )
+  actor_terms.update(
+    {
+      "joint_pos": ObservationTermCfg(
+        func=mdp.joint_pos,
+        noise=Unoise(n_min=-0.01, n_max=0.01),
+      ),
+      "joint_vel": ObservationTermCfg(
+        func=mdp.joint_vel,
+        noise=Unoise(n_min=-0.5, n_max=0.5),
+      ),
+      "actions": ObservationTermCfg(func=env_mdp.last_action),
+      "keyframe_joint_error": ObservationTermCfg(
+        func=mdp.keyframe_joint_error,
+        params={"command_name": "motion"},
+        noise=Unoise(n_min=-0.01, n_max=0.01),
+      ),
+      "phase": ObservationTermCfg(
+        func=mdp.motion_phase,
+        params={"command_name": "motion"},
+      ),
+    }
+  )
   critic_terms = {
     "base_lin_vel": ObservationTermCfg(
       func=env_mdp.builtin_sensor,
@@ -57,18 +70,26 @@ def _firm_observations(play: bool) -> dict[str, ObservationGroupCfg]:
       func=env_mdp.builtin_sensor,
       params={"sensor_name": "robot/imu_ang_vel"},
     ),
-    "joint_pos": ObservationTermCfg(func=mdp.joint_pos),
-    "joint_vel": ObservationTermCfg(func=mdp.joint_vel),
-    "actions": ObservationTermCfg(func=env_mdp.last_action),
-    "keyframe_joint_error": ObservationTermCfg(
-      func=mdp.keyframe_joint_error,
-      params={"command_name": "motion"},
-    ),
-    "phase": ObservationTermCfg(
-      func=mdp.motion_phase,
-      params={"command_name": "motion"},
-    ),
   }
+  if include_projected_gravity:
+    critic_terms["projected_gravity"] = ObservationTermCfg(
+      func=env_mdp.projected_gravity,
+    )
+  critic_terms.update(
+    {
+      "joint_pos": ObservationTermCfg(func=mdp.joint_pos),
+      "joint_vel": ObservationTermCfg(func=mdp.joint_vel),
+      "actions": ObservationTermCfg(func=env_mdp.last_action),
+      "keyframe_joint_error": ObservationTermCfg(
+        func=mdp.keyframe_joint_error,
+        params={"command_name": "motion"},
+      ),
+      "phase": ObservationTermCfg(
+        func=mdp.motion_phase,
+        params={"command_name": "motion"},
+      ),
+    }
+  )
   return {
     "actor": ObservationGroupCfg(
       terms=actor_terms,
@@ -148,7 +169,11 @@ def _firm_rewards() -> dict[str, RewardTermCfg]:
   }
 
 
-def g1_firm_keyframe_env_cfg(play: bool = False) -> ManagerBasedRlEnvCfg:
+def g1_firm_keyframe_env_cfg(
+  play: bool = False,
+  *,
+  include_projected_gravity: bool = False,
+) -> ManagerBasedRlEnvCfg:
   """Build candidate 003's first sparse-keyframe augmentation expert."""
   cfg = unitree_g1_flat_tracking_env_cfg(play=play)
   base_motion = cfg.commands["motion"]
@@ -164,7 +189,10 @@ def g1_firm_keyframe_env_cfg(play: bool = False) -> ManagerBasedRlEnvCfg:
     anchor_body_name=base_motion.anchor_body_name,
     body_names=base_motion.body_names,
   )
-  cfg.observations = _firm_observations(play)
+  cfg.observations = _firm_observations(
+    play,
+    include_projected_gravity=include_projected_gravity,
+  )
   cfg.rewards = _firm_rewards()
   cfg.terminations = {
     "time_out": TerminationTermCfg(func=env_mdp.time_out, time_out=True),
@@ -185,3 +213,13 @@ def g1_firm_keyframe_env_cfg(play: bool = False) -> ManagerBasedRlEnvCfg:
   cfg.sim.nconmax = 64
   cfg.episode_length_s = int(1e9) if play else 10.0
   return cfg
+
+
+def g1_firm_keyframe_deployable_env_cfg(
+  play: bool = False,
+) -> ManagerBasedRlEnvCfg:
+  """Build the FIRM expert with deployment-available gravity orientation."""
+  return g1_firm_keyframe_env_cfg(
+    play,
+    include_projected_gravity=True,
+  )

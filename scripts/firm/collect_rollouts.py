@@ -20,13 +20,15 @@ from smp.firm.expert_runtime import (
 from smp.rl.tasks.firm.keyframe_env_cfg import MOTION_FILE
 from smp.rl.tasks.getup.mdp.events import random_body_wrench
 
-TASK_ID = "Firm-Keyframe-G1"
+DEFAULT_TASK_ID = "Firm-Keyframe-G1"
 
 
 @dataclass(frozen=True)
 class CollectRolloutsConfig:
   """Pilot rollout collection configuration."""
 
+  task_id: str = DEFAULT_TASK_ID
+  """Registered expert task; deployable observations use Firm-Keyframe-Deployable-G1."""
   checkpoint_file: str | None = None
   """Local model checkpoint. Mutually exclusive with wandb_run_path."""
   wandb_run_path: str | None = None
@@ -130,6 +132,25 @@ def _prepare_output(path: Path) -> None:
     )
 
 
+def _observation_layout(observation_dim: int) -> list[dict[str, object]]:
+  if observation_dim == 90:
+    return [
+      {"name": "root_angular_velocity", "slice": [0, 3]},
+      {"name": "joint_position", "slice": [3, 32]},
+      {"name": "joint_velocity", "slice": [32, 61]},
+      {"name": "previous_action", "slice": [61, 90]},
+    ]
+  if observation_dim == 93:
+    return [
+      {"name": "root_angular_velocity", "slice": [0, 3]},
+      {"name": "projected_gravity", "slice": [3, 6]},
+      {"name": "joint_position", "slice": [6, 35]},
+      {"name": "joint_velocity", "slice": [35, 64]},
+      {"name": "previous_action", "slice": [64, 93]},
+    ]
+  raise ValueError(f"unsupported deployable observation dimension: {observation_dim}")
+
+
 def run_collection(cfg: CollectRolloutsConfig) -> dict:
   """Collect sequential expert transitions and write a reproducible manifest."""
   if cfg.max_steps <= 0 or cfg.standing_hold_steps <= 0:
@@ -148,7 +169,7 @@ def run_collection(cfg: CollectRolloutsConfig) -> dict:
   _prepare_output(output_dir)
 
   runtime = create_expert_runtime(
-    task_id=TASK_ID,
+    task_id=cfg.task_id,
     motion_file=cfg.motion_file,
     checkpoint_file=cfg.checkpoint_file,
     wandb_run_path=cfg.wandb_run_path,
@@ -178,6 +199,7 @@ def run_collection(cfg: CollectRolloutsConfig) -> dict:
   stable_hold = torch.zeros(n, dtype=torch.long, device=device)
   episode_ids = torch.arange(n, dtype=torch.long, device=device)
   obs = env.get_observations()
+  observation_dim = int(actor_base_observation(obs).shape[-1])
 
   try:
     for step in range(cfg.max_steps):
@@ -287,18 +309,13 @@ def run_collection(cfg: CollectRolloutsConfig) -> dict:
   ]
   manifest = {
     "format_version": 1,
-    "task_id": TASK_ID,
+    "task_id": cfg.task_id,
     "config": asdict(cfg),
     "artifacts": runtime_metadata(runtime),
     "layout": {
       "observation": {
-        "shape": [90],
-        "components": [
-          {"name": "root_angular_velocity", "slice": [0, 3]},
-          {"name": "joint_position", "slice": [3, 32]},
-          {"name": "joint_velocity", "slice": [32, 61]},
-          {"name": "previous_action", "slice": [61, 90]},
-        ],
+        "shape": [observation_dim],
+        "components": _observation_layout(observation_dim),
       },
       "goal": {"shape": [29], "description": "target keyframe joint position"},
       "action": {"shape": [29], "description": "clipped expert policy action"},

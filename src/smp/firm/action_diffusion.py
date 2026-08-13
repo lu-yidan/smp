@@ -15,8 +15,18 @@ from smp.pretrain.model import DiffusionDenoiser
 from smp.pretrain.scheduler import DDPMScheduler
 
 OBSERVATION_DIM = 90
+DEPLOYABLE_OBSERVATION_DIM = 93
 JOINT_DIM = 29
 ACTION_DIM = 29
+
+
+def joint_position_slice(observation_dim: int) -> slice:
+  """Return the joint-position slice for a supported deployable state layout."""
+  if observation_dim == OBSERVATION_DIM:
+    return slice(3, 32)
+  if observation_dim == DEPLOYABLE_OBSERVATION_DIM:
+    return slice(6, 35)
+  raise ValueError(f"unsupported observation dimension: {observation_dim}")
 
 
 class FirmRolloutWindowDataset(Dataset[dict[str, torch.Tensor]]):
@@ -47,6 +57,8 @@ class FirmRolloutWindowDataset(Dataset[dict[str, torch.Tensor]]):
     self.arrays = {
       name: np.concatenate(parts, axis=0) for name, parts in fields.items()
     }
+    self.observation_dim = int(self.arrays["observation"].shape[-1])
+    joint_position_slice(self.observation_dim)
     expected = int(self.manifest["total_samples"])
     if any(len(array) != expected for array in self.arrays.values()):
       raise ValueError("rollout field lengths disagree with manifest total_samples")
@@ -88,7 +100,7 @@ class FirmRolloutWindowDataset(Dataset[dict[str, torch.Tensor]]):
 
   def _validate_shapes(self) -> None:
     expected = {
-      "observation": (OBSERVATION_DIM,),
+      "observation": (self.observation_dim,),
       "goal": (JOINT_DIM,),
       "action": (ACTION_DIM,),
     }
@@ -146,7 +158,9 @@ class FirmRolloutWindowDataset(Dataset[dict[str, torch.Tensor]]):
     observations = self.arrays["observation"][observation_ids].astype(np.float32)
     goals = self.arrays["goal"][observation_ids].astype(np.float32)
     actions = self.arrays["action"][action_ids].astype(np.float32)
-    joints = np.concatenate([observations[:, 3:32], goals], axis=0)
+    joints = np.concatenate(
+      [observations[:, joint_position_slice(self.observation_dim)], goals], axis=0
+    )
 
     def stats(value: np.ndarray) -> tuple[torch.Tensor, torch.Tensor]:
       mean = value.mean(axis=0)
@@ -258,6 +272,11 @@ def load_action_diffusion_checkpoint(
   config = payload["config"]
   model = FirmActionDiffusion(
     horizon=int(config["horizon"]),
+    observation_dim=int(
+      config.get(
+        "observation_dim", payload["normalization"]["observation_mean"].numel()
+      )
+    ),
     goal_latent_dim=int(config["goal_latent_dim"]),
     d_model=int(config["d_model"]),
     nhead=int(config["nhead"]),
@@ -280,7 +299,7 @@ def normalize_action_condition(
   statistics: dict[str, torch.Tensor],
 ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
   """Normalize state, current joints, and goal with training-only statistics."""
-  current_joint = observation[:, 3:32]
+  current_joint = observation[:, joint_position_slice(observation.shape[-1])]
   normalized_observation = (observation - statistics["observation_mean"]) / statistics[
     "observation_std"
   ]

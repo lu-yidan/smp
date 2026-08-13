@@ -14,7 +14,11 @@ import torch.nn.functional as F
 import tyro
 from torch.utils.data import ConcatDataset, DataLoader, Subset
 
-from smp.firm.action_diffusion import FirmActionDiffusion, FirmRolloutWindowDataset
+from smp.firm.action_diffusion import (
+  FirmActionDiffusion,
+  FirmRolloutWindowDataset,
+  joint_position_slice,
+)
 from smp.firm.expert_runtime import sha256_file
 from smp.pretrain.scheduler import DDPMScheduler
 
@@ -105,7 +109,7 @@ def _to_device(
   observation = batch["observation"].to(device, non_blocking=True)
   goal = batch["goal"].to(device, non_blocking=True)
   actions = batch["actions"].to(device, non_blocking=True)
-  current_joint = observation[:, 3:32]
+  current_joint = observation[:, joint_position_slice(observation.shape[-1])]
 
   observation = (observation - stats["observation_mean"]) / stats["observation_std"]
   current_joint = (current_joint - stats["joint_mean"]) / stats["joint_std"]
@@ -174,7 +178,7 @@ def _save_checkpoint(
     "model": model.state_dict(),
     "model_ema": ema.shadow.state_dict(),
     "normalization": {name: value.cpu() for name, value in stats.items()},
-    "config": asdict(cfg),
+    "config": {**asdict(cfg), "observation_dim": model.observation_dim},
     "manifest_file": str(datasets[0].manifest_path),
     "manifest_sha256": sha256_file(datasets[0].manifest_path),
     "manifests": [
@@ -247,6 +251,12 @@ def train(cfg: TrainActionDiffusionConfig) -> Path:
     )
     for manifest_file in manifest_files
   ]
+  observation_dims = {dataset.observation_dim for dataset in datasets}
+  if len(observation_dims) != 1:
+    raise ValueError(
+      f"all rollout datasets must share one layout, got {observation_dims}"
+    )
+  observation_dim = observation_dims.pop()
   splits = [
     dataset.split_window_indices(cfg.train_fraction, cfg.seed + index)
     for index, dataset in enumerate(datasets)
@@ -294,6 +304,7 @@ def train(cfg: TrainActionDiffusionConfig) -> Path:
   model = FirmActionDiffusion(
     horizon=cfg.horizon,
     goal_latent_dim=cfg.goal_latent_dim,
+    observation_dim=observation_dim,
     d_model=cfg.d_model,
     nhead=cfg.nhead,
     num_layers=cfg.num_layers,

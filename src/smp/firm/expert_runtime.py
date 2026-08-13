@@ -222,12 +222,16 @@ def create_expert_runtime(
 
 
 def actor_base_observation(obs: TensorDict) -> torch.Tensor:
-  """Return FIRM's 90-D state observation without goal error or phase."""
+  """Return deployable FIRM state channels without goal error or phase."""
   actor = obs["actor"]
-  if actor.shape[-1] != 120:
-    msg = f"expected 120-D FIRM actor observation, got {tuple(actor.shape)}"
+  state_dim = actor.shape[-1] - 30  # 29-D goal error and one phase channel.
+  if state_dim not in {90, 93}:
+    msg = (
+      "expected legacy 120-D or gravity-aware 123-D FIRM actor observation, "
+      f"got {tuple(actor.shape)}"
+    )
     raise RuntimeError(msg)
-  return actor[:, :90]
+  return actor[:, :state_dim]
 
 
 def runtime_metadata(runtime: ExpertRuntime) -> dict[str, Any]:

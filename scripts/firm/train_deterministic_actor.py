@@ -156,7 +156,10 @@ def _save(
       "normalization": {
         name: value.detach().cpu() for name, value in statistics.items()
       },
-      "config": asdict(cfg),
+      "config": {
+        **asdict(cfg),
+        "observation_dim": int(statistics["observation_mean"].numel()),
+      },
       "manifests": [
         {
           "path": str(dataset.manifest_path),
@@ -177,9 +180,7 @@ def train(cfg: TrainDeterministicActorConfig) -> Path:
   """Train a direct one-step expert-action regressor."""
   if cfg.num_epochs <= 0 or cfg.batch_size <= 0:
     raise ValueError("num_epochs and batch_size must be positive")
-  repeats = cfg.additional_dataset_repeats or (1,) * len(
-    cfg.additional_manifest_files
-  )
+  repeats = cfg.additional_dataset_repeats or (1,) * len(cfg.additional_manifest_files)
   if len(repeats) != len(cfg.additional_manifest_files):
     raise ValueError("additional_dataset_repeats must match additional manifests")
   if any(repeat <= 0 for repeat in repeats):
@@ -196,6 +197,12 @@ def train(cfg: TrainDeterministicActorConfig) -> Path:
     )
     for manifest in (cfg.manifest_file, *cfg.additional_manifest_files)
   ]
+  observation_dims = {dataset.observation_dim for dataset in datasets}
+  if len(observation_dims) != 1:
+    raise ValueError(
+      f"all rollout datasets must share one layout, got {observation_dims}"
+    )
+  observation_dim = observation_dims.pop()
   splits = [
     dataset.split_window_indices(cfg.train_fraction, cfg.seed + index)
     for index, dataset in enumerate(datasets)
@@ -235,6 +242,7 @@ def train(cfg: TrainDeterministicActorConfig) -> Path:
   )
 
   model = FirmDeterministicActor(
+    observation_dim=observation_dim,
     observation_latent_dim=cfg.observation_latent_dim,
     goal_latent_dim=cfg.goal_latent_dim,
     hidden_dims=cfg.hidden_dims,
@@ -286,9 +294,7 @@ def train(cfg: TrainDeterministicActorConfig) -> Path:
       totals += torch.stack((loss.detach(), mae.detach(), rmse.detach()))
       batches += 1
     totals /= max(batches, 1)
-    validation = _validate(
-      model, validation_loader, statistics, device, cfg.loss_beta
-    )
+    validation = _validate(model, validation_loader, statistics, device, cfg.loss_beta)
     if validation["loss"] < best_loss:
       best_loss = validation["loss"]
       best_epoch = epoch
