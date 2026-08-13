@@ -13,12 +13,169 @@ __all__ = [
   "post_stand_body_wrench",
   "random_body_wrench",
   "record_failure_states",
+  "reset_escape_obstacle",
   "reset_recovery_stage",
   "reset_sustained_constraint",
   "reset_stand_counter",
   "stratified_post_stand_wrench",
+  "update_escape_phase",
   "update_recovery_stage",
 ]
+
+
+@torch.no_grad()
+def reset_escape_obstacle(
+  env: ManagerBasedRlEnv,
+  env_ids: torch.Tensor | None = None,
+  obstacle_probability: float = 0.80,
+  target_body_names: tuple[str, ...] = ("torso_link", "pelvis"),
+  target_weights: tuple[float, ...] = (0.65, 0.35),
+  eligible_reset_types: tuple[int, ...] | None = None,
+  xy_offset_range: float = 0.035,
+  clearance: float = 0.055,
+  inactive_xy: tuple[float, float] = (0.72, 0.72),
+) -> None:
+  """Place a free obstacle on the torso/pelvis after the robot fall reset.
+
+  The obstacle is a physical entity: unlike a body-following wrench, the robot
+  can push it away or crawl out from underneath it.  Target/body identity is
+  simulator-only state and is not appended to policy observations.
+  """
+  if env_ids is None:
+    env_ids = torch.arange(env.num_envs, device=env.device)
+  if env_ids.numel() == 0:
+    return
+  if len(target_body_names) != len(target_weights):
+    raise ValueError("target_body_names and target_weights must have equal length")
+  weights = torch.tensor(target_weights, dtype=torch.float, device=env.device)
+  if torch.any(weights < 0.0) or weights.sum() <= 0.0:
+    raise ValueError("target_weights must be non-negative with positive sum")
+  weights /= weights.sum()
+
+  robot = env.scene["robot"]
+  obstacle = env.scene["escape_obstacle"]
+  body_ids = robot.find_bodies(list(target_body_names), preserve_order=True)[0]
+  if len(body_ids) != len(target_body_names):
+    raise ValueError("all escape target bodies must resolve exactly once")
+  body_ids_tensor = torch.tensor(body_ids, dtype=torch.long, device=env.device)
+  n = env_ids.numel()
+  active = torch.rand(n, device=env.device) < obstacle_probability
+  if eligible_reset_types is not None:
+    reset_type = getattr(env, "_robust_reset_type", None)
+    if reset_type is None:
+      raise RuntimeError("eligible_reset_types requires mixed_fall_reset state")
+    eligible = torch.zeros(n, dtype=torch.bool, device=env.device)
+    for reset_value in eligible_reset_types:
+      eligible |= reset_type[env_ids] == reset_value
+    active &= eligible
+  target_slot = torch.multinomial(weights, n, replacement=True)
+  selected_body_ids = body_ids_tensor[target_slot]
+  target_pos = robot.data.body_link_pos_w[env_ids, selected_body_ids].clone()
+
+  xy_noise = torch.empty(n, 2, device=env.device).uniform_(
+    -xy_offset_range, xy_offset_range
+  )
+  active_pos = target_pos
+  active_pos[:, :2] += xy_noise
+  active_pos[:, 2] += clearance
+  origins = env.scene.env_origins[env_ids]
+  inactive_pos = origins.clone()
+  inactive_pos[:, 0] += inactive_xy[0]
+  inactive_pos[:, 1] += inactive_xy[1]
+  inactive_pos[:, 2] += clearance
+  pos = torch.where(active[:, None], active_pos, inactive_pos)
+
+  roll = torch.zeros(n, device=env.device)
+  pitch = torch.zeros(n, device=env.device)
+  yaw = torch.empty(n, device=env.device).uniform_(-torch.pi, torch.pi)
+  quat = quat_from_euler_xyz(roll, pitch, yaw)
+  velocity = torch.zeros(n, 6, device=env.device)
+  obstacle.write_root_state_to_sim(
+    torch.cat((pos, quat, velocity), dim=-1), env_ids=env_ids
+  )
+  env.sim.forward()
+
+  if not hasattr(env, "_escape_phase"):
+    env._escape_phase = torch.zeros(  # type: ignore[attr-defined]
+      env.num_envs, dtype=torch.long, device=env.device
+    )
+    env._escape_target_slot = torch.zeros_like(  # type: ignore[attr-defined]
+      env._escape_phase  # type: ignore[attr-defined]
+    )
+    env._escape_contact_ever = torch.zeros(  # type: ignore[attr-defined]
+      env.num_envs, dtype=torch.bool, device=env.device
+    )
+    env._escape_clear_hold = torch.zeros_like(  # type: ignore[attr-defined]
+      env._escape_phase  # type: ignore[attr-defined]
+    )
+    env._escape_best_separation = torch.zeros(  # type: ignore[attr-defined]
+      env.num_envs, device=env.device
+    )
+    env._escape_separation_delta = torch.zeros_like(  # type: ignore[attr-defined]
+      env._escape_best_separation  # type: ignore[attr-defined]
+    )
+    env._escape_start_robot_xy = torch.zeros(  # type: ignore[attr-defined]
+      env.num_envs, 2, device=env.device
+    )
+    env._escape_start_obstacle_xy = torch.zeros_like(  # type: ignore[attr-defined]
+      env._escape_start_robot_xy  # type: ignore[attr-defined]
+    )
+
+  # phase: 0=clean, 1=waiting for initial contact, 2=constrained, 3=escaped.
+  env._escape_phase[env_ids] = active.long()  # type: ignore[attr-defined]
+  env._escape_target_slot[env_ids] = target_slot  # type: ignore[attr-defined]
+  env._escape_contact_ever[env_ids] = False  # type: ignore[attr-defined]
+  env._escape_clear_hold[env_ids] = 0  # type: ignore[attr-defined]
+  env._escape_separation_delta[env_ids] = 0.0  # type: ignore[attr-defined]
+  robot_xy = robot.data.root_link_pos_w[env_ids, :2]
+  obstacle_xy = obstacle.data.root_link_pos_w[env_ids, :2]
+  separation = torch.linalg.vector_norm(robot_xy - obstacle_xy, dim=-1)
+  env._escape_best_separation[env_ids] = separation  # type: ignore[attr-defined]
+  env._escape_start_robot_xy[env_ids] = robot_xy  # type: ignore[attr-defined]
+  env._escape_start_obstacle_xy[env_ids] = obstacle_xy  # type: ignore[attr-defined]
+
+
+@torch.no_grad()
+def update_escape_phase(
+  env: ManagerBasedRlEnv,
+  env_ids: torch.Tensor | None = None,
+  sensor_name: str = "robot_obstacle_contact",
+  clear_hold_steps: int = 15,
+  separation_threshold: float = 0.24,
+) -> None:
+  """Track first contact, separation progress, and stable physical escape."""
+  if env_ids is None:
+    env_ids = torch.arange(env.num_envs, device=env.device)
+  if env_ids.numel() == 0 or not hasattr(env, "_escape_phase"):
+    return
+  sensor = env.scene[sensor_name]
+  found = sensor.data.found
+  if found is None:
+    raise RuntimeError(f"{sensor_name} must expose the 'found' contact field")
+  contact = torch.any(found[env_ids] > 0, dim=-1)
+  phase = env._escape_phase  # type: ignore[attr-defined]
+  contact_ever = env._escape_contact_ever  # type: ignore[attr-defined]
+  clear_hold = env._escape_clear_hold  # type: ignore[attr-defined]
+  best = env._escape_best_separation  # type: ignore[attr-defined]
+  delta = env._escape_separation_delta  # type: ignore[attr-defined]
+
+  active = phase[env_ids] > 0
+  contact_ever[env_ids] |= contact & active
+  newly_contacted = env_ids[(phase[env_ids] == 1) & contact]
+  phase[newly_contacted] = 2
+
+  robot_xy = env.scene["robot"].data.root_link_pos_w[env_ids, :2]
+  obstacle_xy = env.scene["escape_obstacle"].data.root_link_pos_w[env_ids, :2]
+  separation = torch.linalg.vector_norm(robot_xy - obstacle_xy, dim=-1)
+  previous_best = best[env_ids].clone()
+  delta[env_ids] = torch.clamp(separation - previous_best, min=0.0)
+  best[env_ids] = torch.maximum(previous_best, separation)
+
+  constrained = phase[env_ids] == 2
+  clear = constrained & (~contact) & (separation >= separation_threshold)
+  clear_hold[env_ids] = torch.where(clear, clear_hold[env_ids] + 1, 0)
+  escaped_ids = env_ids[clear_hold[env_ids] >= clear_hold_steps]
+  phase[escaped_ids] = 3
 
 
 def _ensure_sustained_constraint_state(

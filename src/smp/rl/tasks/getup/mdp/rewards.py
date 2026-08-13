@@ -9,6 +9,8 @@ import torch
 from mjlab.envs import ManagerBasedRlEnv
 from mjlab.managers.scene_entity_config import SceneEntityCfg
 
+from smp.rl.rewards import task_smp_product as _task_smp_product
+
 __all__ = [
   "active_wrench_metric",
   "action_rate_rms_metric",
@@ -24,9 +26,17 @@ __all__ = [
   "constraint_cohort_metric",
   "constraint_load_metric",
   "constraint_release_progress_metric",
+  "crawl_with_hand_support",
+  "escape_completion",
+  "escape_gated_task_smp_product",
+  "escape_object_displacement_metric",
+  "escape_obstacle_episode_metric",
+  "escape_phase_metric",
+  "escape_separation_progress",
   "feet_stationary_when_upright",
   "head_vertical_speed_metric",
   "head_vertical_overspeed_l2",
+  "hand_support_contact_metric",
   "joint_acc_rms_metric",
   "low_base_angular_velocity",
   "low_joint_velocity",
@@ -59,6 +69,83 @@ __all__ = [
   "v6_push_cohort_metric",
   "v6_push_count_metric",
 ]
+
+
+def escape_gated_task_smp_product(
+  env: ManagerBasedRlEnv,
+  task_terms: tuple,
+  fixed_timesteps: tuple[int, ...] = (8, 15, 22),
+  ws: float = 6.0,
+  constrained_scale: float = 0.15,
+) -> torch.Tensor:
+  """Relax the upright/get-up objective while a physical route is blocked.
+
+  SMP is still evaluated exactly once.  The gate is privileged reward shaping,
+  not an actor observation; a later deployable adapter must infer it from
+  proprioceptive and motor-response history.
+  """
+  product = _task_smp_product(
+    env, task_terms=task_terms, fixed_timesteps=fixed_timesteps, ws=ws
+  )
+  phase = getattr(env, "_escape_phase", None)
+  if phase is None:
+    return product
+  constrained = (phase == 1) | (phase == 2)
+  scale = torch.where(
+    constrained,
+    torch.full_like(product, constrained_scale),
+    torch.ones_like(product),
+  )
+  gated = product * scale
+  env._smp_product_score = gated  # type: ignore[attr-defined]
+  return gated
+
+
+def _contact_found(env: ManagerBasedRlEnv, sensor_name: str) -> torch.Tensor:
+  found = env.scene[sensor_name].data.found
+  if found is None:
+    raise RuntimeError(f"{sensor_name} must expose the 'found' contact field")
+  return found > 0
+
+
+def crawl_with_hand_support(
+  env: ManagerBasedRlEnv,
+  sensor_name: str = "hand_ground_contact",
+  target_speed: float = 0.10,
+  speed_scale: float = 55.0,
+  max_head_height: float = 0.90,
+) -> torch.Tensor:
+  """Reward controlled low-pose translation while one or both hands support."""
+  phase = getattr(env, "_escape_phase", None)
+  if phase is None:
+    return torch.zeros(env.num_envs, device=env.device)
+  support_fraction = _contact_found(env, sensor_name).float().mean(dim=-1)
+  robot = env.scene["robot"]
+  speed = torch.linalg.vector_norm(robot.data.root_link_lin_vel_w[:, :2], dim=-1)
+  speed_score = torch.exp(-speed_scale * torch.square(speed - target_speed))
+  head_idx = robot.find_sites(["head"], preserve_order=True)[0][0]
+  low_pose = robot.data.site_pos_w[:, head_idx, 2] <= max_head_height
+  return (phase == 2).float() * low_pose.float() * support_fraction * speed_score
+
+
+def escape_separation_progress(
+  env: ManagerBasedRlEnv,
+  progress_scale: float = 0.025,
+) -> torch.Tensor:
+  """Reward only new robot-obstacle planar separation, not oscillation."""
+  phase = getattr(env, "_escape_phase", None)
+  delta = getattr(env, "_escape_separation_delta", None)
+  if phase is None or delta is None:
+    return torch.zeros(env.num_envs, device=env.device)
+  return (phase == 2).float() * torch.clamp(delta / progress_scale, 0.0, 1.0)
+
+
+def escape_completion(env: ManagerBasedRlEnv) -> torch.Tensor:
+  """Persistent success signal after stable contact-free separation."""
+  phase = getattr(env, "_escape_phase", None)
+  if phase is None:
+    return torch.zeros(env.num_envs, device=env.device)
+  return (phase == 3).float()
 
 
 def track_head_height(
@@ -581,3 +668,36 @@ def constraint_release_progress_metric(env: ManagerBasedRlEnv) -> torch.Tensor:
     return torch.zeros(env.num_envs, device=env.device)
   elapsed = 1.0 - remaining.float() / torch.clamp(duration.float(), min=1.0)
   return torch.where(cohort > 0, elapsed, torch.zeros_like(elapsed))
+
+
+def escape_phase_metric(env: ManagerBasedRlEnv) -> torch.Tensor:
+  """Normalized escape phase: clean=0, pending=1/3, pinned=2/3, escaped=1."""
+  phase = getattr(env, "_escape_phase", None)
+  if phase is None:
+    return torch.zeros(env.num_envs, device=env.device)
+  return phase.float() / 3.0
+
+
+def escape_object_displacement_metric(env: ManagerBasedRlEnv) -> torch.Tensor:
+  """Planar obstacle displacement from reset, in metres."""
+  start = getattr(env, "_escape_start_obstacle_xy", None)
+  if start is None:
+    return torch.zeros(env.num_envs, device=env.device)
+  current = env.scene["escape_obstacle"].data.root_link_pos_w[:, :2]
+  return torch.linalg.vector_norm(current - start, dim=-1)
+
+
+def escape_obstacle_episode_metric(env: ManagerBasedRlEnv) -> torch.Tensor:
+  """Return one for episodes initialized with the physical obstacle."""
+  phase = getattr(env, "_escape_phase", None)
+  if phase is None:
+    return torch.zeros(env.num_envs, device=env.device)
+  return (phase > 0).float()
+
+
+def hand_support_contact_metric(
+  env: ManagerBasedRlEnv,
+  sensor_name: str = "hand_ground_contact",
+) -> torch.Tensor:
+  """Fraction of left/right hands currently supporting on the ground."""
+  return _contact_found(env, sensor_name).float().mean(dim=-1)
