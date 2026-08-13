@@ -932,3 +932,45 @@ frame 324 above 0/12 while keeping the three-seed aggregate success at or above
 92% and unsafe termination at 0%. Retrieval similarity and keyframe-switch
 count are recorded to distinguish a useful route change from unstable goal
 chattering.
+
+### Adapter v1/v2 diagnostic record
+
+Adapter v1 trained on 402,628 successful transitions from 3,215 episodes and
+24 keyframe goals. W&B run
+[`pgr6civ2`](https://wandb.ai/tabletennis/smp/runs/pgr6civ2) ended at
+validation cosine loss 0.01436 and `cosine >= 0.95` rate 98.09%. Its checkpoint
+is
+`/root/workspace/smp-firm-artifacts/training/firm_goal_adapter_c003_v1/2026-08-13_11-39-36/firm_goal_adapter.pt`
+with SHA256
+`b90a8c4a0a4f39b9cfd0b6244bc57846db649cde0fdc0598305965112f2c7b65`.
+
+The unchanged frame-324 ensemble-4 gate remained 0/12 success and 0/12 unsafe
+over seeds 42/43/44. A goal-usage trace showed that 337 of 400 seed-42
+retrievals selected the final standing frame 486. This exposed a misleading
+metric: frame 486 accounts for 242,472 of the 402,628 training transitions, so
+high cosine agreement can coexist with majority-goal collapse.
+
+Adapter v2 enables inverse-frequency goal sampling and reports actual
+24-way nearest-codebook accuracy. W&B run
+[`b4qyv6gb`](https://wandb.ai/tabletennis/smp/runs/b4qyv6gb) reached 98.39%
+natural-validation top-1 accuracy. Its checkpoint is
+`/root/workspace/smp-firm-artifacts/training/firm_goal_adapter_c003_balanced_v2/2026-08-13_11-52-17/firm_goal_adapter.pt`
+with SHA256
+`f824f714128daae71a16770901d604ba15b49cbce52f671da287dfa8d379318e`.
+However, frame 324 again remained 0/12 success and 0/12 unsafe; frame 486 still
+received 993 of 1,200 retrievals. The failure is therefore not fixed by class
+balancing alone.
+
+A diagnostic nearest-route selector matches the current normalized 29-joint
+pose to the recovery keyframe sequence and selects the following keyframe. It
+also reached 0/4 on frame 324 seed 42, although it lowered action-rate RMS from
+approximately 0.340 to 0.267. This is evidence that alternate goal selection
+alone is insufficient for the V4 action model at this state.
+
+The next action-data stage must preserve long coherent expert rescues from
+states actually visited by diffusion. The existing 12-step intervention
+dataset repeatedly hands control back before the policy escapes the failure
+basin. The planned collector triggers on diffusion/expert disagreement, lets
+the expert control until stable recovery or timeout, and saves rolling
+constant-goal action windows. Only after this action-policy gate improves
+should another learned online adapter be accepted.

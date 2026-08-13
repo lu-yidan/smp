@@ -228,6 +228,8 @@ def run_evaluation(cfg: EvaluateDiffusionPolicyConfig) -> dict:
         retrieved_goal = new_goal
         retrieved_index = new_index
         retrieval_score_sum += torch.where(active, similarity, 0.0)
+        retrieval_count += active.long()
+        retrieval_histogram.scatter_add_(0, new_index, active.long())
 
       action_index = step % cfg.action_execution_steps
       if action_index == 0:
