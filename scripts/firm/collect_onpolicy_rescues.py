@@ -40,6 +40,7 @@ class CollectOnPolicyRescuesConfig:
   disagreement_threshold: float = 0.12
   max_steps: int = 500
   standing_hold_steps: int = 25
+  stop_after_stable_recovery: bool = True
   root_height_threshold: float = 0.65
   upright_threshold: float = 0.85
   root_linear_speed_threshold: float = 0.50
@@ -168,11 +169,18 @@ def run_collection(cfg: CollectOnPolicyRescuesConfig) -> dict:
         & (root_angular_speed <= cfg.root_angular_speed_threshold)
       )
       stable_hold = torch.where(active & stable, stable_hold + 1, 0)
+      recovery_complete = (
+        active
+        & rescuing
+        & cfg.stop_after_stable_recovery
+        & (stable_hold >= cfg.standing_hold_steps)
+        & (command.goal_steps == command.keyframe_indices[-1])
+      )
 
       next_obs, _, dones, _ = env.step(actions)
       terminated = raw_env.termination_manager.terminated.bool()
       timeouts = raw_env.termination_manager.time_outs.bool()
-      transition_done = dones.bool() & active
+      transition_done = (dones.bool() | recovery_complete) & active
       transition_unsafe = terminated & active
       transition_timeout = timeouts & active
 
@@ -206,7 +214,8 @@ def run_collection(cfg: CollectOnPolicyRescuesConfig) -> dict:
         unsafe[transition_done] = terminated[transition_done]
         timed_out[transition_done] = timeouts[transition_done]
         success[transition_done] = (
-          timeouts[transition_done]
+          recovery_complete[transition_done]
+          | timeouts[transition_done]
           & ~terminated[transition_done]
           & (stable_hold[transition_done] >= cfg.standing_hold_steps)
         )
