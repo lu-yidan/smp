@@ -176,6 +176,33 @@ def normalize_adapter_history(
   return (observation_history - observation_mean) / observation_std
 
 
+@torch.no_grad()
+def retrieve_nearest_route_goal(
+  current_joint: torch.Tensor,
+  route_goals: torch.Tensor,
+  joint_mean: torch.Tensor,
+  joint_std: torch.Tensor,
+  lookahead: int = 1,
+) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+  """Select a future route keyframe relative to the nearest current pose."""
+  if lookahead < 0:
+    raise ValueError("lookahead must be non-negative")
+  if route_goals.ndim != 2 or route_goals.shape[1] != current_joint.shape[1]:
+    raise ValueError(
+      f"route goals must have shape (*, {current_joint.shape[1]}), "
+      f"got {tuple(route_goals.shape)}"
+    )
+  normalized_current = (current_joint - joint_mean) / joint_std
+  normalized_route = (route_goals - joint_mean) / joint_std
+  distances = torch.mean(
+    torch.square(normalized_current[:, None] - normalized_route[None]),
+    dim=-1,
+  )
+  nearest = distances.argmin(dim=-1)
+  selected = (nearest + lookahead).clamp(max=len(route_goals) - 1)
+  scores = -distances.gather(1, selected[:, None]).squeeze(1)
+  return route_goals[selected], selected, scores
+
 def load_goal_adapter_checkpoint(
   checkpoint_file: str | Path,
   device: str | torch.device,

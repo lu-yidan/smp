@@ -31,6 +31,7 @@ from smp.firm.expert_runtime import (
 from smp.firm.goal_adapter import (
   load_goal_adapter_checkpoint,
   retrieve_adapter_goal,
+  retrieve_nearest_route_goal,
 )
 from smp.rl.tasks.firm.keyframe_env_cfg import MOTION_FILE
 
@@ -45,6 +46,8 @@ class EvaluateDiffusionPolicyConfig:
   adapter_checkpoint_file: str | None = None
   adapter_goal_refresh_steps: int = 5
   """Retrieve a codebook goal every N control steps when an adapter is used."""
+  nearest_route_lookahead: int | None = None
+  """Diagnostic pose-route selector; mutually exclusive with an adapter."""
   expert_checkpoint_file: str | None = None
   """Stage-0 expert checkpoint used only to construct the matched runtime."""
   expert_wandb_run_path: str | None = None
@@ -80,6 +83,13 @@ def run_evaluation(cfg: EvaluateDiffusionPolicyConfig) -> dict:
     raise ValueError("num_action_samples must be positive")
   if cfg.adapter_goal_refresh_steps <= 0:
     raise ValueError("adapter_goal_refresh_steps must be positive")
+  if cfg.nearest_route_lookahead is not None:
+    if cfg.nearest_route_lookahead < 0:
+      raise ValueError("nearest_route_lookahead must be non-negative")
+    if cfg.adapter_checkpoint_file is not None:
+      raise ValueError(
+        "nearest_route_lookahead is mutually exclusive with an adapter"
+      )
   if cfg.start_frame is not None:
     if cfg.start_frame < 0:
       raise ValueError("start_frame must be non-negative")
@@ -132,6 +142,13 @@ def run_evaluation(cfg: EvaluateDiffusionPolicyConfig) -> dict:
         "adapter/action checkpoint mismatch: "
         f"expected {expected_action_hash}, got {actual_action_hash}"
       )
+  route_goals = None
+  if cfg.nearest_route_lookahead is not None:
+    route_goals = command.motion.joint_pos[command.keyframe_indices].clone()
+  selector_size = (
+    len(adapter_payload["codebook_goals"]) if adapter_payload is not None
+    else 0 if route_goals is None else len(route_goals)
+  )
   n = env.num_envs
 
   active_steps = torch.zeros(n, dtype=torch.long, device=device)
@@ -159,7 +176,7 @@ def run_evaluation(cfg: EvaluateDiffusionPolicyConfig) -> dict:
   retrieval_count = torch.zeros(n, dtype=torch.long, device=device)
   retrieval_switches = torch.zeros(n, dtype=torch.long, device=device)
   retrieval_histogram = torch.zeros(
-    0 if adapter_payload is None else len(adapter_payload["codebook_goals"]),
+    selector_size,
     dtype=torch.long,
     device=device,
   )
@@ -193,11 +210,31 @@ def run_evaluation(cfg: EvaluateDiffusionPolicyConfig) -> dict:
         retrieval_score_sum += torch.where(active, similarity, 0.0)
         retrieval_count += active.long()
         retrieval_histogram.scatter_add_(0, new_index, active.long())
+      elif (
+        route_goals is not None
+        and step % cfg.adapter_goal_refresh_steps == 0
+      ):
+        assert cfg.nearest_route_lookahead is not None
+        new_goal, new_index, similarity = retrieve_nearest_route_goal(
+          state_observation[:, 3:32],
+          route_goals,
+          statistics["joint_mean"],
+          statistics["joint_std"],
+          cfg.nearest_route_lookahead,
+        )
+        retrieval_switches += (
+          active & (retrieved_index >= 0) & (new_index != retrieved_index)
+        ).long()
+        retrieved_goal = new_goal
+        retrieved_index = new_index
+        retrieval_score_sum += torch.where(active, similarity, 0.0)
 
       action_index = step % cfg.action_execution_steps
       if action_index == 0:
         conditioning_goal = (
-          retrieved_goal if adapter is not None else command.joint_pos
+          retrieved_goal
+          if adapter is not None or route_goals is not None
+          else command.joint_pos
         )
         normalized_observation, current_joint, normalized_goal = (
           normalize_action_condition(state_observation, conditioning_goal, statistics)
@@ -328,6 +365,11 @@ def run_evaluation(cfg: EvaluateDiffusionPolicyConfig) -> dict:
     },
     "adapter": {
       "enabled": adapter is not None,
+      "mode": (
+        "adapter"
+        if adapter is not None
+        else "nearest_route" if route_goals is not None else "fixed"
+      ),
       "checkpoint_file": cfg.adapter_checkpoint_file,
       "checkpoint_sha256": (
         sha256_file(cfg.adapter_checkpoint_file)
