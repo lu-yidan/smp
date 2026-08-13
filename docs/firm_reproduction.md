@@ -1016,3 +1016,53 @@ evaluation uses the existing evaluator with
 `--action-checkpoint-file` is allowed. V4 remains the accepted FIRM baseline
 until the diagnostic passes both frame 324 and the full three-seed regression
 gate.
+### Deterministic actor and conservative hybrid gate result
+
+The deterministic diagnostic trained on 627,424 effective samples from twelve
+nominal, corrective, on-policy, and trimmed-rescue datasets. The 626,461
+parameter model reached normalized validation action RMSE 0.1711 at epoch 29.
+W&B run [`57f5nqrb`](https://wandb.ai/tabletennis/smp/runs/57f5nqrb)
+stores the final checkpoint. The server copy is
+`/root/workspace/smp-firm-artifacts/training/firm_deterministic_actor_c003_v1/2026-08-13_12-26-28/firm_deterministic_actor.pt`
+with SHA256
+`74f9ccf68991948607c442fd9cd980baf9679c2cca86b59229790b1938083b15`.
+
+The fixed-goal closed-loop result is decisive:
+
+| Policy | frame 324 | 300-episode success | unsafe | action-rate RMS |
+| --- | ---: | ---: | ---: | ---: |
+| V4 diffusion, ensemble 4 | 0/12 | 276/300 (92.0%) | 0 | 0.271 |
+| Deterministic actor | **12/12** | **286/300 (95.3%)** | 0 | **0.252** |
+| V4 + threshold-0.4 gate | **12/12** | 283/300 (94.3%) | 0 | 0.262 |
+
+The deterministic actor also lowers the approximate three-seed mean peak joint
+acceleration from 3,628 to 3,423 rad/s². Thus frame 324 does not require a more
+violent action; the failure comes from this reproduction's stochastic
+12-step diffusion action model.
+
+The deployable hybrid computes normalized first-action RMSE between the V4
+ensemble and deterministic actor, then uses the actor only above 0.4. It
+activates on about 4.0% of control decisions over the full 300-episode
+evaluation while retaining the diffusion policy elsewhere. This is an explicit
+recovery/safety gate and should be reported as an extension or ablation rather
+than as the unmodified FIRM algorithm.
+
+Interactive hybrid playback downloads both W&B checkpoints when needed:
+
+```bash
+uv run scripts/firm/play_diffusion_policy.py \
+  --action-wandb-run-path tabletennis/smp/zif8zf4w \
+  --action-wandb-checkpoint-name firm_action_diffusion.pt \
+  --deterministic-wandb-run-path tabletennis/smp/57f5nqrb \
+  --deterministic-wandb-checkpoint-name firm_deterministic_actor.pt \
+  --hybrid-disagreement-threshold 0.4 \
+  --expert-wandb-run-path tabletennis/smp/j0q8fell \
+  --expert-wandb-checkpoint-name model_29999.pt \
+  --start-frame 324 \
+  --num-action-samples 4 \
+  --viewer native
+```
+
+For the deterministic-only ablation, omit the two action-diffusion flags and
+set `--num-action-samples 1`. Native perturbations and disabled terminations
+remain enabled by default.

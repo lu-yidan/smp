@@ -78,6 +78,7 @@ class EvaluateDiffusionPolicyConfig:
   output_file: str | None = None
   log_root: str = "logs/rsl_rl"
 
+@torch.inference_mode()
 
 def run_evaluation(cfg: EvaluateDiffusionPolicyConfig) -> dict:
   """Run receding-horizon diffusion inference, executing its first action."""
