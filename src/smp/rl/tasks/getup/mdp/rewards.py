@@ -20,6 +20,10 @@ __all__ = [
   "recovery_initiation_progress",
   "cached_smp_score",
   "cached_task_score",
+  "constraint_active_metric",
+  "constraint_cohort_metric",
+  "constraint_load_metric",
+  "constraint_release_progress_metric",
   "feet_stationary_when_upright",
   "head_vertical_speed_metric",
   "head_vertical_overspeed_l2",
@@ -541,3 +545,39 @@ def v6_push_count_metric(env: ManagerBasedRlEnv) -> torch.Tensor:
   if count is None:
     return torch.zeros(env.num_envs, device=env.device)
   return count.float()
+
+
+def constraint_active_metric(env: ManagerBasedRlEnv) -> torch.Tensor:
+  """Return one while a sampled sustained constraint is being applied."""
+  remaining = getattr(env, "_constraint_remaining", None)
+  wait = getattr(env, "_constraint_wait", None)
+  if remaining is None or wait is None:
+    return torch.zeros(env.num_envs, device=env.device)
+  return ((wait <= 0) & (remaining > 0)).float()
+
+
+def constraint_cohort_metric(env: ManagerBasedRlEnv) -> torch.Tensor:
+  """Normalized cohort: clean=0, trunk=0.5, limb=1."""
+  cohort = getattr(env, "_constraint_cohort", None)
+  if cohort is None:
+    return torch.zeros(env.num_envs, device=env.device)
+  return cohort.float() / 2.0
+
+
+def constraint_load_metric(env: ManagerBasedRlEnv) -> torch.Tensor:
+  """Sampled downward load magnitude in newtons (zero for clean episodes)."""
+  magnitude = getattr(env, "_constraint_force_magnitude", None)
+  if magnitude is None:
+    return torch.zeros(env.num_envs, device=env.device)
+  return magnitude
+
+
+def constraint_release_progress_metric(env: ManagerBasedRlEnv) -> torch.Tensor:
+  """Fraction of the sampled constraint duration that has elapsed."""
+  remaining = getattr(env, "_constraint_remaining", None)
+  duration = getattr(env, "_constraint_duration", None)
+  cohort = getattr(env, "_constraint_cohort", None)
+  if remaining is None or duration is None or cohort is None:
+    return torch.zeros(env.num_envs, device=env.device)
+  elapsed = 1.0 - remaining.float() / torch.clamp(duration.float(), min=1.0)
+  return torch.where(cohort > 0, elapsed, torch.zeros_like(elapsed))

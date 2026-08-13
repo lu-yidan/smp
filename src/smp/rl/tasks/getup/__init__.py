@@ -3,6 +3,9 @@
 from mjlab.tasks.registry import register_mjlab_task
 
 from smp.rl.rl_cfg import unitree_g1_smp_ppo_runner_cfg
+from smp.rl.tasks.getup.constrained_env_cfg import (
+  g1_getup_constrained_smp_env_cfg,
+)
 from smp.rl.tasks.getup.getup_env_cfg import g1_getup_smp_env_cfg
 from smp.rl.tasks.getup.robust_env_cfg import g1_getup_robust_smp_env_cfg
 from smp.rl.tasks.getup.safe_env_cfg import g1_getup_robust_safe_smp_env_cfg
@@ -107,12 +110,25 @@ register_mjlab_task(
   rl_cfg=_v7_route_getup_rl,
 )
 
+_constrained_getup_rl = unitree_g1_smp_ppo_runner_cfg()
+_constrained_getup_rl.experiment_name = "smp_getup_constrained_g1"
+_constrained_getup_rl.run_name = "smp_getup_constrained_g1"
+_constrained_getup_rl.save_interval = 1000
+
+register_mjlab_task(
+  task_id="Smp-Getup-Constrained-G1",
+  env_cfg=g1_getup_constrained_smp_env_cfg(play=False),
+  play_env_cfg=g1_getup_constrained_smp_env_cfg(play=True),
+  rl_cfg=_constrained_getup_rl,
+)
+
 __all__ = [
   "g1_getup_robust_smp_env_cfg",
   "g1_getup_robust_safe_smp_env_cfg",
   "g1_getup_robust_smooth_smp_env_cfg",
   "g1_getup_robust_staged_smp_env_cfg",
   "g1_getup_smp_env_cfg",
+  "g1_getup_constrained_smp_env_cfg",
   "g1_getup_v6_prior_smp_env_cfg",
   "g1_getup_v6_smp_env_cfg",
   "g1_getup_v7_route_smp_env_cfg",

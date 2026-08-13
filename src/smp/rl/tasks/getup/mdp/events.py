@@ -7,16 +7,190 @@ from mjlab.envs import ManagerBasedRlEnv
 from mjlab.utils.lab_api.math import quat_from_euler_xyz, quat_mul
 
 __all__ = [
+  "apply_sustained_constraint",
   "failure_state_replay_reset",
   "mixed_fall_reset",
   "post_stand_body_wrench",
   "random_body_wrench",
   "record_failure_states",
   "reset_recovery_stage",
+  "reset_sustained_constraint",
   "reset_stand_counter",
   "stratified_post_stand_wrench",
   "update_recovery_stage",
 ]
+
+
+def _ensure_sustained_constraint_state(
+  env: ManagerBasedRlEnv,
+  body_names: tuple[str, ...],
+  cohort_weights: tuple[float, float, float],
+) -> None:
+  """Allocate the per-environment state used by the constrained task.
+
+  Cohorts are clean, trunk-constrained, and limb-constrained.  Keeping the
+  assignment explicit makes it possible to report a recovery envelope instead
+  of averaging unrelated cases into one success number.
+  """
+  if hasattr(env, "_constraint_body_ids"):
+    return
+  if len(body_names) < 3:
+    raise ValueError("body_names must include two trunk bodies and at least one limb")
+  weights = torch.tensor(cohort_weights, dtype=torch.float, device=env.device)
+  if weights.shape != (3,) or torch.any(weights < 0.0) or weights.sum() <= 0.0:
+    raise ValueError("cohort_weights must be three non-negative values")
+  robot = env.scene["robot"]
+  body_ids = robot.find_bodies(list(body_names), preserve_order=True)[0]
+  if len(body_ids) != len(body_names):
+    raise ValueError("all sustained-constraint body names must resolve exactly once")
+
+  env._constraint_body_ids = body_ids  # type: ignore[attr-defined]
+  env._constraint_cohort_weights = weights / weights.sum()  # type: ignore[attr-defined]
+  env._constraint_cohort = torch.zeros(  # type: ignore[attr-defined]
+    env.num_envs, dtype=torch.long, device=env.device
+  )
+  env._constraint_body_slot = torch.zeros_like(  # type: ignore[attr-defined]
+    env._constraint_cohort  # type: ignore[attr-defined]
+  )
+  env._constraint_wait = torch.zeros_like(  # type: ignore[attr-defined]
+    env._constraint_cohort  # type: ignore[attr-defined]
+  )
+  env._constraint_remaining = torch.zeros_like(  # type: ignore[attr-defined]
+    env._constraint_cohort  # type: ignore[attr-defined]
+  )
+  env._constraint_duration = torch.ones_like(  # type: ignore[attr-defined]
+    env._constraint_cohort  # type: ignore[attr-defined]
+  )
+  env._constraint_force_magnitude = torch.zeros(  # type: ignore[attr-defined]
+    env.num_envs, device=env.device
+  )
+  shape = (env.num_envs, len(body_ids), 3)
+  env._constraint_forces = torch.zeros(shape, device=env.device)  # type: ignore[attr-defined]
+  env._constraint_torques = torch.zeros(shape, device=env.device)  # type: ignore[attr-defined]
+
+
+@torch.no_grad()
+def reset_sustained_constraint(
+  env: ManagerBasedRlEnv,
+  env_ids: torch.Tensor | None = None,
+  body_names: tuple[str, ...] = (
+    "pelvis",
+    "torso_link",
+    "left_elbow_link",
+    "right_elbow_link",
+    "left_knee_link",
+    "right_knee_link",
+  ),
+  cohort_weights: tuple[float, float, float] = (0.25, 0.50, 0.25),
+  delay_steps: tuple[int, int] = (0, 15),
+  duration_steps: tuple[int, int] = (100, 350),
+  force_range: tuple[float, float] = (20.0, 120.0),
+  torque_range: tuple[float, float] = (0.0, 8.0),
+  lateral_force_fraction: float = 0.20,
+  curriculum_steps: int = 400_000,
+) -> None:
+  """Sample a persistent, downward-biased body constraint for each episode.
+
+  This is intentionally a force-based first benchmark, not a claim that a
+  wrench is equivalent to rigid-object pinning.  It provides a cheap,
+  vectorized curriculum before movable and fixed obstacle contacts are added.
+  The policy does not observe the sampled cohort, body, force, or duration.
+  """
+  if env_ids is None:
+    env_ids = torch.arange(env.num_envs, device=env.device)
+  if env_ids.numel() == 0:
+    return
+  _ensure_sustained_constraint_state(env, body_names, cohort_weights)
+
+  cohort = env._constraint_cohort  # type: ignore[attr-defined]
+  body_slot = env._constraint_body_slot  # type: ignore[attr-defined]
+  wait = env._constraint_wait  # type: ignore[attr-defined]
+  remaining = env._constraint_remaining  # type: ignore[attr-defined]
+  duration = env._constraint_duration  # type: ignore[attr-defined]
+  magnitude = env._constraint_force_magnitude  # type: ignore[attr-defined]
+  forces = env._constraint_forces  # type: ignore[attr-defined]
+  torques = env._constraint_torques  # type: ignore[attr-defined]
+
+  cohort[env_ids] = torch.multinomial(
+    env._constraint_cohort_weights,  # type: ignore[attr-defined]
+    env_ids.numel(),
+    replacement=True,
+  )
+  trunk = cohort[env_ids] == 1
+  limb = cohort[env_ids] == 2
+  slots = torch.zeros(env_ids.numel(), dtype=torch.long, device=env.device)
+  if trunk.any():
+    slots[trunk] = torch.randint(0, 2, (int(trunk.sum()),), device=env.device)
+  if limb.any():
+    slots[limb] = torch.randint(
+      2, len(body_names), (int(limb.sum()),), device=env.device
+    )
+  body_slot[env_ids] = slots
+
+  wait[env_ids] = torch.randint(
+    delay_steps[0], delay_steps[1] + 1, (env_ids.numel(),), device=env.device
+  )
+  sampled_duration = torch.randint(
+    duration_steps[0], duration_steps[1] + 1, (env_ids.numel(),), device=env.device
+  )
+  sampled_duration[cohort[env_ids] == 0] = 0
+  duration[env_ids] = torch.clamp(sampled_duration, min=1)
+  remaining[env_ids] = sampled_duration
+
+  progress = min(float(env.common_step_counter) / max(curriculum_steps, 1), 1.0)
+  max_force = force_range[0] + progress * (force_range[1] - force_range[0])
+  sampled_force = torch.empty(env_ids.numel(), device=env.device).uniform_(
+    0.60 * max_force, max_force
+  )
+  sampled_force[cohort[env_ids] == 0] = 0.0
+  magnitude[env_ids] = sampled_force
+
+  angle = torch.empty(env_ids.numel(), device=env.device).uniform_(-torch.pi, torch.pi)
+  lateral = lateral_force_fraction * sampled_force
+  force_vec = torch.stack(
+    (lateral * torch.cos(angle), lateral * torch.sin(angle), -sampled_force),
+    dim=-1,
+  )
+  max_torque = torque_range[0] + progress * (torque_range[1] - torque_range[0])
+  torque_vec = torch.empty_like(force_vec).uniform_(-max_torque, max_torque)
+  torque_vec[:, 2] *= 0.35
+  forces[env_ids] = 0.0
+  torques[env_ids] = 0.0
+  forces[env_ids, slots] = force_vec
+  torques[env_ids, slots] = torque_vec
+
+
+@torch.no_grad()
+def apply_sustained_constraint(
+  env: ManagerBasedRlEnv,
+  env_ids: torch.Tensor | None = None,
+) -> None:
+  """Apply and eventually release the constraint sampled at episode reset."""
+  if env_ids is None:
+    env_ids = torch.arange(env.num_envs, device=env.device)
+  if env_ids.numel() == 0 or not hasattr(env, "_constraint_body_ids"):
+    return
+  wait = env._constraint_wait  # type: ignore[attr-defined]
+  remaining = env._constraint_remaining  # type: ignore[attr-defined]
+  forces = env._constraint_forces  # type: ignore[attr-defined]
+  torques = env._constraint_torques  # type: ignore[attr-defined]
+
+  waiting = wait[env_ids] > 0
+  wait[env_ids[waiting]] -= 1
+  active = (wait[env_ids] <= 0) & (remaining[env_ids] > 0)
+  step_forces = torch.zeros_like(forces[env_ids])
+  step_torques = torch.zeros_like(torques[env_ids])
+  active_ids = env_ids[active]
+  if active_ids.numel() > 0:
+    step_forces[active] = forces[active_ids]
+    step_torques[active] = torques[active_ids]
+    remaining[active_ids] -= 1
+  env.scene["robot"].write_external_wrench_to_sim(
+    step_forces,
+    step_torques,
+    env_ids=env_ids,
+    body_ids=env._constraint_body_ids,  # type: ignore[attr-defined]
+  )
 
 
 @torch.no_grad()
