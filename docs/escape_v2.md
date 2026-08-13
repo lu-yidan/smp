@@ -88,3 +88,21 @@ uv run scripts/play.py Smp-Getup-Escape-G1 \
 4. Distill a privileged contact/plate-state teacher into that history encoder.
 5. Hold out plate mass, footprint, friction, chest offset, then add pelvis and
    single-limb pinning.
+
+## V2 pilot record
+
+- Implementation branch/commits: `codex/constrained-escape-v2`, `11dc4d7`
+  plus final-metric fix `5b57f41`.
+- Server workspace: `/mnt/workspace/user/luyidan/smp-v6-prior` on `dsw-lyd2`.
+- Seed: constrained V1 `model_73994.pt` (local copied SHA-256
+  `83763a19fcc6a13e6f40d835c60ee74172128fc3694663f46e3f3c96eb10ea7d`).
+- Frozen-policy baseline: 512 environments x 1000 steps. Loaded episodes were
+  71.34% of the batch and 15.19% of the whole batch ended escaped, giving a
+  conditional loaded-episode escape rate of approximately 21.3%. Mean hand
+  support contact was 9.31%; mean peak joint torque/power were 33.49 Nm and
+  67.27 W. The baseline log is `run_control/escape_v2_baseline_final.log`.
+- The 4096-environment V2 continuation started on RTX PRO 5000 GPU 1 with
+  learning rate `3e-4`, 4000 additional iterations, and checkpoint interval
+  1000. W&B: <https://wandb.ai/tabletennis/smp/runs/ml3n9wb6>.
+- Server log/PID: `run_control/escape_v2_ppo.log` and
+  `run_control/escape_v2_ppo.pid`.
