@@ -1,5 +1,15 @@
 # V2 physical-object escape task
 
+> **Invalid physical experiment (2026-08-13).** Do not use this V2 run as a
+> paper result or physical-object baseline. The obstacle reset teleported the
+> plate to a fixed offset from the torso body centre without collision-aware
+> surface placement or a settling phase. A 256-environment contact-distance
+> diagnostic measured median initial penetration of 4.60 cm and maximum
+> penetration of 13.37 cm. Initial contact force had median 630 N and 99th
+> percentile 8.28 kN; after 10 simulation steps the maximum reached 13.29 kN.
+> The W&B run `ml3n9wb6` and checkpoint table below are retained only as a
+> negative implementation record. They do not measure valid pinned recovery.
+
 ## Motivation
 
 The V1 sustained-wrench task trains load rejection and post-release recovery,
@@ -127,11 +137,12 @@ Every checkpoint and the frozen V1 seed were re-evaluated with the same seed
 | V2 `77000` | 13.2% | 36.0% | 29.85 | 63.49 |
 | V2 `77993` | 14.9% | 35.0% | 30.27 | 60.82 |
 
-The result is a useful negative ablation: a dense hand-supported crawl reward
-creates a support/motion local optimum without guaranteeing escape. In the
-final training summary, the crawl reward contribution (`0.0254`) was about 18
-times the separation-progress contribution (`0.0014`). V2.1 should therefore
-gate hand support by positive new separation, reduce its standalone weight,
-and strengthen separation/completion. It should not continue V2 unchanged.
+Because the initial contacts are invalid, the checkpoint comparison cannot
+isolate reward design from collision artifacts. The observed increase in hand
+support remains a debugging clue, not a valid ablation result. A replacement
+task must spawn the plate with guaranteed positive clearance, settle it under
+physics, reject/resample excessive penetration, and log contact distance and
+force before any reward comparison. Only after that validation should hand
+support be gated by positive separation and the reward balance be revisited.
 
 Evaluation logs are under `run_control/escape_v2_eval/` on the server.
