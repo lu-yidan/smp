@@ -158,6 +158,11 @@ def run_evaluation(cfg: EvaluateDiffusionPolicyConfig) -> dict:
   retrieval_score_sum = torch.zeros(n, device=device)
   retrieval_count = torch.zeros(n, dtype=torch.long, device=device)
   retrieval_switches = torch.zeros(n, dtype=torch.long, device=device)
+  retrieval_histogram = torch.zeros(
+    0 if adapter_payload is None else len(adapter_payload["codebook_goals"]),
+    dtype=torch.long,
+    device=device,
+  )
 
   obs = env.get_observations()
   try:
@@ -187,6 +192,7 @@ def run_evaluation(cfg: EvaluateDiffusionPolicyConfig) -> dict:
         retrieved_index = new_index
         retrieval_score_sum += torch.where(active, similarity, 0.0)
         retrieval_count += active.long()
+        retrieval_histogram.scatter_add_(0, new_index, active.long())
 
       action_index = step % cfg.action_execution_steps
       if action_index == 0:
@@ -333,6 +339,7 @@ def run_evaluation(cfg: EvaluateDiffusionPolicyConfig) -> dict:
         (retrieval_score_sum / retrieval_count.clamp(min=1)).mean()
       ),
       "mean_goal_switches": float(retrieval_switches.float().mean()),
+      "goal_index_counts": retrieval_histogram.tolist(),
     },
     "inference": {
       "sampled_windows": sampled_windows,
