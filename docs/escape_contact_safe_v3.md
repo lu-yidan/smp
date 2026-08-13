@@ -121,6 +121,18 @@ uv run scripts/play.py Smp-Getup-Escape-Plate-V3-G1 \
 For quantitative evaluation, do not pass `--no-terminations True`; invalid
 contact episodes must remain rejected and reported.
 
+### Active training record
+
+- branch/implementation commit: `codex/escape-contact-safe-v3`, `97912ca`;
+- server workspace: `/mnt/workspace/user/luyidan/smp-v6-prior` on `dsw-lyd2`;
+- 4096-environment server smoke test completed successfully on RTX PRO 5000;
+- formal seed: constrained V1 `tabletennis/smp/fiykfruo/model_73994.pt`;
+- formal run: <https://wandb.ai/tabletennis/smp/runs/wwbgq95n>;
+- log/PID files: `run_control/escape_plate_v3_ppo.log` and
+  `run_control/escape_plate_v3_ppo.pid`;
+- configuration: 4096 environments, learning rate `3e-4`, 5000 additional
+  iterations, checkpoint interval 1000.
+
 ## Staged mobility roadmap
 
 Do not claim V3 as general movable-object recovery. Advance only after V3
