@@ -106,3 +106,32 @@ uv run scripts/play.py Smp-Getup-Escape-G1 \
   1000. W&B: <https://wandb.ai/tabletennis/smp/runs/ml3n9wb6>.
 - Server log/PID: `run_control/escape_v2_ppo.log` and
   `run_control/escape_v2_ppo.pid`.
+
+## Completed V2 result
+
+The run completed at `model_77993.pt` after 2 h 3 min. All intended
+checkpoints (`74000`, `75000`, `76000`, `77000`, `77993`) are present in W&B.
+Training increased hand-ground support and reduced contact effort, but it did
+not improve physical escape success.
+
+Every checkpoint and the frozen V1 seed were re-evaluated with the same seed
+(`20260813`), 512 environments, and 1000-step rollouts. Conditional escape is
+`escape_completion / escape_obstacle_episode`:
+
+| checkpoint | conditional escape | hand support | peak torque (Nm) | peak power (W) |
+| --- | ---: | ---: | ---: | ---: |
+| V1 `73994` | 25.1% | 9.2% | 33.31 | 67.04 |
+| V2 `74000` | 21.8% | 8.9% | 33.48 | 67.32 |
+| V2 `75000` | 10.1% | 24.0% | 28.57 | 59.61 |
+| V2 `76000` | 10.3% | 32.5% | 29.97 | 60.79 |
+| V2 `77000` | 13.2% | 36.0% | 29.85 | 63.49 |
+| V2 `77993` | 14.9% | 35.0% | 30.27 | 60.82 |
+
+The result is a useful negative ablation: a dense hand-supported crawl reward
+creates a support/motion local optimum without guaranteeing escape. In the
+final training summary, the crawl reward contribution (`0.0254`) was about 18
+times the separation-progress contribution (`0.0014`). V2.1 should therefore
+gate hand support by positive new separation, reduce its standalone weight,
+and strengthen separation/completion. It should not continue V2 unchanged.
+
+Evaluation logs are under `run_control/escape_v2_eval/` on the server.
