@@ -140,13 +140,15 @@ def g1_getup_escape_smp_env_cfg(play: bool = False):
   )
   cfg.metrics.update(
     {
-      "escape_phase": MetricsTermCfg(func=mdp.escape_phase_metric),
-      "escape_completion": MetricsTermCfg(func=mdp.escape_completion),
+      "escape_phase": MetricsTermCfg(func=mdp.escape_phase_metric, reduce="last"),
+      "escape_completion": MetricsTermCfg(
+        func=mdp.escape_completion, reduce="last"
+      ),
       "escape_object_displacement": MetricsTermCfg(
-        func=mdp.escape_object_displacement_metric
+        func=mdp.escape_object_displacement_metric, reduce="last"
       ),
       "escape_obstacle_episode": MetricsTermCfg(
-        func=mdp.escape_obstacle_episode_metric
+        func=mdp.escape_obstacle_episode_metric, reduce="last"
       ),
       "hand_support_contact": MetricsTermCfg(
         func=mdp.hand_support_contact_metric,
