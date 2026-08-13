@@ -28,6 +28,10 @@ from smp.firm.expert_runtime import (
   runtime_metadata,
   sha256_file,
 )
+from smp.firm.goal_adapter import (
+  load_goal_adapter_checkpoint,
+  retrieve_adapter_goal,
+)
 from smp.rl.tasks.firm.keyframe_env_cfg import MOTION_FILE
 
 TASK_ID = "Firm-Keyframe-G1"
@@ -38,6 +42,9 @@ class EvaluateDiffusionPolicyConfig:
   """Fixed-start closed-loop diffusion-policy evaluation configuration."""
 
   action_checkpoint_file: str
+  adapter_checkpoint_file: str | None = None
+  adapter_goal_refresh_steps: int = 5
+  """Retrieve a codebook goal every N control steps when an adapter is used."""
   expert_checkpoint_file: str | None = None
   """Stage-0 expert checkpoint used only to construct the matched runtime."""
   expert_wandb_run_path: str | None = None
@@ -69,6 +76,8 @@ def run_evaluation(cfg: EvaluateDiffusionPolicyConfig) -> dict:
     raise ValueError("max_steps and standing_hold_steps must be positive")
   if cfg.num_action_samples <= 0:
     raise ValueError("num_action_samples must be positive")
+  if cfg.adapter_goal_refresh_steps <= 0:
+    raise ValueError("adapter_goal_refresh_steps must be positive")
 
   runtime = create_expert_runtime(
     task_id=TASK_ID,
@@ -96,6 +105,23 @@ def run_evaluation(cfg: EvaluateDiffusionPolicyConfig) -> dict:
   if not 1 <= cfg.action_execution_steps <= model.horizon:
     env.close()
     raise ValueError(f"action_execution_steps must be in [1, {model.horizon}]")
+  action_path = Path(cfg.action_checkpoint_file).expanduser().resolve()
+  adapter = None
+  adapter_payload = None
+  if cfg.adapter_checkpoint_file is not None:
+    adapter, adapter_payload = load_goal_adapter_checkpoint(
+      cfg.adapter_checkpoint_file, device
+    )
+    expected_action_hash = adapter_payload["artifacts"][
+      "action_checkpoint_sha256"
+    ]
+    actual_action_hash = sha256_file(action_path)
+    if expected_action_hash != actual_action_hash:
+      env.close()
+      raise ValueError(
+        "adapter/action checkpoint mismatch: "
+        f"expected {expected_action_hash}, got {actual_action_hash}"
+      )
   n = env.num_envs
 
   active_steps = torch.zeros(n, dtype=torch.long, device=device)
@@ -116,6 +142,12 @@ def run_evaluation(cfg: EvaluateDiffusionPolicyConfig) -> dict:
   sampling_seconds = 0.0
   sampled_windows = 0
   normalized_horizon: torch.Tensor | None = None
+  observation_history: torch.Tensor | None = None
+  retrieved_goal = command.joint_pos.clone()
+  retrieved_index = torch.full((n,), -1, dtype=torch.long, device=device)
+  retrieval_score_sum = torch.zeros(n, device=device)
+  retrieval_count = torch.zeros(n, dtype=torch.long, device=device)
+  retrieval_switches = torch.zeros(n, dtype=torch.long, device=device)
 
   obs = env.get_observations()
   try:
@@ -124,11 +156,35 @@ def run_evaluation(cfg: EvaluateDiffusionPolicyConfig) -> dict:
       if not active.any():
         break
 
+      state_observation = actor_base_observation(obs)
+      if observation_history is None:
+        history_steps = 50 if adapter is None else adapter.history_steps
+        observation_history = state_observation[:, None, :].expand(
+          -1, history_steps, -1
+        ).clone()
+      else:
+        observation_history = torch.roll(observation_history, shifts=-1, dims=1)
+        observation_history[:, -1] = state_observation
+      if adapter is not None and step % cfg.adapter_goal_refresh_steps == 0:
+        assert adapter_payload is not None
+        new_goal, new_index, similarity = retrieve_adapter_goal(
+          adapter, observation_history, adapter_payload
+        )
+        retrieval_switches += (
+          active & (retrieved_index >= 0) & (new_index != retrieved_index)
+        ).long()
+        retrieved_goal = new_goal
+        retrieved_index = new_index
+        retrieval_score_sum += torch.where(active, similarity, 0.0)
+        retrieval_count += active.long()
+
       action_index = step % cfg.action_execution_steps
       if action_index == 0:
-        state_observation = actor_base_observation(obs)
+        conditioning_goal = (
+          retrieved_goal if adapter is not None else command.joint_pos
+        )
         normalized_observation, current_joint, normalized_goal = (
-          normalize_action_condition(state_observation, command.joint_pos, statistics)
+          normalize_action_condition(state_observation, conditioning_goal, statistics)
         )
         if device.type == "cuda":
           torch.cuda.synchronize(device)
@@ -242,7 +298,6 @@ def run_evaluation(cfg: EvaluateDiffusionPolicyConfig) -> dict:
     max_actuator_force=max_actuator_force,
     max_root_vertical_speed=max_root_vertical_speed,
   )
-  action_path = Path(cfg.action_checkpoint_file).expanduser().resolve()
   result = {
     "format_version": 1,
     "task_id": TASK_ID,
@@ -254,6 +309,20 @@ def run_evaluation(cfg: EvaluateDiffusionPolicyConfig) -> dict:
       "action_checkpoint_sha256": sha256_file(action_path),
       "action_checkpoint_epoch": int(action_checkpoint["epoch"]),
       "action_weights": "ema" if cfg.use_ema else "online",
+    },
+    "adapter": {
+      "enabled": adapter is not None,
+      "checkpoint_file": cfg.adapter_checkpoint_file,
+      "checkpoint_sha256": (
+        sha256_file(cfg.adapter_checkpoint_file)
+        if cfg.adapter_checkpoint_file is not None
+        else None
+      ),
+      "goal_refresh_steps": cfg.adapter_goal_refresh_steps,
+      "mean_retrieval_similarity": float(
+        (retrieval_score_sum / retrieval_count.clamp(min=1)).mean()
+      ),
+      "mean_goal_switches": float(retrieval_switches.float().mean()),
     },
     "inference": {
       "sampled_windows": sampled_windows,

@@ -847,3 +847,86 @@ the reference reaches its last standing goal.
 - [x] Aggregate on-policy diffusion failure states.
 - [ ] Close the on-policy diffusion policy gap.
 - [ ] Train the adapter and evaluate full FIRM-R.
+
+### Online goal adapter implementation
+
+The adapter stage follows the FIRM appendix rather than the main-text shorthand:
+a three-layer temporal 1D CNN reads the previous 50 proprioceptive observations.
+Its kernel/stride pairs are `(8, 4)`, `(5, 1)`, and `(5, 1)`; the output is
+normalized to the unit sphere and trained for 20 epochs with cosine loss against
+the frozen action policy's goal encoder. At inference, cosine nearest-neighbour
+retrieval selects a raw joint-position keyframe from the dataset codebook every
+five control steps.
+
+Two reproduction choices are explicit because the paper does not fully specify
+them. The temporal channels are `128/256/256`. The adapter latent is 64-D to
+match this reproduction's frozen action diffusion goal encoder; this differs
+from the 256-D sphere drawn in the paper figure. The paper main text calls the
+adapter an MLP while the appendix specifies the temporal CNN, so the appendix is
+treated as authoritative.
+
+`FirmGoalAdapterDataset` constructs histories inside a single rollout episode
+and left-pads only the beginning of an episode. Train/validation splitting is by
+source-qualified episode. The saved checkpoint embeds the action-checkpoint
+SHA256, observation normalization, raw goal codebook, encoded unit-sphere
+codebook, and every rollout-manifest SHA256. Evaluation and playback reject an
+adapter paired with a different action model.
+
+The first formal adapter should use the successful nominal and corrective expert
+trajectories plus the first on-policy correction set:
+
+```bash
+CUDA_VISIBLE_DEVICES=1 uv run scripts/firm/train_goal_adapter.py \
+  --action-checkpoint-file \
+    /root/workspace/smp-firm-artifacts/training/firm_action_diffusion_c003_targeted_onpolicy_ft_v4/2026-08-10_09-53-38/firm_action_diffusion.pt \
+  --manifest-file \
+    datasets/firm/rollouts/c003_stage0_model_29999_pilot/manifest.json \
+  --additional-manifest-files \
+    /root/workspace/smp-firm-artifacts/c003_stage0_model_29999_corrective_force40_seed42/manifest.json \
+    /root/workspace/smp-firm-artifacts/c003_earlymid_corrective_force40_seed42/manifest.json \
+    /root/workspace/smp-firm-artifacts/c003_onpolicy_corrections_v2_t012/manifest.json \
+  --history-steps 50 \
+  --num-epochs 20 \
+  --batch-size 1024 \
+  --run-name firm_goal_adapter_v1
+```
+
+The 12-step on-policy correction episodes are useful off-distribution states but
+contain only a short true history; left-padding makes that limitation explicit.
+They must not replace the full nominal/corrective episodes. If the first adapter
+still fails frame 324, the next data action is to collect continuous diffusion
+rollouts with expert-selected keyframe labels, not merely repeat the same
+12-action correction windows.
+
+Closed-loop evaluation is opt-in and retains the fixed-goal baseline when
+`--adapter-checkpoint-file` is absent:
+
+```bash
+uv run scripts/firm/evaluate_diffusion_policy.py \
+  --action-checkpoint-file ACTION_CHECKPOINT \
+  --adapter-checkpoint-file ADAPTER_CHECKPOINT \
+  --expert-wandb-run-path tabletennis/smp/j0q8fell \
+  --expert-wandb-checkpoint-name model_29999.pt \
+  --num-action-samples 4 \
+  --output-file /root/workspace/smp-firm-artifacts/evaluation/firm_adapter_v1.json
+```
+
+Interactive inspection uses the same optional flag:
+
+```bash
+uv run scripts/firm/play_diffusion_policy.py \
+  --action-wandb-run-path tabletennis/smp/zif8zf4w \
+  --action-wandb-checkpoint-name firm_action_diffusion.pt \
+  --adapter-checkpoint-file ADAPTER_CHECKPOINT \
+  --expert-wandb-run-path tabletennis/smp/j0q8fell \
+  --expert-wandb-checkpoint-name model_29999.pt \
+  --start-frame 324 \
+  --num-action-samples 4 \
+  --viewer native
+```
+
+Acceptance is measured against the unchanged V4 ensemble-4 baseline: improve
+frame 324 above 0/12 while keeping the three-seed aggregate success at or above
+92% and unsafe termination at 0%. Retrieval similarity and keyframe-switch
+count are recorded to distinguish a useful route change from unstable goal
+chattering.

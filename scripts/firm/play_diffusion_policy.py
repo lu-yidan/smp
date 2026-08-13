@@ -19,7 +19,16 @@ from smp.firm.action_diffusion import (
   normalize_action_condition,
   sample_action_horizon,
 )
-from smp.firm.expert_runtime import actor_base_observation, create_expert_runtime
+from smp.firm.expert_runtime import (
+  actor_base_observation,
+  create_expert_runtime,
+  sha256_file,
+)
+from smp.firm.goal_adapter import (
+  FirmGoalAdapter,
+  load_goal_adapter_checkpoint,
+  retrieve_adapter_goal,
+)
 from smp.pretrain.scheduler import DDPMScheduler
 from smp.rl.tasks.firm.keyframe_env_cfg import MOTION_FILE
 
@@ -35,6 +44,8 @@ class PlayDiffusionPolicyConfig:
   action_wandb_checkpoint_name: str | None = "firm_action_diffusion.pt"
   """Action-diffusion checkpoint name within the W&B run."""
   action_log_root: str = "logs/firm_action_diffusion"
+  adapter_checkpoint_file: str | None = None
+  adapter_goal_refresh_steps: int = 5
   expert_checkpoint_file: str | None = None
   expert_wandb_run_path: str | None = None
   expert_wandb_checkpoint_name: str | None = None
@@ -65,6 +76,9 @@ class _DiffusionPolicy:
     scheduler: DDPMScheduler,
     statistics: dict[str, torch.Tensor],
     num_action_samples: int,
+    adapter: FirmGoalAdapter | None = None,
+    adapter_payload: dict | None = None,
+    adapter_goal_refresh_steps: int = 5,
   ) -> None:
     self.env = env
     self.command = command
@@ -72,13 +86,44 @@ class _DiffusionPolicy:
     self.scheduler = scheduler
     self.statistics = statistics
     self.num_action_samples = num_action_samples
+    self.adapter = adapter
+    self.adapter_payload = adapter_payload
+    self.adapter_goal_refresh_steps = adapter_goal_refresh_steps
+    self.observation_history: torch.Tensor | None = None
+    self.retrieved_goal: torch.Tensor | None = None
+    self.step = 0
 
   @torch.inference_mode()
   def __call__(self, obs: TensorDict) -> torch.Tensor:
     observation = actor_base_observation(obs)
+    if self.observation_history is None:
+      history_steps = 50 if self.adapter is None else self.adapter.history_steps
+      self.observation_history = observation[:, None, :].expand(
+        -1, history_steps, -1
+      ).clone()
+    else:
+      self.observation_history = torch.roll(
+        self.observation_history, shifts=-1, dims=1
+      )
+      self.observation_history[:, -1] = observation
+    if (
+      self.adapter is not None
+      and self.step % self.adapter_goal_refresh_steps == 0
+    ):
+      assert self.adapter_payload is not None
+      self.retrieved_goal, _, _ = retrieve_adapter_goal(
+        self.adapter,
+        self.observation_history,
+        self.adapter_payload,
+      )
+    conditioning_goal = (
+      self.retrieved_goal
+      if self.retrieved_goal is not None
+      else self.command.joint_pos
+    )
     normalized_observation, current_joint, normalized_goal = normalize_action_condition(
       observation,
-      self.command.joint_pos,
+      conditioning_goal,
       self.statistics,
     )
     batch = observation.shape[0]
@@ -107,6 +152,7 @@ class _DiffusionPolicy:
     actions = denormalize_actions(horizon[:, 0], self.statistics)
     if self.env.clip_actions is not None:
       actions = actions.clamp(-self.env.clip_actions, self.env.clip_actions)
+    self.step += 1
     return actions
 
 
@@ -160,6 +206,8 @@ def run_play(cfg: PlayDiffusionPolicyConfig) -> None:
     raise ValueError("num_envs and num_action_samples must be positive")
   if cfg.frame_rate <= 0:
     raise ValueError("frame_rate must be positive")
+  if cfg.adapter_goal_refresh_steps <= 0:
+    raise ValueError("adapter_goal_refresh_steps must be positive")
 
   runtime = create_expert_runtime(
     task_id=TASK_ID,
@@ -186,6 +234,22 @@ def run_play(cfg: PlayDiffusionPolicyConfig) -> None:
     device,
     use_ema=cfg.use_ema,
   )
+  adapter = None
+  adapter_payload = None
+  if cfg.adapter_checkpoint_file is not None:
+    adapter, adapter_payload = load_goal_adapter_checkpoint(
+      cfg.adapter_checkpoint_file, device
+    )
+    expected_action_hash = adapter_payload["artifacts"][
+      "action_checkpoint_sha256"
+    ]
+    actual_action_hash = sha256_file(action_checkpoint)
+    if expected_action_hash != actual_action_hash:
+      env.close()
+      raise ValueError(
+        "adapter/action checkpoint mismatch: "
+        f"expected {expected_action_hash}, got {actual_action_hash}"
+      )
   policy = _DiffusionPolicy(
     env=env,
     command=runtime.command,
@@ -193,6 +257,9 @@ def run_play(cfg: PlayDiffusionPolicyConfig) -> None:
     scheduler=scheduler,
     statistics=statistics,
     num_action_samples=cfg.num_action_samples,
+    adapter=adapter,
+    adapter_payload=adapter_payload,
+    adapter_goal_refresh_steps=cfg.adapter_goal_refresh_steps,
   )
 
   resolved_viewer = cfg.viewer
@@ -202,7 +269,8 @@ def run_play(cfg: PlayDiffusionPolicyConfig) -> None:
   print(
     f"[INFO] FIRM diffusion play: viewer={resolved_viewer}, "
     f"start_frame={cfg.start_frame}, samples={cfg.num_action_samples}, "
-    f"terminations={'off' if cfg.disable_terminations else 'on'}"
+    f"terminations={'off' if cfg.disable_terminations else 'on'}, "
+    f"adapter={'on' if adapter is not None else 'off'}"
   )
   try:
     if resolved_viewer == "native":
