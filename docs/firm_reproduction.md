@@ -1108,3 +1108,22 @@ uv run scripts/train.py Firm-Keyframe-Deployable-G1 \
 ```
 
 This observation repair alone is not claimed to solve arbitrary mouse-drag
+
+### Gravity-aware Stage-0 training record
+
+The first deployable-observation expert was launched on 2026-08-13:
+
+| Field | Value |
+| --- | --- |
+| code branch / commit | `repro/firm-g1` / `3520b9e` |
+| server workspace | `/mnt/workspace/user/luyidan/smp-firm` |
+| device | physical GPU 0, NVIDIA RTX PRO 5000 72GB Blackwell |
+| environments | 4096 |
+| actor / critic dimensions | 123 / 126 |
+| iterations / checkpoint interval | 30,000 / 1,000 |
+| W&B run | [`tabletennis/smp/6po0tv9u`](https://wandb.ai/tabletennis/smp/runs/6po0tv9u) |
+| run directory | `logs/rsl_rl/firm_keyframe_deployable_g1_c003/2026-08-13_14-12-28_firm_keyframe_deployable_g1_c003` |
+| launcher PID at launch | `129716` |
+| captured stdout | `run_control/firm_keyframe_deployable_g1_c003.log` |
+
+At iteration 5 the run sustained about 170k steps/s with zero unsafe-velocity
