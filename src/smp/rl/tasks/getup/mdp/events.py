@@ -14,6 +14,7 @@ __all__ = [
   "random_body_wrench",
   "record_failure_states",
   "reset_escape_obstacle",
+  "reset_guided_escape_plate",
   "reset_recovery_stage",
   "reset_sustained_constraint",
   "reset_stand_counter",
@@ -21,6 +22,48 @@ __all__ = [
   "update_escape_phase",
   "update_recovery_stage",
 ]
+
+
+def _ensure_escape_state(env: ManagerBasedRlEnv) -> None:
+  """Allocate shared state for free-object and guided-plate escape tasks."""
+  if not hasattr(env, "_escape_phase"):
+    env._escape_phase = torch.zeros(  # type: ignore[attr-defined]
+      env.num_envs, dtype=torch.long, device=env.device
+    )
+    env._escape_target_slot = torch.zeros_like(  # type: ignore[attr-defined]
+      env._escape_phase  # type: ignore[attr-defined]
+    )
+    env._escape_contact_ever = torch.zeros(  # type: ignore[attr-defined]
+      env.num_envs, dtype=torch.bool, device=env.device
+    )
+    env._escape_clear_hold = torch.zeros_like(  # type: ignore[attr-defined]
+      env._escape_phase  # type: ignore[attr-defined]
+    )
+    env._escape_best_separation = torch.zeros(  # type: ignore[attr-defined]
+      env.num_envs, device=env.device
+    )
+    env._escape_separation_delta = torch.zeros_like(  # type: ignore[attr-defined]
+      env._escape_best_separation  # type: ignore[attr-defined]
+    )
+    env._escape_start_robot_xy = torch.zeros(  # type: ignore[attr-defined]
+      env.num_envs, 2, device=env.device
+    )
+    env._escape_start_obstacle_xy = torch.zeros_like(  # type: ignore[attr-defined]
+      env._escape_start_robot_xy  # type: ignore[attr-defined]
+    )
+  if not hasattr(env, "_escape_invalid_contact"):
+    env._escape_invalid_contact = torch.zeros(  # type: ignore[attr-defined]
+      env.num_envs, dtype=torch.bool, device=env.device
+    )
+    env._escape_peak_penetration = torch.zeros(  # type: ignore[attr-defined]
+      env.num_envs, device=env.device
+    )
+    env._escape_peak_contact_force = torch.zeros(  # type: ignore[attr-defined]
+      env.num_envs, device=env.device
+    )
+    env._escape_sensor_grace = torch.zeros(  # type: ignore[attr-defined]
+      env.num_envs, dtype=torch.long, device=env.device
+    )
 
 
 @torch.no_grad()
@@ -95,31 +138,7 @@ def reset_escape_obstacle(
   )
   env.sim.forward()
 
-  if not hasattr(env, "_escape_phase"):
-    env._escape_phase = torch.zeros(  # type: ignore[attr-defined]
-      env.num_envs, dtype=torch.long, device=env.device
-    )
-    env._escape_target_slot = torch.zeros_like(  # type: ignore[attr-defined]
-      env._escape_phase  # type: ignore[attr-defined]
-    )
-    env._escape_contact_ever = torch.zeros(  # type: ignore[attr-defined]
-      env.num_envs, dtype=torch.bool, device=env.device
-    )
-    env._escape_clear_hold = torch.zeros_like(  # type: ignore[attr-defined]
-      env._escape_phase  # type: ignore[attr-defined]
-    )
-    env._escape_best_separation = torch.zeros(  # type: ignore[attr-defined]
-      env.num_envs, device=env.device
-    )
-    env._escape_separation_delta = torch.zeros_like(  # type: ignore[attr-defined]
-      env._escape_best_separation  # type: ignore[attr-defined]
-    )
-    env._escape_start_robot_xy = torch.zeros(  # type: ignore[attr-defined]
-      env.num_envs, 2, device=env.device
-    )
-    env._escape_start_obstacle_xy = torch.zeros_like(  # type: ignore[attr-defined]
-      env._escape_start_robot_xy  # type: ignore[attr-defined]
-    )
+  _ensure_escape_state(env)
 
   # phase: 0=clean, 1=waiting for initial contact, 2=constrained, 3=escaped.
   env._escape_phase[env_ids] = active.long()  # type: ignore[attr-defined]
@@ -133,6 +152,96 @@ def reset_escape_obstacle(
   env._escape_best_separation[env_ids] = separation  # type: ignore[attr-defined]
   env._escape_start_robot_xy[env_ids] = robot_xy  # type: ignore[attr-defined]
   env._escape_start_obstacle_xy[env_ids] = obstacle_xy  # type: ignore[attr-defined]
+  env._escape_invalid_contact[env_ids] = False  # type: ignore[attr-defined]
+  env._escape_peak_penetration[env_ids] = 0.0  # type: ignore[attr-defined]
+  env._escape_peak_contact_force[env_ids] = 0.0  # type: ignore[attr-defined]
+  env._escape_sensor_grace[env_ids] = 1  # type: ignore[attr-defined]
+
+
+@torch.no_grad()
+def reset_guided_escape_plate(
+  env: ManagerBasedRlEnv,
+  env_ids: torch.Tensor | None = None,
+  obstacle_probability: float = 0.90,
+  target_body_name: str = "torso_link",
+  eligible_reset_types: tuple[int, ...] | None = None,
+  xy_offset_range: float = 0.015,
+  body_origin_clearance: float = 0.26,
+  inactive_xy: tuple[float, float] = (1.20, 1.20),
+) -> None:
+  """Reset a guided plate above the robot with conservative positive clearance.
+
+  The mocap anchor is positioned once at reset.  It never follows the robot.
+  A passive slide joint lets the plate descend under gravity and react to contact
+  only along the vertical axis, so successful separation must come from robot
+  translation rather than an obstacle that is teleported away.
+  """
+  if env_ids is None:
+    env_ids = torch.arange(env.num_envs, device=env.device)
+  if env_ids.numel() == 0:
+    return
+  robot = env.scene["robot"]
+  obstacle = env.scene["escape_obstacle"]
+  target_ids = robot.find_bodies([target_body_name], preserve_order=True)[0]
+  if len(target_ids) != 1:
+    raise ValueError(f"target body {target_body_name!r} must resolve exactly once")
+
+  n = env_ids.numel()
+  active = torch.rand(n, device=env.device) < obstacle_probability
+  if eligible_reset_types is not None:
+    reset_type = getattr(env, "_robust_reset_type", None)
+    if reset_type is None:
+      raise RuntimeError("eligible_reset_types requires mixed_fall_reset state")
+    eligible = torch.zeros(n, dtype=torch.bool, device=env.device)
+    for reset_value in eligible_reset_types:
+      eligible |= reset_type[env_ids] == reset_value
+    active &= eligible
+
+  target_pos = robot.data.body_link_pos_w[env_ids, target_ids[0]].clone()
+  target_pos[:, :2] += torch.empty(n, 2, device=env.device).uniform_(
+    -xy_offset_range, xy_offset_range
+  )
+  # Targeting only the torso centre recreated V2's bug whenever a hand, foot,
+  # or head collision was higher.  This conservative envelope is independent
+  # of which link happens to be uppermost in the sampled prone pose.
+  target_pos[:, 2] = (
+    robot.data.body_link_pos_w[env_ids, :, 2].amax(dim=-1) + body_origin_clearance
+  )
+  origins = env.scene.env_origins[env_ids]
+  inactive_pos = origins.clone()
+  inactive_pos[:, 0] += inactive_xy[0]
+  inactive_pos[:, 1] += inactive_xy[1]
+  inactive_pos[:, 2] += body_origin_clearance
+  anchor_pos = torch.where(active[:, None], target_pos, inactive_pos)
+  anchor_quat = torch.zeros(n, 4, device=env.device)
+  anchor_quat[:, 0] = 1.0
+  obstacle.write_mocap_pose_to_sim(
+    torch.cat((anchor_pos, anchor_quat), dim=-1), env_ids=env_ids
+  )
+  obstacle.write_joint_state_to_sim(
+    torch.zeros(n, 1, device=env.device),
+    torch.zeros(n, 1, device=env.device),
+    env_ids=env_ids,
+  )
+  _ensure_escape_state(env)
+  env._escape_phase[env_ids] = active.long()  # type: ignore[attr-defined]
+  env._escape_target_slot[env_ids] = 0  # type: ignore[attr-defined]
+  env._escape_contact_ever[env_ids] = False  # type: ignore[attr-defined]
+  env._escape_clear_hold[env_ids] = 0  # type: ignore[attr-defined]
+  env._escape_separation_delta[env_ids] = 0.0  # type: ignore[attr-defined]
+  env._escape_invalid_contact[env_ids] = False  # type: ignore[attr-defined]
+  env._escape_peak_penetration[env_ids] = 0.0  # type: ignore[attr-defined]
+  env._escape_peak_contact_force[env_ids] = 0.0  # type: ignore[attr-defined]
+  # Step events run after auto-reset but before the subsequent sim.sense().  Skip
+  # one update so a terminated episode's stale sensor sample cannot invalidate
+  # the freshly reset episode.
+  env._escape_sensor_grace[env_ids] = 1  # type: ignore[attr-defined]
+  robot_xy = robot.data.root_link_pos_w[env_ids, :2]
+  obstacle_xy = anchor_pos[:, :2]
+  separation = torch.linalg.vector_norm(robot_xy - obstacle_xy, dim=-1)
+  env._escape_best_separation[env_ids] = separation  # type: ignore[attr-defined]
+  env._escape_start_robot_xy[env_ids] = robot_xy  # type: ignore[attr-defined]
+  env._escape_start_obstacle_xy[env_ids] = obstacle_xy  # type: ignore[attr-defined]
 
 
 @torch.no_grad()
@@ -142,12 +251,21 @@ def update_escape_phase(
   sensor_name: str = "robot_obstacle_contact",
   clear_hold_steps: int = 15,
   separation_threshold: float = 0.24,
+  max_penetration: float | None = None,
+  max_contact_force: float | None = None,
 ) -> None:
   """Track first contact, separation progress, and stable physical escape."""
   if env_ids is None:
     env_ids = torch.arange(env.num_envs, device=env.device)
   if env_ids.numel() == 0 or not hasattr(env, "_escape_phase"):
     return
+  grace = getattr(env, "_escape_sensor_grace", None)
+  if grace is not None:
+    waiting = grace[env_ids] > 0
+    grace[env_ids] = torch.clamp(grace[env_ids] - 1, min=0)
+    env_ids = env_ids[~waiting]
+    if env_ids.numel() == 0:
+      return
   sensor = env.scene[sensor_name]
   found = sensor.data.found
   if found is None:
@@ -159,7 +277,46 @@ def update_escape_phase(
   best = env._escape_best_separation  # type: ignore[attr-defined]
   delta = env._escape_separation_delta  # type: ignore[attr-defined]
 
-  active = phase[env_ids] > 0
+  # Track contact quality before updating task phase.  V3 rejects episodes that
+  # violate conservative solver limits instead of learning from interpenetration.
+  penetration = torch.zeros(env_ids.numel(), device=env.device)
+  if sensor.data.dist is not None:
+    valid = found[env_ids] > 0
+    penetration = torch.where(
+      valid, torch.clamp(-sensor.data.dist[env_ids], min=0.0), 0.0
+    ).amax(dim=-1)
+    if sensor.data.dist_history is not None:
+      penetration = torch.maximum(
+        penetration,
+        torch.clamp(-sensor.data.dist_history[env_ids], min=0.0).amax(dim=(-1, -2)),
+      )
+  contact_force = torch.zeros_like(penetration)
+  if sensor.data.force is not None:
+    contact_force = torch.linalg.vector_norm(sensor.data.force[env_ids], dim=-1).amax(
+      dim=-1
+    )
+    if sensor.data.force_history is not None:
+      contact_force = torch.maximum(
+        contact_force,
+        torch.linalg.vector_norm(sensor.data.force_history[env_ids], dim=-1).amax(
+          dim=(-1, -2)
+        ),
+      )
+  if hasattr(env, "_escape_peak_penetration"):
+    peak_penetration = env._escape_peak_penetration  # type: ignore[attr-defined]
+    peak_force = env._escape_peak_contact_force  # type: ignore[attr-defined]
+    peak_penetration[env_ids] = torch.maximum(peak_penetration[env_ids], penetration)
+    peak_force[env_ids] = torch.maximum(peak_force[env_ids], contact_force)
+    invalid = torch.zeros_like(contact)
+    if max_penetration is not None:
+      invalid |= penetration > max_penetration
+    if max_contact_force is not None:
+      invalid |= contact_force > max_contact_force
+    invalid &= phase[env_ids] > 0
+    env._escape_invalid_contact[env_ids] |= invalid  # type: ignore[attr-defined]
+    phase[env_ids[invalid]] = 4
+
+  active = (phase[env_ids] > 0) & (phase[env_ids] < 4)
   contact_ever[env_ids] |= contact & active
   newly_contacted = env_ids[(phase[env_ids] == 1) & contact]
   phase[newly_contacted] = 2

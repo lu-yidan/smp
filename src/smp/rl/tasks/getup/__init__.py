@@ -7,6 +7,9 @@ from smp.rl.tasks.getup.constrained_env_cfg import (
   g1_getup_constrained_smp_env_cfg,
 )
 from smp.rl.tasks.getup.escape_env_cfg import g1_getup_escape_smp_env_cfg
+from smp.rl.tasks.getup.escape_v3_env_cfg import (
+  g1_getup_escape_plate_v3_smp_env_cfg,
+)
 from smp.rl.tasks.getup.getup_env_cfg import g1_getup_smp_env_cfg
 from smp.rl.tasks.getup.robust_env_cfg import g1_getup_robust_smp_env_cfg
 from smp.rl.tasks.getup.safe_env_cfg import g1_getup_robust_safe_smp_env_cfg
@@ -135,6 +138,18 @@ register_mjlab_task(
   rl_cfg=_escape_getup_rl,
 )
 
+_escape_plate_v3_getup_rl = unitree_g1_smp_ppo_runner_cfg()
+_escape_plate_v3_getup_rl.experiment_name = "smp_getup_escape_plate_v3_g1"
+_escape_plate_v3_getup_rl.run_name = "smp_getup_escape_plate_v3_g1"
+_escape_plate_v3_getup_rl.save_interval = 1000
+
+register_mjlab_task(
+  task_id="Smp-Getup-Escape-Plate-V3-G1",
+  env_cfg=g1_getup_escape_plate_v3_smp_env_cfg(play=False),
+  play_env_cfg=g1_getup_escape_plate_v3_smp_env_cfg(play=True),
+  rl_cfg=_escape_plate_v3_getup_rl,
+)
+
 __all__ = [
   "g1_getup_robust_smp_env_cfg",
   "g1_getup_robust_safe_smp_env_cfg",
@@ -143,6 +158,7 @@ __all__ = [
   "g1_getup_smp_env_cfg",
   "g1_getup_constrained_smp_env_cfg",
   "g1_getup_escape_smp_env_cfg",
+  "g1_getup_escape_plate_v3_smp_env_cfg",
   "g1_getup_v6_prior_smp_env_cfg",
   "g1_getup_v6_smp_env_cfg",
   "g1_getup_v7_route_smp_env_cfg",

@@ -5,7 +5,15 @@ from __future__ import annotations
 import torch
 from mjlab.envs import ManagerBasedRlEnv
 
-__all__ = ["smp_too_low", "stood_up"]
+__all__ = ["invalid_escape_contact", "smp_too_low", "stood_up"]
+
+
+def invalid_escape_contact(env: ManagerBasedRlEnv) -> torch.Tensor:
+  """Terminate samples whose obstacle contact is physically invalid."""
+  invalid = getattr(env, "_escape_invalid_contact", None)
+  if invalid is None:
+    return torch.zeros(env.num_envs, dtype=torch.bool, device=env.device)
+  return invalid
 
 
 def stood_up(

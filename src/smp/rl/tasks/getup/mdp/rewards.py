@@ -28,6 +28,7 @@ __all__ = [
   "constraint_release_progress_metric",
   "crawl_with_hand_support",
   "escape_completion",
+  "escape_contact_force_excess_l2",
   "escape_gated_task_smp_product",
   "escape_object_displacement_metric",
   "escape_obstacle_episode_metric",
@@ -37,6 +38,10 @@ __all__ = [
   "head_vertical_speed_metric",
   "head_vertical_overspeed_l2",
   "hand_support_contact_metric",
+  "hand_supported_escape_progress",
+  "escape_invalid_contact_metric",
+  "escape_peak_contact_force_metric",
+  "escape_peak_penetration_metric",
   "joint_acc_rms_metric",
   "low_base_angular_velocity",
   "low_joint_velocity",
@@ -140,12 +145,52 @@ def escape_separation_progress(
   return (phase == 2).float() * torch.clamp(delta / progress_scale, 0.0, 1.0)
 
 
+def hand_supported_escape_progress(
+  env: ManagerBasedRlEnv,
+  sensor_name: str = "hand_ground_contact",
+  progress_scale: float = 0.025,
+  max_head_height: float = 0.90,
+) -> torch.Tensor:
+  """Reward new separation only when a low robot is supported by its hands.
+
+  Coupling support to monotonic progress prevents the V2 local optimum where the
+  policy accumulated hand-contact/crawling reward while remaining under the plate.
+  """
+  phase = getattr(env, "_escape_phase", None)
+  delta = getattr(env, "_escape_separation_delta", None)
+  if phase is None or delta is None:
+    return torch.zeros(env.num_envs, device=env.device)
+  support_fraction = _contact_found(env, sensor_name).float().mean(dim=-1)
+  robot = env.scene["robot"]
+  head_idx = robot.find_sites(["head"], preserve_order=True)[0][0]
+  low_pose = robot.data.site_pos_w[:, head_idx, 2] <= max_head_height
+  progress = torch.clamp(delta / progress_scale, 0.0, 1.0)
+  return (phase == 2).float() * low_pose.float() * support_fraction * progress
+
+
 def escape_completion(env: ManagerBasedRlEnv) -> torch.Tensor:
   """Persistent success signal after stable contact-free separation."""
   phase = getattr(env, "_escape_phase", None)
   if phase is None:
     return torch.zeros(env.num_envs, device=env.device)
   return (phase == 3).float()
+
+
+def escape_contact_force_excess_l2(
+  env: ManagerBasedRlEnv,
+  sensor_name: str = "robot_obstacle_contact",
+  force_limit: float = 300.0,
+  force_scale: float = 300.0,
+) -> torch.Tensor:
+  """Penalize striking the plate rather than establishing controlled support."""
+  phase = getattr(env, "_escape_phase", None)
+  force = env.scene[sensor_name].data.force
+  if phase is None or force is None:
+    return torch.zeros(env.num_envs, device=env.device)
+  peak = torch.linalg.vector_norm(force, dim=-1).amax(dim=-1)
+  excess = torch.clamp(peak - force_limit, min=0.0) / max(force_scale, 1e-6)
+  constrained = (phase == 1) | (phase == 2)
+  return constrained.float() * torch.square(excess)
 
 
 def track_head_height(
@@ -671,11 +716,12 @@ def constraint_release_progress_metric(env: ManagerBasedRlEnv) -> torch.Tensor:
 
 
 def escape_phase_metric(env: ManagerBasedRlEnv) -> torch.Tensor:
-  """Normalized escape phase: clean=0, pending=1/3, pinned=2/3, escaped=1."""
+  """Normalized phase; invalid-contact episodes are reported as -1."""
   phase = getattr(env, "_escape_phase", None)
   if phase is None:
     return torch.zeros(env.num_envs, device=env.device)
-  return phase.float() / 3.0
+  normalized = phase.float() / 3.0
+  return torch.where(phase == 4, -torch.ones_like(normalized), normalized)
 
 
 def escape_object_displacement_metric(env: ManagerBasedRlEnv) -> torch.Tensor:
@@ -693,6 +739,30 @@ def escape_obstacle_episode_metric(env: ManagerBasedRlEnv) -> torch.Tensor:
   if phase is None:
     return torch.zeros(env.num_envs, device=env.device)
   return (phase > 0).float()
+
+
+def escape_invalid_contact_metric(env: ManagerBasedRlEnv) -> torch.Tensor:
+  """One when penetration/force exceeded the configured validity envelope."""
+  invalid = getattr(env, "_escape_invalid_contact", None)
+  if invalid is None:
+    return torch.zeros(env.num_envs, device=env.device)
+  return invalid.float()
+
+
+def escape_peak_penetration_metric(env: ManagerBasedRlEnv) -> torch.Tensor:
+  """Largest robot-plate penetration observed in the episode, in metres."""
+  peak = getattr(env, "_escape_peak_penetration", None)
+  if peak is None:
+    return torch.zeros(env.num_envs, device=env.device)
+  return peak
+
+
+def escape_peak_contact_force_metric(env: ManagerBasedRlEnv) -> torch.Tensor:
+  """Largest robot-plate contact-force norm observed in the episode, in newtons."""
+  peak = getattr(env, "_escape_peak_contact_force", None)
+  if peak is None:
+    return torch.zeros(env.num_envs, device=env.device)
+  return peak
 
 
 def hand_support_contact_metric(
