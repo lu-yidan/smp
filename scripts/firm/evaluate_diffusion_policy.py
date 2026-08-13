@@ -45,6 +45,8 @@ class EvaluateDiffusionPolicyConfig:
 
   action_checkpoint_file: str | None = None
   deterministic_checkpoint_file: str | None = None
+  hybrid_disagreement_threshold: float = 0.25
+  """Use deterministic action when normalized first-action RMSE exceeds this."""
   adapter_checkpoint_file: str | None = None
   adapter_goal_refresh_steps: int = 5
   """Retrieve a codebook goal every N control steps when an adapter is used."""
@@ -85,17 +87,21 @@ def run_evaluation(cfg: EvaluateDiffusionPolicyConfig) -> dict:
     raise ValueError("num_action_samples must be positive")
   if cfg.adapter_goal_refresh_steps <= 0:
     raise ValueError("adapter_goal_refresh_steps must be positive")
-  if (cfg.action_checkpoint_file is None) == (
-    cfg.deterministic_checkpoint_file is None
-  ):
-    raise ValueError("provide exactly one action or deterministic checkpoint")
-  deterministic = cfg.deterministic_checkpoint_file is not None
-  if deterministic and (
+  has_diffusion = cfg.action_checkpoint_file is not None
+  has_deterministic = cfg.deterministic_checkpoint_file is not None
+  if not has_diffusion and not has_deterministic:
+    raise ValueError("provide an action checkpoint, a deterministic checkpoint, or both")
+  hybrid = has_diffusion and has_deterministic
+  if cfg.hybrid_disagreement_threshold < 0:
+    raise ValueError("hybrid_disagreement_threshold must be non-negative")
+  if has_deterministic and (
     cfg.adapter_checkpoint_file is not None
+    or cfg.nearest_route_lookahead is not None
     or cfg.action_execution_steps != 1
-    or cfg.num_action_samples != 1
   ):
-    raise ValueError("deterministic evaluation requires fixed goal and one action")
+    raise ValueError("deterministic and hybrid evaluation require a fixed one-step goal")
+  if has_deterministic and not has_diffusion and cfg.num_action_samples != 1:
+    raise ValueError("deterministic-only evaluation requires num_action_samples=1")
   if cfg.nearest_route_lookahead is not None:
     if cfg.nearest_route_lookahead < 0:
       raise ValueError("nearest_route_lookahead must be non-negative")
@@ -130,25 +136,43 @@ def run_evaluation(cfg: EvaluateDiffusionPolicyConfig) -> dict:
   robot = raw_env.scene["robot"]
   command = runtime.command
   device = torch.device(env.device)
+  diffusion_model = None
+  deterministic_model = None
   scheduler = None
-  if deterministic:
-    assert cfg.deterministic_checkpoint_file is not None
-    model, statistics, action_checkpoint = load_deterministic_actor_checkpoint(
-      cfg.deterministic_checkpoint_file, device
-    )
-    model_horizon = 1
-    action_path = Path(cfg.deterministic_checkpoint_file).expanduser().resolve()
-  else:
+  diffusion_checkpoint = None
+  deterministic_checkpoint = None
+  diffusion_path = None
+  deterministic_path = None
+  statistics: dict[str, torch.Tensor] | None = None
+  model_horizon = 1
+  if has_diffusion:
     assert cfg.action_checkpoint_file is not None
-    model, scheduler, statistics, action_checkpoint = (
+    diffusion_model, scheduler, statistics, diffusion_checkpoint = (
       load_action_diffusion_checkpoint(
         cfg.action_checkpoint_file,
         device,
         use_ema=cfg.use_ema,
       )
     )
-    model_horizon = model.horizon
-    action_path = Path(cfg.action_checkpoint_file).expanduser().resolve()
+    model_horizon = diffusion_model.horizon
+    diffusion_path = Path(cfg.action_checkpoint_file).expanduser().resolve()
+  if has_deterministic:
+    assert cfg.deterministic_checkpoint_file is not None
+    deterministic_model, deterministic_statistics, deterministic_checkpoint = (
+      load_deterministic_actor_checkpoint(cfg.deterministic_checkpoint_file, device)
+    )
+    deterministic_path = (
+      Path(cfg.deterministic_checkpoint_file).expanduser().resolve()
+    )
+    if statistics is None:
+      statistics = deterministic_statistics
+    elif any(
+      not torch.allclose(statistics[name], deterministic_statistics[name])
+      for name in statistics
+    ):
+      env.close()
+      raise ValueError("diffusion and deterministic normalization tensors differ")
+  assert statistics is not None
   if not 1 <= cfg.action_execution_steps <= model_horizon:
     env.close()
     raise ValueError(f"action_execution_steps must be in [1, {model_horizon}]")
@@ -161,7 +185,8 @@ def run_evaluation(cfg: EvaluateDiffusionPolicyConfig) -> dict:
     expected_action_hash = adapter_payload["artifacts"][
       "action_checkpoint_sha256"
     ]
-    actual_action_hash = sha256_file(action_path)
+    assert diffusion_path is not None
+    actual_action_hash = sha256_file(diffusion_path)
     if expected_action_hash != actual_action_hash:
       env.close()
       raise ValueError(
@@ -180,6 +205,10 @@ def run_evaluation(cfg: EvaluateDiffusionPolicyConfig) -> dict:
   active_steps = torch.zeros(n, dtype=torch.long, device=device)
   done = torch.zeros(n, dtype=torch.bool, device=device)
   success = torch.zeros_like(done)
+  gate_activations = torch.zeros(n, dtype=torch.long, device=device)
+  gate_decisions = torch.zeros(n, dtype=torch.long, device=device)
+  gate_disagreement_sum = torch.zeros(n, device=device)
+  gate_disagreement_max = torch.zeros(n, device=device)
   unsafe = torch.zeros_like(done)
   timed_out = torch.zeros_like(done)
   stable_hold = torch.zeros(n, dtype=torch.long, device=device)
@@ -270,36 +299,65 @@ def run_evaluation(cfg: EvaluateDiffusionPolicyConfig) -> dict:
         if device.type == "cuda":
           torch.cuda.synchronize(device)
         sample_start = time.perf_counter()
-        if deterministic:
-          normalized_horizon = model(
+        deterministic_action = None
+        if deterministic_model is not None:
+          deterministic_action = deterministic_model(
             normalized_observation, current_joint, normalized_goal
-          )[:, None, :]
+          )
+        if diffusion_model is None:
+          assert deterministic_action is not None
+          normalized_horizon = deterministic_action[:, None, :]
         else:
           assert scheduler is not None
+          diffusion_observation = normalized_observation
+          diffusion_current_joint = current_joint
+          diffusion_goal = normalized_goal
           if cfg.num_action_samples > 1:
-            normalized_observation = normalized_observation.repeat_interleave(
+            diffusion_observation = diffusion_observation.repeat_interleave(
               cfg.num_action_samples, dim=0
             )
-            current_joint = current_joint.repeat_interleave(
+            diffusion_current_joint = diffusion_current_joint.repeat_interleave(
               cfg.num_action_samples, dim=0
             )
-            normalized_goal = normalized_goal.repeat_interleave(
+            diffusion_goal = diffusion_goal.repeat_interleave(
               cfg.num_action_samples, dim=0
             )
           normalized_horizon = sample_action_horizon(
-            model,
+            diffusion_model,
             scheduler,
-            normalized_observation,
-            current_joint,
-            normalized_goal,
+            diffusion_observation,
+            diffusion_current_joint,
+            diffusion_goal,
           )
           if cfg.num_action_samples > 1:
             normalized_horizon = normalized_horizon.view(
               n,
               cfg.num_action_samples,
               model_horizon,
-              model.action_dim,
+              diffusion_model.action_dim,
             ).mean(dim=1)
+          if deterministic_action is not None:
+            disagreement = torch.sqrt(
+              torch.mean(
+                torch.square(normalized_horizon[:, 0] - deterministic_action),
+                dim=-1,
+              )
+            )
+            use_deterministic = active & (
+              disagreement > cfg.hybrid_disagreement_threshold
+            )
+            normalized_horizon[:, 0] = torch.where(
+              use_deterministic[:, None],
+              deterministic_action,
+              normalized_horizon[:, 0],
+            )
+            gate_activations += use_deterministic.long()
+            gate_decisions += active.long()
+            gate_disagreement_sum += torch.where(active, disagreement, 0.0)
+            gate_disagreement_max = torch.maximum(
+              gate_disagreement_max,
+              torch.where(active, disagreement, 0.0),
+            )
         if device.type == "cuda":
           torch.cuda.synchronize(device)
         sampling_seconds += time.perf_counter() - sample_start
@@ -391,17 +449,41 @@ def run_evaluation(cfg: EvaluateDiffusionPolicyConfig) -> dict:
     "format_version": 1,
     "task_id": TASK_ID,
     "policy": (
-      "firm_deterministic_actor"
-      if deterministic
-      else "firm_action_diffusion_action_chunking"
+      "firm_diffusion_deterministic_gate"
+      if hybrid
+      else (
+        "firm_action_diffusion_action_chunking"
+        if has_diffusion
+        else "firm_deterministic_actor"
+      )
     ),
     "config": asdict(cfg),
     "artifacts": {
       **runtime_metadata(runtime),
-      "action_checkpoint_file": str(action_path),
-      "action_checkpoint_sha256": sha256_file(action_path),
-      "action_checkpoint_epoch": int(action_checkpoint["epoch"]),
-      "action_weights": "ema" if cfg.use_ema else "online",
+      "action_checkpoint_file": (
+        None if diffusion_path is None else str(diffusion_path)
+      ),
+      "action_checkpoint_sha256": (
+        None if diffusion_path is None else sha256_file(diffusion_path)
+      ),
+      "action_checkpoint_epoch": (
+        None if diffusion_checkpoint is None else int(diffusion_checkpoint["epoch"])
+      ),
+      "action_weights": (
+        None if diffusion_checkpoint is None
+        else "ema" if cfg.use_ema else "online"
+      ),
+      "deterministic_checkpoint_file": (
+        None if deterministic_path is None else str(deterministic_path)
+      ),
+      "deterministic_checkpoint_sha256": (
+        None if deterministic_path is None else sha256_file(deterministic_path)
+      ),
+      "deterministic_checkpoint_epoch": (
+        None
+        if deterministic_checkpoint is None
+        else int(deterministic_checkpoint["epoch"])
+      ),
     },
     "adapter": {
       "enabled": adapter is not None,
@@ -422,6 +504,17 @@ def run_evaluation(cfg: EvaluateDiffusionPolicyConfig) -> dict:
       ),
       "mean_goal_switches": float(retrieval_switches.float().mean()),
       "goal_index_counts": retrieval_histogram.tolist(),
+    },
+    "hybrid_gate": {
+      "enabled": hybrid,
+      "threshold": cfg.hybrid_disagreement_threshold,
+      "activation_rate": float(
+        gate_activations.sum() / gate_decisions.sum().clamp(min=1)
+      ),
+      "mean_normalized_action_rmse": float(
+        gate_disagreement_sum.sum() / gate_decisions.sum().clamp(min=1)
+      ),
+      "max_normalized_action_rmse": float(gate_disagreement_max.max()),
     },
     "inference": {
       "sampled_windows": sampled_windows,
