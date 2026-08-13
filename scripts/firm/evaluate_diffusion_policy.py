@@ -50,6 +50,8 @@ class EvaluateDiffusionPolicyConfig:
   expert_wandb_run_path: str | None = None
   expert_wandb_checkpoint_name: str | None = None
   motion_file: str = MOTION_FILE
+  start_frame: int | None = None
+  """Optional exact start frame; requires num_start_frames=1."""
   num_start_frames: int = 25
   episodes_per_frame: int = 32
   max_steps: int = 500
@@ -78,6 +80,11 @@ def run_evaluation(cfg: EvaluateDiffusionPolicyConfig) -> dict:
     raise ValueError("num_action_samples must be positive")
   if cfg.adapter_goal_refresh_steps <= 0:
     raise ValueError("adapter_goal_refresh_steps must be positive")
+  if cfg.start_frame is not None:
+    if cfg.start_frame < 0:
+      raise ValueError("start_frame must be non-negative")
+    if cfg.num_start_frames != 1:
+      raise ValueError("an exact start_frame requires num_start_frames=1")
 
   runtime = create_expert_runtime(
     task_id=TASK_ID,
@@ -91,6 +98,9 @@ def run_evaluation(cfg: EvaluateDiffusionPolicyConfig) -> dict:
     seed=cfg.seed,
     device=cfg.device,
     observation_corruption=cfg.observation_corruption,
+    start_frame_range=(
+      (cfg.start_frame, cfg.start_frame) if cfg.start_frame is not None else None
+    ),
   )
   env = runtime.env
   raw_env = env.unwrapped

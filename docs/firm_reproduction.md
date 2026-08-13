@@ -907,6 +907,8 @@ uv run scripts/firm/evaluate_diffusion_policy.py \
   --adapter-checkpoint-file ADAPTER_CHECKPOINT \
   --expert-wandb-run-path tabletennis/smp/j0q8fell \
   --expert-wandb-checkpoint-name model_29999.pt \
+  --start-frame 324 \
+  --num-start-frames 1 \
   --num-action-samples 4 \
   --output-file /root/workspace/smp-firm-artifacts/evaluation/firm_adapter_v1.json
 ```
