@@ -121,16 +121,19 @@ def run_collection(cfg: CollectOnPolicyRescuesConfig) -> dict:
       goals = command.joint_pos.clone()
       motion_frames = command.time_steps.clone()
       goal_frames = command.goal_steps.clone()
-      diffusion_action = _diffusion_action(
-        state_observation,
-        goals,
-        model=model,
-        scheduler=scheduler,
-        statistics=statistics,
-        num_samples=cfg.num_action_samples,
-      )
       with torch.no_grad():
         expert_action = runtime.policy(obs)
+      if (active & ~rescuing).any():
+        diffusion_action = _diffusion_action(
+          state_observation,
+          goals,
+          model=model,
+          scheduler=scheduler,
+          statistics=statistics,
+          num_samples=cfg.num_action_samples,
+        )
+      else:
+        diffusion_action = expert_action.clone()
       if env.clip_actions is not None:
         diffusion_action = diffusion_action.clamp(
           -env.clip_actions, env.clip_actions
