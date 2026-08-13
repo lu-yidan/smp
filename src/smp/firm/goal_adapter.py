@@ -60,6 +60,16 @@ class FirmGoalAdapterDataset(Dataset[dict[str, torch.Tensor]]):
     if not self.records:
       raise ValueError("adapter dataset contains no transitions")
     self.sample_episode_groups = np.asarray(sample_episode_groups, dtype=np.int64)
+    record_goals = np.asarray(
+      [
+        self.sources[source_index].arrays["goal"][episode_indices[position]]
+        for source_index, episode_indices, position in self.records
+      ],
+      dtype=np.float32,
+    )
+    self._codebook_goals, self.sample_goal_indices = np.unique(
+      record_goals, axis=0, return_inverse=True
+    )
 
   def __len__(self) -> int:
     return len(self.records)
@@ -77,6 +87,7 @@ class FirmGoalAdapterDataset(Dataset[dict[str, torch.Tensor]]):
     return {
       "observation_history": torch.from_numpy(history).float(),
       "goal": torch.from_numpy(source.arrays["goal"][target_id]).float(),
+      "goal_index": torch.tensor(self.sample_goal_indices[index], dtype=torch.long),
       "episode_group": torch.tensor(
         self.sample_episode_groups[index], dtype=torch.long
       ),

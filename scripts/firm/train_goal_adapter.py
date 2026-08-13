@@ -12,7 +12,7 @@ import numpy as np
 import torch
 import torch.nn.functional as F
 import tyro
-from torch.utils.data import DataLoader, Subset
+from torch.utils.data import DataLoader, Subset, WeightedRandomSampler
 
 from smp.firm.action_diffusion import load_action_diffusion_checkpoint
 from smp.firm.expert_runtime import sha256_file
@@ -28,6 +28,7 @@ class TrainGoalAdapterConfig:
   channels: tuple[int, int, int] = (128, 256, 256)
   train_fraction: float = 0.9
   successful_only: bool = True
+  balance_goal_sampling: bool = True
   batch_size: int = 1024
   num_epochs: int = 20
   learning_rate: float = 3e-4
@@ -66,16 +67,19 @@ def _evaluate(
   action_model,
   loader: DataLoader,
   statistics: dict[str, torch.Tensor],
+  codebook_features: torch.Tensor,
   device: torch.device,
-) -> tuple[float, float]:
+) -> tuple[float, float, float]:
   adapter.eval()
   loss_sum = 0.0
   correct = 0
+  retrieval_correct = 0
   count = 0
   with torch.no_grad():
     for batch in loader:
       history = batch["observation_history"].to(device)
       goal = batch["goal"].to(device)
+      goal_index = batch["goal_index"].to(device)
       history = (
         history - statistics["observation_mean"]
       ) / statistics["observation_std"]
@@ -90,7 +94,13 @@ def _evaluate(
       loss_sum += float((1.0 - cosine).sum())
       correct += int((cosine >= 0.95).sum())
       count += len(history)
-  return loss_sum / max(count, 1), correct / max(count, 1)
+      retrieved = (predicted @ codebook_features.transpose(0, 1)).argmax(dim=-1)
+      retrieval_correct += int((retrieved == goal_index).sum())
+  return (
+    loss_sum / max(count, 1),
+    correct / max(count, 1),
+    retrieval_correct / max(count, 1),
+  )
 
 
 def train(cfg: TrainGoalAdapterConfig) -> Path:
@@ -108,10 +118,24 @@ def train(cfg: TrainGoalAdapterConfig) -> Path:
     cfg.train_fraction, cfg.seed
   )
   generator = torch.Generator().manual_seed(cfg.seed)
+  train_sampler = None
+  if cfg.balance_goal_sampling:
+    train_goal_indices = dataset.sample_goal_indices[train_ids]
+    class_counts = np.bincount(
+      train_goal_indices, minlength=len(dataset.codebook_goals())
+    )
+    sample_weights = 1.0 / class_counts[train_goal_indices]
+    train_sampler = WeightedRandomSampler(
+      torch.from_numpy(sample_weights),
+      num_samples=len(train_ids),
+      replacement=True,
+      generator=generator,
+    )
   train_loader = DataLoader(
     Subset(dataset, train_ids.tolist()),
     batch_size=cfg.batch_size,
-    shuffle=True,
+    shuffle=train_sampler is None,
+    sampler=train_sampler,
     generator=generator,
     num_workers=cfg.num_workers,
     pin_memory=device.type == "cuda",
@@ -134,6 +158,14 @@ def train(cfg: TrainGoalAdapterConfig) -> Path:
     latent_dim = action_model.goal_encoder(
       torch.zeros(1, 29, device=device)
     ).shape[-1]
+  codebook_goals = dataset.codebook_goals().to(device)
+  with torch.no_grad():
+    codebook_features = _target_latent(
+      action_model,
+      codebook_goals,
+      statistics["joint_mean"],
+      statistics["joint_std"],
+    )
   adapter = FirmGoalAdapter(
     history_steps=cfg.history_steps,
     latent_dim=int(latent_dim),
@@ -188,15 +220,21 @@ def train(cfg: TrainGoalAdapterConfig) -> Path:
       train_loss_sum += float(loss.detach()) * len(history)
       train_count += len(history)
 
-    validation_loss, validation_cos095 = _evaluate(
-      adapter, action_model, validation_loader, statistics, device
+    validation_loss, validation_cos095, validation_retrieval_accuracy = _evaluate(
+      adapter,
+      action_model,
+      validation_loader,
+      statistics,
+      codebook_features,
+      device,
     )
     train_loss = train_loss_sum / max(train_count, 1)
     if epoch % cfg.log_interval == 0 or epoch == cfg.num_epochs - 1:
       print(
         f"Epoch {epoch:03d} | train={train_loss:.6f} "
         f"validation={validation_loss:.6f} "
-        f"val_cos>=0.95={validation_cos095:.4f}"
+        f"val_cos>=0.95={validation_cos095:.4f} "
+        f"val_retrieval={validation_retrieval_accuracy:.4f}"
       )
     if wandb_run is not None:
       wandb_run.log(
@@ -205,6 +243,7 @@ def train(cfg: TrainGoalAdapterConfig) -> Path:
           "train/loss": train_loss,
           "validation/loss": validation_loss,
           "validation/cosine_ge_0.95": validation_cos095,
+          "validation/retrieval_accuracy": validation_retrieval_accuracy,
         }
       )
 
