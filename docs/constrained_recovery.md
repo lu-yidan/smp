@@ -94,3 +94,18 @@ The primary evaluation is a recovery envelope over initial-pose bin, constrained
 body, normalized load, duration, and terrain severity. Report recovery success,
 post-release success, escape/stall time, peak joint speed/torque/power, action
 jerk, contact impulse, slip, energy, and post-stand stability with matched seeds.
+
+## V1 training record
+
+- Branch/implementation commit: `codex/constrained-recovery-v1` / `9280a43`.
+- Server workspace: `/mnt/workspace/user/luyidan/smp-v6-prior` on `dsw-lyd2`.
+- V7 seed: `model_69995.pt`, copied without modification into
+  `logs/rsl_rl/smp_getup_constrained_g1/v7_seed_69995/` (SHA-256
+  `1324d3cbfe71d3896cd502e2cc381b839a678a17a357183528dd6153f6f0f0da`).
+- A 64-environment, two-iteration checkpoint-resume smoke test passed on
+  2026-08-13.
+- The 4096-environment V1 continuation started on RTX PRO 5000 GPU 1 with
+  learning rate `3e-4`, 4000 additional iterations, and checkpoint interval
+  1000. W&B: <https://wandb.ai/tabletennis/smp/runs/fiykfruo>.
+- Server log/PID: `run_control/constrained_v1_ppo.log` and
+  `run_control/constrained_v1_ppo.pid`.
