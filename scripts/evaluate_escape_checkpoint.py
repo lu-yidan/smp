@@ -79,8 +79,10 @@ def main(cfg: EvalCfg) -> None:
   active_count = int(active.sum())
   contacted = (first_contact >= 0) & active
   invalid = raw_env._escape_invalid_contact & active  # type: ignore[attr-defined]
+  setup_invalid = raw_env._escape_invalid_setup & active  # type: ignore[attr-defined]
+  any_invalid = invalid | setup_invalid
   escaped = (phase == 3) & active
-  valid = active & (~invalid)
+  valid = active & (~any_invalid)
   first = first_contact[contacted].float()
   penetration = raw_env._escape_peak_penetration[active]  # type: ignore[attr-defined]
   force = raw_env._escape_peak_contact_force[active]  # type: ignore[attr-defined]
@@ -103,6 +105,8 @@ def main(cfg: EvalCfg) -> None:
     ),
     "invalid": int(invalid.sum()),
     "invalid_rate": float(invalid.sum() / max(active_count, 1)),
+    "setup_invalid": int(setup_invalid.sum()),
+    "setup_invalid_rate": float(setup_invalid.sum() / max(active_count, 1)),
     "pending": int(((phase == 1) & active).sum()),
     "pinned": int(((phase == 2) & active).sum()),
     "penetration_median_m": float(penetration.median()),
@@ -112,6 +116,18 @@ def main(cfg: EvalCfg) -> None:
     "force_p99_n": quantile(force, 0.99),
     "force_max_n": float(force.max()),
     "hand_support_mean": float((hand_support_sum[active] / cfg.steps).mean()),
+    "first_contact_head_height_median_m": float(
+      raw_env._escape_first_contact_head_height[contacted].median()  # type: ignore[attr-defined]
+    ),
+    "first_contact_head_height_max_m": float(
+      raw_env._escape_first_contact_head_height[contacted].max()  # type: ignore[attr-defined]
+    ),
+    "hand_support_steps_median": float(
+      raw_env._escape_hand_support_steps[active].float().median()  # type: ignore[attr-defined]
+    ),
+    "hand_supported_progress_median_m": float(
+      raw_env._escape_hand_supported_progress[active].median()  # type: ignore[attr-defined]
+    ),
     "max_torque_mean_nm": float(max_torque[active].mean()),
     "max_power_mean_w": float(max_power[active].mean()),
   }

@@ -40,6 +40,10 @@ __all__ = [
   "hand_support_contact_metric",
   "hand_supported_escape_progress",
   "escape_invalid_contact_metric",
+  "escape_invalid_setup_metric",
+  "escape_first_contact_head_height_metric",
+  "escape_hand_support_steps_metric",
+  "escape_hand_supported_progress_metric",
   "escape_peak_contact_force_metric",
   "escape_peak_penetration_metric",
   "joint_acc_rms_metric",
@@ -747,6 +751,38 @@ def escape_invalid_contact_metric(env: ManagerBasedRlEnv) -> torch.Tensor:
   if invalid is None:
     return torch.zeros(env.num_envs, device=env.device)
   return invalid.float()
+
+
+def escape_invalid_setup_metric(env: ManagerBasedRlEnv) -> torch.Tensor:
+  """One when the plate failed to load the robot promptly in a low pose."""
+  invalid = getattr(env, "_escape_invalid_setup", None)
+  if invalid is None:
+    return torch.zeros(env.num_envs, device=env.device)
+  return invalid.float()
+
+
+def escape_first_contact_head_height_metric(env: ManagerBasedRlEnv) -> torch.Tensor:
+  """Head height at first plate contact; -1 means contact never occurred."""
+  height = getattr(env, "_escape_first_contact_head_height", None)
+  if height is None:
+    return -torch.ones(env.num_envs, device=env.device)
+  return height
+
+
+def escape_hand_support_steps_metric(env: ManagerBasedRlEnv) -> torch.Tensor:
+  """Number of constrained control steps with at least one supporting hand."""
+  steps = getattr(env, "_escape_hand_support_steps", None)
+  if steps is None:
+    return torch.zeros(env.num_envs, device=env.device)
+  return steps.float()
+
+
+def escape_hand_supported_progress_metric(env: ManagerBasedRlEnv) -> torch.Tensor:
+  """New planar separation accumulated while a hand supported on the ground."""
+  progress = getattr(env, "_escape_hand_supported_progress", None)
+  if progress is None:
+    return torch.zeros(env.num_envs, device=env.device)
+  return progress
 
 
 def escape_peak_penetration_metric(env: ManagerBasedRlEnv) -> torch.Tensor:

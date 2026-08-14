@@ -5,7 +5,12 @@ from __future__ import annotations
 import torch
 from mjlab.envs import ManagerBasedRlEnv
 
-__all__ = ["invalid_escape_contact", "smp_too_low", "stood_up"]
+__all__ = [
+  "invalid_escape_contact",
+  "invalid_escape_episode",
+  "smp_too_low",
+  "stood_up",
+]
 
 
 def invalid_escape_contact(env: ManagerBasedRlEnv) -> torch.Tensor:
@@ -14,6 +19,19 @@ def invalid_escape_contact(env: ManagerBasedRlEnv) -> torch.Tensor:
   if invalid is None:
     return torch.zeros(env.num_envs, dtype=torch.bool, device=env.device)
   return invalid
+
+
+def invalid_escape_episode(env: ManagerBasedRlEnv) -> torch.Tensor:
+  """Terminate either physically invalid contact or an invalid plate setup."""
+  contact = getattr(env, "_escape_invalid_contact", None)
+  setup = getattr(env, "_escape_invalid_setup", None)
+  if contact is None and setup is None:
+    return torch.zeros(env.num_envs, dtype=torch.bool, device=env.device)
+  if contact is None:
+    return setup
+  if setup is None:
+    return contact
+  return contact | setup
 
 
 def stood_up(

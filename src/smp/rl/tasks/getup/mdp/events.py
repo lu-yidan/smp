@@ -64,6 +64,21 @@ def _ensure_escape_state(env: ManagerBasedRlEnv) -> None:
     env._escape_sensor_grace = torch.zeros(  # type: ignore[attr-defined]
       env.num_envs, dtype=torch.long, device=env.device
     )
+    env._escape_invalid_setup = torch.zeros(  # type: ignore[attr-defined]
+      env.num_envs, dtype=torch.bool, device=env.device
+    )
+    env._escape_wait_steps = torch.zeros(  # type: ignore[attr-defined]
+      env.num_envs, dtype=torch.long, device=env.device
+    )
+    env._escape_first_contact_head_height = torch.full(  # type: ignore[attr-defined]
+      (env.num_envs,), -1.0, device=env.device
+    )
+    env._escape_hand_support_steps = torch.zeros(  # type: ignore[attr-defined]
+      env.num_envs, dtype=torch.long, device=env.device
+    )
+    env._escape_hand_supported_progress = torch.zeros(  # type: ignore[attr-defined]
+      env.num_envs, device=env.device
+    )
 
 
 @torch.no_grad()
@@ -156,6 +171,11 @@ def reset_escape_obstacle(
   env._escape_peak_penetration[env_ids] = 0.0  # type: ignore[attr-defined]
   env._escape_peak_contact_force[env_ids] = 0.0  # type: ignore[attr-defined]
   env._escape_sensor_grace[env_ids] = 1  # type: ignore[attr-defined]
+  env._escape_invalid_setup[env_ids] = False  # type: ignore[attr-defined]
+  env._escape_wait_steps[env_ids] = 0  # type: ignore[attr-defined]
+  env._escape_first_contact_head_height[env_ids] = -1.0  # type: ignore[attr-defined]
+  env._escape_hand_support_steps[env_ids] = 0  # type: ignore[attr-defined]
+  env._escape_hand_supported_progress[env_ids] = 0.0  # type: ignore[attr-defined]
 
 
 @torch.no_grad()
@@ -167,6 +187,8 @@ def reset_guided_escape_plate(
   eligible_reset_types: tuple[int, ...] | None = None,
   xy_offset_range: float = 0.015,
   body_origin_clearance: float = 0.26,
+  align_to_body: bool = False,
+  longitudinal_offset: float = 0.0,
   inactive_xy: tuple[float, float] = (1.20, 1.20),
 ) -> None:
   """Reset a guided plate above the robot with conservative positive clearance.
@@ -198,6 +220,20 @@ def reset_guided_escape_plate(
     active &= eligible
 
   target_pos = robot.data.body_link_pos_w[env_ids, target_ids[0]].clone()
+  forward_xy = torch.zeros(n, 2, device=env.device)
+  forward_xy[:, 0] = 1.0
+  if align_to_body:
+    head_ids = robot.find_sites(["head"], preserve_order=True)[0]
+    if len(head_ids) != 1:
+      raise ValueError("head site must resolve exactly once for plate alignment")
+    head_xy = robot.data.site_pos_w[env_ids, head_ids[0], :2]
+    raw_forward = head_xy - target_pos[:, :2]
+    forward_norm = torch.linalg.vector_norm(raw_forward, dim=-1, keepdim=True)
+    forward_xy = raw_forward / torch.clamp(forward_norm, min=1e-6)
+    fallback = forward_norm[:, 0] < 1e-5
+    forward_xy[fallback, 0] = 1.0
+    forward_xy[fallback, 1] = 0.0
+    target_pos[:, :2] += longitudinal_offset * forward_xy
   target_pos[:, :2] += torch.empty(n, 2, device=env.device).uniform_(
     -xy_offset_range, xy_offset_range
   )
@@ -213,8 +249,12 @@ def reset_guided_escape_plate(
   inactive_pos[:, 1] += inactive_xy[1]
   inactive_pos[:, 2] += body_origin_clearance
   anchor_pos = torch.where(active[:, None], target_pos, inactive_pos)
-  anchor_quat = torch.zeros(n, 4, device=env.device)
-  anchor_quat[:, 0] = 1.0
+  if align_to_body:
+    yaw = torch.atan2(forward_xy[:, 1], forward_xy[:, 0])
+    anchor_quat = quat_from_euler_xyz(torch.zeros_like(yaw), torch.zeros_like(yaw), yaw)
+  else:
+    anchor_quat = torch.zeros(n, 4, device=env.device)
+    anchor_quat[:, 0] = 1.0
   obstacle.write_mocap_pose_to_sim(
     torch.cat((anchor_pos, anchor_quat), dim=-1), env_ids=env_ids
   )
@@ -236,6 +276,11 @@ def reset_guided_escape_plate(
   # one update so a terminated episode's stale sensor sample cannot invalidate
   # the freshly reset episode.
   env._escape_sensor_grace[env_ids] = 1  # type: ignore[attr-defined]
+  env._escape_invalid_setup[env_ids] = False  # type: ignore[attr-defined]
+  env._escape_wait_steps[env_ids] = 0  # type: ignore[attr-defined]
+  env._escape_first_contact_head_height[env_ids] = -1.0  # type: ignore[attr-defined]
+  env._escape_hand_support_steps[env_ids] = 0  # type: ignore[attr-defined]
+  env._escape_hand_supported_progress[env_ids] = 0.0  # type: ignore[attr-defined]
   robot_xy = robot.data.root_link_pos_w[env_ids, :2]
   obstacle_xy = anchor_pos[:, :2]
   separation = torch.linalg.vector_norm(robot_xy - obstacle_xy, dim=-1)
@@ -253,6 +298,11 @@ def update_escape_phase(
   separation_threshold: float = 0.24,
   max_penetration: float | None = None,
   max_contact_force: float | None = None,
+  max_wait_steps: int | None = None,
+  max_initial_contact_head_height: float | None = None,
+  hand_sensor_name: str | None = None,
+  min_hand_support_steps: int = 0,
+  min_hand_supported_progress: float = 0.0,
 ) -> None:
   """Track first contact, separation progress, and stable physical escape."""
   if env_ids is None:
@@ -276,6 +326,11 @@ def update_escape_phase(
   clear_hold = env._escape_clear_hold  # type: ignore[attr-defined]
   best = env._escape_best_separation  # type: ignore[attr-defined]
   delta = env._escape_separation_delta  # type: ignore[attr-defined]
+  wait_steps = env._escape_wait_steps  # type: ignore[attr-defined]
+  first_contact_height = env._escape_first_contact_head_height  # type: ignore[attr-defined]
+  invalid_setup = env._escape_invalid_setup  # type: ignore[attr-defined]
+  hand_support_steps = env._escape_hand_support_steps  # type: ignore[attr-defined]
+  hand_supported_progress = env._escape_hand_supported_progress  # type: ignore[attr-defined]
 
   # Track contact quality before updating task phase.  V3 rejects episodes that
   # violate conservative solver limits instead of learning from interpenetration.
@@ -317,6 +372,26 @@ def update_escape_phase(
     phase[env_ids[invalid]] = 4
 
   active = (phase[env_ids] > 0) & (phase[env_ids] < 4)
+  waiting_for_contact = (phase[env_ids] == 1) & active
+  wait_steps[env_ids] = torch.where(
+    waiting_for_contact, wait_steps[env_ids] + 1, wait_steps[env_ids]
+  )
+  first_contact = waiting_for_contact & contact
+  robot = env.scene["robot"]
+  head_idx = robot.find_sites(["head"], preserve_order=True)[0][0]
+  head_height = robot.data.site_pos_w[env_ids, head_idx, 2]
+  first_contact_height[env_ids[first_contact]] = head_height[first_contact]
+  late_contact = torch.zeros_like(contact)
+  if max_initial_contact_head_height is not None:
+    late_contact = first_contact & (head_height > max_initial_contact_head_height)
+  setup_timeout = torch.zeros_like(contact)
+  if max_wait_steps is not None:
+    setup_timeout = waiting_for_contact & (wait_steps[env_ids] > max_wait_steps)
+  setup_invalid = late_contact | setup_timeout
+  invalid_setup[env_ids] |= setup_invalid
+  phase[env_ids[setup_invalid]] = 4
+
+  active = (phase[env_ids] > 0) & (phase[env_ids] < 4)
   contact_ever[env_ids] |= contact & active
   newly_contacted = env_ids[(phase[env_ids] == 1) & contact]
   phase[newly_contacted] = 2
@@ -329,7 +404,21 @@ def update_escape_phase(
   best[env_ids] = torch.maximum(previous_best, separation)
 
   constrained = phase[env_ids] == 2
-  clear = constrained & (~contact) & (separation >= separation_threshold)
+  if hand_sensor_name is not None:
+    hand_found = env.scene[hand_sensor_name].data.found
+    if hand_found is None:
+      raise RuntimeError(f"{hand_sensor_name} must expose the 'found' field")
+    hand_support = torch.any(hand_found[env_ids] > 0, dim=-1) & constrained
+    hand_support_steps[env_ids] += hand_support.long()
+    hand_supported_progress[env_ids] += torch.where(
+      hand_support, delta[env_ids], torch.zeros_like(delta[env_ids])
+    )
+  support_valid = (hand_support_steps[env_ids] >= min_hand_support_steps) & (
+    hand_supported_progress[env_ids] >= min_hand_supported_progress
+  )
+  clear = (
+    constrained & (~contact) & (separation >= separation_threshold) & support_valid
+  )
   clear_hold[env_ids] = torch.where(clear, clear_hold[env_ids] + 1, 0)
   escaped_ids = env_ids[clear_hold[env_ids] >= clear_hold_steps]
   phase[escaped_ids] = 3
