@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import mujoco
 import torch
 from mjlab.envs import ManagerBasedRlEnv
 from mjlab.utils.lab_api.math import quat_from_euler_xyz, quat_mul
@@ -79,6 +80,85 @@ def _ensure_escape_state(env: ManagerBasedRlEnv) -> None:
     env._escape_hand_supported_progress = torch.zeros(  # type: ignore[attr-defined]
       env.num_envs, device=env.device
     )
+
+
+def _collision_vertical_geometry(
+  env: ManagerBasedRlEnv,
+  env_ids: torch.Tensor,
+  geom_pattern: str,
+) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
+  """Return exact primitive z bounds plus conservative world XY AABBs.
+
+  The returned tensors are geom position, vertical half-extent, world AABB
+  centre, world AABB half-size, and global geom ids.  G1 collision geoms are
+  spheres/capsules, but the common MuJoCo primitives are handled as well.
+  """
+  robot = env.scene["robot"]
+  local_ids, names = robot.find_geoms(geom_pattern)
+  if not local_ids:
+    raise ValueError(f"no robot geoms match {geom_pattern!r}")
+  local = torch.tensor(local_ids, dtype=torch.long, device=env.device)
+  geom_ids = robot.indexing.geom_ids[local].long()
+  pos = robot.data.data.geom_xpos[env_ids[:, None], geom_ids[None, :]]
+  mat = robot.data.data.geom_xmat[env_ids[:, None], geom_ids[None, :]]
+  size = env.sim.model.geom_size[env_ids[:, None], geom_ids[None, :]]
+  geom_type = env.sim.model.geom_type[geom_ids]
+
+  row_z = mat[:, :, 2, :]
+  abs_row_z = row_z.abs()
+  # Box is also the conservative fallback for non-primitive geometry.
+  z_extent = (abs_row_z * size).sum(dim=-1)
+  sphere = geom_type == int(mujoco.mjtGeom.mjGEOM_SPHERE)
+  capsule = geom_type == int(mujoco.mjtGeom.mjGEOM_CAPSULE)
+  cylinder = geom_type == int(mujoco.mjtGeom.mjGEOM_CYLINDER)
+  ellipsoid = geom_type == int(mujoco.mjtGeom.mjGEOM_ELLIPSOID)
+  z_extent = torch.where(sphere[None, :], size[:, :, 0], z_extent)
+  z_extent = torch.where(
+    capsule[None, :],
+    size[:, :, 0] + size[:, :, 1] * abs_row_z[:, :, 2],
+    z_extent,
+  )
+  radial_projection = torch.sqrt(row_z[:, :, 0].square() + row_z[:, :, 1].square())
+  z_extent = torch.where(
+    cylinder[None, :],
+    size[:, :, 0] * radial_projection + size[:, :, 1] * abs_row_z[:, :, 2],
+    z_extent,
+  )
+  z_extent = torch.where(
+    ellipsoid[None, :],
+    torch.sqrt(((row_z * size).square()).sum(dim=-1)),
+    z_extent,
+  )
+
+  aabb = env.sim.model.geom_aabb[env_ids[:, None], geom_ids[None, :]]
+  aabb_center = pos + torch.einsum("ngij,ngj->ngi", mat, aabb[:, :, 0])
+  aabb_half = torch.einsum("ngij,ngj->ngi", mat.abs(), aabb[:, :, 1])
+  return pos, z_extent, aabb_center, aabb_half, geom_ids
+
+
+def _prime_smp_history_from_current_state(
+  env: ManagerBasedRlEnv, env_ids: torch.Tensor
+) -> None:
+  """Fill the SMP window with the current, post-reset simulator state."""
+  if env_ids.numel() == 0:
+    return
+  robot = env.scene["robot"]
+  origins = env.scene.env_origins[env_ids]
+  buffer = env._smp_buffer  # type: ignore[attr-defined]
+  window_size = buffer.window_size
+  ee_indexes = env._smp_ee_indexes  # type: ignore[attr-defined]
+  root_pos = robot.data.root_link_pos_w[env_ids] - origins
+  ee_pos = robot.data.body_link_pos_w[env_ids][:, ee_indexes] - origins[:, None, :]
+  buffer.reset(
+    env_ids,
+    root_pos[:, None, :].expand(-1, window_size, -1),
+    robot.data.root_link_quat_w[env_ids][:, None, :].expand(-1, window_size, -1),
+    robot.data.root_link_lin_vel_w[env_ids][:, None, :].expand(-1, window_size, -1),
+    robot.data.root_link_ang_vel_w[env_ids][:, None, :].expand(-1, window_size, -1),
+    ee_pos[:, None, :, :].expand(-1, window_size, -1, -1),
+    robot.data.joint_pos[env_ids][:, None, :].expand(-1, window_size, -1),
+    robot.data.joint_vel[env_ids][:, None, :].expand(-1, window_size, -1),
+  )
 
 
 @torch.no_grad()
@@ -189,6 +269,12 @@ def reset_guided_escape_plate(
   body_origin_clearance: float = 0.26,
   align_to_body: bool = False,
   longitudinal_offset: float = 0.0,
+  crawl_ready_prone: bool = False,
+  crawl_arm_noise: float = 0.0,
+  ground_clearance: float = 0.004,
+  surface_gap: float | None = None,
+  plate_half_extents: tuple[float, float, float] = (0.45, 0.32, 0.035),
+  collision_geom_pattern: str = r".*_collision$",
   inactive_xy: tuple[float, float] = (1.20, 1.20),
 ) -> None:
   """Reset a guided plate above the robot with conservative positive clearance.
@@ -219,6 +305,79 @@ def reset_guided_escape_plate(
       eligible |= reset_type[env_ids] == reset_value
     active &= eligible
 
+  active_ids = env_ids[active]
+  if crawl_ready_prone and active_ids.numel() > 0:
+    # A procedural prone reset is a rotated nominal stand; its hands are often
+    # the highest collision geoms.  This symmetric pose places both hands on
+    # the floor just outside the board edges so they can establish support.
+    arm_names = (
+      "left_shoulder_pitch_joint",
+      "left_shoulder_roll_joint",
+      "left_shoulder_yaw_joint",
+      "left_elbow_joint",
+      "left_wrist_roll_joint",
+      "left_wrist_pitch_joint",
+      "left_wrist_yaw_joint",
+      "right_shoulder_pitch_joint",
+      "right_shoulder_roll_joint",
+      "right_shoulder_yaw_joint",
+      "right_elbow_joint",
+      "right_wrist_roll_joint",
+      "right_wrist_pitch_joint",
+      "right_wrist_yaw_joint",
+    )
+    arm_ids, _ = robot.find_joints(arm_names, preserve_order=True)
+    if len(arm_ids) != len(arm_names):
+      raise ValueError("all crawl-ready arm joints must resolve exactly once")
+    joint_pos = robot.data.joint_pos[active_ids].clone()
+    joint_vel = torch.zeros_like(joint_pos)
+    arm_pose = torch.tensor(
+      (
+        -2.104,
+        -1.105,
+        0.0,
+        0.744,
+        0.0,
+        0.0,
+        0.0,
+        -2.104,
+        1.105,
+        0.0,
+        0.744,
+        0.0,
+        0.0,
+        0.0,
+      ),
+      device=env.device,
+    )
+    arm_values = arm_pose[None, :].expand(active_ids.numel(), -1).clone()
+    if crawl_arm_noise > 0.0:
+      arm_values += torch.empty_like(arm_values).uniform_(
+        -crawl_arm_noise, crawl_arm_noise
+      )
+    arm_local = torch.tensor(arm_ids, dtype=torch.long, device=env.device)
+    joint_pos[:, arm_local] = arm_values
+    robot.write_joint_state_to_sim(joint_pos, joint_vel, env_ids=active_ids)
+    env.sim.forward()
+
+    # Put the lowest collision surface just above flat ground.  The robot no
+    # longer falls away from a close board during the first control steps.
+    geom_pos, z_extent, _, _, _ = _collision_vertical_geometry(
+      env, active_ids, collision_geom_pattern
+    )
+    lowest = (geom_pos[:, :, 2] - z_extent).amin(dim=-1)
+    root_state = torch.cat(
+      (
+        robot.data.root_link_pose_w[active_ids].clone(),
+        torch.zeros(active_ids.numel(), 6, device=env.device),
+      ),
+      dim=-1,
+    )
+    root_state[:, 2] += env.scene.env_origins[active_ids, 2] + ground_clearance - lowest
+    robot.write_root_state_to_sim(root_state, env_ids=active_ids)
+    env.sim.forward()
+    _prime_smp_history_from_current_state(env, active_ids)
+
   target_pos = robot.data.body_link_pos_w[env_ids, target_ids[0]].clone()
   forward_xy = torch.zeros(n, 2, device=env.device)
   forward_xy[:, 0] = 1.0
@@ -237,12 +396,44 @@ def reset_guided_escape_plate(
   target_pos[:, :2] += torch.empty(n, 2, device=env.device).uniform_(
     -xy_offset_range, xy_offset_range
   )
-  # Targeting only the torso centre recreated V2's bug whenever a hand, foot,
-  # or head collision was higher.  This conservative envelope is independent
-  # of which link happens to be uppermost in the sampled prone pose.
-  target_pos[:, 2] = (
-    robot.data.body_link_pos_w[env_ids, :, 2].amax(dim=-1) + body_origin_clearance
-  )
+  if surface_gap is None:
+    # Targeting only the torso centre recreated V2's bug whenever a hand, foot,
+    # or head collision was higher.  This conservative envelope is independent
+    # of which link happens to be uppermost in the sampled prone pose.
+    target_pos[:, 2] = (
+      robot.data.body_link_pos_w[env_ids, :, 2].amax(dim=-1) + body_origin_clearance
+    )
+  else:
+    # Place the board a few millimetres above the exact primitive support
+    # surface.  Conservative XY AABBs decide which robot geoms overlap the
+    # yaw-aligned plate footprint; exact primitive support avoids the large
+    # false clearance caused by rotated hand/capsule AABBs.
+    geom_pos, z_extent, aabb_center, aabb_half, _ = _collision_vertical_geometry(
+      env, env_ids, collision_geom_pattern
+    )
+    lateral_xy = torch.stack((-forward_xy[:, 1], forward_xy[:, 0]), dim=-1)
+    relative_xy = aabb_center[:, :, :2] - target_pos[:, None, :2]
+    along = (relative_xy * forward_xy[:, None, :]).sum(dim=-1)
+    across = (relative_xy * lateral_xy[:, None, :]).sum(dim=-1)
+    along_extent = (
+      aabb_half[:, :, 0] * forward_xy[:, None, 0].abs()
+      + aabb_half[:, :, 1] * forward_xy[:, None, 1].abs()
+    )
+    across_extent = (
+      aabb_half[:, :, 0] * lateral_xy[:, None, 0].abs()
+      + aabb_half[:, :, 1] * lateral_xy[:, None, 1].abs()
+    )
+    overlaps = (along.abs() <= plate_half_extents[0] + along_extent) & (
+      across.abs() <= plate_half_extents[1] + across_extent
+    )
+    surface_top = torch.where(
+      overlaps,
+      geom_pos[:, :, 2] + z_extent,
+      torch.full_like(along, -torch.inf),
+    ).amax(dim=-1)
+    if torch.any(~torch.isfinite(surface_top)):
+      raise RuntimeError("guided escape plate footprint overlaps no robot geometry")
+    target_pos[:, 2] = surface_top + plate_half_extents[2] + surface_gap
   origins = env.scene.env_origins[env_ids]
   inactive_pos = origins.clone()
   inactive_pos[:, 0] += inactive_xy[0]
@@ -735,21 +926,7 @@ def mixed_fall_reset(
 
   # A repeated static window is honest history for a newly placed pose and avoids
   # an artificial GSI-to-procedural discontinuity in the SMP score.
-  buffer = env._smp_buffer  # type: ignore[attr-defined]
-  window_size = buffer.window_size
-  ee_indexes = env._smp_ee_indexes  # type: ignore[attr-defined]
-  root_pos = robot.data.root_link_pos_w[fall_ids] - origins
-  ee_pos = robot.data.body_link_pos_w[fall_ids][:, ee_indexes] - origins[:, None, :]
-  buffer.reset(
-    fall_ids,
-    root_pos[:, None, :].expand(-1, window_size, -1),
-    robot.data.root_link_quat_w[fall_ids][:, None, :].expand(-1, window_size, -1),
-    robot.data.root_link_lin_vel_w[fall_ids][:, None, :].expand(-1, window_size, -1),
-    robot.data.root_link_ang_vel_w[fall_ids][:, None, :].expand(-1, window_size, -1),
-    ee_pos[:, None, :, :].expand(-1, window_size, -1, -1),
-    robot.data.joint_pos[fall_ids][:, None, :].expand(-1, window_size, -1),
-    robot.data.joint_vel[fall_ids][:, None, :].expand(-1, window_size, -1),
-  )
+  _prime_smp_history_from_current_state(env, fall_ids)
   reset_types[fall_ids] = modes + 1
 
 

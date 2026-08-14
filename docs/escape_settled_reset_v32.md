@@ -1,0 +1,81 @@
+# V3.2 settled-reset board escape
+
+## Problem isolated from the V3.1 preview
+
+The larger V3.1 board fixed partial body coverage, but its reset was still a
+dynamic loading experiment: the board began above the robot and descended while
+the policy was already trying to recover.  The resulting trajectory could push
+the robot sideways until only a board edge remained in contact.
+
+The underlying prone reset also mattered.  It rotated the nominal standing pose
+onto its front without preparing the arms.  In 1024 deterministic samples, the
+highest collision geom under the board was a hand in 891 cases (87.0%), a thigh
+in 91 cases, and the torso in only 14 cases.  A collision-safe board therefore
+had to hover above raised hands rather than begin against the trunk.
+
+V3.2 is a separate task, `Smp-Getup-Escape-Plate-V32-G1`, so V3 and V3.1 remain
+reproducible baselines.
+
+## Reset definition
+
+For each active board episode V3.2 now:
+
+1. samples the same prone body orientation and lower-body variation;
+2. places both arms in a symmetric crawl-ready pose, with small joint noise;
+3. shifts the complete robot vertically until its lowest collision surface is
+   4 mm above the flat ground and zeros reset velocity;
+4. aligns the 0.90 x 0.64 m board with the torso-to-head direction;
+5. computes exact vertical support for G1's sphere/capsule collision geoms and
+   places the board bottom 1 mm above the highest overlapping surface.
+
+No physics steps are hidden inside reset.  MjLab advances all vectorized worlds
+together, so settling only newly reset environments would corrupt other active
+episodes.  The geometry-based placement works for asynchronous resets and keeps
+the actor's episode clock honest.
+
+The board remains an 8 kg physical rigid body with one passive vertical slide.
+Its x/y anchor is fixed at reset and never follows the robot.  Plate contacts use
+locally stiffer solver parameters; robot-ground and other contacts are unchanged.
+The actor observation is still the deployable 96-dimensional proprioceptive
+vector.  Reset geometry, board pose, and contact state are not actor inputs.
+
+## Pre-training checks (2026-08-14)
+
+With 512 environments, seed `20260814`, and zero actions, 428 episodes contained
+an active board.  Over the first 12 control steps:
+
+- all 428 boards contacted the robot;
+- first-contact step min/median/p99/max: 1/3/8/12;
+- zero setup-invalid episodes;
+- initial head-height median/p99/max: 0.121/0.199/0.218 m;
+- peak penetration median/p99/max: 4.51/21.76/24.34 mm;
+- peak contact force median/p99/max: 451/1576/2749 N;
+- 32/428 samples crossed a physical-invalid threshold after the nominal
+  zero-action controller began driving the prepared pose toward nominal stand.
+
+A 4096-environment initialization and stepping smoke test also passed.  The
+remaining physical-invalid samples are behavior failures, not initial overlap:
+the board starts with a positive 1 mm geometric gap.  Training should terminate
+and penalize policies that violently push into the board.
+
+The frozen V3 `model_78993.pt` was evaluated for 500 steps in V3.2.  It contacted
+all 428 active boards but escaped none, and 23.8% became physical-invalid.  This
+is expected: V3 learned the earlier delayed/small-board route and is useful only
+as a preview initialization, not evidence that V3.2 is solved.
+
+## Visual preview before training
+
+```bash
+uv run scripts/play.py Smp-Getup-Escape-Plate-V32-G1 \
+  --wandb-run-path tabletennis/smp/wwbgq95n \
+  --wandb-checkpoint-name model_78993.pt \
+  --num-envs 1 \
+  --viewer native \
+  --no-terminations True \
+  --auto-disturbances True
+```
+
+The expected reset is already prone with hands near the ground and the board
+almost touching.  The old policy is not expected to escape.  Confirm visually
+that the initial coverage matches the intended pinned scenario before launching
+fine-tuning.
