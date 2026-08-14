@@ -79,3 +79,27 @@ The expected reset is already prone with hands near the ground and the board
 almost touching.  The old policy is not expected to escape.  Confirm visually
 that the initial coverage matches the intended pinned scenario before launching
 fine-tuning.
+
+## Fine-tuning run (started 2026-08-14)
+
+The first V3.2 run fine-tunes the completed V3 actor for 10,000 additional PPO
+iterations on 4096 environments:
+
+```bash
+uv run scripts/train.py Smp-Getup-Escape-Plate-V32-G1 \
+  --env.scene.num-envs=4096 \
+  --agent.resume True \
+  --wandb-run-path tabletennis/smp/wwbgq95n \
+  --wandb-checkpoint-name model_78993.pt \
+  --agent.algorithm.learning-rate=3e-4 \
+  --agent.max-iterations=10000 \
+  --agent.save-interval=1000 \
+  --agent.run-name escape_plate_v32_settled_from_v3_78993
+```
+
+- W&B run: `tabletennis/smp/7pgs6r86`
+- server: `dsw-lyd2`, GPU 0
+- tmux session: `smp_v32`
+- expected final iteration: `88993`
+- initial throughput: about 51,000 steps/s; estimated duration about 5 h 45 min
+- startup checkpoint: V3 `model_78993.pt`
