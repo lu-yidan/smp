@@ -103,3 +103,43 @@ uv run scripts/train.py Smp-Getup-Escape-Plate-V32-G1 \
 - expected final iteration: `88993`
 - initial throughput: about 51,000 steps/s; estimated duration about 5 h 45 min
 - startup checkpoint: V3 `model_78993.pt`
+
+## Interrupted run audit and stable continuation (2026-08-14)
+
+The first run did not reach its intended final iteration.  At iteration 84317 a
+rare contact sample produced a non-finite actor observation and stopped the
+whole 4096-environment job.  Immediately before the exception, mean value loss
+jumped from `0.0088` to `2.0e13` and then `3.2e16`.  The last complete checkpoint
+is `model_84000.pt`; the W&B run must therefore be treated as interrupted, not
+successfully completed.
+
+Deterministic 512-environment/1000-step comparisons showed that `model_84000.pt`
+was the strongest saved actor: 3/428 active plate episodes completed, median
+hand-supported progress was 0.414 m, and 238/428 reached 0.50 m center
+separation.  However, only three samples maintained the required contact-free
+hold.  This distinguishes the remaining bottleneck from a lack of crawling:
+many policies move far enough laterally but do not fully clear the large board.
+
+Commit `0cb4cf4` adds a pre-observation termination that resets only a world with
+non-finite or runaway raw MuJoCo state.  It also rejects non-finite failure-replay
+snapshots.  Normal actor observations are unchanged.  Training was resumed from
+`model_84000.pt` with a lower learning rate and MuJoCo NaN dumps enabled:
+
+```bash
+uv run scripts/train.py Smp-Getup-Escape-Plate-V32-G1 \
+  --env.scene.num-envs=4096 \
+  --agent.resume True \
+  --agent.load-run 2026-08-14_11-50-50_escape_plate_v32_settled_from_v3_78993 \
+  --agent.load-checkpoint model_84000.pt \
+  --agent.algorithm.learning-rate=1e-4 \
+  --agent.max-iterations=5000 \
+  --agent.save-interval=1000 \
+  --agent.run-name escape_plate_v32_nan_safe_from_84000 \
+  --enable-nan-guard True
+```
+
+- W&B run: `tabletennis/smp/kazawsxg`
+- server/GPU: `dsw-lyd2`, GPU 0
+- tmux session: `smp_v32_resume`
+- run log: `run_control/v32_resume_from_84000.log`
+- expected final iteration: `89000`
