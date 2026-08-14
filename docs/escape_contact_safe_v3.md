@@ -133,6 +133,39 @@ contact episodes must remain rejected and reported.
 - configuration: 4096 environments, learning rate `3e-4`, 5000 additional
   iterations, checkpoint interval 1000.
 
+### Completed result and checkpoint audit (2026-08-14)
+
+The run finished after 2 h 22 min at `model_78993.pt`; W&B contains all six
+intended checkpoints. Every checkpoint and the frozen V1 seed were evaluated
+for 1000 control steps with 512 environments and seed `20260814`. Terminations
+were disabled during this audit so physically invalid samples remained visible
+instead of being reset out of the statistics. There were 428 active guided-plate
+episodes in each batch.
+
+| checkpoint | escape | invalid | penetration p99 / max (mm) | force p99 / max (N) | mean peak torque (Nm) | mean peak power (W) |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| V1 `73994` | 28.50% | 0.00% | 16.19 / 19.94 | 1031 / 1120 | 121.1 | 484.1 |
+| `74000` | 22.43% | 1.40% | 20.79 / 28.30 | 1011 / 1352 | 120.1 | 477.8 |
+| `75000` | 92.52% | 0.00% | 9.61 / 10.94 | 619 / 692 | 99.1 | 279.4 |
+| `76000` | 98.60% | 0.23% | 8.40 / 20.89 | 561 / 2357 | 101.8 | 259.5 |
+| `77000` | 97.66% | 0.00% | 8.82 / 10.37 | 558 / 641 | **87.7** | **239.3** |
+| `78000` | 98.36% | 0.00% | 7.37 / 16.65 | **541** / 749 | 103.4 | 329.4 |
+| **`78993`** | **98.83%** | **0.00%** | **7.17 / 7.73** | 542 / **585** | 110.9 | 261.1 |
+
+`model_78993.pt` is the primary checkpoint: it has the best escape rate, zero
+invalid samples, the smallest maximum penetration, and the smallest maximum
+contact force. `model_77000.pt` is retained as the lower-effort alternative;
+it gives up 1.17 percentage points of escape success but has lower mean peak
+torque and power.
+
+The 3--4 kN values shown by the final online training log are not consistent
+with the deterministic per-environment audit. They come from the episode
+metrics manager's aggregation/reset timing rather than the frozen rollout's
+persistent peak state. Paper tables should use the reproducible audit script
+and its raw logs under `run_control/escape_v3_eval/`, not the online dashboard
+peak fields. The audit command is implemented in
+`scripts/evaluate_escape_checkpoint.py`.
+
 ## Staged mobility roadmap
 
 Do not claim V3 as general movable-object recovery. Advance only after V3
