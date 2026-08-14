@@ -1363,6 +1363,11 @@ def record_failure_states(
     & (upright < 0.80)
     & (torch.rand(env_ids.numel(), device=env.device) < record_probability)
   )
+  # Never persist a numerically corrupted state into the hard-state replay
+  # buffer.  The raw MuJoCo state also covers task entities such as the plate.
+  finite_state = torch.isfinite(env.sim.data.qpos[env_ids]).all(dim=-1)
+  finite_state &= torch.isfinite(env.sim.data.qvel[env_ids]).all(dim=-1)
+  candidate_mask &= finite_state
   record_ids = env_ids[candidate_mask][:max_records_per_step]
   if record_ids.numel() == 0:
     return

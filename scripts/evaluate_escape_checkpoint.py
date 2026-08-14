@@ -86,6 +86,8 @@ def main(cfg: EvalCfg) -> None:
   first = first_contact[contacted].float()
   penetration = raw_env._escape_peak_penetration[active]  # type: ignore[attr-defined]
   force = raw_env._escape_peak_contact_force[active]  # type: ignore[attr-defined]
+  separation = raw_env._escape_best_separation[active]  # type: ignore[attr-defined]
+  clear_hold = raw_env._escape_clear_hold[active]  # type: ignore[attr-defined]
 
   def quantile(values: torch.Tensor, q: float) -> float:
     return float(torch.quantile(values, q)) if values.numel() else 0.0
@@ -115,6 +117,13 @@ def main(cfg: EvalCfg) -> None:
     "force_median_n": float(force.median()),
     "force_p99_n": quantile(force, 0.99),
     "force_max_n": float(force.max()),
+    "separation_median_m": float(separation.median()),
+    "separation_p90_m": quantile(separation, 0.90),
+    "separation_p99_m": quantile(separation, 0.99),
+    "separation_max_m": float(separation.max()),
+    "separation_ready": int((separation >= 0.50).sum()),
+    "clear_hold_median_steps": float(clear_hold.float().median()),
+    "clear_hold_max_steps": int(clear_hold.max()),
     "hand_support_mean": float((hand_support_sum[active] / cfg.steps).mean()),
     "first_contact_head_height_median_m": float(
       raw_env._escape_first_contact_head_height[contacted].median()  # type: ignore[attr-defined]

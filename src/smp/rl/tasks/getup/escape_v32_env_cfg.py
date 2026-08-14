@@ -3,7 +3,9 @@
 from __future__ import annotations
 
 import mujoco
+from mjlab.managers.termination_manager import TerminationTermCfg
 
+from smp.rl.tasks.getup import mdp
 from smp.rl.tasks.getup.escape_v31_env_cfg import (
   g1_getup_escape_plate_v31_smp_env_cfg,
 )
@@ -65,5 +67,8 @@ def g1_getup_escape_plate_v32_smp_env_cfg(play: bool = False):
       "max_wait_steps": 12,
       "max_initial_contact_head_height": 0.40,
     }
+  )
+  cfg.terminations["unstable_sim_state"] = TerminationTermCfg(
+    func=mdp.unstable_sim_state
   )
   return cfg
