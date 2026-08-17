@@ -81,13 +81,28 @@ def main(cfg: EvalCfg) -> None:
   first_success = torch.full(
     (raw_env.num_envs,), -1, dtype=torch.long, device=raw_env.device
   )
+  first_ordered_success = torch.full_like(first_success, -1)
+  stand_hold = torch.zeros_like(first_success)
+  head_idx = robot.find_sites(["head"], preserve_order=True)[0][0]
 
   for step in range(cfg.steps):
     with torch.inference_mode():
       actions = policy(obs)
       obs, _, _, _ = env.step(actions)
     stage = raw_env._v4_recovery_stage  # type: ignore[attr-defined]
-    first_success[(first_success < 0) & (stage == 3)] = step + 1
+    first_ordered_success[(first_ordered_success < 0) & (stage == 3)] = step + 1
+    head_z = robot.data.site_pos_w[:, head_idx, 2]
+    upright = torch.clamp(-robot.data.projected_gravity_b[:, 2], 0.0, 1.0)
+    linear_speed = torch.linalg.vector_norm(robot.data.root_link_lin_vel_w, dim=-1)
+    angular_speed = torch.linalg.vector_norm(robot.data.root_link_ang_vel_w, dim=-1)
+    standing = (
+      (head_z >= 1.10)
+      & (upright >= 0.85)
+      & (linear_speed < 0.50)
+      & (angular_speed < 1.0)
+    )
+    stand_hold = torch.where(standing, stand_hold + 1, torch.zeros_like(stand_hold))
+    first_success[(first_success < 0) & (stand_hold >= 25)] = step + 1
     foot_excursion = torch.linalg.vector_norm(
       robot.data.site_pos_w[:, foot_ids, :2] - initial_feet,
       dim=-1,
@@ -107,6 +122,7 @@ def main(cfg: EvalCfg) -> None:
     )
 
   success = first_success >= 0
+  ordered_success = first_ordered_success >= 0
   recovery_steps = first_success[success].float()
 
   def quantile(values: torch.Tensor, q: float) -> float:
@@ -121,6 +137,8 @@ def main(cfg: EvalCfg) -> None:
     "steps": cfg.steps,
     "success": int(success.sum()),
     "success_rate": float(success.float().mean()),
+    "ordered_success": int(ordered_success.sum()),
+    "ordered_success_rate": float(ordered_success.float().mean()),
     "recovery_time_median_s": (
       float(recovery_steps.median() * raw_env.step_dt)
       if recovery_steps.numel()
