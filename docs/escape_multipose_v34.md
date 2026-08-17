@@ -98,3 +98,18 @@ curriculum can be introduced as the next attributable change.
 - checkpoint interval: 1,000 iterations
 - initial throughput: about 41,600 steps/s; initial ETA about 5 h 42 min
 - log: run_control/v34_supine_prone_from_v33_95000.log
+
+## Corrected-label checkpoint preview
+
+At `model_96000.pt`, a deterministic 256-environment evaluation per pose
+(seed `20260818`, 1,000 steps, 8 kg centred plate) found:
+
+| physical pose | escape + stable stand | invalid | median stable foot separation |
+|---|---:|---:|---:|
+| prone | 94.53% | 5.47% | 0.482 m |
+| supine | 81.64% | 17.58% | 0.488 m |
+
+The new true-prone skill has emerged, but the frozen supine skill has regressed
+relative to its 94.72% source baseline. This is an intermediate checkpoint,
+not a selected result. Continue the run and select only after evaluating every
+saved checkpoint on both physical strata and multiple fixed seeds.
