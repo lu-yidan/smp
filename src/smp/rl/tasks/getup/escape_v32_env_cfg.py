@@ -71,4 +71,10 @@ def g1_getup_escape_plate_v32_smp_env_cfg(play: bool = False):
   cfg.terminations["unstable_sim_state"] = TerminationTermCfg(
     func=mdp.unstable_sim_state
   )
+  if play:
+    # The plate is the task condition, not an optional automatic disturbance.
+    # A one-environment viewer must therefore always start in the prone plate
+    # cohort, independent of the play wrapper's auto-disturbance switch.
+    cfg.events["mixed_fall_reset"].params["procedural_probability"] = 1.0
+    cfg.events["reset_escape_obstacle"].params["obstacle_probability"] = 1.0
   return cfg

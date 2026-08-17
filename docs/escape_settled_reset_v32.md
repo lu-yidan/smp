@@ -72,13 +72,19 @@ uv run scripts/play.py Smp-Getup-Escape-Plate-V32-G1 \
   --num-envs 1 \
   --viewer native \
   --no-terminations True \
-  --auto-disturbances True
+  --auto-disturbances False
 ```
 
 The expected reset is already prone with hands near the ground and the board
 almost touching.  The old policy is not expected to escape.  Confirm visually
 that the initial coverage matches the intended pinned scenario before launching
 fine-tuning.
+
+In play mode V3.2 forces both the prone reset and plate activation to 100%.
+The plate is the core task condition and is present even when
+`--auto-disturbances False`; that switch controls only additional physical
+disturbances.  Earlier revisions incorrectly parked the plate at the inactive
+offset when automatic disturbances were disabled.
 
 ## Fine-tuning run (started 2026-08-14)
 
