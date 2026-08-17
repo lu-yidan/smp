@@ -97,6 +97,25 @@ contact, penetration, force, torque, or power. Also retain a separate no-plate
 V8 evaluation; V3.3 is an escape specialist and is not evidence that general
 fall recovery improved.
 
+## Formal run (started 2026-08-17)
+
+The 64-environment two-iteration resume smoke test completed from the V3.2
+checkpoint. A 256-environment compatibility evaluation also loaded the old
+actor unchanged and observed genuine 15-step geometry-clear successes, proving
+that the stricter success state is reachable before fine-tuning.
+
+- branch: `codex/escape-geometry-v33`
+- source commit: `12534b5`
+- server/GPU: `dsw-lyd2`, GPU 0
+- tmux session: `smp_v33`
+- W&B: `tabletennis/smp/owzoec67`
+- source checkpoint: V3.2 `model_88999.pt`
+- duration: 8,000 additional PPO iterations
+- expected final checkpoint: `model_96998.pt`
+- checkpoint interval: 1,000 iterations
+- initial throughput: about 39,000 steps/s; initial ETA about 5 h 23 min
+- log: `run_control/v33_geometry_from_v32_88999.log`
+
 ## Visual test
 
 After training, enable the plate without enabling random play pushes:
