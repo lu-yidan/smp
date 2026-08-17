@@ -130,3 +130,52 @@ uv run scripts/play.py Smp-Getup-Escape-Plate-V33-G1 \
   --escape-obstacle True \
   --auto-disturbances False
 ```
+
+## Completed run and checkpoint selection (2026-08-17)
+
+The run completed at `model_96998.pt`. Checkpoint selection was performed with
+three deterministic seeds (20260817--20260819), 512 environments per seed and
+1,000 control steps per environment under the same centred 8 kg plate
+condition. The evaluator additionally reports post-escape stable standing,
+stance width and safety metrics. Stable standing requires the head to remain
+above 1.10 m with upright projection at least 0.85, base linear speed below
+0.5 m/s and base angular speed below 1.0 rad/s for 25 consecutive steps.
+
+| checkpoint | escape + stable stand | invalid setup | median escape time | median escape-to-stand | stable foot separation | stable foot speed |
+|---|---:|---:|---:|---:|---:|---:|
+| 94000 | 91.73% | 8.07% | 1.71 s | 3.91 s | 0.651 m | 0.0071 m/s |
+| **95000** | **95.64%** | **4.30%** | 1.80 s | 3.50 s | **0.456 m** | **0.0029 m/s** |
+| 96000 | 93.75% | 6.18% | 1.71 s | **3.19 s** | 0.764 m | 0.0059 m/s |
+| 96998 | 92.06% | 7.88% | 1.70 s | 4.12 s | 0.939 m | 0.0082 m/s |
+
+`model_95000.pt` is therefore the frozen **balanced V3.3 baseline**. It has the
+highest standard-condition success rate, the lowest invalid rate, the
+narrowest stable stance and the lowest residual foot motion. The final
+checkpoint is not selected merely because it is later.
+
+A one-seed, 512-environment mass sweep shows a real robustness--stance
+trade-off:
+
+| plate mass | 94000 | **95000** | 96000 | 96998 |
+|---|---:|---:|---:|---:|
+| 4 kg | 93.75% | **95.90%** | 94.34% | 89.06% |
+| 12 kg | 78.12% | 85.35% | **89.65%** | 88.28% |
+| 16 kg (OOD) | 48.05% | 57.23% | 66.41% | **70.51%** |
+
+The 16 kg result is outside the 4--12 kg training curriculum and is retained
+as an OOD diagnostic, not as the headline result. `model_96998.pt` is archived
+as a heavy-load specialist, while its approximately 0.94 m stable foot
+separation makes it unsuitable as the balanced default.
+
+Frozen balanced checkpoint:
+
+- W&B: `tabletennis/smp/owzoec67`, `model_95000.pt`
+- SHA-256: `38063879c144bd29af8e792bb7547b0e6c99e4043ba9b4c3c08219dab16ef81a`
+- tag: `baseline/v33-escape-model-95000-balanced`
+- server archive: `/mnt/workspace/user/luyidan/baselines/G1_Recovery_Below_Block/v33/model_95000.pt`
+
+The next stance experiment must not penalize wide feet while the robot is
+pinned, crawling or transitioning through kneeling. A stance-band regularizer
+should activate only after full geometry clearance and stable upright entry.
+For later stair recovery, the target should be terrain-relative feasible foot
+placement rather than a globally narrow stance.
