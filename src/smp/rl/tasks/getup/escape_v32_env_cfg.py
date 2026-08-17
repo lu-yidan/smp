@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import os
+
 import mujoco
 from mjlab.managers.termination_manager import TerminationTermCfg
 
@@ -73,8 +75,10 @@ def g1_getup_escape_plate_v32_smp_env_cfg(play: bool = False):
   )
   if play:
     # The plate is the task condition, not an optional automatic disturbance.
-    # A one-environment viewer must therefore always start in the prone plate
-    # cohort, independent of the play wrapper's auto-disturbance switch.
+    # It defaults on and has its own explicit play override.
+    obstacle_enabled = os.environ.get("SMP_PLAY_ESCAPE_OBSTACLE", "1") == "1"
     cfg.events["mixed_fall_reset"].params["procedural_probability"] = 1.0
-    cfg.events["reset_escape_obstacle"].params["obstacle_probability"] = 1.0
+    cfg.events["reset_escape_obstacle"].params["obstacle_probability"] = float(
+      obstacle_enabled
+    )
   return cfg

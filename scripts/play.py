@@ -1,4 +1,4 @@
-"""Play SMP tasks with an optional automatic-disturbance switch."""
+"""Play SMP tasks with independent disturbance and task-obstacle switches."""
 
 from __future__ import annotations
 
@@ -6,6 +6,7 @@ import os
 import sys
 
 _AUTO_DISTURBANCES_ENV = "SMP_PLAY_AUTO_DISTURBANCES"
+_ESCAPE_OBSTACLE_ENV = "SMP_PLAY_ESCAPE_OBSTACLE"
 
 
 def _consume_auto_disturbances_arg(argv: list[str]) -> bool:
@@ -27,12 +28,36 @@ def _consume_auto_disturbances_arg(argv: list[str]) -> bool:
   return value == "true"
 
 
+def _consume_escape_obstacle_arg(argv: list[str]) -> bool | None:
+  """Consume an optional escape-plate override from the wrapper arguments."""
+  flag = "--escape-obstacle"
+  count = argv.count(flag)
+  if count == 0:
+    return None
+  if count > 1:
+    raise SystemExit(f"{flag} may only be specified once")
+
+  index = argv.index(flag)
+  if index + 1 >= len(argv):
+    raise SystemExit(f"{flag} requires True or False")
+  value = argv[index + 1].lower()
+  if value not in {"true", "false"}:
+    raise SystemExit(f"{flag} requires True or False, got {argv[index + 1]!r}")
+  del argv[index : index + 2]
+  return value == "true"
+
+
 def main() -> None:
   auto_disturbances = _consume_auto_disturbances_arg(sys.argv)
+  escape_obstacle = _consume_escape_obstacle_arg(sys.argv)
   if auto_disturbances:
     os.environ[_AUTO_DISTURBANCES_ENV] = "1"
   else:
     os.environ.pop(_AUTO_DISTURBANCES_ENV, None)
+  if escape_obstacle is None:
+    os.environ.pop(_ESCAPE_OBSTACLE_ENV, None)
+  else:
+    os.environ[_ESCAPE_OBSTACLE_ENV] = "1" if escape_obstacle else "0"
 
   # Task configs are constructed during this import, after the flag is known.
   from mjlab.scripts.play import main as mjlab_play_main
@@ -41,6 +66,12 @@ def main() -> None:
 
   state = "enabled" if auto_disturbances else "disabled"
   print(f"[INFO] Automatic physical disturbances during play: {state}")
+  obstacle_state = (
+    "task default"
+    if escape_obstacle is None
+    else ("enabled" if escape_obstacle else "disabled")
+  )
+  print(f"[INFO] Escape obstacle during play: {obstacle_state}")
   mjlab_play_main()
 
 
