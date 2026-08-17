@@ -81,3 +81,25 @@ envelope, not final PPO reward. The intended acceptance criteria are:
 3. preserve prone recovery success within two percentage points or improve it;
 4. preserve non-prone success within five percentage points;
 5. do not increase p95 joint speed, mean peak torque, or mean peak power.
+
+## V7 baseline envelope (2026-08-17)
+
+The deterministic evaluator was run for 1,000 control steps on 512 environments
+per reset stratum with seed `20260817`. A stable stand means 25 consecutive
+steps with head height at least 1.10 m, upright score at least 0.85, base linear
+speed below 0.50 m/s, and angular speed below 1.0 rad/s.
+
+| Reset | Stable success | Median time | Ordered-stage success |
+| --- | ---: | ---: | ---: |
+| prone | 512/512 | 2.50 s | 0/512 |
+| supine | 57/512 | 4.56 s | 0/512 |
+| left side | 512/512 | 2.86 s | 0/512 |
+| right side | 512/512 | 2.70 s | 0/512 |
+
+The prone policy is successful by final posture but not by the intended route:
+mean hand-support occupancy is 0.85%, knee/shin support is 0.012%, leg-splay
+excess p95 is 0.157, and foot excursion is 0.543 m median / 0.824 m p95. Joint
+speed p95 is 12.14 rad/s, while mean peak torque and power are 85.15 Nm and
+202.40 W. These values are the frozen V7 comparison targets for checkpoint
+selection. The weak 11.1% supine result must also be monitored; a visually
+better prone policy is not accepted if it further damages supine recovery.
