@@ -19,6 +19,9 @@ __all__ = [
   "cached_raw_smp_score",
   "failure_buffer_fill_metric",
   "failure_replay_reset_metric",
+  "ground_support_contact_metric",
+  "prone_leg_splay_excess_l2",
+  "prone_support_route",
   "recovery_initiation_progress",
   "cached_smp_score",
   "cached_task_score",
@@ -115,6 +118,81 @@ def _contact_found(env: ManagerBasedRlEnv, sensor_name: str) -> torch.Tensor:
   if found is None:
     raise RuntimeError(f"{sensor_name} must expose the 'found' contact field")
   return found > 0
+
+
+def ground_support_contact_metric(
+  env: ManagerBasedRlEnv,
+  sensor_name: str,
+) -> torch.Tensor:
+  """Fraction of configured support collision groups touching the terrain."""
+  return _contact_found(env, sensor_name).float().mean(dim=-1)
+
+
+def _procedural_prone_mask(env: ManagerBasedRlEnv) -> torch.Tensor:
+  reset_type = getattr(env, "_robust_reset_type", None)
+  if reset_type is None:
+    return torch.zeros(env.num_envs, dtype=torch.bool, device=env.device)
+  return reset_type == 2
+
+
+def prone_support_route(
+  env: ManagerBasedRlEnv,
+  hand_sensor_name: str = "natural_hand_ground_contact",
+  knee_sensor_name: str = "natural_knee_ground_contact",
+  start_height: float = 0.28,
+  waypoint_height: float = 0.62,
+) -> torch.Tensor:
+  """Reward a supported prone-to-kneeling route before the first waypoint.
+
+  Hands are required for dense elevation credit. Knee/shin support raises the
+  score but is not mandatory, allowing the demonstrated asymmetric kneeling
+  variants. Once stage one is reached the term remains at one, so advancing is
+  always preferable to holding a quadruped pose.
+  """
+  robot = env.scene["robot"]
+  stage = _recovery_stage(env)
+  prone = _procedural_prone_mask(env)
+  hand = ground_support_contact_metric(env, hand_sensor_name)
+  knee = ground_support_contact_metric(env, knee_sensor_name)
+  head_idx = robot.find_sites(["head"], preserve_order=True)[0][0]
+  head_z = robot.data.site_pos_w[:, head_idx, 2]
+  height = torch.clamp(
+    (head_z - start_height) / max(waypoint_height - start_height, 1e-6),
+    0.0,
+    1.0,
+  )
+  supported_height = hand * height * (0.65 + 0.35 * knee)
+  route = 0.20 * hand + 0.20 * hand * knee + 0.60 * supported_height
+  route = torch.where(stage > 0, torch.ones_like(route), route)
+  return prone.float() * route
+
+
+def prone_leg_splay_excess_l2(
+  env: ManagerBasedRlEnv,
+  hip_roll_limit: float = 0.65,
+  hip_yaw_limit: float = 0.75,
+  max_head_height: float = 0.95,
+) -> torch.Tensor:
+  """Penalize extreme early-prone hip abduction/yaw without affecting other falls."""
+  robot = env.scene["robot"]
+  joint_ids = robot.find_joints(
+    [
+      "left_hip_roll_joint",
+      "right_hip_roll_joint",
+      "left_hip_yaw_joint",
+      "right_hip_yaw_joint",
+    ],
+    preserve_order=True,
+  )[0]
+  hip = torch.abs(robot.data.joint_pos[:, joint_ids])
+  roll_excess = torch.clamp(hip[:, :2] - hip_roll_limit, min=0.0)
+  yaw_excess = torch.clamp(hip[:, 2:] - hip_yaw_limit, min=0.0)
+  excess = torch.mean(torch.square(roll_excess), dim=-1)
+  excess += torch.mean(torch.square(yaw_excess), dim=-1)
+  head_idx = robot.find_sites(["head"], preserve_order=True)[0][0]
+  low = robot.data.site_pos_w[:, head_idx, 2] < max_head_height
+  early = _recovery_stage(env) <= 1
+  return _procedural_prone_mask(env).float() * low.float() * early.float() * excess
 
 
 def crawl_with_hand_support(
