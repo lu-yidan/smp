@@ -88,6 +88,22 @@ def main(cfg: EvalCfg) -> None:
   force = raw_env._escape_peak_contact_force[active]  # type: ignore[attr-defined]
   separation = raw_env._escape_best_separation[active]  # type: ignore[attr-defined]
   clear_hold = raw_env._escape_clear_hold[active]  # type: ignore[attr-defined]
+  initial_covered = getattr(raw_env, "_escape_initial_covered_geom_count", None)
+  covered = getattr(raw_env, "_escape_covered_geom_count", None)
+  best_covered = getattr(raw_env, "_escape_best_covered_geom_count", None)
+  planar_clearance = getattr(raw_env, "_escape_planar_clearance", None)
+  if initial_covered is not None:
+    initial_covered = initial_covered[active]
+    covered = covered[active]
+    best_covered = best_covered[active]
+    planar_clearance = planar_clearance[active]
+  obstacle = raw_env.scene["escape_obstacle"]
+  plate_body_ids, _ = obstacle.find_bodies(["escape_plate"], preserve_order=True)
+  plate_mass = None
+  if len(plate_body_ids) == 1:
+    plate_local = torch.tensor(plate_body_ids, dtype=torch.long, device=raw_env.device)
+    plate_body_id = obstacle.indexing.body_ids[plate_local][0].long()
+    plate_mass = raw_env.sim.model.body_mass[:, plate_body_id][active]
 
   def quantile(values: torch.Tensor, q: float) -> float:
     return float(torch.quantile(values, q)) if values.numel() else 0.0
@@ -140,6 +156,26 @@ def main(cfg: EvalCfg) -> None:
     "max_torque_mean_nm": float(max_torque[active].mean()),
     "max_power_mean_w": float(max_power[active].mean()),
   }
+  if initial_covered is not None:
+    result.update(
+      {
+        "initial_covered_geom_count_median": float(initial_covered.float().median()),
+        "final_covered_geom_count_median": float(covered.float().median()),
+        "best_covered_geom_count_median": float(best_covered.float().median()),
+        "fully_clear_geometry": int(
+          ((covered == 0) & (planar_clearance >= 0.025)).sum()
+        ),
+        "planar_clearance_median_m": float(planar_clearance.median()),
+        "planar_clearance_p90_m": quantile(planar_clearance, 0.90),
+      }
+    )
+  if plate_mass is not None:
+    result.update(
+      {
+        "plate_mass_median_kg": float(plate_mass.median()),
+        "plate_mass_max_kg": float(plate_mass.max()),
+      }
+    )
   print("ESCAPE_EVAL_JSON=" + json.dumps(result, sort_keys=True))
   raw_env.close()
 

@@ -32,6 +32,10 @@ __all__ = [
   "crawl_with_hand_support",
   "escape_completion",
   "escape_contact_force_excess_l2",
+  "escape_covered_geom_count_metric",
+  "escape_best_covered_geom_count_metric",
+  "escape_geometry_clearance_score",
+  "escape_geometry_progress",
   "escape_gated_task_smp_product",
   "escape_object_displacement_metric",
   "escape_obstacle_episode_metric",
@@ -49,6 +53,8 @@ __all__ = [
   "escape_hand_supported_progress_metric",
   "escape_peak_contact_force_metric",
   "escape_peak_penetration_metric",
+  "escape_planar_clearance_metric",
+  "escape_plate_mass_metric",
   "joint_acc_rms_metric",
   "low_base_angular_velocity",
   "low_joint_velocity",
@@ -248,6 +254,52 @@ def hand_supported_escape_progress(
   low_pose = robot.data.site_pos_w[:, head_idx, 2] <= max_head_height
   progress = torch.clamp(delta / progress_scale, 0.0, 1.0)
   return (phase == 2).float() * low_pose.float() * support_fraction * progress
+
+
+def escape_geometry_progress(
+  env: ManagerBasedRlEnv,
+  sensor_name: str = "hand_ground_contact",
+  coverage_scale: float = 0.025,
+  clearance_scale: float = 0.02,
+  max_head_height: float = 0.90,
+) -> torch.Tensor:
+  """Reward all-body footprint clearance gained while hand-supported.
+
+  Unlike centre-distance progress, this term cannot be maximized while the
+  head, torso, hand, or foot remains under a plate edge.
+  """
+  phase = getattr(env, "_escape_phase", None)
+  coverage_delta = getattr(env, "_escape_coverage_delta", None)
+  clearance_delta = getattr(env, "_escape_clearance_delta", None)
+  if phase is None or coverage_delta is None or clearance_delta is None:
+    return torch.zeros(env.num_envs, device=env.device)
+  support_fraction = _contact_found(env, sensor_name).float().mean(dim=-1)
+  robot = env.scene["robot"]
+  head_idx = robot.find_sites(["head"], preserve_order=True)[0][0]
+  low_pose = robot.data.site_pos_w[:, head_idx, 2] <= max_head_height
+  progress = torch.clamp(coverage_delta / coverage_scale, 0.0, 1.0)
+  progress += 0.5 * torch.clamp(clearance_delta / clearance_scale, 0.0, 1.0)
+  return (phase == 2).float() * low_pose.float() * support_fraction * progress
+
+
+def escape_geometry_clearance_score(
+  env: ManagerBasedRlEnv,
+  target_clearance: float = 0.04,
+) -> torch.Tensor:
+  """Small dense score for reducing covered geoms and clearing the last edge."""
+  phase = getattr(env, "_escape_phase", None)
+  covered = getattr(env, "_escape_covered_geom_count", None)
+  initial = getattr(env, "_escape_initial_covered_geom_count", None)
+  clearance = getattr(env, "_escape_planar_clearance", None)
+  if phase is None or covered is None or initial is None or clearance is None:
+    return torch.zeros(env.num_envs, device=env.device)
+  denominator = torch.clamp(initial.float(), min=1.0)
+  uncovered_fraction = torch.clamp(
+    1.0 - covered.float() / denominator, min=0.0, max=1.0
+  )
+  clearance_score = torch.clamp(clearance / target_clearance, 0.0, 1.0)
+  active = (phase == 2) | (phase == 3)
+  return active.float() * (0.85 * uncovered_fraction + 0.15 * clearance_score)
 
 
 def escape_completion(env: ManagerBasedRlEnv) -> torch.Tensor:
@@ -813,6 +865,41 @@ def escape_object_displacement_metric(env: ManagerBasedRlEnv) -> torch.Tensor:
     return torch.zeros(env.num_envs, device=env.device)
   current = env.scene["escape_obstacle"].data.root_link_pos_w[:, :2]
   return torch.linalg.vector_norm(current - start, dim=-1)
+
+
+def escape_covered_geom_count_metric(env: ManagerBasedRlEnv) -> torch.Tensor:
+  """Current number of robot collision geoms covered by the plate footprint."""
+  count = getattr(env, "_escape_covered_geom_count", None)
+  if count is None:
+    return torch.zeros(env.num_envs, device=env.device)
+  return count.float()
+
+
+def escape_best_covered_geom_count_metric(env: ManagerBasedRlEnv) -> torch.Tensor:
+  """Smallest covered collision-geom count achieved in the episode."""
+  count = getattr(env, "_escape_best_covered_geom_count", None)
+  if count is None:
+    return torch.zeros(env.num_envs, device=env.device)
+  return count.float()
+
+
+def escape_planar_clearance_metric(env: ManagerBasedRlEnv) -> torch.Tensor:
+  """Minimum all-body planar clearance outside the plate footprint, in metres."""
+  clearance = getattr(env, "_escape_planar_clearance", None)
+  if clearance is None:
+    return torch.zeros(env.num_envs, device=env.device)
+  return clearance
+
+
+def escape_plate_mass_metric(env: ManagerBasedRlEnv) -> torch.Tensor:
+  """Per-world guided-plate mass in kilograms."""
+  obstacle = env.scene["escape_obstacle"]
+  local_ids, _ = obstacle.find_bodies(["escape_plate"], preserve_order=True)
+  if len(local_ids) != 1:
+    return torch.zeros(env.num_envs, device=env.device)
+  local = torch.tensor(local_ids, dtype=torch.long, device=env.device)
+  body_id = obstacle.indexing.body_ids[local][0].long()
+  return env.sim.model.body_mass[:, body_id]
 
 
 def escape_obstacle_episode_metric(env: ManagerBasedRlEnv) -> torch.Tensor:
