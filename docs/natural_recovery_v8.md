@@ -103,3 +103,17 @@ speed p95 is 12.14 rad/s, while mean peak torque and power are 85.15 Nm and
 202.40 W. These values are the frozen V7 comparison targets for checkpoint
 selection. The weak 11.1% supine result must also be monitored; a visually
 better prone policy is not accepted if it further damages supine recovery.
+
+## Formal run (started 2026-08-17)
+
+The 64-environment fresh-policy smoke test and two-iteration resume smoke test
+both completed. The V7 source and local V8 seed copy have identical SHA-256:
+`1324d3cbfe71d3896cd502e2cc381b839a678a17a357183528dd6153f6f0f0da`.
+
+- W&B: `tabletennis/smp/xyxaybwi`
+- server/GPU: `dsw-lyd2`, GPU 0
+- tmux session: `smp_v8_natural`
+- log: `run_control/v8_natural_from_v7_69995.log`
+- source checkpoint: V7 `model_69995.pt`
+- expected checkpoints: `70000`, `71000`, `72000`, `73000`, `74000`, `74994`
+- initial throughput: about 68,000 steps/s; ETA about 2 h 5 min
