@@ -17,14 +17,14 @@ but its force follows the selected robot body. The robot cannot physically
 slide out from under it. `Smp-Getup-Escape-G1` replaces that abstraction with a
 visible free rigid body that can be pushed, rolled aside, or crawled out from.
 
-V2 intentionally focuses on one failure mode: prone, chest-loaded recovery on
+V2 unintentionally focused on supine, back-loaded recovery on
 flat ground. Complex terrain, pelvis/limb pinning, and deformable objects remain
 held-out extensions until this mechanism is validated.
 
 ## Environment and phases
 
 The orange padded-plate proxy is 0.40 x 0.84 x 0.09 m, weighs 8 kg, and has
-high sliding friction. Ninety percent of resets are procedural prone poses;
+high sliding friction. Ninety percent of resets are procedural supine poses;
 the plate is sampled on 90% of those poses. Other resets remain clean controls.
 
 Escape state is simulator-only:

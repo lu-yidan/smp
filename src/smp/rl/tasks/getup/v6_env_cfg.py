@@ -34,7 +34,8 @@ def g1_getup_v6_smp_env_cfg(play: bool = False):
   cfg.events["mixed_fall_reset"].params.update(
     {
       "procedural_probability": 0.65,
-      "mode_weights": (2.0, 3.5, 1.5, 1.5),
+      # Mode order is prone, supine, left side, right side.
+      "mode_weights": (3.5, 2.0, 1.5, 1.5),
       "root_height_range": (0.38, 0.64),
       "joint_noise": 0.24,
       "orientation_noise": 0.40,

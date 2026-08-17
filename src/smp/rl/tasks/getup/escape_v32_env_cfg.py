@@ -42,12 +42,12 @@ def get_settled_escape_board_spec() -> mujoco.MjSpec:  # type: ignore[attr-defin
 
 
 def g1_getup_escape_plate_v32_smp_env_cfg(play: bool = False):
-  """Build V3.2: begin prone, grounded, and within millimetres of the load."""
+  """Build V3.2: begin supine, grounded, and within millimetres of the load."""
   cfg = g1_getup_escape_plate_v31_smp_env_cfg(play=play)
   cfg.scene.entities["escape_obstacle"].spec_fn = get_settled_escape_board_spec
   cfg.events["mixed_fall_reset"].params.update(
     {
-      # Keep continuous pose coverage without tilting the prepared prone body
+      # Keep continuous pose coverage without tilting the prepared supine body
       # far enough that the head or one shoulder becomes the sole support.
       "joint_noise": 0.10,
       "orientation_noise": 0.04,
@@ -55,8 +55,8 @@ def g1_getup_escape_plate_v32_smp_env_cfg(play: bool = False):
   )
   cfg.events["reset_escape_obstacle"].params.update(
     {
-      "crawl_ready_prone": True,
-      "crawl_arm_noise": 0.035,
+      "support_ready_supine": True,
+      "support_arm_noise": 0.035,
       "ground_clearance": 0.004,
       "surface_gap": 0.001,
       "plate_half_extents": (0.45, 0.32, 0.035),

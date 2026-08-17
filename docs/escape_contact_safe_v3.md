@@ -5,7 +5,7 @@
 `Smp-Getup-Escape-Plate-V3-G1` is the first controlled physical-contact stage
 after the invalid V2 free-plate pilot. It answers one narrow question:
 
-> Can a prone G1 establish hand support and translate laterally out from under
+> Can a supine G1 establish hand support and translate laterally out from under
 > a real load without exploiting reset interpenetration?
 
 The blue plate is an experimental fixture, not the final debris model. It has a
@@ -27,8 +27,8 @@ This deliberate restriction prevents two confounds during the first skill:
 - mass: 5 kg (approximately 49 N static load);
 - high sliding friction;
 - passive z slide with 120 N s/m damping and no actuator;
-- 95% procedural resets, restricted to noisy prone poses;
-- plate applied to 90% of eligible prone episodes, leaving clean controls;
+- 95% procedural resets, restricted to noisy supine poses;
+- plate applied to 90% of eligible supine episodes, leaving clean controls;
 - actor observation remains the same deployable 96 dimensions: base velocity,
   projected gravity, joint position/velocity, and previous action;
 - plate pose, contact truth, task phase, and penetration are used only by the

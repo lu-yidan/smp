@@ -99,6 +99,7 @@ def g1_getup_escape_plate_v3_smp_env_cfg(play: bool = False):
   cfg.events["mixed_fall_reset"].params.update(
     {
       "procedural_probability": 0.95,
+      # Historical V3--V3.3 used reset type 2, which is physically supine.
       "mode_weights": (0.0, 1.0, 0.0, 0.0),
       "root_height_range": (0.38, 0.50),
       "root_xy_range": 0.04,

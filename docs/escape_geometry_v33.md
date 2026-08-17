@@ -2,7 +2,7 @@
 
 ## Why V3.3 is separate
 
-V3.2 fixed the reset physics: a crawl-ready prone G1 starts grounded with a
+V3.2 fixed the reset physics: a support-ready supine G1 starts grounded with a
 positive 1 mm plate gap, and an 8 kg board can move only along its passive
 vertical slide. The completed actor learned substantial lateral translation,
 but the objective still measured pelvis-to-board centre distance. It could
@@ -46,7 +46,7 @@ vertical slide. Over the first 100,000 control steps:
 - plate mass is sampled from 4--6 kg initially, then from 4--12 kg.
 
 Mass and box inertia are scaled together per world. In play mode the curriculum
-is disabled: the board is centred over the prepared prone body and fixed at
+is disabled: the board is centred over the prepared supine body and fixed at
 8 kg so visual tests always show the intended pinned scenario.
 
 ## Implementation checks

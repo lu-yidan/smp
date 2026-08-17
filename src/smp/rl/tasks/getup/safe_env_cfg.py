@@ -40,7 +40,7 @@ def g1_getup_robust_safe_smp_env_cfg(play: bool = False):
   cfg.events["mixed_fall_reset"].params.update(
     {
       "procedural_probability": 0.70,
-      "mode_weights": (1.5, 3.5, 1.0, 1.0),
+      "mode_weights": (3.5, 1.5, 1.0, 1.0),
       "root_height_range": (0.42, 0.56),
       "joint_noise": 0.16,
     }

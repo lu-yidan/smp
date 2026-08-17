@@ -17,8 +17,8 @@ import smp.rl.tasks  # noqa: F401  # task registration
 from smp.rl.tasks.getup import mdp
 
 _RESET_WEIGHTS = {
-  "supine": (1.0, 0.0, 0.0, 0.0),
-  "prone": (0.0, 1.0, 0.0, 0.0),
+  "supine": (0.0, 1.0, 0.0, 0.0),
+  "prone": (1.0, 0.0, 0.0, 0.0),
   "left_side": (0.0, 0.0, 1.0, 0.0),
   "right_side": (0.0, 0.0, 0.0, 1.0),
 }

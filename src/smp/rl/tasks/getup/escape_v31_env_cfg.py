@@ -37,7 +37,7 @@ def get_body_aligned_escape_board_spec() -> mujoco.MjSpec:  # type: ignore[attr-
 
 
 def g1_getup_escape_plate_v31_smp_env_cfg(play: bool = False):
-  """Build V3.1 with prompt prone loading and required supported progress."""
+  """Build V3.1 with prompt supine loading and required supported progress."""
   cfg = g1_getup_escape_plate_v3_smp_env_cfg(play=play)
   cfg.scene.entities["escape_obstacle"].spec_fn = get_body_aligned_escape_board_spec
 

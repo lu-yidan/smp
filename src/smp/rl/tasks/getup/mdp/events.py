@@ -369,8 +369,8 @@ def reset_guided_escape_plate(
   longitudinal_offset_curriculum: tuple[float, float] | None = None,
   lateral_offset_curriculum: tuple[float, float] | None = None,
   overlap_curriculum_steps: int = 0,
-  crawl_ready_prone: bool = False,
-  crawl_arm_noise: float = 0.0,
+  support_ready_supine: bool = False,
+  support_arm_noise: float = 0.0,
   ground_clearance: float = 0.004,
   surface_gap: float | None = None,
   plate_half_extents: tuple[float, float, float] = (0.45, 0.32, 0.035),
@@ -406,14 +406,15 @@ def reset_guided_escape_plate(
     active &= eligible
 
   active_ids = env_ids[active]
-  if crawl_ready_prone and active_ids.numel() > 0:
-    # Prepare only procedural-prone actors with the crawl arm pose. Supine
-    # actors retain their sampled arms so a multi-pose task does not silently
-    # turn both reset families into the same joint configuration.
+  if support_ready_supine and active_ids.numel() > 0:
+    # V3.2/V3.3 were physically supine (reset type 2), despite their original
+    # "prone" labels. Preserve that learned support-ready arm initialization
+    # only for supine actors; true prone actors retain independently sampled
+    # arms in the mixed-pose task.
     reset_type = getattr(env, "_robust_reset_type", None)
     if reset_type is None:
-      raise RuntimeError("crawl_ready_prone requires mixed_fall_reset state")
-    prone_ids = active_ids[reset_type[active_ids] == 2]
+      raise RuntimeError("support_ready_supine requires mixed_fall_reset state")
+    supine_ids = active_ids[reset_type[active_ids] == 2]
     arm_names = (
       "left_shoulder_pitch_joint",
       "left_shoulder_roll_joint",
@@ -430,11 +431,11 @@ def reset_guided_escape_plate(
       "right_wrist_pitch_joint",
       "right_wrist_yaw_joint",
     )
-    if prone_ids.numel() > 0:
+    if supine_ids.numel() > 0:
       arm_ids, _ = robot.find_joints(arm_names, preserve_order=True)
       if len(arm_ids) != len(arm_names):
         raise ValueError("all crawl-ready arm joints must resolve exactly once")
-      joint_pos = robot.data.joint_pos[prone_ids].clone()
+      joint_pos = robot.data.joint_pos[supine_ids].clone()
       joint_vel = torch.zeros_like(joint_pos)
       arm_pose = torch.tensor(
         (
@@ -455,18 +456,18 @@ def reset_guided_escape_plate(
         ),
         device=env.device,
       )
-      arm_values = arm_pose[None, :].expand(prone_ids.numel(), -1).clone()
-      if crawl_arm_noise > 0.0:
+      arm_values = arm_pose[None, :].expand(supine_ids.numel(), -1).clone()
+      if support_arm_noise > 0.0:
         arm_values += torch.empty_like(arm_values).uniform_(
-          -crawl_arm_noise, crawl_arm_noise
+          -support_arm_noise, support_arm_noise
         )
       arm_local = torch.tensor(arm_ids, dtype=torch.long, device=env.device)
       joint_pos[:, arm_local] = arm_values
-      robot.write_joint_state_to_sim(joint_pos, joint_vel, env_ids=prone_ids)
+      robot.write_joint_state_to_sim(joint_pos, joint_vel, env_ids=supine_ids)
       env.sim.forward()
 
     # Ground every eligible pose before placing the plate. This preserves the
-    # V3.3 prone setup and gives supine actors the same prompt-load contract.
+    # V3.3 supine setup and gives prone actors the same prompt-load contract.
     geom_pos, z_extent, _, _, _ = _collision_vertical_geometry(
       env, active_ids, collision_geom_pattern
     )
@@ -526,7 +527,7 @@ def reset_guided_escape_plate(
   if surface_gap is None:
     # Targeting only the torso centre recreated V2's bug whenever a hand, foot,
     # or head collision was higher.  This conservative envelope is independent
-    # of which link happens to be uppermost in the sampled prone pose.
+    # of which link happens to be uppermost in the sampled lying pose.
     target_pos[:, 2] = (
       robot.data.body_link_pos_w[env_ids, :, 2].amax(dim=-1) + body_origin_clearance
     )
@@ -1055,7 +1056,7 @@ def mixed_fall_reset(
   """Mix GSI resets with four physically plausible procedural lying poses.
 
   gsi_reset runs first for every reset. This event replaces a configurable
-  subset with supine, prone, left-side, or right-side poses, then re-primes the
+  subset with prone, supine, left-side, or right-side poses, then re-primes the
   SMP history with the actual simulator state so no stale GSI trajectory leaks
   into the reward.
   """
@@ -1132,6 +1133,8 @@ def mixed_fall_reset(
   pitch = torch.zeros(n, device=env.device)
   roll = torch.where(modes == 2, torch.full_like(roll, torch.pi / 2), roll)
   roll = torch.where(modes == 3, torch.full_like(roll, -torch.pi / 2), roll)
+  # With G1's root convention, +pi/2 places the torso forward/chest axis down
+  # (prone), while -pi/2 points it up (supine).
   pitch = torch.where(modes == 0, torch.full_like(pitch, torch.pi / 2), pitch)
   pitch = torch.where(modes == 1, torch.full_like(pitch, -torch.pi / 2), pitch)
   if orientation_noise > 0.0:

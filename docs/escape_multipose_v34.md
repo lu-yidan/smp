@@ -2,10 +2,16 @@
 
 ## Scope
 
-V3.3 remains the frozen prone-only baseline. Its `mixed_fall_reset` selected
-only reset type 2 (procedural prone), and the plate event accepted only that
-type. V3.4 adds reset type 1 (procedural supine) without changing the frozen
+V3.3 remains the frozen supine-only baseline. Its `mixed_fall_reset` selected
+only reset type 2 (procedural supine), and the plate event accepted only that
+type. V3.4 adds reset type 1 (procedural prone) without changing the frozen
 task or its checkpoint.
+
+This naming was corrected on 2026-08-18 after a rendered reset and a direct
+torso-frame audit exposed an old label inversion. For G1, reset type 1 points
+the torso forward/chest axis down (`mean z = -0.997`, prone), while type 2
+points it up (`mean z = +0.997`, supine). The physical trajectories and frozen
+checkpoints are unchanged; only their earlier pose labels were wrong.
 
 Task ID: `Smp-Getup-Escape-Plate-V34-G1`.
 
@@ -20,16 +26,16 @@ Training samples 50% supine and 50% prone episodes before replay. Both poses:
 - retain the 96-dimensional deployable actor observation with no plate pose,
   mass, geometry clearance or simulator contact labels.
 
-Only the prone subset receives the crawl-ready symmetric arm pose inherited
-from V3.2. Supine actors retain their sampled arm configuration. This avoids
+Only the supine subset receives the support-ready symmetric arm pose inherited
+from V3.2. Prone actors retain their sampled arm configuration. This avoids
 silently collapsing two orientation families into one joint pose.
 
 The first deterministic 256-environment, two-step reset audit sampled 131
-supine and 125 prone scenes. All 256 plate episodes were active; initial peak
+prone and 125 supine scenes. All 256 plate episodes were active; initial peak
 penetration was below 2.4 mm, peak force was below 718 N, and neither contact
 invalidity nor setup invalidity was observed. A longer 64-environment smoke
-rollout showed that the frozen prone expert does not already solve supine: the
-supine invalid-contact rate rose as the old policy acted under the unfamiliar
+rollout showed that the frozen supine expert does not already solve prone: the
+prone invalid-contact rate rose as the old policy acted under the unfamiliar
 constraint. This is expected evidence for fine-tuning, not a reset failure.
 
 A separate 512-environment, 1,000-step source-checkpoint evaluation quantified
@@ -37,11 +43,11 @@ the starting gap before any V3.4 learning:
 
 | reset pose | episodes | escape + stable stand | invalid contact | stable foot separation |
 |---|---:|---:|---:|---:|
-| prone | 246 | 94.72% | 5.28% | 0.456 m |
-| supine | 266 | 0.00% | 36.84% | not reached |
+| supine | 246 | 94.72% | 5.28% | 0.456 m |
+| prone | 266 | 0.00% | 36.84% | not reached |
 
 The mixed aggregate was 45.51%. This is a useful controlled baseline: V3.4
-must gain supine escape without sacrificing the already strong prone stratum.
+must gain prone escape without sacrificing the already strong supine stratum.
 
 ## Evaluation
 
@@ -75,7 +81,7 @@ Keep the first V3.4 experiment focused on the pose expansion: do not
 simultaneously add the wider-board or stance-band changes.
 
 Checkpoint selection must report supine and prone success separately. A model
-that improves the average by sacrificing the frozen prone skill is rejected.
+that improves the average by sacrificing the frozen supine skill is rejected.
 After this controlled experiment, mirrored hard-state replay and wider-board
 curriculum can be introduced as the next attributable change.
 

@@ -7,8 +7,8 @@ dynamic loading experiment: the board began above the robot and descended while
 the policy was already trying to recover.  The resulting trajectory could push
 the robot sideways until only a board edge remained in contact.
 
-The underlying prone reset also mattered.  It rotated the nominal standing pose
-onto its front without preparing the arms.  In 1024 deterministic samples, the
+The underlying supine reset also mattered. It rotated the nominal standing pose
+onto its back without preparing the arms. In 1024 deterministic samples, the
 highest collision geom under the board was a hand in 891 cases (87.0%), a thigh
 in 91 cases, and the torso in only 14 cases.  A collision-safe board therefore
 had to hover above raised hands rather than begin against the trunk.
@@ -20,7 +20,7 @@ reproducible baselines.
 
 For each active board episode V3.2 now:
 
-1. samples the same prone body orientation and lower-body variation;
+1. samples the same supine body orientation and lower-body variation;
 2. places both arms in a symmetric crawl-ready pose, with small joint noise;
 3. shifts the complete robot vertically until its lowest collision surface is
    4 mm above the flat ground and zeros reset velocity;
@@ -76,12 +76,12 @@ uv run scripts/play.py Smp-Getup-Escape-Plate-V32-G1 \
   --auto-disturbances False
 ```
 
-The expected reset is already prone with hands near the ground and the board
+The expected reset is already supine with hands near the ground and the board
 almost touching.  The old policy is not expected to escape.  Confirm visually
 that the initial coverage matches the intended pinned scenario before launching
 fine-tuning.
 
-In play mode V3.2 forces the prone reset to 100% and enables the plate by
+In play mode V3.2 forces the supine reset to 100% and enables the plate by
 default.  `--escape-obstacle True|False` controls the plate independently;
 `--auto-disturbances True|False` controls only additional physical
 disturbances.  Earlier revisions incorrectly used the automatic-disturbance

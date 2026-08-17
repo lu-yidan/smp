@@ -1,5 +1,11 @@
 # Robust G1 get-up experiment notes
 
+> **Reset-label correction (2026-08-18).** Historical comments named the first
+> two procedural modes in reverse. The physical order is prone (type 1), supine
+> (type 2), left side, right side. Historical checkpoints are unchanged, but
+> old per-pose labels and claimed reset shares must be interpreted using
+> `docs/reset_pose_label_audit_20260818.md`.
+
 This document records the task lineage, design choices, commands, and evaluation
 criteria for the robust and smooth get-up policies. The baseline
 `Smp-Getup-G1` remains unchanged so results stay reproducible.

@@ -139,7 +139,7 @@ def _procedural_prone_mask(env: ManagerBasedRlEnv) -> torch.Tensor:
   reset_type = getattr(env, "_robust_reset_type", None)
   if reset_type is None:
     return torch.zeros(env.num_envs, dtype=torch.bool, device=env.device)
-  return reset_type == 2
+  return reset_type == 1
 
 
 def prone_support_route(
@@ -672,7 +672,7 @@ def prone_reset_metric(env: ManagerBasedRlEnv) -> torch.Tensor:
   reset_type = getattr(env, "_robust_reset_type", None)
   if reset_type is None:
     return torch.zeros(env.num_envs, device=env.device)
-  return (reset_type == 2).float()
+  return (reset_type == 1).float()
 
 
 def supine_reset_metric(env: ManagerBasedRlEnv) -> torch.Tensor:
@@ -680,7 +680,7 @@ def supine_reset_metric(env: ManagerBasedRlEnv) -> torch.Tensor:
   reset_type = getattr(env, "_robust_reset_type", None)
   if reset_type is None:
     return torch.zeros(env.num_envs, device=env.device)
-  return (reset_type == 1).float()
+  return (reset_type == 2).float()
 
 
 def recovery_stage_metric(env: ManagerBasedRlEnv) -> torch.Tensor:

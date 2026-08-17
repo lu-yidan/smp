@@ -1,5 +1,13 @@
 # V8 natural prone recovery
 
+> **Pose-label correction (2026-08-18).** The historical evaluator and
+> pose-gated reward treated reset type 2 as prone, but a direct torso-frame
+> audit showed that type 2 is physically supine and type 1 is prone. Therefore
+> the old prone/supine row labels in this document must be swapped, and the
+> completed V8 run is not evidence for a prone-specific reward improvement.
+> See `docs/reset_pose_label_audit_20260818.md`. The code now uses type 1 for
+> future prone-specific training and evaluation.
+
 ## Motivation
 
 V7 changes the local 0.2-second SMP prior but leaves the long-horizon PPO route

@@ -15,7 +15,7 @@ not rewrite its results.
 ## Task changes
 
 `Smp-Getup-Escape-Plate-V31-G1` uses a 0.90 x 0.64 x 0.07 m, 8 kg board. At
-reset, its long axis is aligned with the prone torso-to-head direction and its
+reset, its long axis is aligned with the supine torso-to-head direction and its
 centre is shifted 0.10 m toward the pelvis. The board still has only one passive
 vertical slide degree of freedom; its x/y anchor never follows the robot.
 

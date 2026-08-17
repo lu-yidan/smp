@@ -14,13 +14,13 @@ from smp.rl.tasks.getup.escape_v33_env_cfg import (
 _PLAY_RESET_POSE_ENV = "SMP_PLAY_ESCAPE_RESET_POSE"
 _POSE_WEIGHTS = {
   "mixed": (1.0, 1.0, 0.0, 0.0),
-  "supine": (1.0, 0.0, 0.0, 0.0),
-  "prone": (0.0, 1.0, 0.0, 0.0),
+  "supine": (0.0, 1.0, 0.0, 0.0),
+  "prone": (1.0, 0.0, 0.0, 0.0),
 }
 
 
 def g1_getup_escape_plate_v34_smp_env_cfg(play: bool = False):
-  """Build V3.4 by adding physically grounded supine plate resets to V3.3."""
+  """Build V3.4 by adding physically grounded prone plate resets to V3.3."""
   cfg = g1_getup_escape_plate_v33_smp_env_cfg(play=play)
   reset_pose = os.environ.get(_PLAY_RESET_POSE_ENV, "mixed") if play else "mixed"
   if reset_pose not in _POSE_WEIGHTS:

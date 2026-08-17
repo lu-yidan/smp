@@ -21,7 +21,7 @@ def g1_getup_robust_staged_smp_env_cfg(play: bool = False):
   cfg.events["mixed_fall_reset"].params.update(
     {
       "procedural_probability": 0.60,
-      "mode_weights": (1.0, 3.0, 1.0, 1.0),
+      "mode_weights": (3.0, 1.0, 1.0, 1.0),
     }
   )
   cfg.events["reset_recovery_stage"] = EventTermCfg(
