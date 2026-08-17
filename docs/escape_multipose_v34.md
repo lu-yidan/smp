@@ -32,6 +32,17 @@ rollout showed that the frozen prone expert does not already solve supine: the
 supine invalid-contact rate rose as the old policy acted under the unfamiliar
 constraint. This is expected evidence for fine-tuning, not a reset failure.
 
+A separate 512-environment, 1,000-step source-checkpoint evaluation quantified
+the starting gap before any V3.4 learning:
+
+| reset pose | episodes | escape + stable stand | invalid contact | stable foot separation |
+|---|---:|---:|---:|---:|
+| prone | 246 | 94.72% | 5.28% | 0.456 m |
+| supine | 266 | 0.00% | 36.84% | not reached |
+
+The mixed aggregate was 45.51%. This is a useful controlled baseline: V3.4
+must gain supine escape without sacrificing the already strong prone stratum.
+
 ## Evaluation
 
 The checkpoint evaluator accepts `--reset-pose prone`, `supine`, or `mixed`
@@ -57,12 +68,27 @@ press Enter in the native viewer to resample within that family.
 ## Fine-tuning plan
 
 Resume from the balanced V3.3 `model_95000.pt`, not from the wider-stance
-heavy-load checkpoint. First run a short 64-environment resume smoke test,
-then fine-tune for 8,000 iterations with a 1e-4 learning rate and 1,000-step
-checkpoint interval. Keep the first V3.4 experiment focused on the pose
-expansion: do not simultaneously add the wider-board or stance-band changes.
+heavy-load checkpoint. A 256-environment, two-iteration resume smoke test
+completed with finite metrics and an exact 50/50 pose split. Fine-tune for
+8,000 iterations with a 1e-4 learning rate and 1,000-step checkpoint interval.
+Keep the first V3.4 experiment focused on the pose expansion: do not
+simultaneously add the wider-board or stance-band changes.
 
 Checkpoint selection must report supine and prone success separately. A model
 that improves the average by sacrificing the frozen prone skill is rejected.
 After this controlled experiment, mirrored hard-state replay and wider-board
 curriculum can be introduced as the next attributable change.
+
+## Formal run (started 2026-08-17)
+
+- branch: codex/escape-multipose-v34
+- source commit: 8e5ccd9
+- server/GPU: dsw-lyd2, GPU 0
+- tmux session: smp_v34
+- W&B: tabletennis/smp/x3xkcqro
+- source checkpoint: V3.3 balanced model_95000.pt
+- duration: 8,000 additional PPO iterations
+- expected final checkpoint: model_102999.pt
+- checkpoint interval: 1,000 iterations
+- initial throughput: about 41,600 steps/s; initial ETA about 5 h 42 min
+- log: run_control/v34_supine_prone_from_v33_95000.log
