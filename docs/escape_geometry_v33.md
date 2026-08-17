@@ -179,3 +179,40 @@ pinned, crawling or transitioning through kneeling. A stance-band regularizer
 should activate only after full geometry clearance and stable upright entry.
 For later stair recovery, the target should be terrain-relative feasible foot
 placement rather than a globally narrow stance.
+
+## Initial OOD boundary scan (2026-08-17)
+
+The evaluator now supports explicit plate length, width, thickness, friction,
+longitudinal offset and lateral offset. The physical plate spec, reset overlap
+geometry and success geometry are changed together, avoiding a mismatch
+between visible collision and the clearance metric. A 16-environment custom
+geometry smoke test passed before the server sweep.
+
+The first boundary scan used the balanced `model_95000.pt`, seed 20260822,
+512 environments per condition, 1,000 steps, 8 kg and no reset jitter. These
+are single-seed diagnostics rather than final paper statistics.
+
+| condition | escape + stable stand | invalid | stable foot separation |
+|---|---:|---:|---:|
+| standard 0.90 x 0.64 m, friction 1.2 | 95.31% | 4.69% | 0.455 m |
+| small 0.75 x 0.54 m | 96.88% | 3.12% | 0.455 m |
+| large 1.05 x 0.74 m | 79.10% | 19.53% | 0.458 m |
+| extra-large 1.20 x 0.80 m | 66.60% | 29.10% | 0.457 m |
+| lateral offset -0.16 m | 81.84% | 17.97% | 0.457 m |
+| lateral offset +0.16 m | 70.70% | 28.12% | 0.456 m |
+| friction 0.4 | 85.94% | 14.06% | 0.455 m |
+| friction 0.8 | 92.77% | 7.23% | 0.456 m |
+| friction 1.8 | 91.21% | 8.20% | 0.457 m |
+
+Longitudinal offsets of -0.20, 0.00 and +0.10 m achieved 95.70%, 90.04% and
+84.57%, respectively. The left/right lateral result exposes an asymmetric
+failure region that should be examined with mirrored failure states and more
+seeds before changing training. Across every tested geometry, friction and
+offset, the stable foot-separation median stayed within 0.455--0.458 m. This
+strongly indicates that the stance is a learned checkpoint terminal state,
+not a temporary response to a particular plate condition.
+
+Priority for the next method iteration is therefore: (1) reproduce the
+lateral asymmetry over three seeds, (2) train with mirrored hard-state replay
+and wider-size curriculum, and only then (3) add a post-clearance-only stance
+band. Do not entangle the stance penalty with the pinned escape phase.
