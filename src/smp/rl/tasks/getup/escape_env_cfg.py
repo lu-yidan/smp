@@ -75,8 +75,10 @@ def g1_getup_escape_smp_env_cfg(play: bool = False):
   )
   cfg.scene.sensors = (cfg.scene.sensors or ()) + (hand_ground, robot_obstacle)
 
-  # V2 isolates object escape from V6's post-standing knockdown curriculum.
-  cfg.events.pop("stratified_post_stand_wrench", None)
+  # Training isolates object escape from V6's post-standing knockdown
+  # curriculum. Playback can request it independently from the obstacle.
+  if not (play and os.environ.get("SMP_PLAY_AUTO_DISTURBANCES") == "1"):
+    cfg.events.pop("stratified_post_stand_wrench", None)
   cfg.events["mixed_fall_reset"].params.update(
     {
       "procedural_probability": 0.90,
@@ -86,8 +88,10 @@ def g1_getup_escape_smp_env_cfg(play: bool = False):
     }
   )
   obstacle_probability = 0.80
-  if play and os.environ.get("SMP_PLAY_AUTO_DISTURBANCES") != "1":
-    obstacle_probability = 0.0
+  if play:
+    obstacle_probability = float(
+      os.environ.get("SMP_PLAY_ESCAPE_OBSTACLE", "1") == "1"
+    )
   cfg.events["reset_escape_obstacle"] = EventTermCfg(
     func=mdp.reset_escape_obstacle,
     mode="reset",

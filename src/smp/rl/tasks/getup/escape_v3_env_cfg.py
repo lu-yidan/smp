@@ -92,9 +92,10 @@ def g1_getup_escape_plate_v3_smp_env_cfg(play: bool = False):
   )
   cfg.scene.sensors = (cfg.scene.sensors or ()) + (hand_ground, robot_plate)
 
-  # Isolate the first skill: a prone robot must establish hand support and move
-  # laterally out from under a load.  Object mobility is expanded in later stages.
-  cfg.events.pop("stratified_post_stand_wrench", None)
+  # Training isolates the first escape skill.  Playback may explicitly retain
+  # V6's post-stand wrench, independently of whether the plate is enabled.
+  if not (play and os.environ.get("SMP_PLAY_AUTO_DISTURBANCES") == "1"):
+    cfg.events.pop("stratified_post_stand_wrench", None)
   cfg.events["mixed_fall_reset"].params.update(
     {
       "procedural_probability": 0.95,
@@ -108,8 +109,10 @@ def g1_getup_escape_plate_v3_smp_env_cfg(play: bool = False):
     }
   )
   obstacle_probability = 0.90
-  if play and os.environ.get("SMP_PLAY_AUTO_DISTURBANCES") != "1":
-    obstacle_probability = 0.0
+  if play:
+    obstacle_probability = float(
+      os.environ.get("SMP_PLAY_ESCAPE_OBSTACLE", "1") == "1"
+    )
   cfg.events["reset_escape_obstacle"] = EventTermCfg(
     func=mdp.reset_guided_escape_plate,
     mode="reset",
