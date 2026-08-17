@@ -117,3 +117,33 @@ both completed. The V7 source and local V8 seed copy have identical SHA-256:
 - source checkpoint: V7 `model_69995.pt`
 - expected checkpoints: `70000`, `71000`, `72000`, `73000`, `74000`, `74994`
 - initial throughput: about 68,000 steps/s; ETA about 2 h 5 min
+
+## Completed checkpoint evaluation (2026-08-17)
+
+The run completed at `model_74994.pt`. All six saved checkpoints were evaluated
+deterministically on 512 prone and supine resets for 1,000 control steps with
+seed `20260817`. The three strongest prone candidates were also evaluated on
+both side-lying strata.
+
+| Checkpoint | Prone success | Leg-splay p95 | Hand support | Joint-speed p95 | Mean peak torque | Mean peak power | Supine success |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| V7 `69995` | 100.0% | 0.157 | 0.85% | 12.14 rad/s | 85.15 Nm | 202.40 W | 11.1% |
+| `70000` | 100.0% | 0.157 | 0.83% | 12.00 rad/s | 84.49 Nm | 203.46 W | 10.7% |
+| `71000` | 100.0% | 0.184 | 1.68% | 12.00 rad/s | 80.46 Nm | 200.91 W | 8.2% |
+| `72000` | 100.0% | 0.111 | 2.03% | 11.56 rad/s | 81.62 Nm | 227.58 W | 6.6% |
+| `73000` | 100.0% | 0.103 | 1.81% | 10.07 rad/s | 75.73 Nm | 221.49 W | 3.1% |
+| `74000` | 99.8% | 0.108 | 1.89% | 11.43 rad/s | 80.55 Nm | 195.46 W | 4.5% |
+| `74994` | 100.0% | 0.133 | 2.16% | 12.04 rad/s | 76.76 Nm | 185.16 W | 6.25% |
+
+`74000` meets the intended prone splay reduction and improves the three prone
+safety metrics, but loses 6.6 percentage points of supine success. `74994` is
+the lowest-power and strongest-hand-support checkpoint and stays just inside
+the five-point supine regression allowance, but its splay reduction is only
+about 15%. Side-lying recovery remains at least 99.6% for `73000`, `74000`, and
+`74994`.
+
+Therefore no V8 checkpoint satisfies every predeclared acceptance criterion.
+For visual review, use `74000` as the natural-prone candidate and `74994` as the
+lower-power compromise; do not label either as a fully accepted replacement
+for V7. A follow-up should retain a fixed supine replay fraction while
+fine-tuning the prone support route.
