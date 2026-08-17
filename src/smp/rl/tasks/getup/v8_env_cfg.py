@@ -14,6 +14,13 @@ def g1_getup_v8_natural_smp_env_cfg(play: bool = False):
   """Build V8: hand/knee-supported prone recovery without a task obstacle."""
   cfg = g1_getup_v7_route_smp_env_cfg(play=play)
 
+  # Hand/knee support adds enough simultaneous contacts to exceed the robust
+  # base task's 64-contact allocation during prone recovery. Keep headroom for
+  # interactive dragging and highly folded poses so MuJoCo does not discard
+  # broadphase contacts during evaluation.
+  cfg.sim.nconmax = 128
+  cfg.sim.njmax = 2500
+
   hand_ground = ContactSensorCfg(
     name="natural_hand_ground_contact",
     primary=ContactMatch(

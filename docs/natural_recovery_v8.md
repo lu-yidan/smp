@@ -13,6 +13,12 @@ V8 is a no-obstacle natural-recovery task. Plate escape remains a separate task
 and experiment so motion quality and obstacle-clearance improvements can be
 attributed independently.
 
+The play switch `--escape-obstacle True` only enables a plate entity already
+defined by an escape task; it does not add a plate to V8. To stress-test a V8
+checkpoint under the plate, load that checkpoint with the
+`Smp-Getup-Escape-Plate-V33-G1` task. This is a cross-task baseline only: the V8
+policy was not trained to escape the plate.
+
 ## Task definition
 
 Task ID: `Smp-Getup-Robust-Smooth-V8-Natural-G1`.

@@ -47,6 +47,13 @@ def _consume_escape_obstacle_arg(argv: list[str]) -> bool | None:
   return value == "true"
 
 
+def _chosen_task(argv: list[str]) -> str | None:
+  """Return the positional task ID expected by mjlab's play entry point."""
+  if len(argv) < 2 or argv[1].startswith("-"):
+    return None
+  return argv[1]
+
+
 def main() -> None:
   auto_disturbances = _consume_auto_disturbances_arg(sys.argv)
   escape_obstacle = _consume_escape_obstacle_arg(sys.argv)
@@ -61,8 +68,20 @@ def main() -> None:
 
   # Task configs are constructed during this import, after the flag is known.
   from mjlab.scripts.play import main as mjlab_play_main
+  from mjlab.tasks.registry import load_env_cfg
 
   import smp.rl.tasks  # noqa: F401
+
+  task_name = _chosen_task(sys.argv)
+  if escape_obstacle and task_name is not None:
+    task_cfg = load_env_cfg(task_name, play=True)
+    if "escape_obstacle" not in task_cfg.scene.entities:
+      raise SystemExit(
+        f"{task_name} does not contain an escape obstacle. "
+        "--escape-obstacle can enable an obstacle already defined by an escape "
+        "task, but it cannot add one to a recovery-only task. Use "
+        "Smp-Getup-Escape-Plate-V33-G1 to play with the plate."
+      )
 
   state = "enabled" if auto_disturbances else "disabled"
   print(f"[INFO] Automatic physical disturbances during play: {state}")
