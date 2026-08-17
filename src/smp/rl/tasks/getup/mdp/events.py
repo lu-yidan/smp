@@ -365,6 +365,7 @@ def reset_guided_escape_plate(
   body_origin_clearance: float = 0.26,
   align_to_body: bool = False,
   longitudinal_offset: float = 0.0,
+  lateral_offset: float = 0.0,
   longitudinal_offset_curriculum: tuple[float, float] | None = None,
   lateral_offset_curriculum: tuple[float, float] | None = None,
   overlap_curriculum_steps: int = 0,
@@ -493,6 +494,7 @@ def reset_guided_escape_plate(
     forward_xy[fallback, 1] = 0.0
     target_pos[:, :2] += longitudinal_offset * forward_xy
     lateral_xy = torch.stack((-forward_xy[:, 1], forward_xy[:, 0]), dim=-1)
+    target_pos[:, :2] += lateral_offset * lateral_xy
     if overlap_curriculum_steps > 0:
       progress = min(
         float(env.common_step_counter) / max(overlap_curriculum_steps, 1), 1.0

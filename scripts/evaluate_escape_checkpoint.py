@@ -4,8 +4,10 @@ from __future__ import annotations
 
 import json
 from dataclasses import asdict, dataclass
+from functools import partial
 from pathlib import Path
 
+import mujoco
 import torch
 import tyro
 from mjlab.envs import ManagerBasedRlEnv
@@ -30,7 +32,12 @@ class EvalCfg:
   seed: int = 20260814
   device: str = "cuda:0"
   plate_mass_kg: float = 8.0
+  plate_length_m: float = 0.90
+  plate_width_m: float = 0.64
+  plate_thickness_m: float = 0.07
+  plate_friction: float = 1.20
   longitudinal_offset_m: float = -0.10
+  lateral_offset_m: float = 0.0
   longitudinal_jitter_m: float = 0.0
   lateral_jitter_m: float = 0.0
   xy_jitter_m: float = 0.005
@@ -42,9 +49,41 @@ class EvalCfg:
   wide_stance_threshold_m: float = 0.45
 
 
+def _get_evaluation_plate_spec(
+  half_extents: tuple[float, float, float], friction: float
+) -> mujoco.MjSpec:  # type: ignore[attr-defined]
+  """Create the V3.3 plate with evaluation-specific geometry and friction."""
+  spec = mujoco.MjSpec()
+  body = spec.worldbody.add_body(name="escape_plate")
+  body.add_joint(
+    name="escape_plate_slide",
+    type=mujoco.mjtJoint.mjJNT_SLIDE,
+    axis=(0.0, 0.0, 1.0),
+    limited=True,
+    range=(-1.20, 0.0),
+    damping=60.0,
+  )
+  geom = body.add_geom(
+    name="escape_plate_geom",
+    type=mujoco.mjtGeom.mjGEOM_BOX,
+    size=half_extents,
+    mass=8.0,
+    friction=(friction, 0.01, 0.001),
+    rgba=(0.12, 0.72, 0.24, 0.82),
+  )
+  geom.priority = 1
+  geom.solref = (0.01, 1.0)
+  geom.solimp = (0.98, 0.995, 0.001, 0.5, 2.0)
+  return spec
+
+
 def main(cfg: EvalCfg) -> None:
   if cfg.plate_mass_kg <= 0.0:
     raise ValueError("plate_mass_kg must be positive")
+  if min(cfg.plate_length_m, cfg.plate_width_m, cfg.plate_thickness_m) <= 0.0:
+    raise ValueError("plate dimensions must be positive")
+  if cfg.plate_friction <= 0.0:
+    raise ValueError("plate_friction must be positive")
   if cfg.stable_hold_steps <= 0:
     raise ValueError("stable_hold_steps must be positive")
   configure_torch_backends()
@@ -52,6 +91,16 @@ def main(cfg: EvalCfg) -> None:
   agent_cfg = load_rl_cfg(cfg.task)
   env_cfg.scene.num_envs = cfg.num_envs
   env_cfg.seed = cfg.seed
+  plate_half_extents = (
+    0.5 * cfg.plate_length_m,
+    0.5 * cfg.plate_width_m,
+    0.5 * cfg.plate_thickness_m,
+  )
+  env_cfg.scene.entities["escape_obstacle"].spec_fn = partial(
+    _get_evaluation_plate_spec,
+    half_extents=plate_half_extents,
+    friction=cfg.plate_friction,
+  )
   # Keep terminal/invalid states intact for the complete audit horizon.
   env_cfg.terminations = {}
   # Evaluate one explicit physical condition. Failure replay and post-stand
@@ -71,6 +120,7 @@ def main(cfg: EvalCfg) -> None:
     {
       "obstacle_probability": 1.0,
       "longitudinal_offset": cfg.longitudinal_offset_m,
+      "lateral_offset": cfg.lateral_offset_m,
       "longitudinal_offset_curriculum": (
         cfg.longitudinal_jitter_m,
         cfg.longitudinal_jitter_m,
@@ -84,7 +134,11 @@ def main(cfg: EvalCfg) -> None:
       "plate_mass_range": (cfg.plate_mass_kg, cfg.plate_mass_kg),
       "initial_max_mass": cfg.plate_mass_kg,
       "mass_curriculum_steps": 1,
+      "plate_half_extents": plate_half_extents,
     }
+  )
+  env_cfg.events["update_escape_phase"].params["plate_half_extents"] = (
+    plate_half_extents
   )
 
   raw_env = ManagerBasedRlEnv(env_cfg, device=cfg.device)
@@ -216,7 +270,12 @@ def main(cfg: EvalCfg) -> None:
     "steps": cfg.steps,
     "step_dt_s": raw_env.step_dt,
     "plate_mass_kg": cfg.plate_mass_kg,
+    "plate_length_m": cfg.plate_length_m,
+    "plate_width_m": cfg.plate_width_m,
+    "plate_thickness_m": cfg.plate_thickness_m,
+    "plate_friction": cfg.plate_friction,
     "longitudinal_offset_m": cfg.longitudinal_offset_m,
+    "lateral_offset_m": cfg.lateral_offset_m,
     "longitudinal_jitter_m": cfg.longitudinal_jitter_m,
     "lateral_jitter_m": cfg.lateral_jitter_m,
     "xy_jitter_m": cfg.xy_jitter_m,
