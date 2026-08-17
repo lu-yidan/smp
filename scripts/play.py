@@ -7,6 +7,7 @@ import sys
 
 _AUTO_DISTURBANCES_ENV = "SMP_PLAY_AUTO_DISTURBANCES"
 _ESCAPE_OBSTACLE_ENV = "SMP_PLAY_ESCAPE_OBSTACLE"
+_ESCAPE_RESET_POSE_ENV = "SMP_PLAY_ESCAPE_RESET_POSE"
 
 
 def _consume_auto_disturbances_arg(argv: list[str]) -> bool:
@@ -47,6 +48,27 @@ def _consume_escape_obstacle_arg(argv: list[str]) -> bool | None:
   return value == "true"
 
 
+def _consume_escape_reset_pose_arg(argv: list[str]) -> str | None:
+  """Consume an optional V3.4 reset-pose selection."""
+  flag = "--escape-reset-pose"
+  count = argv.count(flag)
+  if count == 0:
+    return None
+  if count > 1:
+    raise SystemExit(f"{flag} may only be specified once")
+
+  index = argv.index(flag)
+  if index + 1 >= len(argv):
+    raise SystemExit(f"{flag} requires mixed, prone, or supine")
+  value = argv[index + 1].lower()
+  if value not in {"mixed", "prone", "supine"}:
+    raise SystemExit(
+      f"{flag} requires mixed, prone, or supine, got {argv[index + 1]!r}"
+    )
+  del argv[index : index + 2]
+  return value
+
+
 def _chosen_task(argv: list[str]) -> str | None:
   """Return the positional task ID expected by mjlab's play entry point."""
   if len(argv) < 2 or argv[1].startswith("-"):
@@ -57,6 +79,7 @@ def _chosen_task(argv: list[str]) -> str | None:
 def main() -> None:
   auto_disturbances = _consume_auto_disturbances_arg(sys.argv)
   escape_obstacle = _consume_escape_obstacle_arg(sys.argv)
+  escape_reset_pose = _consume_escape_reset_pose_arg(sys.argv)
   if auto_disturbances:
     os.environ[_AUTO_DISTURBANCES_ENV] = "1"
   else:
@@ -65,6 +88,10 @@ def main() -> None:
     os.environ.pop(_ESCAPE_OBSTACLE_ENV, None)
   else:
     os.environ[_ESCAPE_OBSTACLE_ENV] = "1" if escape_obstacle else "0"
+  if escape_reset_pose is None:
+    os.environ.pop(_ESCAPE_RESET_POSE_ENV, None)
+  else:
+    os.environ[_ESCAPE_RESET_POSE_ENV] = escape_reset_pose
 
   # Task configs are constructed during this import, after the flag is known.
   from mjlab.scripts.play import main as mjlab_play_main
@@ -91,6 +118,8 @@ def main() -> None:
     else ("enabled" if escape_obstacle else "disabled")
   )
   print(f"[INFO] Escape obstacle during play: {obstacle_state}")
+  reset_pose_state = escape_reset_pose or "task default"
+  print(f"[INFO] Escape reset pose during play: {reset_pose_state}")
   mjlab_play_main()
 
 

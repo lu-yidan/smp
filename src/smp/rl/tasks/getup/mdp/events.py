@@ -407,9 +407,13 @@ def reset_guided_escape_plate(
 
   active_ids = env_ids[active]
   if crawl_ready_prone and active_ids.numel() > 0:
-    # A procedural prone reset is a rotated nominal stand; its hands are often
-    # the highest collision geoms.  This symmetric pose places both hands on
-    # the floor just outside the board edges so they can establish support.
+    # Prepare only procedural-prone actors with the crawl arm pose. Supine
+    # actors retain their sampled arms so a multi-pose task does not silently
+    # turn both reset families into the same joint configuration.
+    reset_type = getattr(env, "_robust_reset_type", None)
+    if reset_type is None:
+      raise RuntimeError("crawl_ready_prone requires mixed_fall_reset state")
+    prone_ids = active_ids[reset_type[active_ids] == 2]
     arm_names = (
       "left_shoulder_pitch_joint",
       "left_shoulder_roll_joint",
@@ -426,42 +430,43 @@ def reset_guided_escape_plate(
       "right_wrist_pitch_joint",
       "right_wrist_yaw_joint",
     )
-    arm_ids, _ = robot.find_joints(arm_names, preserve_order=True)
-    if len(arm_ids) != len(arm_names):
-      raise ValueError("all crawl-ready arm joints must resolve exactly once")
-    joint_pos = robot.data.joint_pos[active_ids].clone()
-    joint_vel = torch.zeros_like(joint_pos)
-    arm_pose = torch.tensor(
-      (
-        -2.104,
-        -1.105,
-        0.0,
-        0.744,
-        0.0,
-        0.0,
-        0.0,
-        -2.104,
-        1.105,
-        0.0,
-        0.744,
-        0.0,
-        0.0,
-        0.0,
-      ),
-      device=env.device,
-    )
-    arm_values = arm_pose[None, :].expand(active_ids.numel(), -1).clone()
-    if crawl_arm_noise > 0.0:
-      arm_values += torch.empty_like(arm_values).uniform_(
-        -crawl_arm_noise, crawl_arm_noise
+    if prone_ids.numel() > 0:
+      arm_ids, _ = robot.find_joints(arm_names, preserve_order=True)
+      if len(arm_ids) != len(arm_names):
+        raise ValueError("all crawl-ready arm joints must resolve exactly once")
+      joint_pos = robot.data.joint_pos[prone_ids].clone()
+      joint_vel = torch.zeros_like(joint_pos)
+      arm_pose = torch.tensor(
+        (
+          -2.104,
+          -1.105,
+          0.0,
+          0.744,
+          0.0,
+          0.0,
+          0.0,
+          -2.104,
+          1.105,
+          0.0,
+          0.744,
+          0.0,
+          0.0,
+          0.0,
+        ),
+        device=env.device,
       )
-    arm_local = torch.tensor(arm_ids, dtype=torch.long, device=env.device)
-    joint_pos[:, arm_local] = arm_values
-    robot.write_joint_state_to_sim(joint_pos, joint_vel, env_ids=active_ids)
-    env.sim.forward()
+      arm_values = arm_pose[None, :].expand(prone_ids.numel(), -1).clone()
+      if crawl_arm_noise > 0.0:
+        arm_values += torch.empty_like(arm_values).uniform_(
+          -crawl_arm_noise, crawl_arm_noise
+        )
+      arm_local = torch.tensor(arm_ids, dtype=torch.long, device=env.device)
+      joint_pos[:, arm_local] = arm_values
+      robot.write_joint_state_to_sim(joint_pos, joint_vel, env_ids=prone_ids)
+      env.sim.forward()
 
-    # Put the lowest collision surface just above flat ground.  The robot no
-    # longer falls away from a close board during the first control steps.
+    # Ground every eligible pose before placing the plate. This preserves the
+    # V3.3 prone setup and gives supine actors the same prompt-load contract.
     geom_pos, z_extent, _, _, _ = _collision_vertical_geometry(
       env, active_ids, collision_geom_pattern
     )

@@ -36,6 +36,7 @@ class EvalCfg:
   plate_width_m: float = 0.64
   plate_thickness_m: float = 0.07
   plate_friction: float = 1.20
+  reset_pose: str = "prone"
   longitudinal_offset_m: float = -0.10
   lateral_offset_m: float = 0.0
   longitudinal_jitter_m: float = 0.0
@@ -84,6 +85,15 @@ def main(cfg: EvalCfg) -> None:
     raise ValueError("plate dimensions must be positive")
   if cfg.plate_friction <= 0.0:
     raise ValueError("plate_friction must be positive")
+  pose_specs = {
+    "supine": ((1.0, 0.0, 0.0, 0.0), (1,)),
+    "prone": ((0.0, 1.0, 0.0, 0.0), (2,)),
+    "mixed": ((1.0, 1.0, 0.0, 0.0), (1, 2)),
+  }
+  if cfg.reset_pose not in pose_specs:
+    choices = ", ".join(pose_specs)
+    raise ValueError(f"reset_pose must be one of {choices}, got {cfg.reset_pose!r}")
+  pose_weights, eligible_reset_types = pose_specs[cfg.reset_pose]
   if cfg.stable_hold_steps <= 0:
     raise ValueError("stable_hold_steps must be positive")
   configure_torch_backends()
@@ -112,13 +122,14 @@ def main(cfg: EvalCfg) -> None:
   env_cfg.events["mixed_fall_reset"].params.update(
     {
       "procedural_probability": 1.0,
-      "mode_weights": (0.0, 1.0, 0.0, 0.0),
+      "mode_weights": pose_weights,
     }
   )
   plate_reset = env_cfg.events["reset_escape_obstacle"].params
   plate_reset.update(
     {
       "obstacle_probability": 1.0,
+      "eligible_reset_types": eligible_reset_types,
       "longitudinal_offset": cfg.longitudinal_offset_m,
       "lateral_offset": cfg.lateral_offset_m,
       "longitudinal_offset_curriculum": (
@@ -158,6 +169,7 @@ def main(cfg: EvalCfg) -> None:
   foot_ids = robot.find_sites(["left_foot", "right_foot"], preserve_order=True)[0]
   head_idx = robot.find_sites(["head"], preserve_order=True)[0][0]
   active = (raw_env._escape_phase > 0).clone()  # type: ignore[attr-defined]
+  reset_type = raw_env._robust_reset_type.clone()  # type: ignore[attr-defined]
   first_contact = torch.full(
     (raw_env.num_envs,), -1, dtype=torch.long, device=raw_env.device
   )
@@ -274,6 +286,7 @@ def main(cfg: EvalCfg) -> None:
     "plate_width_m": cfg.plate_width_m,
     "plate_thickness_m": cfg.plate_thickness_m,
     "plate_friction": cfg.plate_friction,
+    "reset_pose": cfg.reset_pose,
     "longitudinal_offset_m": cfg.longitudinal_offset_m,
     "lateral_offset_m": cfg.lateral_offset_m,
     "longitudinal_jitter_m": cfg.longitudinal_jitter_m,
@@ -368,6 +381,22 @@ def main(cfg: EvalCfg) -> None:
     "max_torque_mean_nm": float(max_torque[active].mean()),
     "max_power_mean_w": float(max_power[active].mean()),
   }
+  for pose_name, pose_type in (("supine", 1), ("prone", 2)):
+    pose_active = active & (reset_type == pose_type)
+    pose_stable = stable_stand & pose_active
+    pose_invalid = any_invalid & pose_active
+    pose_count = int(pose_active.sum())
+    pose_foot_separation = foot_separation_at_stand[pose_stable]
+    result.update(
+      {
+        f"{pose_name}_active": pose_count,
+        f"{pose_name}_escape_and_stand_rate": float(
+          pose_stable.sum() / max(pose_count, 1)
+        ),
+        f"{pose_name}_invalid_rate": float(pose_invalid.sum() / max(pose_count, 1)),
+        f"{pose_name}_stable_foot_separation_median_m": median_or(pose_foot_separation),
+      }
+    )
   if initial_covered is not None:
     result.update(
       {

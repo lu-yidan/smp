@@ -79,6 +79,7 @@ __all__ = [
   "staged_head_velocity_profile",
   "staged_recovery_pose",
   "stable_stand_metric",
+  "supine_reset_metric",
   "track_head_height",
   "track_head_velocity_profile",
   "upright_posture",
@@ -672,6 +673,14 @@ def prone_reset_metric(env: ManagerBasedRlEnv) -> torch.Tensor:
   if reset_type is None:
     return torch.zeros(env.num_envs, device=env.device)
   return (reset_type == 2).float()
+
+
+def supine_reset_metric(env: ManagerBasedRlEnv) -> torch.Tensor:
+  """Return one for the procedural supine reset mode."""
+  reset_type = getattr(env, "_robust_reset_type", None)
+  if reset_type is None:
+    return torch.zeros(env.num_envs, device=env.device)
+  return (reset_type == 1).float()
 
 
 def recovery_stage_metric(env: ManagerBasedRlEnv) -> torch.Tensor:
