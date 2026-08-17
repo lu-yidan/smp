@@ -24,14 +24,29 @@ from smp.rl.tasks.getup import mdp
 @dataclass(frozen=True)
 class EvalCfg:
   checkpoint: Path
-  task: str = "Smp-Getup-Escape-Plate-V3-G1"
+  task: str = "Smp-Getup-Escape-Plate-V33-G1"
   num_envs: int = 512
   steps: int = 1000
   seed: int = 20260814
   device: str = "cuda:0"
+  plate_mass_kg: float = 8.0
+  longitudinal_offset_m: float = -0.10
+  longitudinal_jitter_m: float = 0.0
+  lateral_jitter_m: float = 0.0
+  xy_jitter_m: float = 0.005
+  stable_hold_steps: int = 25
+  stand_head_height_m: float = 1.10
+  stand_min_upright: float = 0.85
+  stand_max_linear_speed_m_s: float = 0.50
+  stand_max_angular_speed_rad_s: float = 1.0
+  wide_stance_threshold_m: float = 0.45
 
 
 def main(cfg: EvalCfg) -> None:
+  if cfg.plate_mass_kg <= 0.0:
+    raise ValueError("plate_mass_kg must be positive")
+  if cfg.stable_hold_steps <= 0:
+    raise ValueError("stable_hold_steps must be positive")
   configure_torch_backends()
   env_cfg = load_env_cfg(cfg.task)
   agent_cfg = load_rl_cfg(cfg.task)
@@ -39,6 +54,38 @@ def main(cfg: EvalCfg) -> None:
   env_cfg.seed = cfg.seed
   # Keep terminal/invalid states intact for the complete audit horizon.
   env_cfg.terminations = {}
+  # Evaluate one explicit physical condition. Failure replay and post-stand
+  # pushes otherwise change the requested reset distribution during an audit.
+  env_cfg.events.pop("stratified_post_stand_wrench", None)
+  env_cfg.events.pop("record_failure_states", None)
+  env_cfg.events.pop("failure_state_replay_reset", None)
+  env_cfg.events.pop("gsi_refresh", None)
+  env_cfg.events["mixed_fall_reset"].params.update(
+    {
+      "procedural_probability": 1.0,
+      "mode_weights": (0.0, 1.0, 0.0, 0.0),
+    }
+  )
+  plate_reset = env_cfg.events["reset_escape_obstacle"].params
+  plate_reset.update(
+    {
+      "obstacle_probability": 1.0,
+      "longitudinal_offset": cfg.longitudinal_offset_m,
+      "longitudinal_offset_curriculum": (
+        cfg.longitudinal_jitter_m,
+        cfg.longitudinal_jitter_m,
+      ),
+      "lateral_offset_curriculum": (
+        cfg.lateral_jitter_m,
+        cfg.lateral_jitter_m,
+      ),
+      "overlap_curriculum_steps": 1,
+      "xy_offset_range": cfg.xy_jitter_m,
+      "plate_mass_range": (cfg.plate_mass_kg, cfg.plate_mass_kg),
+      "initial_max_mass": cfg.plate_mass_kg,
+      "mass_curriculum_steps": 1,
+    }
+  )
 
   raw_env = ManagerBasedRlEnv(env_cfg, device=cfg.device)
   env = RslRlVecEnvWrapper(raw_env, clip_actions=agent_cfg.clip_actions)
@@ -53,11 +100,21 @@ def main(cfg: EvalCfg) -> None:
   policy = runner.get_inference_policy(device=cfg.device)
   obs = env.get_observations()
 
+  robot = raw_env.scene["robot"]
+  foot_ids = robot.find_sites(["left_foot", "right_foot"], preserve_order=True)[0]
+  head_idx = robot.find_sites(["head"], preserve_order=True)[0][0]
   active = (raw_env._escape_phase > 0).clone()  # type: ignore[attr-defined]
   first_contact = torch.full(
     (raw_env.num_envs,), -1, dtype=torch.long, device=raw_env.device
   )
+  first_escape = torch.full_like(first_contact, -1)
+  first_stable_stand = torch.full_like(first_contact, -1)
+  stand_hold = torch.zeros_like(first_contact)
   hand_support_sum = torch.zeros(raw_env.num_envs, device=raw_env.device)
+  foot_separation_at_stand = torch.full_like(hand_support_sum, torch.nan)
+  foot_speed_at_stand = torch.full_like(hand_support_sum, torch.nan)
+  max_post_escape_foot_separation = torch.zeros_like(hand_support_sum)
+  max_joint_speed = torch.zeros_like(hand_support_sum)
   max_torque = torch.zeros_like(hand_support_sum)
   max_power = torch.zeros_like(hand_support_sum)
 
@@ -72,6 +129,38 @@ def main(cfg: EvalCfg) -> None:
     hand_found = raw_env.scene["hand_ground_contact"].data.found
     assert hand_found is not None
     hand_support_sum += (hand_found > 0).float().mean(dim=-1)
+    phase = raw_env._escape_phase  # type: ignore[attr-defined]
+    escaped_now = phase == 3
+    first_escape[(first_escape < 0) & escaped_now & active] = step + 1
+    foot_xy = robot.data.site_pos_w[:, foot_ids, :2]
+    foot_separation = torch.linalg.vector_norm(foot_xy[:, 0] - foot_xy[:, 1], dim=-1)
+    foot_speed = torch.linalg.vector_norm(
+      robot.data.site_lin_vel_w[:, foot_ids, :2], dim=-1
+    ).mean(dim=-1)
+    max_post_escape_foot_separation = torch.where(
+      escaped_now,
+      torch.maximum(max_post_escape_foot_separation, foot_separation),
+      max_post_escape_foot_separation,
+    )
+    head_z = robot.data.site_pos_w[:, head_idx, 2]
+    upright = torch.clamp(-robot.data.projected_gravity_b[:, 2], 0.0, 1.0)
+    linear_speed = torch.linalg.vector_norm(robot.data.root_link_lin_vel_w, dim=-1)
+    angular_speed = torch.linalg.vector_norm(robot.data.root_link_ang_vel_w, dim=-1)
+    standing = (
+      (head_z >= cfg.stand_head_height_m)
+      & (upright >= cfg.stand_min_upright)
+      & (linear_speed < cfg.stand_max_linear_speed_m_s)
+      & (angular_speed < cfg.stand_max_angular_speed_rad_s)
+      & escaped_now
+    )
+    stand_hold = torch.where(standing, stand_hold + 1, torch.zeros_like(stand_hold))
+    new_stable = (first_stable_stand < 0) & (stand_hold >= cfg.stable_hold_steps)
+    first_stable_stand[new_stable] = step + 1
+    foot_separation_at_stand[new_stable] = foot_separation[new_stable]
+    foot_speed_at_stand[new_stable] = foot_speed[new_stable]
+    max_joint_speed = torch.maximum(
+      max_joint_speed, torch.abs(robot.data.joint_vel).amax(dim=-1)
+    )
     max_torque = torch.maximum(max_torque, mdp.max_joint_torque_metric(raw_env))
     max_power = torch.maximum(max_power, mdp.max_joint_power_metric(raw_env))
 
@@ -81,9 +170,18 @@ def main(cfg: EvalCfg) -> None:
   invalid = raw_env._escape_invalid_contact & active  # type: ignore[attr-defined]
   setup_invalid = raw_env._escape_invalid_setup & active  # type: ignore[attr-defined]
   any_invalid = invalid | setup_invalid
-  escaped = (phase == 3) & active
+  escaped = (first_escape >= 0) & active
   valid = active & (~any_invalid)
+  valid_escaped = escaped & valid
+  stable_stand = (first_stable_stand >= 0) & valid
   first = first_contact[contacted].float()
+  escape_steps = first_escape[valid_escaped].float()
+  stable_steps = first_stable_stand[stable_stand].float()
+  escape_to_stand_steps = (
+    first_stable_stand[stable_stand] - first_escape[stable_stand]
+  ).float()
+  stable_foot_separation = foot_separation_at_stand[stable_stand]
+  stable_foot_speed = foot_speed_at_stand[stable_stand]
   penetration = raw_env._escape_peak_penetration[active]  # type: ignore[attr-defined]
   force = raw_env._escape_peak_contact_force[active]  # type: ignore[attr-defined]
   separation = raw_env._escape_best_separation[active]  # type: ignore[attr-defined]
@@ -108,18 +206,71 @@ def main(cfg: EvalCfg) -> None:
   def quantile(values: torch.Tensor, q: float) -> float:
     return float(torch.quantile(values, q)) if values.numel() else 0.0
 
+  def median_or(values: torch.Tensor, default: float = -1.0) -> float:
+    return float(values.median()) if values.numel() else default
+
   result = {
     "checkpoint": cfg.checkpoint.name,
     "seed": cfg.seed,
     "num_envs": cfg.num_envs,
     "steps": cfg.steps,
+    "step_dt_s": raw_env.step_dt,
+    "plate_mass_kg": cfg.plate_mass_kg,
+    "longitudinal_offset_m": cfg.longitudinal_offset_m,
+    "longitudinal_jitter_m": cfg.longitudinal_jitter_m,
+    "lateral_jitter_m": cfg.lateral_jitter_m,
+    "xy_jitter_m": cfg.xy_jitter_m,
+    "stable_hold_steps": cfg.stable_hold_steps,
+    "stand_head_height_m": cfg.stand_head_height_m,
+    "stand_min_upright": cfg.stand_min_upright,
+    "stand_max_linear_speed_m_s": cfg.stand_max_linear_speed_m_s,
+    "stand_max_angular_speed_rad_s": cfg.stand_max_angular_speed_rad_s,
     "active": active_count,
     "contacted": int(contacted.sum()),
     "first_contact_step_median": float(first.median()) if first.numel() else -1.0,
     "escaped": int(escaped.sum()),
     "conditional_escape_rate": float(escaped.sum() / max(active_count, 1)),
     "valid_conditional_escape_rate": float(
-      (escaped & valid).sum() / max(int(valid.sum()), 1)
+      valid_escaped.sum() / max(int(valid.sum()), 1)
+    ),
+    "escape_time_median_s": (
+      median_or(escape_steps) * raw_env.step_dt if escape_steps.numel() else -1.0
+    ),
+    "escape_time_p90_s": (
+      quantile(escape_steps * raw_env.step_dt, 0.90) if escape_steps.numel() else -1.0
+    ),
+    "escaped_and_stably_stood": int(stable_stand.sum()),
+    "escape_and_stand_rate": float(stable_stand.sum() / max(active_count, 1)),
+    "valid_escape_and_stand_rate": float(stable_stand.sum() / max(int(valid.sum()), 1)),
+    "stable_stand_given_escape_rate": float(
+      stable_stand.sum() / max(int(valid_escaped.sum()), 1)
+    ),
+    "stable_stand_time_median_s": (
+      median_or(stable_steps) * raw_env.step_dt if stable_steps.numel() else -1.0
+    ),
+    "escape_to_stand_time_median_s": (
+      median_or(escape_to_stand_steps) * raw_env.step_dt
+      if escape_to_stand_steps.numel()
+      else -1.0
+    ),
+    "stable_foot_separation_median_m": median_or(stable_foot_separation),
+    "stable_foot_separation_p90_m": (
+      quantile(stable_foot_separation, 0.90) if stable_foot_separation.numel() else -1.0
+    ),
+    "stable_foot_separation_p95_m": (
+      quantile(stable_foot_separation, 0.95) if stable_foot_separation.numel() else -1.0
+    ),
+    "wide_stance_threshold_m": cfg.wide_stance_threshold_m,
+    "wide_stance_rate_at_stable": (
+      float((stable_foot_separation > cfg.wide_stance_threshold_m).float().mean())
+      if stable_foot_separation.numel()
+      else -1.0
+    ),
+    "stable_foot_speed_median_m_s": median_or(stable_foot_speed),
+    "max_post_escape_foot_separation_p95_m": (
+      quantile(max_post_escape_foot_separation[valid_escaped], 0.95)
+      if valid_escaped.any()
+      else -1.0
     ),
     "invalid": int(invalid.sum()),
     "invalid_rate": float(invalid.sum() / max(active_count, 1)),
@@ -153,6 +304,8 @@ def main(cfg: EvalCfg) -> None:
     "hand_supported_progress_median_m": float(
       raw_env._escape_hand_supported_progress[active].median()  # type: ignore[attr-defined]
     ),
+    "max_joint_speed_mean_rad_s": float(max_joint_speed[active].mean()),
+    "max_joint_speed_p95_rad_s": quantile(max_joint_speed[active], 0.95),
     "max_torque_mean_nm": float(max_torque[active].mean()),
     "max_power_mean_w": float(max_power[active].mean()),
   }
