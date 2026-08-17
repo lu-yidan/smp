@@ -838,7 +838,11 @@ def update_escape_phase(
   if geometry_clearance:
     separation_ready = geometry_ready
   clear = constrained & (~contact) & separation_ready & support_valid
-  clear_hold[env_ids] = torch.where(clear, clear_hold[env_ids] + 1, 0)
+  already_escaped = phase[env_ids] == 3
+  updated_hold = torch.where(clear, clear_hold[env_ids] + 1, 0)
+  # Keep the achieved hold count after success so evaluation can distinguish a
+  # genuine 15-step clearance from a transient final-frame geometry state.
+  clear_hold[env_ids] = torch.where(already_escaped, clear_hold[env_ids], updated_hold)
   escaped_ids = env_ids[clear_hold[env_ids] >= clear_hold_steps]
   phase[escaped_ids] = 3
 

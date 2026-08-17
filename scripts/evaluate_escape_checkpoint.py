@@ -162,7 +162,7 @@ def main(cfg: EvalCfg) -> None:
         "initial_covered_geom_count_median": float(initial_covered.float().median()),
         "final_covered_geom_count_median": float(covered.float().median()),
         "best_covered_geom_count_median": float(best_covered.float().median()),
-        "fully_clear_geometry": int(
+        "final_fully_clear_geometry": int(
           ((covered == 0) & (planar_clearance >= 0.025)).sum()
         ),
         "planar_clearance_median_m": float(planar_clearance.median()),
