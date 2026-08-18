@@ -8,6 +8,9 @@ import sys
 _AUTO_DISTURBANCES_ENV = "SMP_PLAY_AUTO_DISTURBANCES"
 _ESCAPE_OBSTACLE_ENV = "SMP_PLAY_ESCAPE_OBSTACLE"
 _ESCAPE_RESET_POSE_ENV = "SMP_PLAY_ESCAPE_RESET_POSE"
+_TERRAIN_TYPE_ENV = "SMP_PLAY_TERRAIN_TYPE"
+_TERRAIN_LEVEL_ENV = "SMP_PLAY_TERRAIN_LEVEL"
+_TERRAIN_RESET_POSE_ENV = "SMP_PLAY_TERRAIN_RESET_POSE"
 
 
 def _consume_auto_disturbances_arg(argv: list[str]) -> bool:
@@ -69,6 +72,67 @@ def _consume_escape_reset_pose_arg(argv: list[str]) -> str | None:
   return value
 
 
+def _consume_terrain_type_arg(argv: list[str]) -> str | None:
+  """Consume an optional V3.5 terrain-family selection."""
+  flag = "--terrain-type"
+  count = argv.count(flag)
+  if count == 0:
+    return None
+  if count > 1:
+    raise SystemExit(f"{flag} may only be specified once")
+  index = argv.index(flag)
+  if index + 1 >= len(argv):
+    raise SystemExit(f"{flag} requires flat, slope, stairs, rough, or mixed")
+  value = argv[index + 1].lower()
+  choices = {"flat", "slope", "stairs", "rough", "mixed"}
+  if value not in choices:
+    raise SystemExit(f"{flag} got unsupported value {argv[index + 1]!r}")
+  del argv[index : index + 2]
+  return value
+
+
+def _consume_terrain_level_arg(argv: list[str]) -> int | None:
+  """Consume a fixed V3.5 difficulty bin from zero through three."""
+  flag = "--terrain-level"
+  count = argv.count(flag)
+  if count == 0:
+    return None
+  if count > 1:
+    raise SystemExit(f"{flag} may only be specified once")
+  index = argv.index(flag)
+  if index + 1 >= len(argv):
+    raise SystemExit(f"{flag} requires 0, 1, 2, or 3")
+  try:
+    value = int(argv[index + 1])
+  except ValueError as exc:
+    raise SystemExit(f"{flag} requires 0, 1, 2, or 3") from exc
+  if value not in range(4):
+    raise SystemExit(f"{flag} requires 0, 1, 2, or 3")
+  del argv[index : index + 2]
+  return value
+
+
+def _consume_terrain_reset_pose_arg(argv: list[str]) -> str | None:
+  """Consume an optional V3.5 physical reset-pose selection."""
+  flag = "--terrain-reset-pose"
+  count = argv.count(flag)
+  if count == 0:
+    return None
+  if count > 1:
+    raise SystemExit(f"{flag} may only be specified once")
+  index = argv.index(flag)
+  if index + 1 >= len(argv):
+    raise SystemExit(
+      f"{flag} requires mixed, prone, supine, left-side, or right-side"
+    )
+  value = argv[index + 1].lower().replace("-", "_")
+  choices = {"mixed", "prone", "supine", "left_side", "right_side"}
+  if value not in choices:
+    raise SystemExit(f"{flag} got unsupported value {argv[index + 1]!r}")
+  del argv[index : index + 2]
+  return value
+
+
 def _chosen_task(argv: list[str]) -> str | None:
   """Return the positional task ID expected by mjlab's play entry point."""
   if len(argv) < 2 or argv[1].startswith("-"):
@@ -80,6 +144,9 @@ def main() -> None:
   auto_disturbances = _consume_auto_disturbances_arg(sys.argv)
   escape_obstacle = _consume_escape_obstacle_arg(sys.argv)
   escape_reset_pose = _consume_escape_reset_pose_arg(sys.argv)
+  terrain_type = _consume_terrain_type_arg(sys.argv)
+  terrain_level = _consume_terrain_level_arg(sys.argv)
+  terrain_reset_pose = _consume_terrain_reset_pose_arg(sys.argv)
   if auto_disturbances:
     os.environ[_AUTO_DISTURBANCES_ENV] = "1"
   else:
@@ -92,6 +159,18 @@ def main() -> None:
     os.environ.pop(_ESCAPE_RESET_POSE_ENV, None)
   else:
     os.environ[_ESCAPE_RESET_POSE_ENV] = escape_reset_pose
+  if terrain_type is None:
+    os.environ.pop(_TERRAIN_TYPE_ENV, None)
+  else:
+    os.environ[_TERRAIN_TYPE_ENV] = terrain_type
+  if terrain_level is None:
+    os.environ.pop(_TERRAIN_LEVEL_ENV, None)
+  else:
+    os.environ[_TERRAIN_LEVEL_ENV] = str(terrain_level)
+  if terrain_reset_pose is None:
+    os.environ.pop(_TERRAIN_RESET_POSE_ENV, None)
+  else:
+    os.environ[_TERRAIN_RESET_POSE_ENV] = terrain_reset_pose
 
   # Task configs are constructed during this import, after the flag is known.
   from mjlab.scripts.play import main as mjlab_play_main
@@ -120,6 +199,11 @@ def main() -> None:
   print(f"[INFO] Escape obstacle during play: {obstacle_state}")
   reset_pose_state = escape_reset_pose or "task default"
   print(f"[INFO] Escape reset pose during play: {reset_pose_state}")
+  terrain_state = terrain_type or "task default"
+  level_state = terrain_level if terrain_level is not None else "task default"
+  terrain_pose_state = terrain_reset_pose or "task default"
+  print(f"[INFO] Terrain during play: {terrain_state}, level: {level_state}")
+  print(f"[INFO] Terrain reset pose during play: {terrain_pose_state}")
   mjlab_play_main()
 
 

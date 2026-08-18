@@ -11,6 +11,7 @@ from mjlab.utils.lab_api.math import quat_from_euler_xyz, quat_mul
 __all__ = [
   "apply_sustained_constraint",
   "failure_state_replay_reset",
+  "ground_procedural_fall_on_terrain",
   "mixed_fall_reset",
   "post_stand_body_wrench",
   "random_body_wrench",
@@ -1170,6 +1171,75 @@ def mixed_fall_reset(
   # an artificial GSI-to-procedural discontinuity in the SMP score.
   _prime_smp_history_from_current_state(env, fall_ids)
   reset_types[fall_ids] = modes + 1
+
+
+@torch.no_grad()
+def ground_procedural_fall_on_terrain(
+  env: ManagerBasedRlEnv,
+  env_ids: torch.Tensor | None = None,
+  eligible_reset_types: tuple[int, ...] = (1, 2, 3, 4),
+  ground_clearance: float = 0.006,
+  collision_geom_pattern: str = r".*_collision$",
+  surface_normals: tuple[tuple[float, float, float], ...] = ((0.0, 0.0, 1.0),),
+) -> None:
+  """Place procedural fall resets on their terrain spawn surface.
+
+  Terrain generators expose a collision-safe spawn origin and support normal.
+  ``mixed_fall_reset`` samples pose and articulation first; this event then
+  translates the complete robot so the conservative collision AABB support is
+  just above that plane.  The flat/stair/rough origins are the highest support
+  under the reset footprint, while a directed slope uses its exact plane normal.
+  No terrain height, type, or reset label is added to actor observations.
+  """
+  if env_ids is None:
+    env_ids = torch.arange(env.num_envs, device=env.device)
+  if env_ids.numel() == 0:
+    return
+
+  reset_type = getattr(env, "_robust_reset_type", None)
+  if reset_type is None:
+    raise RuntimeError("terrain grounding requires mixed_fall_reset state")
+  eligible = torch.zeros(env_ids.numel(), dtype=torch.bool, device=env.device)
+  for reset_value in eligible_reset_types:
+    eligible |= reset_type[env_ids] == reset_value
+  grounded_ids = env_ids[eligible]
+  if grounded_ids.numel() == 0:
+    return
+
+  robot = env.scene["robot"]
+  _, _, aabb_center, aabb_half, _ = _collision_vertical_geometry(
+    env, grounded_ids, collision_geom_pattern
+  )
+  normal_options = torch.tensor(
+    surface_normals, dtype=aabb_center.dtype, device=env.device
+  )
+  normal_options /= torch.clamp(
+    torch.linalg.vector_norm(normal_options, dim=-1, keepdim=True), min=1e-6
+  )
+  if len(surface_normals) == 1:
+    normals = normal_options.expand(grounded_ids.numel(), -1)
+  else:
+    terrain_types = env.scene["terrain"].terrain_types[grounded_ids]
+    normals = normal_options[terrain_types]
+  origins = env.scene.env_origins[grounded_ids]
+  signed_center = ((aabb_center - origins[:, None, :]) * normals[:, None, :]).sum(
+    dim=-1
+  )
+  support_extent = (aabb_half * normals[:, None, :].abs()).sum(dim=-1)
+  lowest_signed_distance = (signed_center - support_extent).amin(dim=-1)
+  root_state = torch.cat(
+    (
+      robot.data.root_link_pose_w[grounded_ids].clone(),
+      torch.zeros(grounded_ids.numel(), 6, device=env.device),
+    ),
+    dim=-1,
+  )
+  root_state[:, :3] += (ground_clearance - lowest_signed_distance)[
+    :, None
+  ] * normals
+  robot.write_root_state_to_sim(root_state, env_ids=grounded_ids)
+  env.sim.forward()
+  _prime_smp_history_from_current_state(env, grounded_ids)
 
 
 def _head_height_and_upright(
