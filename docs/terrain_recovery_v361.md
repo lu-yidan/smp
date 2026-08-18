@@ -60,9 +60,23 @@ level above zero.  If this does not occur, do not start the formal run.
 
 ## Verification
 
-A 256-environment, 120-update CUDA resume smoke test passed the launch gate.
-The actor remained 96-dimensional, the V3.6 `model_102000.pt` checkpoint loaded
-without mismatch, `stage_success` reached 0.20, mean terrain level reached
-0.0977, maximum terrain level reached 2, and no patch-exit termination occurred.
-The same smoke test with the original V3.6 gate had level mean and maximum equal
-to zero, so this test directly verifies the controlled curriculum correction.
+A 256-environment, 120-update CUDA resume smoke test passed the launch gate on
+both the local RTX 4090 and the target server GPU.  The actor remained
+96-dimensional and the V3.6 `model_102000.pt` checkpoint loaded without
+mismatch.  On the server, `stage_success` reached 0.45, mean terrain level
+reached 0.1477, maximum terrain level reached 2, and no patch-exit termination
+occurred.  The same smoke test with the original V3.6 gate had level mean and
+maximum equal to zero, so this directly verifies the controlled correction.
+
+## Formal run
+
+- Status: running from 2026-08-18 22:51 Asia/Taipei
+- Source code commit: `1e0ed00`
+- Server/GPU: `dsw-lyd2`, GPU 0
+- tmux: `smp_v361`
+- W&B: `tabletennis/smp/nagvy866`
+- Server log: `run_control/v361_terrain_from_v36_102000.log`
+- Iteration range: 102,000 through 109,999
+- Initial sustained ETA: about 5 h 30 min
+- Runner seed confirmed in log: `20260818`
+- Selected checkpoint: pending frozen multi-level evaluation

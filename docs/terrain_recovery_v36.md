@@ -104,6 +104,12 @@ checkpoint are recorded below after launch.
 - Iteration range: 98,000 through 105,999 (8,000 additional updates)
 - W&B sync: complete; all nine checkpoints are available as run files
 - Selected level-0 safety checkpoint: `model_102000.pt`
+- Selected checkpoint SHA-256:
+  `2ebfa32eea590a40ebaec4bad237180c95d334fbe507ea7544e055ede70a2b55`
+- Server archive:
+  `/mnt/workspace/user/luyidan/baselines/G1_Recovery_Below_Block/v36/model_102000_level0_safety.pt`
+- Local archive:
+  `logs/rsl_rl/smp_getup_terrain_v36_g1/manual_checkpoints/model_102000_level0_safety.pt`
 
 ## Completed-run audit
 
