@@ -92,7 +92,7 @@ checkpoint are recorded below after launch.
 
 ## Formal run
 
-- Status: running from 2026-08-18 16:42 Asia/Taipei
+- Status: completed
 - Source code commit: `1198651`
 - Server/GPU: `dsw-lyd2`, GPU 0
 - tmux: `smp_v36`
@@ -100,8 +100,50 @@ checkpoint are recorded below after launch.
 - Server log: `run_control/v36_terrain_from_v34_98000.log`
 - Initial throughput: about 27,858 steps/s
 - Initial ETA: about 7 h 50 min
+- Actual wall time: 5 h 17 min 58 s
 - Iteration range: 98,000 through 105,999 (8,000 additional updates)
-- Selected checkpoint: pending evaluation
+- W&B sync: complete; all nine checkpoints are available as run files
+- Selected level-0 safety checkpoint: `model_102000.pt`
+
+## Completed-run audit
+
+The run was numerically stable and learned a strong level-0 policy, but it did
+not execute the intended four-level curriculum.  W&B shows terrain level mean,
+maximum, and per-family values equal to zero throughout all 8,000 updates.  The
+strict `stood_up` termination also remained zero.  The final training rollout
+had no invalid-state or patch-exit failures, but the fixed PPO action standard
+deviation of 0.3 repeatedly interrupted the separate 25-step standing counter.
+
+Deterministic evaluation uses the same strict 25-step standing definition and
+shows that the learned policies do stand reliably.  Therefore this is a
+curriculum-gating failure, not a failed level-0 policy.  Results below use 32
+environments per terrain/pose case, a 10 s horizon, all four reset poses, and
+seed `20260818`.
+
+| Checkpoint | Level | Overall | Stairs | Mean peak power | Foot slip |
+|---|---:|---:|---:|---:|---:|
+| 99000 | 0 | 94.7% | 80.5% | 156.6 W | 0.087 m/s |
+| 102000 | 0 | 99.4% | 97.7% | 134.1 W | 0.057 m/s |
+| 105999 | 0 | 99.6% | 99.2% | 157.3 W | 0.095 m/s |
+| 102000 | 1 | 86.3% | 51.6% | 151.5 W | 0.084 m/s |
+| 105999 | 1 | 89.8% | 78.9% | 199.5 W | 0.132 m/s |
+
+The final checkpoint gains some level-1 stair success by becoming materially
+more aggressive.  Since safety and non-ballistic recovery are primary design
+goals, `model_102000.pt` is frozen as the V3.6 level-0 safety candidate.  It
+recovers level-0 flat/slope/rough at 100% and stairs at 97.7%; at level 1 it
+achieves 94.5% on the 10-degree slope, 51.6% on 10 cm stairs, and 99.2% on the
+rough grid.  V3.6 must not be reported as a completed level-0-to-3 curriculum.
+
+## V3.6.1 correction
+
+V3.6.1 preserves the actor, rewards, terrain distribution, and strict frozen
+evaluator.  Its curriculum additionally accepts recovery stage three as an
+episode-level achievement latch.  Reaching stage three already requires the
+ordered seated, crouched, and standing holds; the latch survives exploratory
+action noise unless the robot substantially falls again.  This separates
+training curriculum progression from the stricter deterministic evaluation
+criterion without adding an actor observation or relaxing paper metrics.
 
 ## Checkpoint selection
 

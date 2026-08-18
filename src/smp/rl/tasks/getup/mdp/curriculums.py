@@ -14,6 +14,7 @@ def terrain_levels_getup(
   stand_hold_steps: int = 25,
   success_radius: float = 1.50,
   minimum_episode_steps: int = 20,
+  accept_completed_recovery_stage: bool = False,
 ) -> dict[str, torch.Tensor]:
   """Advance one terrain level after an anchored stable recovery.
 
@@ -41,7 +42,17 @@ def terrain_levels_getup(
     - env.scene.env_origins[env_ids, :2],
     dim=-1,
   )
-  success = valid & stable & (displacement <= success_radius)
+  stage = getattr(env, "_v4_recovery_stage", None)
+  if accept_completed_recovery_stage and stage is not None:
+    # Stage three is an episode-level achievement latch: reaching it already
+    # required the seated, crouched, and standing holds in order.  Unlike the
+    # instantaneous stand counter it survives exploratory action noise unless
+    # the robot substantially falls again, so curriculum progress does not
+    # depend on 25 additional noise-free actions at the reset boundary.
+    completed_stage = stage[env_ids] >= 3
+  else:
+    completed_stage = torch.zeros_like(stable)
+  success = valid & (stable | completed_stage) & (displacement <= success_radius)
 
   generator = terrain.cfg.terrain_generator
   assert generator is not None
@@ -59,6 +70,8 @@ def terrain_levels_getup(
     "mean": all_levels.mean(),
     "max": all_levels.max(),
     "success": success.float().mean(),
+    "stand_success": (valid & stable).float().mean(),
+    "stage_success": (valid & completed_stage).float().mean(),
   }
   for index, name in enumerate(names):
     mask = terrain.terrain_types == index
