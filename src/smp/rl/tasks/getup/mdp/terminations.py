@@ -10,6 +10,7 @@ __all__ = [
   "invalid_escape_episode",
   "smp_too_low",
   "stood_up",
+  "terrain_patch_exit",
   "unstable_sim_state",
 ]
 
@@ -67,6 +68,8 @@ def stood_up(
   hold_steps: int = 10,
   min_upright: float = 0.0,
   max_angular_speed: float = float("inf"),
+  relative_to_env_origin: bool = False,
+  max_origin_distance: float = float("inf"),
 ) -> torch.Tensor:
   """Truncate once a stable standing condition holds for consecutive steps.
 
@@ -76,14 +79,20 @@ def stood_up(
   robot = env.scene["robot"]
   head_idx = robot.find_sites(["head"], preserve_order=True)[0][0]
   z = robot.data.site_pos_w[:, head_idx, 2]
+  if relative_to_env_origin:
+    z = z - env.scene.env_origins[:, 2]
   speed = torch.linalg.norm(robot.data.root_link_lin_vel_w, dim=-1)
   angular_speed = torch.linalg.norm(robot.data.root_link_ang_vel_w, dim=-1)
   upright = torch.clamp(-robot.data.projected_gravity_b[:, 2], 0.0, 1.0)
+  origin_distance = torch.linalg.vector_norm(
+    robot.data.root_link_pos_w[:, :2] - env.scene.env_origins[:, :2], dim=-1
+  )
   is_standing = (
     (z >= head_height)
     & (speed < max_speed)
     & (upright >= min_upright)
     & (angular_speed < max_angular_speed)
+    & (origin_distance <= max_origin_distance)
   )
   cnt = getattr(env, "_getup_stand_count", None)
   if cnt is None:
@@ -91,6 +100,23 @@ def stood_up(
   cnt = torch.where(is_standing, cnt + 1, torch.zeros_like(cnt))
   env._getup_stand_count = cnt  # type: ignore[attr-defined]
   return cnt >= hold_steps
+
+
+def terrain_patch_exit(
+  env: ManagerBasedRlEnv,
+  margin: float = 0.50,
+) -> torch.Tensor:
+  """Terminate after leaving the assigned terrain patch, not the whole grid."""
+  terrain = env.scene.terrain
+  if terrain is None or terrain.cfg.terrain_generator is None:
+    return torch.zeros(env.num_envs, dtype=torch.bool, device=env.device)
+  half_x = 0.5 * terrain.cfg.terrain_generator.size[0] - margin
+  half_y = 0.5 * terrain.cfg.terrain_generator.size[1] - margin
+  displacement = (
+    env.scene["robot"].data.root_link_pos_w[:, :2] - env.scene.env_origins[:, :2]
+  ).abs()
+  outside = (displacement[:, 0] > half_x) | (displacement[:, 1] > half_y)
+  return outside & (env.episode_length_buf > 2)
 
 
 def smp_too_low(

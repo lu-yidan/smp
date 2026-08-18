@@ -81,6 +81,9 @@ __all__ = [
   "stable_stand_metric",
   "supine_reset_metric",
   "track_head_height",
+  "terrain_foot_slip_l2",
+  "terrain_planar_displacement_l2",
+  "terrain_stance_width_excess_l2",
   "track_head_velocity_profile",
   "upright_posture",
   "upward_velocity",
@@ -148,6 +151,7 @@ def prone_support_route(
   knee_sensor_name: str = "natural_knee_ground_contact",
   start_height: float = 0.28,
   waypoint_height: float = 0.62,
+  relative_to_env_origin: bool = False,
 ) -> torch.Tensor:
   """Reward a supported prone-to-kneeling route before the first waypoint.
 
@@ -163,6 +167,8 @@ def prone_support_route(
   knee = ground_support_contact_metric(env, knee_sensor_name)
   head_idx = robot.find_sites(["head"], preserve_order=True)[0][0]
   head_z = robot.data.site_pos_w[:, head_idx, 2]
+  if relative_to_env_origin:
+    head_z = head_z - env.scene.env_origins[:, 2]
   height = torch.clamp(
     (head_z - start_height) / max(waypoint_height - start_height, 1e-6),
     0.0,
@@ -179,6 +185,7 @@ def prone_leg_splay_excess_l2(
   hip_roll_limit: float = 0.65,
   hip_yaw_limit: float = 0.75,
   max_head_height: float = 0.95,
+  relative_to_env_origin: bool = False,
 ) -> torch.Tensor:
   """Penalize extreme early-prone hip abduction/yaw without affecting other falls."""
   robot = env.scene["robot"]
@@ -197,7 +204,10 @@ def prone_leg_splay_excess_l2(
   excess = torch.mean(torch.square(roll_excess), dim=-1)
   excess += torch.mean(torch.square(yaw_excess), dim=-1)
   head_idx = robot.find_sites(["head"], preserve_order=True)[0][0]
-  low = robot.data.site_pos_w[:, head_idx, 2] < max_head_height
+  head_z = robot.data.site_pos_w[:, head_idx, 2]
+  if relative_to_env_origin:
+    head_z = head_z - env.scene.env_origins[:, 2]
+  low = head_z < max_head_height
   early = _recovery_stage(env) <= 1
   return _procedural_prone_mask(env).float() * low.float() * early.float() * excess
 
@@ -328,17 +338,27 @@ def escape_contact_force_excess_l2(
   return constrained.float() * torch.square(excess)
 
 
+def _head_height(
+  env: ManagerBasedRlEnv, relative_to_env_origin: bool = False
+) -> torch.Tensor:
+  robot = env.scene["robot"]
+  head_idx = robot.find_sites(["head"], preserve_order=True)[0][0]
+  height = robot.data.site_pos_w[:, head_idx, 2]
+  if relative_to_env_origin:
+    height = height - env.scene.env_origins[:, 2]
+  return height
+
+
 def track_head_height(
   env: ManagerBasedRlEnv,
   target_height: float = 1.2,
   scale: float = 6.0,
+  relative_to_env_origin: bool = False,
 ) -> torch.Tensor:
   """Reward the ``head`` site reaching ``target_height``:
   ``exp(-scale·max(target_height − head_z, 0)²)`` (no penalty for overshoot).
   Needs the ``head`` site from ``getup_env_cfg.get_g1_spec_with_head``."""
-  robot = env.scene["robot"]
-  head_idx = robot.find_sites(["head"], preserve_order=True)[0][0]
-  z = robot.data.site_pos_w[:, head_idx, 2]
+  z = _head_height(env, relative_to_env_origin=relative_to_env_origin)
   shortfall = torch.clamp(z - target_height, max=0.0)
   return torch.exp(-scale * shortfall * shortfall)
 
@@ -470,11 +490,11 @@ def staged_joint_power_excess_l2(
   return torch.mean(torch.square(torch.clamp(power - limit, min=0.0)), dim=-1)
 
 
-def recovery_initiation_progress(env: ManagerBasedRlEnv) -> torch.Tensor:
+def recovery_initiation_progress(
+  env: ManagerBasedRlEnv, relative_to_env_origin: bool = False
+) -> torch.Tensor:
   """Bounded, ungated progress reward that prevents a stay-down local optimum."""
-  robot = env.scene["robot"]
-  head_idx = robot.find_sites(["head"], preserve_order=True)[0][0]
-  head_z = robot.data.site_pos_w[:, head_idx, 2]
+  head_z = _head_height(env, relative_to_env_origin=relative_to_env_origin)
   upright = upright_posture(env, power=1.0)
   height_progress = torch.clamp((head_z - 0.35) / 0.27, 0.0, 1.0)
   upright_progress = torch.clamp(upright / 0.60, 0.0, 1.0)
@@ -489,6 +509,7 @@ def staged_recovery_pose(
   height_scale: float = 8.0,
   upright_scale: float = 6.0,
   knee_scale: float = 5.0,
+  relative_to_env_origin: bool = False,
 ) -> torch.Tensor:
   """Reward the current seated, crouched, or standing waypoint.
 
@@ -502,6 +523,8 @@ def staged_recovery_pose(
     ["left_knee_joint", "right_knee_joint"], preserve_order=True
   )[0]
   head_z = robot.data.site_pos_w[:, head_idx, 2]
+  if relative_to_env_origin:
+    head_z = head_z - env.scene.env_origins[:, 2]
   knee_flexion = robot.data.joint_pos[:, knee_ids].mean(dim=-1)
   upright = upright_posture(env, power=1.0)
   stage = _recovery_stage(env)
@@ -522,11 +545,14 @@ def staged_head_velocity_profile(
   env: ManagerBasedRlEnv,
   scale: float = 45.0,
   overspeed_scale: float = 140.0,
+  relative_to_env_origin: bool = False,
 ) -> torch.Tensor:
   """Track a deliberately slow vertical speed for each recovery waypoint."""
   robot = env.scene["robot"]
   head_idx = robot.find_sites(["head"], preserve_order=True)[0][0]
   head_z = robot.data.site_pos_w[:, head_idx, 2]
+  if relative_to_env_origin:
+    head_z = head_z - env.scene.env_origins[:, 2]
   head_vz = robot.data.site_lin_vel_w[:, head_idx, 2]
   stage = _recovery_stage(env)
   target_height = head_z.new_tensor((0.62, 0.86, 1.15, 1.15))[stage]
@@ -584,11 +610,14 @@ def quiet_stance_gate(
   head_height_full: float = 1.15,
   upright_start: float = 0.70,
   upright_full: float = 0.90,
+  relative_to_env_origin: bool = False,
 ) -> torch.Tensor:
   """Smoothly activate quiet-standing objectives outside push recovery windows."""
   robot = env.scene["robot"]
   head_idx = robot.find_sites(["head"], preserve_order=True)[0][0]
   head_z = robot.data.site_pos_w[:, head_idx, 2]
+  if relative_to_env_origin:
+    head_z = head_z - env.scene.env_origins[:, 2]
   upright = upright_posture(env, power=1.0)
   height_width = max(head_height_full - head_height_start, 1e-6)
   upright_width = max(upright_full - upright_start, 1e-6)
@@ -612,11 +641,12 @@ def feet_stationary_when_upright(
   env: ManagerBasedRlEnv,
   site_names: tuple[str, ...] = ("left_foot", "right_foot"),
   scale: float = 20.0,
+  relative_to_env_origin: bool = False,
 ) -> torch.Tensor:
   """Reward low planar foot speed only when the robot should stand quietly."""
   robot = env.scene["robot"]
   site_ids = robot.find_sites(list(site_names), preserve_order=True)[0]
-  gate = quiet_stance_gate(env)
+  gate = quiet_stance_gate(env, relative_to_env_origin=relative_to_env_origin)
   foot_vel_xy = robot.data.site_lin_vel_w[:, site_ids, :2]
   speed_sq = torch.mean(torch.sum(torch.square(foot_vel_xy), dim=-1), dim=-1)
   return gate * torch.exp(-scale * speed_sq)
@@ -625,13 +655,70 @@ def feet_stationary_when_upright(
 def base_stationary_when_upright(
   env: ManagerBasedRlEnv,
   scale: float = 8.0,
+  relative_to_env_origin: bool = False,
 ) -> torch.Tensor:
   """Reward low horizontal base velocity during quiet standing."""
-  gate = quiet_stance_gate(env)
+  gate = quiet_stance_gate(env, relative_to_env_origin=relative_to_env_origin)
   vel_xy_sq = torch.sum(
     torch.square(env.scene["robot"].data.root_link_lin_vel_w[:, :2]), dim=-1
   )
   return gate * torch.exp(-scale * vel_xy_sq)
+
+
+def terrain_planar_displacement_l2(
+  env: ManagerBasedRlEnv,
+  free_radius: float = 0.40,
+  stage_multipliers: tuple[float, float, float, float] = (0.25, 0.50, 1.0, 1.0),
+) -> torch.Tensor:
+  """Penalize rolling or stepping far from the terrain reset origin.
+
+  A free radius preserves the short translations needed to turn and establish
+  hand/foot support.  The cost grows only outside that radius and becomes fully
+  active once the policy reaches crouch/stand stages.
+  """
+  root_xy = env.scene["robot"].data.root_link_pos_w[:, :2]
+  displacement = torch.linalg.vector_norm(
+    root_xy - env.scene.env_origins[:, :2], dim=-1
+  )
+  excess = torch.clamp(displacement - free_radius, min=0.0)
+  return _stage_multiplier(env, stage_multipliers) * torch.square(excess)
+
+
+def terrain_foot_slip_l2(
+  env: ManagerBasedRlEnv,
+  sensor_name: str = "terrain_foot_ground_contact",
+  site_names: tuple[str, str] = ("left_foot", "right_foot"),
+) -> torch.Tensor:
+  """Penalize planar foot velocity only while the corresponding foot contacts."""
+  found = env.scene[sensor_name].data.found
+  if found is None:
+    raise RuntimeError(f"{sensor_name} must expose the 'found' contact field")
+  flat_found = found.reshape(env.num_envs, -1) > 0
+  split = max(flat_found.shape[1] // 2, 1)
+  left = flat_found[:, :split].any(dim=-1)
+  right = flat_found[:, split:].any(dim=-1)
+  if flat_found.shape[1] == 1:
+    right = left
+  contact = torch.stack((left, right), dim=-1).float()
+  robot = env.scene["robot"]
+  site_ids = robot.find_sites(list(site_names), preserve_order=True)[0]
+  speed_sq = torch.sum(torch.square(robot.data.site_lin_vel_w[:, site_ids, :2]), dim=-1)
+  return torch.sum(contact * speed_sq, dim=-1)
+
+
+def terrain_stance_width_excess_l2(
+  env: ManagerBasedRlEnv,
+  max_width: float = 0.65,
+  site_names: tuple[str, str] = ("left_foot", "right_foot"),
+) -> torch.Tensor:
+  """Apply a mild wide-stance cost only after a terrain-relative stand."""
+  robot = env.scene["robot"]
+  site_ids = robot.find_sites(list(site_names), preserve_order=True)[0]
+  feet_xy = robot.data.site_pos_w[:, site_ids, :2]
+  width = torch.linalg.vector_norm(feet_xy[:, 0] - feet_xy[:, 1], dim=-1)
+  excess = torch.clamp(width - max_width, min=0.0)
+  gate = quiet_stance_gate(env, relative_to_env_origin=True)
+  return gate * torch.square(excess)
 
 
 def _cached_score(env: ManagerBasedRlEnv, name: str) -> torch.Tensor:
@@ -708,11 +795,14 @@ def stable_stand_metric(
   min_upright: float = 0.85,
   max_linear_speed: float = 0.5,
   max_angular_speed: float = 0.5,
+  relative_to_env_origin: bool = False,
 ) -> torch.Tensor:
   """Return one only for a tall, upright, low-motion standing state."""
   robot = env.scene["robot"]
   head_idx = robot.find_sites(["head"], preserve_order=True)[0][0]
   head_z = robot.data.site_pos_w[:, head_idx, 2]
+  if relative_to_env_origin:
+    head_z = head_z - env.scene.env_origins[:, 2]
   lin_speed = torch.linalg.norm(robot.data.root_link_lin_vel_w, dim=-1)
   ang_speed = torch.linalg.norm(robot.data.root_link_ang_vel_w, dim=-1)
   upright = upright_posture(env, power=1.0)

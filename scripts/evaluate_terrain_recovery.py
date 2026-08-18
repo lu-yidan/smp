@@ -54,9 +54,7 @@ def _run_case(
   if level not in range(4):
     raise ValueError("levels must contain only 0, 1, 2, or 3")
   if reset_mode not in RESET_POSE_WEIGHTS or reset_mode == "mixed":
-    raise ValueError(
-      "reset_modes must contain prone, supine, left_side, or right_side"
-    )
+    raise ValueError("reset_modes must contain prone, supine, left_side, or right_side")
 
   env_cfg = load_env_cfg(cfg.task, play=True)
   agent_cfg = load_rl_cfg(cfg.task)
@@ -65,9 +63,9 @@ def _run_case(
   env_cfg.scene.terrain.terrain_generator = terrain_generator_v35(
     terrain_type, level, cfg.seed
   )
-  env_cfg.events["ground_procedural_fall_on_terrain"].params[
-    "surface_normals"
-  ] = terrain_surface_normals_v35(terrain_type, level)
+  env_cfg.events["ground_procedural_fall_on_terrain"].params["surface_normals"] = (
+    terrain_surface_normals_v35(terrain_type, level)
+  )
   env_cfg.terminations = {}
   for event_name in (
     "stratified_post_stand_wrench",
@@ -115,6 +113,8 @@ def _run_case(
   secondary_fall = torch.zeros(cfg.num_envs, dtype=torch.bool, device=raw_env.device)
   terrain_exit = torch.zeros_like(secondary_fall)
   invalid_dynamics = torch.zeros_like(secondary_fall)
+  terrain_generator = raw_env.scene.terrain.cfg.terrain_generator
+  terrain_exit_radius = 0.5 * min(terrain_generator.size) - 0.5
 
   for step in range(cfg.steps):
     with torch.inference_mode():
@@ -129,7 +129,7 @@ def _run_case(
       robot.data.joint_vel
     ).all(dim=-1)
     invalid_dynamics |= ~finite
-    terrain_exit |= (raw_displacement > 1.75) | ~finite
+    terrain_exit |= (raw_displacement > terrain_exit_radius) | ~finite
     active = ~terrain_exit
 
     head_z = robot.data.site_pos_w[:, head_idx, 2]
@@ -158,10 +158,13 @@ def _run_case(
     secondary_fall |= terrain_exit & (first_success >= 0)
 
     displacement = torch.nan_to_num(
-      raw_displacement, nan=1.75, posinf=1.75, neginf=1.75
+      raw_displacement,
+      nan=terrain_exit_radius,
+      posinf=terrain_exit_radius,
+      neginf=terrain_exit_radius,
     )
     max_planar_displacement = torch.maximum(
-      max_planar_displacement, torch.clamp(displacement, max=1.75)
+      max_planar_displacement, torch.clamp(displacement, max=terrain_exit_radius)
     )
     descent = torch.nan_to_num(
       torch.clamp(origins[:, 2] - raw_root_pos[:, 2], min=0.0),
@@ -197,7 +200,7 @@ def _run_case(
     foot_slip_sum += torch.where(valid_contact, foot_speed_xy, 0.0)
     foot_contact_steps += valid_contact.float()
 
-    # Once a rollout leaves the 4 m terrain patch, re-anchor it in a benign
+    # Once a rollout leaves its terrain patch, re-anchor it in a benign
     # state.  Its failure remains recorded, while one escaped body cannot
     # free-fall to numerical overflow and corrupt the rest of the batch.
     failed_ids = torch.nonzero(terrain_exit, as_tuple=False).flatten()
@@ -239,11 +242,10 @@ def _run_case(
       else -1.0
     ),
     "secondary_fall_rate_after_success": (
-      float(successful_secondary_fall.sum() / success.sum())
-      if success.any()
-      else -1.0
+      float(successful_secondary_fall.sum() / success.sum()) if success.any() else -1.0
     ),
     "terrain_exit_rate": float(terrain_exit.float().mean()),
+    "terrain_exit_radius_m": terrain_exit_radius,
     "invalid_dynamics_rate": float(invalid_dynamics.float().mean()),
     "planar_displacement_median_m": float(max_planar_displacement.median()),
     "planar_displacement_p95_m": _quantile(max_planar_displacement, 0.95),

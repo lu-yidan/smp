@@ -25,6 +25,11 @@ height, and benchmark success are never actor observations.
 | rough grid | +/-2 cm | +/-4 cm | +/-6 cm | +/-8 cm |
 | flat control | flat | flat | flat | flat |
 
+Each benchmark patch is now 8 m by 8 m.  The stair family keeps roughly six
+30 cm stair rings and then provides about 1.9 m of flat lower apron before the
+outer border.  This separates a policy's inability to arrest a roll from the
+artifact of immediately running out of collision terrain.
+
 The directed slope is a rotated collision box, avoiding MuJoCo heightfield
 triangle-contact overflow.  Stairs use 30 cm treads.  Rough terrain uses 30 cm
 cells with deterministic generation seeds.  All non-flat reset footprints are
@@ -65,7 +70,7 @@ The evaluator disables termination, automatic pushes, hard-state recording,
 and replay.  It reports stable-stand success and recovery time together with
 secondary falls, leaving the terrain patch, root displacement, descent below
 the spawn support, contact-conditioned foot speed, joint speed, torque, and
-mechanical power.  Leaving a 1.75 m radius is a benchmark failure; that rollout
+mechanical power.  Leaving a 3.5 m radius is a benchmark failure; that rollout
 is re-anchored internally so an escaped body cannot free-fall and contaminate
 the numerical statistics of the remaining batch.
 
@@ -81,7 +86,7 @@ uv run scripts/evaluate_terrain_recovery.py \
   --output logs/evaluation/terrain_v35_model98000_full.jsonl
 ```
 
-## Preliminary boundary preview
+## Preliminary boundary previews
 
 These numbers are diagnostic, not paper results.  They use level 1, prone
 resets, a 12 s horizon, and seed `20260818`.
@@ -97,6 +102,12 @@ The flat result confirms checkpoint compatibility, while the slope and stair
 results show that V3.4's hand-supported recovery does not yet control tangential
 drift or edge transitions.  This is the intended zero-shot baseline rather than
 a reason to tune the test until the baseline passes.
+
+The table above was produced with the original 4 m patch and is retained as an
+audit trail.  After expanding the patch to 8 m, a short 5 s geometry smoke test
+with 8 prone environments per family produced 0% stair exits and 12.5% slope
+exits.  Stable-stand success remained 0% for slope/stairs, so the larger patch
+removes the boundary confound without hiding the actual zero-shot skill gap.
 
 ## Next experiment: V3.6
 

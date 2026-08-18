@@ -1181,6 +1181,8 @@ def ground_procedural_fall_on_terrain(
   ground_clearance: float = 0.006,
   collision_geom_pattern: str = r".*_collision$",
   surface_normals: tuple[tuple[float, float, float], ...] = ((0.0, 0.0, 1.0),),
+  surface_normal_levels: tuple[tuple[tuple[float, float, float], ...], ...]
+  | None = None,
 ) -> None:
   """Place procedural fall resets on their terrain spawn surface.
 
@@ -1210,17 +1212,29 @@ def ground_procedural_fall_on_terrain(
   _, _, aabb_center, aabb_half, _ = _collision_vertical_geometry(
     env, grounded_ids, collision_geom_pattern
   )
-  normal_options = torch.tensor(
-    surface_normals, dtype=aabb_center.dtype, device=env.device
-  )
-  normal_options /= torch.clamp(
-    torch.linalg.vector_norm(normal_options, dim=-1, keepdim=True), min=1e-6
-  )
-  if len(surface_normals) == 1:
-    normals = normal_options.expand(grounded_ids.numel(), -1)
+  if surface_normal_levels is not None:
+    normal_levels = torch.tensor(
+      surface_normal_levels, dtype=aabb_center.dtype, device=env.device
+    )
+    normal_levels /= torch.clamp(
+      torch.linalg.vector_norm(normal_levels, dim=-1, keepdim=True), min=1e-6
+    )
+    terrain = env.scene["terrain"]
+    normals = normal_levels[
+      terrain.terrain_types[grounded_ids], terrain.terrain_levels[grounded_ids]
+    ]
   else:
-    terrain_types = env.scene["terrain"].terrain_types[grounded_ids]
-    normals = normal_options[terrain_types]
+    normal_options = torch.tensor(
+      surface_normals, dtype=aabb_center.dtype, device=env.device
+    )
+    normal_options /= torch.clamp(
+      torch.linalg.vector_norm(normal_options, dim=-1, keepdim=True), min=1e-6
+    )
+    if len(surface_normals) == 1:
+      normals = normal_options.expand(grounded_ids.numel(), -1)
+    else:
+      terrain_types = env.scene["terrain"].terrain_types[grounded_ids]
+      normals = normal_options[terrain_types]
   origins = env.scene.env_origins[grounded_ids]
   signed_center = ((aabb_center - origins[:, None, :]) * normals[:, None, :]).sum(
     dim=-1
@@ -1234,9 +1248,7 @@ def ground_procedural_fall_on_terrain(
     ),
     dim=-1,
   )
-  root_state[:, :3] += (ground_clearance - lowest_signed_distance)[
-    :, None
-  ] * normals
+  root_state[:, :3] += (ground_clearance - lowest_signed_distance)[:, None] * normals
   robot.write_root_state_to_sim(root_state, env_ids=grounded_ids)
   env.sim.forward()
   _prime_smp_history_from_current_state(env, grounded_ids)
@@ -1245,6 +1257,7 @@ def ground_procedural_fall_on_terrain(
 def _head_height_and_upright(
   env: ManagerBasedRlEnv,
   env_ids: torch.Tensor,
+  relative_to_env_origin: bool = False,
 ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
   robot = env.scene["robot"]
   head_idx = robot.find_sites(["head"], preserve_order=True)[0][0]
@@ -1252,6 +1265,8 @@ def _head_height_and_upright(
     ["left_knee_joint", "right_knee_joint"], preserve_order=True
   )[0]
   head_z = robot.data.site_pos_w[env_ids, head_idx, 2]
+  if relative_to_env_origin:
+    head_z = head_z - env.scene.env_origins[env_ids, 2]
   head_vz = robot.data.site_lin_vel_w[env_ids, head_idx, 2]
   upright = torch.clamp(-robot.data.projected_gravity_b[env_ids, 2], 0.0, 1.0)
   knee_flexion = robot.data.joint_pos[env_ids][:, knee_ids].mean(dim=-1)
@@ -1262,6 +1277,7 @@ def _head_height_and_upright(
 def reset_recovery_stage(
   env: ManagerBasedRlEnv,
   env_ids: torch.Tensor | None = None,
+  relative_to_env_origin: bool = False,
 ) -> None:
   """Initialize the ordered seated-crouched-standing recovery stage."""
   if env_ids is None:
@@ -1277,7 +1293,9 @@ def reset_recovery_stage(
       env.num_envs, dtype=torch.long, device=env.device
     )
 
-  head_z, _, upright, knee_flexion = _head_height_and_upright(env, env_ids)
+  head_z, _, upright, knee_flexion = _head_height_and_upright(
+    env, env_ids, relative_to_env_origin=relative_to_env_origin
+  )
   stage = torch.zeros(env_ids.numel(), dtype=torch.long, device=env.device)
   stage = torch.where(
     (head_z >= 0.55) & (upright >= 0.55) & (knee_flexion >= 1.00),
@@ -1303,6 +1321,7 @@ def update_recovery_stage(
   seated_hold_steps: int = 10,
   crouched_hold_steps: int = 10,
   standing_hold_steps: int = 25,
+  relative_to_env_origin: bool = False,
 ) -> None:
   """Advance recovery only after stable seated, crouched, and standing holds."""
   if env_ids is None:
@@ -1310,11 +1329,13 @@ def update_recovery_stage(
   if env_ids.numel() == 0:
     return
   if not hasattr(env, "_v4_recovery_stage"):
-    reset_recovery_stage(env, env_ids)
+    reset_recovery_stage(env, env_ids, relative_to_env_origin=relative_to_env_origin)
 
   stage = env._v4_recovery_stage  # type: ignore[attr-defined]
   hold = env._v4_stage_hold  # type: ignore[attr-defined]
-  head_z, head_vz, upright, knee_flexion = _head_height_and_upright(env, env_ids)
+  head_z, head_vz, upright, knee_flexion = _head_height_and_upright(
+    env, env_ids, relative_to_env_origin=relative_to_env_origin
+  )
   local_stage = stage[env_ids]
 
   # A new substantial fall restarts the ordered recovery sequence.

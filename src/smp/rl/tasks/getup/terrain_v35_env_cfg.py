@@ -46,20 +46,34 @@ RESET_POSE_WEIGHTS = {
 SLOPE_DEGREES = (5.0, 10.0, 15.0, 20.0)
 STAIR_HEIGHTS_M = (0.05, 0.10, 0.15, 0.20)
 ROUGH_HEIGHTS_M = (0.02, 0.04, 0.06, 0.08)
+TERRAIN_PATCH_SIZE = (8.0, 8.0)
+TERRAIN_OUTER_BORDER_M = 1.0
+STAIR_APRON_WIDTH_M = 1.90
 
 
 @dataclass(kw_only=True)
 class BoxSlopeTerrainCfg(SubTerrainCfg):
   """A single directed planar slope implemented without a heightfield."""
 
-  angle_degrees: float
+  angle_degrees: float | None = None
+  level_angles_degrees: tuple[float, ...] | None = None
   thickness: float = 0.30
 
   def function(
     self, difficulty: float, spec: mujoco.MjSpec, rng: np.random.Generator
   ) -> TerrainOutput:
-    del difficulty, rng
-    angle = math.radians(self.angle_degrees)
+    del rng
+    if self.level_angles_degrees is not None:
+      level = min(
+        int(difficulty * len(self.level_angles_degrees)),
+        len(self.level_angles_degrees) - 1,
+      )
+      angle_degrees = self.level_angles_degrees[level]
+    elif self.angle_degrees is not None:
+      angle_degrees = self.angle_degrees
+    else:
+      raise ValueError("a fixed angle or quantized level angles must be provided")
+    angle = math.radians(angle_degrees)
     half_x = self.size[0] / 2
     half_y = self.size[1] / 2
     half_z = self.thickness / 2
@@ -103,7 +117,9 @@ def terrain_generator_v35(kind: str, level: int, seed: int) -> TerrainGeneratorC
       step_height_range=(stair_height, stair_height),
       step_width=0.30,
       platform_width=platform_width,
-      border_width=0.25,
+      # Keep roughly six stair rings, then add a broad flat apron so a failed
+      # recovery rolls onto valid ground instead of immediately leaving terrain.
+      border_width=STAIR_APRON_WIDTH_M,
     ),
     "rough": BoxRandomGridTerrainCfg(
       proportion=1.0,
@@ -113,15 +129,15 @@ def terrain_generator_v35(kind: str, level: int, seed: int) -> TerrainGeneratorC
       merge_similar_heights=True,
       height_merge_threshold=0.02,
       max_merge_distance=3,
-      border_width=0.25,
+      border_width=1.0,
     ),
   }
   sub_terrains = families if kind == "mixed" else {kind: families[kind]}
   return TerrainGeneratorCfg(
     seed=seed,
     curriculum=kind == "mixed",
-    size=(4.0, 4.0),
-    border_width=0.5,
+    size=TERRAIN_PATCH_SIZE,
+    border_width=TERRAIN_OUTER_BORDER_M,
     border_height=1.0,
     num_rows=1,
     num_cols=max(1, len(sub_terrains)),
@@ -164,9 +180,7 @@ def g1_getup_terrain_v35_smp_env_cfg(play: bool = False):
     level = int(level_text)
   except ValueError as exc:
     raise ValueError("terrain level must be an integer from 0 to 3") from exc
-  reset_pose = (
-    os.environ.get(_PLAY_RESET_POSE_ENV, "mixed") if play else "mixed"
-  )
+  reset_pose = os.environ.get(_PLAY_RESET_POSE_ENV, "mixed") if play else "mixed"
   if reset_pose not in RESET_POSE_WEIGHTS:
     choices = ", ".join(RESET_POSE_WEIGHTS)
     raise ValueError(f"unknown terrain reset pose {reset_pose!r}; choose {choices}")
@@ -178,7 +192,7 @@ def g1_getup_terrain_v35_smp_env_cfg(play: bool = False):
     max_init_terrain_level=0,
     debug_vis=play,
   )
-  cfg.scene.extent = 4.5
+  cfg.scene.extent = 7.0
   # Keep headroom for highly folded prone poses and simultaneous contacts with
   # multiple step/grid cells during interactive dragging.
   cfg.sim.nconmax = 512
@@ -253,7 +267,10 @@ __all__ = [
   "RESET_POSE_WEIGHTS",
   "ROUGH_HEIGHTS_M",
   "SLOPE_DEGREES",
+  "STAIR_APRON_WIDTH_M",
   "STAIR_HEIGHTS_M",
+  "TERRAIN_OUTER_BORDER_M",
+  "TERRAIN_PATCH_SIZE",
   "TERRAIN_KINDS",
   "g1_getup_terrain_v35_smp_env_cfg",
   "terrain_generator_v35",
