@@ -67,7 +67,9 @@ the rollout.
 - Checkpoint interval: 1,000 additional iterations
 - Planned duration: 8,000 additional PPO iterations
 - Learning rate: `1e-4`
-- Seed: `20260818`
+- Requested environment seed: `20260818`
+- Actual runner seed: `42` (the resumed PPO runner applies `agent.seed` to the
+  environment; future multi-seed runs must override `--agent.seed` explicitly)
 
 ```bash
 uv run scripts/train.py Smp-Getup-Terrain-V36-G1 \
@@ -90,9 +92,15 @@ checkpoint are recorded below after launch.
 
 ## Formal run
 
-- Status: pending server launch
-- W&B: pending
-- Server log: pending
+- Status: running from 2026-08-18 16:42 Asia/Taipei
+- Source code commit: `1198651`
+- Server/GPU: `dsw-lyd2`, GPU 0
+- tmux: `smp_v36`
+- W&B: `tabletennis/smp/de2kit7e`
+- Server log: `run_control/v36_terrain_from_v34_98000.log`
+- Initial throughput: about 27,858 steps/s
+- Initial ETA: about 7 h 50 min
+- Iteration range: 98,000 through 105,999 (8,000 additional updates)
 - Selected checkpoint: pending evaluation
 
 ## Checkpoint selection
