@@ -64,31 +64,35 @@ def main(cfg: EvalCfg) -> None:
   )
   policy = runner.get_inference_policy(device=cfg.device)
   obs = env.get_observations()
-  if obs.ndim != 2 or obs.shape[1] != 96:
+  actor_obs = obs["actor"]
+  if actor_obs.ndim != 2 or actor_obs.shape[1] != 96:
     raise RuntimeError(
-      f"Expected the frozen V3.3 96-D actor observation, got {tuple(obs.shape)}"
+      "Expected the frozen V3.3 96-D actor observation, "
+      f"got {tuple(actor_obs.shape)}"
     )
   base_lin_vel_history: deque[torch.Tensor] = deque(
     maxlen=cfg.base_lin_vel_delay_steps + 1
   )
 
-  def deploy_observation(actor_obs: torch.Tensor) -> torch.Tensor:
+  def deploy_observation(observation):
     """Apply a deployment-time base-velocity ablation to actor observations."""
     if cfg.base_lin_vel_mode == "oracle":
-      return actor_obs
-    actor_obs = actor_obs.clone()
-    current = actor_obs[:, :3].clone()
+      return observation
+    observation = observation.clone()
+    actor = observation["actor"]
+    current = actor[:, :3].clone()
     if cfg.base_lin_vel_mode == "zero":
-      actor_obs[:, :3] = 0.0
+      actor[:, :3] = 0.0
     elif cfg.base_lin_vel_mode == "bias":
-      actor_obs[:, :3] += cfg.base_lin_vel_bias_m_s
+      actor[:, :3] += cfg.base_lin_vel_bias_m_s
     else:
       base_lin_vel_history.append(current)
       if len(base_lin_vel_history) <= cfg.base_lin_vel_delay_steps:
-        actor_obs[:, :3] = 0.0
+        actor[:, :3] = 0.0
       else:
-        actor_obs[:, :3] = base_lin_vel_history[0]
-    return actor_obs
+        actor[:, :3] = base_lin_vel_history[0]
+    observation["actor"] = actor
+    return observation
 
   active = (raw_env._escape_phase > 0).clone()  # type: ignore[attr-defined]
   first_contact = torch.full(
