@@ -68,9 +68,9 @@ reached 0.1477, maximum terrain level reached 2, and no patch-exit termination
 occurred.  The same smoke test with the original V3.6 gate had level mean and
 maximum equal to zero, so this directly verifies the controlled correction.
 
-## Formal run
+## Formal run and result
 
-- Status: running from 2026-08-18 22:51 Asia/Taipei
+- Status: completed on 2026-08-19
 - Source code commit: `1e0ed00`
 - Server/GPU: `dsw-lyd2`, GPU 0
 - tmux: `smp_v361`
@@ -79,4 +79,29 @@ maximum equal to zero, so this directly verifies the controlled correction.
 - Iteration range: 102,000 through 109,999
 - Initial sustained ETA: about 5 h 30 min
 - Runner seed confirmed in log: `20260818`
-- Selected checkpoint: pending frozen multi-level evaluation
+- Checkpoints: `model_102000.pt` through `model_109999.pt`
+- Selected checkpoint: none; retain the frozen V3.6 `model_102000.pt` baseline
+
+The corrected gate did activate the curriculum.  Mean terrain level peaked at
+`0.263` near iteration 102,679 and the maximum assigned level reached three.
+However, the run then regressed: mean terrain level fell to `0.028` at 104,000
+and all cohorts returned to level zero from 105,000 onward.  At the same point
+the SMP score, stable-standing score, and stage-completion score collapsed to
+zero.  The final checkpoint is therefore not a valid terrain-recovery model.
+
+Frozen level-1 evaluation confirms that no screened V3.6.1 checkpoint improves
+on its source:
+
+| checkpoint | aggregate success | slope | stairs | rough | mean peak power |
+|---|---:|---:|---:|---:|---:|
+| V3.6 `102000` | 86.3% | 94.5% | 51.6% | 99.2% | 151.5 W |
+| V3.6.1 `103000` | 74.0% | 85.2% | 16.4% | 95.3% | 137.7 W |
+| V3.6.1 `104000` | 69.9% | 78.1% | 28.1% | 75.8% | 142.7 W |
+
+The likely mechanism is the multiplicative task/SMP reward.  When the policy
+enters an out-of-distribution terrain state and the SMP term approaches zero,
+the product removes the main recovery gradient.  Meanwhile, initiation and
+support rewards remain available, creating a low-pose local optimum.  V3.6.2
+must retain a non-zero task-reward floor and fixed replay of difficult terrain
+levels; it must also use short, low-learning-rate training with frequent frozen
+evaluation and early stopping.
