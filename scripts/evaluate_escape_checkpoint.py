@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+from collections import deque
 from dataclasses import asdict, dataclass
 from pathlib import Path
 
@@ -29,10 +30,21 @@ class EvalCfg:
   steps: int = 1000
   seed: int = 20260814
   device: str = "cuda:0"
+  base_lin_vel_mode: str = "oracle"
+  base_lin_vel_delay_steps: int = 5
+  base_lin_vel_bias_m_s: float = 0.0
 
 
 def main(cfg: EvalCfg) -> None:
   configure_torch_backends()
+  valid_modes = {"oracle", "zero", "delay", "bias"}
+  if cfg.base_lin_vel_mode not in valid_modes:
+    raise ValueError(
+      f"base_lin_vel_mode must be one of {sorted(valid_modes)}, "
+      f"got {cfg.base_lin_vel_mode!r}"
+    )
+  if cfg.base_lin_vel_delay_steps < 0:
+    raise ValueError("base_lin_vel_delay_steps must be non-negative")
   env_cfg = load_env_cfg(cfg.task)
   agent_cfg = load_rl_cfg(cfg.task)
   env_cfg.scene.num_envs = cfg.num_envs
@@ -52,6 +64,31 @@ def main(cfg: EvalCfg) -> None:
   )
   policy = runner.get_inference_policy(device=cfg.device)
   obs = env.get_observations()
+  if obs.ndim != 2 or obs.shape[1] != 96:
+    raise RuntimeError(
+      f"Expected the frozen V3.3 96-D actor observation, got {tuple(obs.shape)}"
+    )
+  base_lin_vel_history: deque[torch.Tensor] = deque(
+    maxlen=cfg.base_lin_vel_delay_steps + 1
+  )
+
+  def deploy_observation(actor_obs: torch.Tensor) -> torch.Tensor:
+    """Apply a deployment-time base-velocity ablation to actor observations."""
+    if cfg.base_lin_vel_mode == "oracle":
+      return actor_obs
+    actor_obs = actor_obs.clone()
+    current = actor_obs[:, :3].clone()
+    if cfg.base_lin_vel_mode == "zero":
+      actor_obs[:, :3] = 0.0
+    elif cfg.base_lin_vel_mode == "bias":
+      actor_obs[:, :3] += cfg.base_lin_vel_bias_m_s
+    else:
+      base_lin_vel_history.append(current)
+      if len(base_lin_vel_history) <= cfg.base_lin_vel_delay_steps:
+        actor_obs[:, :3] = 0.0
+      else:
+        actor_obs[:, :3] = base_lin_vel_history[0]
+    return actor_obs
 
   active = (raw_env._escape_phase > 0).clone()  # type: ignore[attr-defined]
   first_contact = torch.full(
@@ -63,7 +100,7 @@ def main(cfg: EvalCfg) -> None:
 
   for step in range(cfg.steps):
     with torch.inference_mode():
-      actions = policy(obs)
+      actions = policy(deploy_observation(obs))
       obs, _, _, _ = env.step(actions)
     obstacle_found = raw_env.scene["robot_obstacle_contact"].data.found
     assert obstacle_found is not None
@@ -113,6 +150,9 @@ def main(cfg: EvalCfg) -> None:
     "seed": cfg.seed,
     "num_envs": cfg.num_envs,
     "steps": cfg.steps,
+    "base_lin_vel_mode": cfg.base_lin_vel_mode,
+    "base_lin_vel_delay_steps": cfg.base_lin_vel_delay_steps,
+    "base_lin_vel_bias_m_s": cfg.base_lin_vel_bias_m_s,
     "active": active_count,
     "contacted": int(contacted.sum()),
     "first_contact_step_median": float(first.median()) if first.numel() else -1.0,
