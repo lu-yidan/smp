@@ -30,6 +30,7 @@ class EvalCfg:
   steps: int = 1000
   seed: int = 20260814
   device: str = "cuda:0"
+  play: bool = False
   base_lin_vel_mode: str = "oracle"
   base_lin_vel_delay_steps: int = 5
   base_lin_vel_bias_m_s: float = 0.0
@@ -45,7 +46,7 @@ def main(cfg: EvalCfg) -> None:
     )
   if cfg.base_lin_vel_delay_steps < 0:
     raise ValueError("base_lin_vel_delay_steps must be non-negative")
-  env_cfg = load_env_cfg(cfg.task)
+  env_cfg = load_env_cfg(cfg.task, play=cfg.play)
   agent_cfg = load_rl_cfg(cfg.task)
   env_cfg.scene.num_envs = cfg.num_envs
   env_cfg.seed = cfg.seed
@@ -154,6 +155,7 @@ def main(cfg: EvalCfg) -> None:
     "seed": cfg.seed,
     "num_envs": cfg.num_envs,
     "steps": cfg.steps,
+    "play": cfg.play,
     "base_lin_vel_mode": cfg.base_lin_vel_mode,
     "base_lin_vel_delay_steps": cfg.base_lin_vel_delay_steps,
     "base_lin_vel_bias_m_s": cfg.base_lin_vel_bias_m_s,
