@@ -85,3 +85,17 @@ A candidate is promoted only if all of the following hold:
 The first run is an ablation-quality experiment: the SMP floor and fixed replay
 must be logged independently so the failure mechanism can be reported, even if
 the candidate is not promoted.
+
+## Formal paired runs (2026-08-25)
+
+Launched on `dsw-lyd2` from server worktree `/mnt/workspace/user/luyidan/smp-v362`:
+
+- source commit: `400edc0` on `codex/terrain-recovery-v362`;
+- shared fixed-std seed SHA-256:
+  `aea692a3d65355f9ea25d980364fa4dbce08fbd8de4c59406f306a373ff86b03`;
+- oracle run: `tabletennis/smp/kw5w8bd2` on GPU 3;
+- zero-velocity Deploy run: `tabletennis/smp/3utesmeb` on GPU 4;
+- both use 4,096 environments, seed `20260825`, learning rate `3e-5`, 1,500
+  updates, and save interval 250;
+- frozen level-1 oracle/Deploy evaluations run concurrently on GPUs 1 and 2
+  before either policy has been fine-tuned.
