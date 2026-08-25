@@ -82,13 +82,20 @@ def task_smp_product(
   task_terms: tuple[TaskTerm, ...],
   fixed_timesteps: tuple[int, ...] = (8, 15, 22),
   ws: float = 6.0,
+  smp_floor: float = 0.0,
 ) -> torch.Tensor:
-  """``(Σ wᵢ · taskᵢ(env)) · r_smp`` — multiplicative SMP gating; ``task_terms`` is
-  a tuple of ``(func, weight, kwargs)``.  Calls ``smp_guidance_reward`` once (the
-  sole SMP-buffer update), so it must be the task's only SMP reward term."""
+  """Multiply the task score by SMP guidance with an optional non-zero floor.
+
+  ``smp_floor=0`` preserves the original exact product.  A positive floor
+  keeps a fraction of the recovery gradient in off-prior states while retaining
+  SMP preference.  This function remains the task's only SMP-buffer update.
+  """
+  if not 0.0 <= smp_floor <= 1.0:
+    raise ValueError(f"smp_floor must be in [0, 1], got {smp_floor}")
   task = sum(w * func(env, **kw) for func, w, kw in task_terms)
   smp = smp_guidance_reward(env, fixed_timesteps=fixed_timesteps, ws=ws)
-  product = task * smp
+  gated_smp = smp_floor + (1.0 - smp_floor) * smp
+  product = task * gated_smp
   env._smp_task_score = task  # type: ignore[attr-defined]
   env._smp_score = smp  # type: ignore[attr-defined]
   env._smp_product_score = product  # type: ignore[attr-defined]
