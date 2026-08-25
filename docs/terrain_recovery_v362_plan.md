@@ -99,3 +99,18 @@ Launched on `dsw-lyd2` from server worktree `/mnt/workspace/user/luyidan/smp-v36
   updates, and save interval 250;
 - frozen level-1 oracle/Deploy evaluations run concurrently on GPUs 1 and 2
   before either policy has been fine-tuned.
+
+## Frozen zero-velocity ablation
+
+Before fine-tuning, the shared V3.6 seed was evaluated at terrain level 1 with
+32 environments per terrain/pose case and 500 control steps:
+
+| actor input | aggregate | flat | slope | stairs | rough | exit | invalid |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| simulator linear velocity | 82.03% | 100.00% | 87.50% | 42.97% | 97.66% | 0.00% | 0.00% |
+| three fixed zeros | 80.47% | 100.00% | 87.50% | 35.94% | 98.44% | 0.39% | 0.00% |
+
+Zeroing velocity costs only 1.56 aggregate percentage points before adaptation;
+the measurable deficit is concentrated on stairs. Mean peak power changes from
+164.34 W to 167.87 W. This supports zero-conditioning the deployment actor while
+retaining the oracle run as a controlled upper-bound comparison.
