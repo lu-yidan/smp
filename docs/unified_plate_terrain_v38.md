@@ -150,11 +150,32 @@ play 默认关闭压板，必须用 `--escape-obstacle True` 显式启用，避�
 - 分支：`codex/unified-recovery-v38`
 - 实现提交：`de45c23`
 - 服务器工作区：`/mnt/workspace/user/luyidan/smp-v38-unified`
-- warm-start W&B：`tabletennis/smp/ysl4x4xm`
+- terrain-seed warm-start W&B：`tabletennis/smp/ysl4x4xm`
+- plate-seed warm-start W&B：`tabletennis/smp/uejfq9qh`
 - from-scratch W&B：`tabletennis/smp/1yw7b3os`
-- 两组均为 4096 environments、1200 iterations、每 100 iterations 保存。
+- 三组均为 4096 environments、每 100 iterations 保存。
 
-warm-start 初始物理健康门（约 iteration 22）：无 unstable dynamics；
+terrain-seed 初始物理健康门（约 iteration 22）：无 unstable dynamics；
 压板峰值穿透约 1 mm，峰值接触力约 128 N；terrain curriculum
 success 约 0.78。此时 escape completion 约 0.8%，仅表示旧地形 seed
 尚未学会新压板任务，不作为最终成功率。
+
+冻结的 `model_100.pt` 审计表明该路线没有快速学到压板：
+
+- flat/stairs、L0/L1、prone/supine 的 8 个无压板 case 平均成功率 58.8%；
+- 8 kg 全覆盖压板下 escape-and-stand 为 0；
+- invalid plate episode 为 21%。
+
+训练内 terrain success 随后下降且 escape 仍接近 0，因此在保存
+`model_200.pt` 后提前停止，不将它作为候选部署模型。两个 checkpoint
+保留在服务器 `baselines/G1_Recovery_Below_Block/v38/audit/`。
+
+V3.4 plate seed 迁移到完全相同的 384 维 deploy actor 后，未微调即得到：
+
+- 8 kg 压板 escape-and-stand 60.95%，valid episode 中为 80%；
+- flat L0/L1 的 prone/supine 为 100%；
+- stairs L0 为 3.1%–12.5%，stairs L1 为 0；
+- 压板 invalid episode 23.3%，关节速度和功率仍明显偏高。
+
+这说明两个 seed 能力互补。后续主 warm-start 改为 plate seed，在统一
+任务中补复杂地形和安全性；from-scratch 保留为同任务对照。
