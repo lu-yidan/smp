@@ -37,6 +37,7 @@ __all__ = [
   "escape_geometry_clearance_score",
   "escape_geometry_progress",
   "escape_gated_task_smp_product",
+  "escape_gated_recovery_initiation_progress",
   "escape_object_displacement_metric",
   "escape_obstacle_episode_metric",
   "escape_phase_metric",
@@ -100,6 +101,7 @@ def escape_gated_task_smp_product(
   task_terms: tuple,
   fixed_timesteps: tuple[int, ...] = (8, 15, 22),
   ws: float = 6.0,
+  smp_floor: float = 0.0,
   constrained_scale: float = 0.15,
 ) -> torch.Tensor:
   """Relax the upright/get-up objective while a physical route is blocked.
@@ -109,7 +111,11 @@ def escape_gated_task_smp_product(
   proprioceptive and motor-response history.
   """
   product = _task_smp_product(
-    env, task_terms=task_terms, fixed_timesteps=fixed_timesteps, ws=ws
+    env,
+    task_terms=task_terms,
+    fixed_timesteps=fixed_timesteps,
+    ws=ws,
+    smp_floor=smp_floor,
   )
   phase = getattr(env, "_escape_phase", None)
   if phase is None:
@@ -123,6 +129,27 @@ def escape_gated_task_smp_product(
   gated = product * scale
   env._smp_product_score = gated  # type: ignore[attr-defined]
   return gated
+
+
+def escape_gated_recovery_initiation_progress(
+  env: ManagerBasedRlEnv,
+  relative_to_env_origin: bool = False,
+  constrained_scale: float = 0.0,
+) -> torch.Tensor:
+  """Preserve dense get-up progress only when the physical route is clear."""
+  progress = recovery_initiation_progress(
+    env, relative_to_env_origin=relative_to_env_origin
+  )
+  phase = getattr(env, "_escape_phase", None)
+  if phase is None:
+    return progress
+  constrained = (phase == 1) | (phase == 2)
+  scale = torch.where(
+    constrained,
+    torch.full_like(progress, constrained_scale),
+    torch.ones_like(progress),
+  )
+  return progress * scale
 
 
 def _contact_found(env: ManagerBasedRlEnv, sensor_name: str) -> torch.Tensor:
@@ -258,6 +285,7 @@ def hand_supported_escape_progress(
   sensor_name: str = "hand_ground_contact",
   progress_scale: float = 0.025,
   max_head_height: float = 0.90,
+  relative_to_env_origin: bool = False,
 ) -> torch.Tensor:
   """Reward new separation only when a low robot is supported by its hands.
 
@@ -271,7 +299,10 @@ def hand_supported_escape_progress(
   support_fraction = _contact_found(env, sensor_name).float().mean(dim=-1)
   robot = env.scene["robot"]
   head_idx = robot.find_sites(["head"], preserve_order=True)[0][0]
-  low_pose = robot.data.site_pos_w[:, head_idx, 2] <= max_head_height
+  head_height = robot.data.site_pos_w[:, head_idx, 2]
+  if relative_to_env_origin:
+    head_height = head_height - _terrain_height_reference(env)
+  low_pose = head_height <= max_head_height
   progress = torch.clamp(delta / progress_scale, 0.0, 1.0)
   return (phase == 2).float() * low_pose.float() * support_fraction * progress
 
@@ -282,6 +313,7 @@ def escape_geometry_progress(
   coverage_scale: float = 0.025,
   clearance_scale: float = 0.02,
   max_head_height: float = 0.90,
+  relative_to_env_origin: bool = False,
 ) -> torch.Tensor:
   """Reward all-body footprint clearance gained while hand-supported.
 
@@ -296,7 +328,10 @@ def escape_geometry_progress(
   support_fraction = _contact_found(env, sensor_name).float().mean(dim=-1)
   robot = env.scene["robot"]
   head_idx = robot.find_sites(["head"], preserve_order=True)[0][0]
-  low_pose = robot.data.site_pos_w[:, head_idx, 2] <= max_head_height
+  head_height = robot.data.site_pos_w[:, head_idx, 2]
+  if relative_to_env_origin:
+    head_height = head_height - _terrain_height_reference(env)
+  low_pose = head_height <= max_head_height
   progress = torch.clamp(coverage_delta / coverage_scale, 0.0, 1.0)
   progress += 0.5 * torch.clamp(clearance_delta / clearance_scale, 0.0, 1.0)
   return (phase == 2).float() * low_pose.float() * support_fraction * progress

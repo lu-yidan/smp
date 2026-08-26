@@ -23,6 +23,9 @@ from smp.rl.tasks.getup.escape_v34_env_cfg import (
   g1_getup_escape_plate_v34_smp_env_cfg,
 )
 from smp.rl.tasks.getup.getup_env_cfg import g1_getup_smp_env_cfg
+from smp.rl.tasks.getup.plate_terrain_v38_env_cfg import (
+  g1_getup_plate_terrain_v38_deploy_smp_env_cfg,
+)
 from smp.rl.tasks.getup.robust_env_cfg import g1_getup_robust_smp_env_cfg
 from smp.rl.tasks.getup.safe_env_cfg import g1_getup_robust_safe_smp_env_cfg
 from smp.rl.tasks.getup.smooth_env_cfg import g1_getup_robust_smooth_smp_env_cfg
@@ -366,7 +369,25 @@ register_mjlab_task(
   rl_cfg=_terrain_v37_deploy_getup_rl,
 )
 
+
+def _plate_terrain_v38_runner_cfg():
+  cfg = _terrain_v363_runner_cfg("smp_getup_plate_terrain_v38_deploy_g1")
+  cfg.save_interval = 100
+  cfg.algorithm.learning_rate = 5.0e-6
+  return cfg
+
+
+_plate_terrain_v38_getup_rl = _plate_terrain_v38_runner_cfg()
+
+register_mjlab_task(
+  task_id="Smp-Getup-Plate-Terrain-V38-Deploy-G1",
+  env_cfg=g1_getup_plate_terrain_v38_deploy_smp_env_cfg(play=False),
+  play_env_cfg=g1_getup_plate_terrain_v38_deploy_smp_env_cfg(play=True),
+  rl_cfg=_plate_terrain_v38_getup_rl,
+)
+
 __all__ = [
+  "g1_getup_plate_terrain_v38_deploy_smp_env_cfg",
   "g1_getup_robust_smp_env_cfg",
   "g1_getup_robust_safe_smp_env_cfg",
   "g1_getup_robust_smooth_smp_env_cfg",

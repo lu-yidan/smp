@@ -363,6 +363,8 @@ def reset_guided_escape_plate(
   obstacle_probability: float = 0.90,
   target_body_name: str = "torso_link",
   eligible_reset_types: tuple[int, ...] | None = None,
+  eligible_terrain_names: tuple[str, ...] | None = None,
+  eligible_terrain_cohorts: tuple[int, ...] | None = None,
   xy_offset_range: float = 0.015,
   body_origin_clearance: float = 0.26,
   align_to_body: bool = False,
@@ -373,6 +375,7 @@ def reset_guided_escape_plate(
   overlap_curriculum_steps: int = 0,
   support_ready_supine: bool = False,
   support_arm_noise: float = 0.0,
+  reground_robot: bool = True,
   ground_clearance: float = 0.004,
   surface_gap: float | None = None,
   plate_half_extents: tuple[float, float, float] = (0.45, 0.32, 0.035),
@@ -406,6 +409,35 @@ def reset_guided_escape_plate(
     for reset_value in eligible_reset_types:
       eligible |= reset_type[env_ids] == reset_value
     active &= eligible
+  if eligible_terrain_names is not None:
+    terrain = env.scene["terrain"]
+    generator = terrain.cfg.terrain_generator
+    if generator is None:
+      raise RuntimeError("eligible_terrain_names requires generated terrain")
+    terrain_names = list(generator.sub_terrains)
+    eligible_columns = torch.tensor(
+      [
+        terrain_names.index(name)
+        for name in eligible_terrain_names
+        if name in terrain_names
+      ],
+      dtype=torch.long,
+      device=env.device,
+    )
+    if eligible_columns.numel() == 0:
+      active &= False
+    else:
+      active &= torch.isin(terrain.terrain_types[env_ids], eligible_columns)
+  if eligible_terrain_cohorts is not None:
+    cohort = getattr(env, "_terrain_reset_cohort", None)
+    if cohort is None:
+      raise RuntimeError(
+        "eligible_terrain_cohorts requires sample_terrain_edge_reset state"
+      )
+    eligible_cohorts = torch.tensor(
+      eligible_terrain_cohorts, dtype=torch.long, device=env.device
+    )
+    active &= torch.isin(cohort[env_ids], eligible_cohorts)
 
   active_ids = env_ids[active]
   if support_ready_supine and active_ids.numel() > 0:
@@ -468,22 +500,26 @@ def reset_guided_escape_plate(
       robot.write_joint_state_to_sim(joint_pos, joint_vel, env_ids=supine_ids)
       env.sim.forward()
 
-    # Ground every eligible pose before placing the plate. This preserves the
-    # V3.3 supine setup and gives prone actors the same prompt-load contract.
-    geom_pos, z_extent, _, _, _ = _collision_vertical_geometry(
-      env, active_ids, collision_geom_pattern
-    )
-    lowest = (geom_pos[:, :, 2] - z_extent).amin(dim=-1)
-    root_state = torch.cat(
-      (
-        robot.data.root_link_pose_w[active_ids].clone(),
-        torch.zeros(active_ids.numel(), 6, device=env.device),
-      ),
-      dim=-1,
-    )
-    root_state[:, 2] += env.scene.env_origins[active_ids, 2] + ground_clearance - lowest
-    robot.write_root_state_to_sim(root_state, env_ids=active_ids)
-    env.sim.forward()
+    if reground_robot:
+      # Flat-world plate tasks historically perform this final grounding pass.
+      # Combined terrain tasks disable it because their terrain-aware grounding
+      # event has already placed the robot on the exact local support surface.
+      geom_pos, z_extent, _, _, _ = _collision_vertical_geometry(
+        env, active_ids, collision_geom_pattern
+      )
+      lowest = (geom_pos[:, :, 2] - z_extent).amin(dim=-1)
+      root_state = torch.cat(
+        (
+          robot.data.root_link_pose_w[active_ids].clone(),
+          torch.zeros(active_ids.numel(), 6, device=env.device),
+        ),
+        dim=-1,
+      )
+      root_state[:, 2] += (
+        env.scene.env_origins[active_ids, 2] + ground_clearance - lowest
+      )
+      robot.write_root_state_to_sim(root_state, env_ids=active_ids)
+      env.sim.forward()
     _prime_smp_history_from_current_state(env, active_ids)
 
   target_pos = robot.data.body_link_pos_w[env_ids, target_ids[0]].clone()
@@ -675,6 +711,7 @@ def update_escape_phase(
   max_contact_force: float | None = None,
   max_wait_steps: int | None = None,
   max_initial_contact_head_height: float | None = None,
+  relative_to_env_origin: bool = False,
   hand_sensor_name: str | None = None,
   min_hand_support_steps: int = 0,
   min_hand_supported_progress: float = 0.0,
@@ -760,6 +797,11 @@ def update_escape_phase(
   robot = env.scene["robot"]
   head_idx = robot.find_sites(["head"], preserve_order=True)[0][0]
   head_height = robot.data.site_pos_w[env_ids, head_idx, 2]
+  if relative_to_env_origin:
+    support_height = getattr(env, "_terrain_reset_support_height", None)
+    if support_height is None:
+      support_height = env.scene.env_origins[:, 2]
+    head_height = head_height - support_height[env_ids]
   first_contact_height[env_ids[first_contact]] = head_height[first_contact]
   late_contact = torch.zeros_like(contact)
   if max_initial_contact_head_height is not None:
