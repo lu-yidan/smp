@@ -33,6 +33,10 @@ from smp.rl.tasks.getup.terrain_v35_env_cfg import (
 from smp.rl.tasks.getup.terrain_v36_env_cfg import (
   g1_getup_terrain_v36_smp_env_cfg,
 )
+from smp.rl.tasks.getup.terrain_v37_env_cfg import (
+  g1_getup_terrain_v37_deploy_smp_env_cfg,
+  g1_getup_terrain_v37_smp_env_cfg,
+)
 from smp.rl.tasks.getup.terrain_v361_env_cfg import (
   g1_getup_terrain_v361_smp_env_cfg,
 )
@@ -333,6 +337,27 @@ register_mjlab_task(
   play_env_cfg=g1_getup_terrain_v363_deploy_smp_env_cfg(play=True),
   rl_cfg=_terrain_v363_deploy_getup_rl,
 )
+
+_terrain_v37_getup_rl = _terrain_v363_runner_cfg("smp_getup_terrain_v37_g1")
+
+register_mjlab_task(
+  task_id="Smp-Getup-Terrain-V37-G1",
+  env_cfg=g1_getup_terrain_v37_smp_env_cfg(play=False),
+  play_env_cfg=g1_getup_terrain_v37_smp_env_cfg(play=True),
+  rl_cfg=_terrain_v37_getup_rl,
+)
+
+_terrain_v37_deploy_getup_rl = _terrain_v363_runner_cfg(
+  "smp_getup_terrain_v37_deploy_g1"
+)
+
+register_mjlab_task(
+  task_id="Smp-Getup-Terrain-V37-Deploy-G1",
+  env_cfg=g1_getup_terrain_v37_deploy_smp_env_cfg(play=False),
+  play_env_cfg=g1_getup_terrain_v37_deploy_smp_env_cfg(play=True),
+  rl_cfg=_terrain_v37_deploy_getup_rl,
+)
+
 __all__ = [
   "g1_getup_robust_smp_env_cfg",
   "g1_getup_robust_safe_smp_env_cfg",
@@ -345,6 +370,8 @@ __all__ = [
   "g1_getup_terrain_v362_smp_env_cfg",
   "g1_getup_terrain_v363_deploy_smp_env_cfg",
   "g1_getup_terrain_v363_smp_env_cfg",
+  "g1_getup_terrain_v37_deploy_smp_env_cfg",
+  "g1_getup_terrain_v37_smp_env_cfg",
   "g1_getup_smp_env_cfg",
   "g1_getup_constrained_smp_env_cfg",
   "g1_getup_escape_smp_env_cfg",

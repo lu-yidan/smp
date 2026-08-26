@@ -21,6 +21,7 @@ class EvalCfg:
   terrain_types: tuple[str, ...] = ("flat", "slope", "stairs", "rough")
   levels: tuple[int, ...] = (1,)
   reset_modes: tuple[str, ...] = ("prone", "supine", "left_side", "right_side")
+  edge_cohorts: tuple[str, ...] = ()
   num_envs: int = 64
   steps: int = 750
   seed: int = 20260818
@@ -37,6 +38,7 @@ def _run_case(
   terrain_type: str,
   level: int,
   reset_mode: str,
+  edge_cohort: str | None = None,
 ) -> dict[str, object]:
   # Task registration happens only after CLI parsing.  The selected benchmark
   # case then replaces the prebuilt play terrain without changing observations.
@@ -48,6 +50,7 @@ def _run_case(
     terrain_generator_v35,
     terrain_surface_normals_v35,
   )
+  from smp.rl.tasks.getup.terrain_v37_env_cfg import EDGE_RESET_COHORTS
 
   if terrain_type not in TERRAIN_KINDS or terrain_type == "mixed":
     raise ValueError("terrain_types must contain flat, slope, stairs, or rough")
@@ -55,6 +58,9 @@ def _run_case(
     raise ValueError("levels must contain only 0, 1, 2, or 3")
   if reset_mode not in RESET_POSE_WEIGHTS or reset_mode == "mixed":
     raise ValueError("reset_modes must contain prone, supine, left_side, or right_side")
+  if edge_cohort is not None:
+    if terrain_type != "stairs" or edge_cohort not in EDGE_RESET_COHORTS:
+      raise ValueError("edge_cohorts require stairs and a supported V3.7 cohort")
 
   env_cfg = load_env_cfg(cfg.task, play=True)
   agent_cfg = load_rl_cfg(cfg.task)
@@ -79,6 +85,10 @@ def _run_case(
       "mode_weights": RESET_POSE_WEIGHTS[reset_mode],
     }
   )
+  if edge_cohort is not None:
+    weights = tuple(float(name == edge_cohort) for name in EDGE_RESET_COHORTS)
+    edge_event = env_cfg.events["sample_terrain_edge_reset"]
+    edge_event.params["cohort_weights"] = weights
 
   raw_env = ManagerBasedRlEnv(env_cfg, device=cfg.device)
   env = RslRlVecEnvWrapper(raw_env, clip_actions=agent_cfg.clip_actions)
@@ -95,6 +105,12 @@ def _run_case(
 
   robot = raw_env.scene["robot"]
   origins = raw_env.scene.env_origins
+  support_height = getattr(raw_env, "_terrain_reset_support_height", origins[:, 2])
+  reset_anchor_xy = getattr(raw_env, "_terrain_reset_anchor_xy", origins[:, :2])
+  initial_reset_offset = torch.linalg.vector_norm(
+    reset_anchor_xy - origins[:, :2], dim=-1
+  )
+  initial_support_delta = support_height - origins[:, 2]
   root_xy_start = robot.data.root_link_pos_w[:, :2].clone()
   foot_ids = robot.find_sites(["left_foot", "right_foot"], preserve_order=True)[0]
   head_idx = robot.find_sites(["head"], preserve_order=True)[0][0]
@@ -137,7 +153,7 @@ def _run_case(
     linear_speed = torch.linalg.vector_norm(robot.data.root_link_lin_vel_w, dim=-1)
     angular_speed = torch.linalg.vector_norm(robot.data.root_link_ang_vel_w, dim=-1)
     standing = (
-      (head_z - origins[:, 2] >= 1.10)
+      (head_z - support_height >= 1.10)
       & (upright >= 0.85)
       & (linear_speed < 0.50)
       & (angular_speed < 1.0)
@@ -147,7 +163,7 @@ def _run_case(
     first_success[newly_successful] = step + 1
 
     fallen_after_success = (first_success >= 0) & (
-      ((head_z - origins[:, 2]) < 0.75) | (upright < 0.40)
+      ((head_z - support_height) < 0.75) | (upright < 0.40)
     )
     secondary_fall_hold = torch.where(
       fallen_after_success,
@@ -167,7 +183,7 @@ def _run_case(
       max_planar_displacement, torch.clamp(displacement, max=terrain_exit_radius)
     )
     descent = torch.nan_to_num(
-      torch.clamp(origins[:, 2] - raw_root_pos[:, 2], min=0.0),
+      torch.clamp(support_height - raw_root_pos[:, 2], min=0.0),
       nan=2.0,
       posinf=2.0,
       neginf=0.0,
@@ -226,6 +242,7 @@ def _run_case(
     "terrain_type": terrain_type,
     "terrain_level": level,
     "reset_mode": reset_mode,
+    "edge_cohort": edge_cohort,
     "seed": cfg.seed,
     "num_envs": cfg.num_envs,
     "steps": cfg.steps,
@@ -245,6 +262,10 @@ def _run_case(
       float(successful_secondary_fall.sum() / success.sum()) if success.any() else -1.0
     ),
     "terrain_exit_rate": float(terrain_exit.float().mean()),
+    "initial_reset_offset_median_m": float(initial_reset_offset.median()),
+    "initial_reset_offset_min_m": float(initial_reset_offset.min()),
+    "initial_reset_offset_max_m": float(initial_reset_offset.max()),
+    "initial_support_delta_median_m": float(initial_support_delta.median()),
     "terrain_exit_radius_m": terrain_exit_radius,
     "invalid_dynamics_rate": float(invalid_dynamics.float().mean()),
     "planar_displacement_median_m": float(max_planar_displacement.median()),
@@ -269,12 +290,16 @@ def main(cfg: EvalCfg) -> None:
   configure_torch_backends()
   cfg.output.parent.mkdir(parents=True, exist_ok=True)
   results = []
+  edge_cohorts: tuple[str | None, ...] = cfg.edge_cohorts or (None,)
   for terrain_type in cfg.terrain_types:
     for level in cfg.levels:
       for reset_mode in cfg.reset_modes:
-        result = _run_case(cfg, terrain_type, level, reset_mode)
-        results.append(result)
-        print("TERRAIN_RECOVERY_EVAL_JSON=" + json.dumps(result, sort_keys=True))
+        for edge_cohort in edge_cohorts:
+          result = _run_case(
+            cfg, terrain_type, level, reset_mode, edge_cohort=edge_cohort
+          )
+          results.append(result)
+          print("TERRAIN_RECOVERY_EVAL_JSON=" + json.dumps(result, sort_keys=True))
 
   with cfg.output.open("w", encoding="utf-8") as stream:
     for result in results:

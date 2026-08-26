@@ -80,7 +80,10 @@ def stood_up(
   head_idx = robot.find_sites(["head"], preserve_order=True)[0][0]
   z = robot.data.site_pos_w[:, head_idx, 2]
   if relative_to_env_origin:
-    z = z - env.scene.env_origins[:, 2]
+    reference = getattr(env, "_terrain_reset_support_height", None)
+    if reference is None:
+      reference = env.scene.env_origins[:, 2]
+    z = z - reference
   speed = torch.linalg.norm(robot.data.root_link_lin_vel_w, dim=-1)
   angular_speed = torch.linalg.norm(robot.data.root_link_ang_vel_w, dim=-1)
   upright = torch.clamp(-robot.data.projected_gravity_b[:, 2], 0.0, 1.0)

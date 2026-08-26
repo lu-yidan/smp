@@ -11,6 +11,7 @@ _ESCAPE_RESET_POSE_ENV = "SMP_PLAY_ESCAPE_RESET_POSE"
 _TERRAIN_TYPE_ENV = "SMP_PLAY_TERRAIN_TYPE"
 _TERRAIN_LEVEL_ENV = "SMP_PLAY_TERRAIN_LEVEL"
 _TERRAIN_RESET_POSE_ENV = "SMP_PLAY_TERRAIN_RESET_POSE"
+_TERRAIN_EDGE_COHORT_ENV = "SMP_PLAY_TERRAIN_EDGE_COHORT"
 
 
 def _consume_auto_disturbances_arg(argv: list[str]) -> bool:
@@ -122,11 +123,30 @@ def _consume_terrain_reset_pose_arg(argv: list[str]) -> str | None:
     raise SystemExit(f"{flag} may only be specified once")
   index = argv.index(flag)
   if index + 1 >= len(argv):
-    raise SystemExit(
-      f"{flag} requires mixed, prone, supine, left-side, or right-side"
-    )
+    raise SystemExit(f"{flag} requires mixed, prone, supine, left-side, or right-side")
   value = argv[index + 1].lower().replace("-", "_")
   choices = {"mixed", "prone", "supine", "left_side", "right_side"}
+  if value not in choices:
+    raise SystemExit(f"{flag} got unsupported value {argv[index + 1]!r}")
+  del argv[index : index + 2]
+  return value
+
+
+def _consume_terrain_edge_cohort_arg(argv: list[str]) -> str | None:
+  """Consume an optional V3.7 stair reset-location cohort."""
+  flag = "--terrain-edge-cohort"
+  count = argv.count(flag)
+  if count == 0:
+    return None
+  if count > 1:
+    raise SystemExit(f"{flag} may only be specified once")
+  index = argv.index(flag)
+  if index + 1 >= len(argv):
+    raise SystemExit(
+      f"{flag} requires mixed, center, near-edge, straddle, or lower-tread"
+    )
+  value = argv[index + 1].lower().replace("-", "_")
+  choices = {"mixed", "center", "near_edge", "straddle", "lower_tread"}
   if value not in choices:
     raise SystemExit(f"{flag} got unsupported value {argv[index + 1]!r}")
   del argv[index : index + 2]
@@ -147,6 +167,7 @@ def main() -> None:
   terrain_type = _consume_terrain_type_arg(sys.argv)
   terrain_level = _consume_terrain_level_arg(sys.argv)
   terrain_reset_pose = _consume_terrain_reset_pose_arg(sys.argv)
+  terrain_edge_cohort = _consume_terrain_edge_cohort_arg(sys.argv)
   if auto_disturbances:
     os.environ[_AUTO_DISTURBANCES_ENV] = "1"
   else:
@@ -171,6 +192,10 @@ def main() -> None:
     os.environ.pop(_TERRAIN_RESET_POSE_ENV, None)
   else:
     os.environ[_TERRAIN_RESET_POSE_ENV] = terrain_reset_pose
+  if terrain_edge_cohort is None:
+    os.environ.pop(_TERRAIN_EDGE_COHORT_ENV, None)
+  else:
+    os.environ[_TERRAIN_EDGE_COHORT_ENV] = terrain_edge_cohort
 
   # Task configs are constructed during this import, after the flag is known.
   from mjlab.scripts.play import main as mjlab_play_main
@@ -202,8 +227,10 @@ def main() -> None:
   terrain_state = terrain_type or "task default"
   level_state = terrain_level if terrain_level is not None else "task default"
   terrain_pose_state = terrain_reset_pose or "task default"
+  edge_state = terrain_edge_cohort or "task default"
   print(f"[INFO] Terrain during play: {terrain_state}, level: {level_state}")
   print(f"[INFO] Terrain reset pose during play: {terrain_pose_state}")
+  print(f"[INFO] Terrain edge cohort during play: {edge_state}")
   mjlab_play_main()
 
 

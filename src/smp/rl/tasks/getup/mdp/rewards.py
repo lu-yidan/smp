@@ -81,8 +81,10 @@ __all__ = [
   "stable_stand_metric",
   "supine_reset_metric",
   "track_head_height",
+  "terrain_edge_reset_metric",
   "terrain_foot_slip_l2",
   "terrain_planar_displacement_l2",
+  "terrain_reset_offset_metric",
   "terrain_stance_width_excess_l2",
   "track_head_velocity_profile",
   "upright_posture",
@@ -145,6 +147,13 @@ def _procedural_prone_mask(env: ManagerBasedRlEnv) -> torch.Tensor:
   return reset_type == 1
 
 
+def _terrain_height_reference(env: ManagerBasedRlEnv) -> torch.Tensor:
+  reference = getattr(env, "_terrain_reset_support_height", None)
+  if reference is None:
+    return env.scene.env_origins[:, 2]
+  return reference
+
+
 def prone_support_route(
   env: ManagerBasedRlEnv,
   hand_sensor_name: str = "natural_hand_ground_contact",
@@ -168,7 +177,7 @@ def prone_support_route(
   head_idx = robot.find_sites(["head"], preserve_order=True)[0][0]
   head_z = robot.data.site_pos_w[:, head_idx, 2]
   if relative_to_env_origin:
-    head_z = head_z - env.scene.env_origins[:, 2]
+    head_z = head_z - _terrain_height_reference(env)
   height = torch.clamp(
     (head_z - start_height) / max(waypoint_height - start_height, 1e-6),
     0.0,
@@ -206,7 +215,7 @@ def prone_leg_splay_excess_l2(
   head_idx = robot.find_sites(["head"], preserve_order=True)[0][0]
   head_z = robot.data.site_pos_w[:, head_idx, 2]
   if relative_to_env_origin:
-    head_z = head_z - env.scene.env_origins[:, 2]
+    head_z = head_z - _terrain_height_reference(env)
   low = head_z < max_head_height
   early = _recovery_stage(env) <= 1
   return _procedural_prone_mask(env).float() * low.float() * early.float() * excess
@@ -345,7 +354,7 @@ def _head_height(
   head_idx = robot.find_sites(["head"], preserve_order=True)[0][0]
   height = robot.data.site_pos_w[:, head_idx, 2]
   if relative_to_env_origin:
-    height = height - env.scene.env_origins[:, 2]
+    height = height - _terrain_height_reference(env)
   return height
 
 
@@ -524,7 +533,7 @@ def staged_recovery_pose(
   )[0]
   head_z = robot.data.site_pos_w[:, head_idx, 2]
   if relative_to_env_origin:
-    head_z = head_z - env.scene.env_origins[:, 2]
+    head_z = head_z - _terrain_height_reference(env)
   knee_flexion = robot.data.joint_pos[:, knee_ids].mean(dim=-1)
   upright = upright_posture(env, power=1.0)
   stage = _recovery_stage(env)
@@ -552,7 +561,7 @@ def staged_head_velocity_profile(
   head_idx = robot.find_sites(["head"], preserve_order=True)[0][0]
   head_z = robot.data.site_pos_w[:, head_idx, 2]
   if relative_to_env_origin:
-    head_z = head_z - env.scene.env_origins[:, 2]
+    head_z = head_z - _terrain_height_reference(env)
   head_vz = robot.data.site_lin_vel_w[:, head_idx, 2]
   stage = _recovery_stage(env)
   target_height = head_z.new_tensor((0.62, 0.86, 1.15, 1.15))[stage]
@@ -617,7 +626,7 @@ def quiet_stance_gate(
   head_idx = robot.find_sites(["head"], preserve_order=True)[0][0]
   head_z = robot.data.site_pos_w[:, head_idx, 2]
   if relative_to_env_origin:
-    head_z = head_z - env.scene.env_origins[:, 2]
+    head_z = head_z - _terrain_height_reference(env)
   upright = upright_posture(env, power=1.0)
   height_width = max(head_height_full - head_height_start, 1e-6)
   upright_width = max(upright_full - upright_start, 1e-6)
@@ -669,6 +678,7 @@ def terrain_planar_displacement_l2(
   env: ManagerBasedRlEnv,
   free_radius: float = 0.40,
   stage_multipliers: tuple[float, float, float, float] = (0.25, 0.50, 1.0, 1.0),
+  reference_reset_anchor: bool = False,
 ) -> torch.Tensor:
   """Penalize rolling or stepping far from the terrain reset origin.
 
@@ -677,9 +687,12 @@ def terrain_planar_displacement_l2(
   active once the policy reaches crouch/stand stages.
   """
   root_xy = env.scene["robot"].data.root_link_pos_w[:, :2]
-  displacement = torch.linalg.vector_norm(
-    root_xy - env.scene.env_origins[:, :2], dim=-1
-  )
+  reference_xy = env.scene.env_origins[:, :2]
+  if reference_reset_anchor:
+    reset_anchor = getattr(env, "_terrain_reset_anchor_xy", None)
+    if reset_anchor is not None:
+      reference_xy = reset_anchor
+  displacement = torch.linalg.vector_norm(root_xy - reference_xy, dim=-1)
   excess = torch.clamp(displacement - free_radius, min=0.0)
   return _stage_multiplier(env, stage_multipliers) * torch.square(excess)
 
@@ -754,6 +767,22 @@ def procedural_reset_metric(env: ManagerBasedRlEnv) -> torch.Tensor:
   return ((reset_type >= 1) & (reset_type <= 4)).float()
 
 
+def terrain_edge_reset_metric(env: ManagerBasedRlEnv) -> torch.Tensor:
+  """Return one for near-edge, straddling, or lower-tread stair resets."""
+  cohort = getattr(env, "_terrain_reset_cohort", None)
+  if cohort is None:
+    return torch.zeros(env.num_envs, device=env.device)
+  return (cohort > 0).float()
+
+
+def terrain_reset_offset_metric(env: ManagerBasedRlEnv) -> torch.Tensor:
+  """Planar distance between the sampled reset anchor and patch centre."""
+  anchor = getattr(env, "_terrain_reset_anchor_xy", None)
+  if anchor is None:
+    return torch.zeros(env.num_envs, device=env.device)
+  return torch.linalg.vector_norm(anchor - env.scene.env_origins[:, :2], dim=-1)
+
+
 def prone_reset_metric(env: ManagerBasedRlEnv) -> torch.Tensor:
   """Return one for the procedural prone reset mode."""
   reset_type = getattr(env, "_robust_reset_type", None)
@@ -802,7 +831,7 @@ def stable_stand_metric(
   head_idx = robot.find_sites(["head"], preserve_order=True)[0][0]
   head_z = robot.data.site_pos_w[:, head_idx, 2]
   if relative_to_env_origin:
-    head_z = head_z - env.scene.env_origins[:, 2]
+    head_z = head_z - _terrain_height_reference(env)
   lin_speed = torch.linalg.norm(robot.data.root_link_lin_vel_w, dim=-1)
   ang_speed = torch.linalg.norm(robot.data.root_link_ang_vel_w, dim=-1)
   upright = upright_posture(env, power=1.0)

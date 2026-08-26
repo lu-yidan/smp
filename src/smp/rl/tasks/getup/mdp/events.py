@@ -13,6 +13,7 @@ __all__ = [
   "failure_state_replay_reset",
   "ground_procedural_fall_on_terrain",
   "mixed_fall_reset",
+  "sample_terrain_edge_reset",
   "post_stand_body_wrench",
   "random_body_wrench",
   "record_failure_states",
@@ -1173,6 +1174,149 @@ def mixed_fall_reset(
   reset_types[fall_ids] = modes + 1
 
 
+EDGE_RESET_COHORTS = ("center", "near_edge", "straddle", "lower_tread")
+
+
+def _stair_surface_height(
+  radial_offset: torch.Tensor,
+  origin_height: torch.Tensor,
+  step_height: torch.Tensor,
+  *,
+  terrain_size: float,
+  border_width: float,
+  platform_width: float,
+  step_width: float,
+) -> torch.Tensor:
+  """Return the pyramid-stair surface height at a Chebyshev radius."""
+  inner_width = terrain_size - 2.0 * border_width
+  num_steps = max(
+    0,
+    int((inner_width - platform_width) / (2.0 * step_width)),
+  )
+  top_width = inner_width - 2.0 * num_steps * step_width
+  top_half = 0.5 * top_width
+  ring = torch.ceil(
+    torch.clamp((radial_offset - top_half) / step_width, min=0.0)
+  ).long()
+  ring = torch.clamp(ring, max=num_steps + 1)
+  return origin_height - ring * step_height
+
+
+@torch.no_grad()
+def sample_terrain_edge_reset(
+  env: ManagerBasedRlEnv,
+  env_ids: torch.Tensor | None = None,
+  cohort_weights: tuple[float, float, float, float] = (0.50, 0.25, 0.15, 0.10),
+  near_edge_range: tuple[float, float] = (0.18, 0.24),
+  straddle_range: tuple[float, float] = (0.27, 0.34),
+  lower_tread_range: tuple[float, float] = (0.38, 0.52),
+  tangent_range: float = 0.12,
+  stair_step_heights: tuple[float, ...] = (0.05, 0.10, 0.15, 0.20),
+  stair_name: str = "stairs",
+  terrain_size: float = 8.0,
+  stair_border_width: float = 1.90,
+  stair_platform_width: float = 0.55,
+  stair_step_width: float = 0.30,
+) -> None:
+  """Stratify stair resets around the top edge without privileged observations.
+
+  The selected cohort and local support height are training/evaluation state.
+  They never enter the actor observation. Non-stair terrain keeps its original
+  centre reset and origin-height reference.
+  """
+  if env_ids is None:
+    env_ids = torch.arange(env.num_envs, device=env.device)
+  if env_ids.numel() == 0:
+    return
+
+  weights = torch.tensor(cohort_weights, dtype=torch.float, device=env.device)
+  if weights.numel() != len(EDGE_RESET_COHORTS) or torch.any(weights < 0):
+    raise ValueError("cohort_weights must contain four non-negative entries")
+  if not torch.isclose(weights.sum(), weights.new_tensor(1.0)):
+    raise ValueError("cohort_weights must sum to one")
+
+  terrain = env.scene["terrain"]
+  generator = terrain.cfg.terrain_generator
+  if generator is None:
+    raise RuntimeError("edge reset requires generated terrain")
+  terrain_names = list(generator.sub_terrains)
+  stair_col = terrain_names.index(stair_name) if stair_name in terrain_names else -1
+
+  if not hasattr(env, "_terrain_reset_cohort"):
+    env._terrain_reset_cohort = torch.zeros(  # type: ignore[attr-defined]
+      env.num_envs, dtype=torch.long, device=env.device
+    )
+    env._terrain_reset_anchor_xy = env.scene.env_origins[:, :2].clone()  # type: ignore[attr-defined]
+    env._terrain_reset_support_height = env.scene.env_origins[:, 2].clone()  # type: ignore[attr-defined]
+
+  robot = env.scene["robot"]
+  origins = env.scene.env_origins[env_ids]
+  env._terrain_reset_cohort[env_ids] = 0  # type: ignore[attr-defined]
+  env._terrain_reset_anchor_xy[env_ids] = robot.data.root_link_pos_w[env_ids, :2]  # type: ignore[attr-defined]
+  env._terrain_reset_support_height[env_ids] = origins[:, 2]  # type: ignore[attr-defined]
+
+  stair_mask = terrain.terrain_types[env_ids] == stair_col
+  stair_ids = env_ids[stair_mask]
+  if stair_ids.numel() == 0:
+    return
+
+  n = stair_ids.numel()
+  cohorts = torch.multinomial(weights, n, replacement=True)
+  offsets = torch.zeros(n, 2, device=env.device)
+  axis = torch.randint(0, 2, (n,), device=env.device)
+  sign = torch.where(
+    torch.rand(n, device=env.device) < 0.5,
+    -torch.ones(n, device=env.device),
+    torch.ones(n, device=env.device),
+  )
+  tangent = torch.empty(n, device=env.device).uniform_(-tangent_range, tangent_range)
+
+  ranges = (near_edge_range, straddle_range, lower_tread_range)
+  for cohort_index, radial_range in enumerate(ranges, start=1):
+    selected = cohorts == cohort_index
+    count = int(selected.sum())
+    if count == 0:
+      continue
+    radial = torch.empty(count, device=env.device).uniform_(*radial_range)
+    local_axis = axis[selected]
+    offsets[selected, 0] = torch.where(
+      local_axis == 0, sign[selected] * radial, tangent[selected]
+    )
+    offsets[selected, 1] = torch.where(
+      local_axis == 1, sign[selected] * radial, tangent[selected]
+    )
+
+  stair_origins = env.scene.env_origins[stair_ids]
+  root_state = torch.cat(
+    (
+      robot.data.root_link_pose_w[stair_ids].clone(),
+      torch.zeros(n, 6, device=env.device),
+    ),
+    dim=-1,
+  )
+  centre = cohorts == 0
+  offsets[centre] = root_state[centre, :2] - stair_origins[centre, :2]
+  root_state[:, :2] = stair_origins[:, :2] + offsets
+  robot.write_root_state_to_sim(root_state, env_ids=stair_ids)
+  env.sim.forward()
+
+  levels = terrain.terrain_levels[stair_ids]
+  heights = torch.tensor(stair_step_heights, device=env.device)[levels]
+  radial = offsets.abs().amax(dim=-1)
+  support_height = _stair_surface_height(
+    radial,
+    stair_origins[:, 2],
+    heights,
+    terrain_size=terrain_size,
+    border_width=stair_border_width,
+    platform_width=stair_platform_width,
+    step_width=stair_step_width,
+  )
+  env._terrain_reset_cohort[stair_ids] = cohorts  # type: ignore[attr-defined]
+  env._terrain_reset_anchor_xy[stair_ids] = root_state[:, :2]  # type: ignore[attr-defined]
+  env._terrain_reset_support_height[stair_ids] = support_height  # type: ignore[attr-defined]
+
+
 @torch.no_grad()
 def ground_procedural_fall_on_terrain(
   env: ManagerBasedRlEnv,
@@ -1183,6 +1327,13 @@ def ground_procedural_fall_on_terrain(
   surface_normals: tuple[tuple[float, float, float], ...] = ((0.0, 0.0, 1.0),),
   surface_normal_levels: tuple[tuple[tuple[float, float, float], ...], ...]
   | None = None,
+  use_stair_height_profile: bool = False,
+  stair_name: str = "stairs",
+  stair_step_heights: tuple[float, ...] = (0.05, 0.10, 0.15, 0.20),
+  terrain_size: float = 8.0,
+  stair_border_width: float = 1.90,
+  stair_platform_width: float = 0.55,
+  stair_step_width: float = 0.30,
 ) -> None:
   """Place procedural fall resets on their terrain spawn surface.
 
@@ -1212,6 +1363,7 @@ def ground_procedural_fall_on_terrain(
   _, _, aabb_center, aabb_half, _ = _collision_vertical_geometry(
     env, grounded_ids, collision_geom_pattern
   )
+  terrain = env.scene["terrain"]
   if surface_normal_levels is not None:
     normal_levels = torch.tensor(
       surface_normal_levels, dtype=aabb_center.dtype, device=env.device
@@ -1219,7 +1371,6 @@ def ground_procedural_fall_on_terrain(
     normal_levels /= torch.clamp(
       torch.linalg.vector_norm(normal_levels, dim=-1, keepdim=True), min=1e-6
     )
-    terrain = env.scene["terrain"]
     normals = normal_levels[
       terrain.terrain_types[grounded_ids], terrain.terrain_levels[grounded_ids]
     ]
@@ -1241,6 +1392,57 @@ def ground_procedural_fall_on_terrain(
   )
   support_extent = (aabb_half * normals[:, None, :].abs()).sum(dim=-1)
   lowest_signed_distance = (signed_center - support_extent).amin(dim=-1)
+  translation = (ground_clearance - lowest_signed_distance)[:, None] * normals
+
+  if use_stair_height_profile:
+    generator = terrain.cfg.terrain_generator
+    if generator is None:
+      raise RuntimeError("stair-profile grounding requires generated terrain")
+    names = list(generator.sub_terrains)
+    stair_col = names.index(stair_name) if stair_name in names else -1
+    stair_mask = terrain.terrain_types[grounded_ids] == stair_col
+    local_stair_ids = torch.nonzero(stair_mask, as_tuple=False).flatten()
+    if local_stair_ids.numel() > 0:
+      stair_env_ids = grounded_ids[local_stair_ids]
+      stair_origins = env.scene.env_origins[stair_env_ids]
+      stair_centers = aabb_center[local_stair_ids]
+      stair_halves = aabb_half[local_stair_ids]
+      sample_directions = stair_centers.new_tensor(
+        (
+          (0.0, 0.0),
+          (-1.0, 0.0),
+          (1.0, 0.0),
+          (0.0, -1.0),
+          (0.0, 1.0),
+          (-1.0, -1.0),
+          (-1.0, 1.0),
+          (1.0, -1.0),
+          (1.0, 1.0),
+        )
+      )
+      sample_xy = stair_centers[:, :, None, :2] + (
+        stair_halves[:, :, None, :2] * sample_directions[None, None, :, :]
+      )
+      local_xy = sample_xy - stair_origins[:, None, None, :2]
+      radial = local_xy.abs().amax(dim=-1)
+      levels = terrain.terrain_levels[stair_env_ids]
+      step_height = stair_centers.new_tensor(stair_step_heights)[levels]
+      surface_z = _stair_surface_height(
+        radial,
+        stair_origins[:, None, None, 2],
+        step_height[:, None, None],
+        terrain_size=terrain_size,
+        border_width=stair_border_width,
+        platform_width=stair_platform_width,
+        step_width=stair_step_width,
+      )
+      geom_bottom = stair_centers[:, :, 2] - stair_halves[:, :, 2]
+      vertical_shift = (surface_z + ground_clearance - geom_bottom[:, :, None]).amax(
+        dim=(1, 2)
+      )
+      translation[local_stair_ids] = 0.0
+      translation[local_stair_ids, 2] = vertical_shift
+
   root_state = torch.cat(
     (
       robot.data.root_link_pose_w[grounded_ids].clone(),
@@ -1248,7 +1450,7 @@ def ground_procedural_fall_on_terrain(
     ),
     dim=-1,
   )
-  root_state[:, :3] += (ground_clearance - lowest_signed_distance)[:, None] * normals
+  root_state[:, :3] += translation
   robot.write_root_state_to_sim(root_state, env_ids=grounded_ids)
   env.sim.forward()
   _prime_smp_history_from_current_state(env, grounded_ids)
@@ -1266,7 +1468,10 @@ def _head_height_and_upright(
   )[0]
   head_z = robot.data.site_pos_w[env_ids, head_idx, 2]
   if relative_to_env_origin:
-    head_z = head_z - env.scene.env_origins[env_ids, 2]
+    reference = getattr(env, "_terrain_reset_support_height", None)
+    if reference is None:
+      reference = env.scene.env_origins[:, 2]
+    head_z = head_z - reference[env_ids]
   head_vz = robot.data.site_lin_vel_w[env_ids, head_idx, 2]
   upright = torch.clamp(-robot.data.projected_gravity_b[env_ids, 2], 0.0, 1.0)
   knee_flexion = robot.data.joint_pos[env_ids][:, knee_ids].mean(dim=-1)
