@@ -40,6 +40,10 @@ from smp.rl.tasks.getup.terrain_v362_env_cfg import (
   g1_getup_terrain_v362_deploy_smp_env_cfg,
   g1_getup_terrain_v362_smp_env_cfg,
 )
+from smp.rl.tasks.getup.terrain_v363_env_cfg import (
+  g1_getup_terrain_v363_deploy_smp_env_cfg,
+  g1_getup_terrain_v363_smp_env_cfg,
+)
 from smp.rl.tasks.getup.v6_env_cfg import (
   g1_getup_v6_prior_smp_env_cfg,
   g1_getup_v6_smp_env_cfg,
@@ -296,6 +300,39 @@ register_mjlab_task(
   rl_cfg=_terrain_v362_deploy_getup_rl,
 )
 
+
+def _terrain_v363_runner_cfg(experiment_name: str):
+  cfg = unitree_g1_smp_ppo_runner_cfg()
+  cfg.experiment_name = experiment_name
+  cfg.run_name = experiment_name
+  cfg.save_interval = 50
+  cfg.algorithm.learning_rate = 1.0e-5
+  cfg.algorithm.clip_param = 0.10
+  cfg.algorithm.desired_kl = 0.005
+  cfg.algorithm.num_learning_epochs = 2
+  cfg.algorithm.max_grad_norm = 0.5
+  return cfg
+
+
+_terrain_v363_getup_rl = _terrain_v363_runner_cfg("smp_getup_terrain_v363_g1")
+
+register_mjlab_task(
+  task_id="Smp-Getup-Terrain-V363-G1",
+  env_cfg=g1_getup_terrain_v363_smp_env_cfg(play=False),
+  play_env_cfg=g1_getup_terrain_v363_smp_env_cfg(play=True),
+  rl_cfg=_terrain_v363_getup_rl,
+)
+
+_terrain_v363_deploy_getup_rl = _terrain_v363_runner_cfg(
+  "smp_getup_terrain_v363_deploy_g1"
+)
+
+register_mjlab_task(
+  task_id="Smp-Getup-Terrain-V363-Deploy-G1",
+  env_cfg=g1_getup_terrain_v363_deploy_smp_env_cfg(play=False),
+  play_env_cfg=g1_getup_terrain_v363_deploy_smp_env_cfg(play=True),
+  rl_cfg=_terrain_v363_deploy_getup_rl,
+)
 __all__ = [
   "g1_getup_robust_smp_env_cfg",
   "g1_getup_robust_safe_smp_env_cfg",
@@ -306,6 +343,8 @@ __all__ = [
   "g1_getup_terrain_v361_smp_env_cfg",
   "g1_getup_terrain_v362_deploy_smp_env_cfg",
   "g1_getup_terrain_v362_smp_env_cfg",
+  "g1_getup_terrain_v363_deploy_smp_env_cfg",
+  "g1_getup_terrain_v363_smp_env_cfg",
   "g1_getup_smp_env_cfg",
   "g1_getup_constrained_smp_env_cfg",
   "g1_getup_escape_smp_env_cfg",
