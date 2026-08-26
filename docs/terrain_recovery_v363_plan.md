@@ -56,3 +56,45 @@ with the terrain-adaptation changes.
   strict stand success were both 87.5%; stage success was 0%.
 - Replay-floor mean was 0.2188 (expected about 0.21), maximum terrain level was
   3, terrain exit was 0%, and invalid dynamics were 0%.
+
+## Formal paired training and early stopping
+
+Both policies resumed from the same fixed-std V3.6 seed for 50 updates. The
+formal Stage-A W&B runs are:
+
+- Oracle: `bploru7k`, final checkpoint `model_102049.pt`.
+- zero-velocity Deploy: `v8y4i559`, final checkpoint `model_102049.pt`.
+
+The frozen 32-environment-per-cell evaluation passed every retention gate:
+
+| policy | level | success | stairs | rough | mean peak power | terrain exit |
+|---|---:|---:|---:|---:|---:|---:|
+| Oracle 102049 | 0 | 99.02% | 96.88% | 100.00% | 136.34 W | 0.00% |
+| Oracle 102049 | 1 | 83.59% | 50.78% | 96.88% | 155.24 W | 0.00% |
+| Deploy 102049 | 0 | 99.22% | 98.44% | 100.00% | 138.86 W | 0.00% |
+| Deploy 102049 | 1 | 78.52% | 38.28% | 94.53% | 166.64 W | 0.59% |
+
+One additional 50-update Stage-B interval was run as a controlled early-stop
+probe (`47ebsn6e` Oracle and `0f2may0p` Deploy), producing
+`model_102098.pt`. It was not promoted:
+
+- Oracle level-0 success fell to 94.73%, below the 95% gate, and level-1 rough
+  success fell to 89.06%, below the 90% gate.
+- Deploy still narrowly passed the absolute gates, but level-1 aggregate fell
+  from 78.52% to 78.32% and stairs fell from 38.28% to 35.16%.
+- The small power and speed reductions did not compensate for the lost recovery
+  success.
+
+Training therefore stops after this probe. `model_102049.pt` is the selected
+V3.6.3 checkpoint for both Oracle and deployable zero-velocity policies. The
+local preserved copies are:
+
+- `logs/rsl_rl/smp_getup_terrain_v363_g1/baseline_v363_strict_102049/model_102049.pt`
+  (`b9493b9211b47557eba59c7875334dfff55233b8246004fd3ad9c43662de3912`).
+- `logs/rsl_rl/smp_getup_terrain_v363_deploy_g1/baseline_v363_deploy_strict_102049/model_102049.pt`
+  (`7fe15d4214dca185d0b97ce0550184923c4e2ba89835573f45b13fd8656c7c80`).
+
+The strict raw results are retained under
+`logs/evaluation/v363_stage_{a,b}/`. These generated artifacts are not committed
+to Git; the code, decision rules, run IDs, checkpoint hashes, and promotion
+decision are recorded here for reproduction.
