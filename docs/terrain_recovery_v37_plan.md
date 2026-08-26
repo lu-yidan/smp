@@ -162,3 +162,35 @@ the rejected checkpoint. It makes the following pre-registered changes:
 
 This increases useful edge exposure while keeping 60% non-stair replay and a
 large centre cohort. The frozen evaluator and promotion gates are unchanged.
+## Controlled-retry result and selection
+
+The controlled retry is W&B `yezkyihk`. Its `model_102058.pt` has SHA-256
+`d66014d8ab9370f48002cff135a449e9d4665c7884e78a3543d77123ef62a36c`.
+It restored all old-distribution retention gates:
+
+| level | aggregate | stairs | rough | mean peak power | exit | invalid |
+|---|---:|---:|---:|---:|---:|---:|
+| 0 | 98.83% | 97.66% | 100.00% | 138.9 W | 0.00% | 0.00% |
+| 1 | 79.30% | 39.84% | 95.31% | 167.5 W | 0.78% | 0.00% |
+
+However, it did not pass the new edge-improvement gate. Level-0 edge results
+were retained, but the difficult level-1 straddle and lower-tread results did
+not improve:
+
+| level | cohort | seed 102049 | retry 102058 | delta |
+|---|---|---:|---:|---:|
+| 0 | centre | 95.31% | 96.09% | +0.78 pp |
+| 0 | near edge | 91.41% | 92.19% | +0.78 pp |
+| 0 | straddle | 93.75% | 93.75% | 0.00 pp |
+| 0 | lower tread | 87.50% | 87.50% | 0.00 pp |
+| 1 | centre | 32.03% | 33.59% | +1.56 pp |
+| 1 | near edge | 25.78% | 25.00% | -0.78 pp |
+| 1 | straddle | 25.00% | 20.31% | -4.69 pp |
+| 1 | lower tread | 7.03% | 6.25% | -0.78 pp |
+
+Consequently neither `model_102098.pt` nor `model_102058.pt` is promoted.
+The selected deployable baseline remains V3.6.3 `model_102049.pt`. V3.7 is a
+validated task and benchmark contribution, not yet an improved policy result.
+The next experiment must target level-1 edge exposure explicitly and should
+consider deployable contact/proprioceptive history or a seed-policy anchoring
+loss; simply extending PPO is prohibited by these results.
