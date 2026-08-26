@@ -48,6 +48,7 @@ def terrain_levels_getup(
   minimum_episode_steps: int = 20,
   accept_completed_recovery_stage: bool = False,
   minimum_level_fractions: tuple[float, ...] | None = None,
+  maximum_terrain_level: int | None = None,
 ) -> dict[str, torch.Tensor]:
   """Advance one terrain level after an anchored stable recovery.
 
@@ -109,7 +110,12 @@ def terrain_levels_getup(
 
   local_levels = levels[env_ids]
   local_floor = replay_floor[env_ids]
-  move_up = success & nonflat & (local_levels < terrain.max_terrain_level - 1)
+  max_level = terrain.max_terrain_level - 1
+  if maximum_terrain_level is not None:
+    if maximum_terrain_level < 0 or maximum_terrain_level > max_level:
+      raise ValueError("maximum_terrain_level must index an available terrain level")
+    max_level = maximum_terrain_level
+  move_up = success & nonflat & (local_levels < max_level)
   move_down = valid & ~success & nonflat & (local_levels > local_floor) & ~move_up
   terrain.update_env_origins(env_ids, move_up, move_down)
 

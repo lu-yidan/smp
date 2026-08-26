@@ -338,7 +338,15 @@ register_mjlab_task(
   rl_cfg=_terrain_v363_deploy_getup_rl,
 )
 
-_terrain_v37_getup_rl = _terrain_v363_runner_cfg("smp_getup_terrain_v37_g1")
+
+def _terrain_v37_runner_cfg(experiment_name: str):
+  cfg = _terrain_v363_runner_cfg(experiment_name)
+  cfg.save_interval = 10
+  cfg.algorithm.learning_rate = 5.0e-6
+  return cfg
+
+
+_terrain_v37_getup_rl = _terrain_v37_runner_cfg("smp_getup_terrain_v37_g1")
 
 register_mjlab_task(
   task_id="Smp-Getup-Terrain-V37-G1",
@@ -347,7 +355,7 @@ register_mjlab_task(
   rl_cfg=_terrain_v37_getup_rl,
 )
 
-_terrain_v37_deploy_getup_rl = _terrain_v363_runner_cfg(
+_terrain_v37_deploy_getup_rl = _terrain_v37_runner_cfg(
   "smp_getup_terrain_v37_deploy_g1"
 )
 

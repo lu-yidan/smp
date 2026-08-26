@@ -19,7 +19,8 @@ from smp.rl.tasks.getup.terrain_v363_env_cfg import (
 )
 
 EDGE_RESET_COHORTS = ("center", "near_edge", "straddle", "lower_tread")
-EDGE_RESET_WEIGHTS = (0.50, 0.25, 0.15, 0.10)
+EDGE_RESET_WEIGHTS = (0.40, 0.20, 0.20, 0.20)
+TERRAIN_TRAIN_PROPORTIONS = (0.25, 0.20, 0.40, 0.15)
 _PLAY_EDGE_COHORT_ENV = "SMP_PLAY_TERRAIN_EDGE_COHORT"
 
 
@@ -38,6 +39,19 @@ def _edge_weights(play: bool) -> tuple[float, float, float, float]:
 
 def _edge_aware_cfg(play: bool):
   cfg = g1_getup_terrain_v363_smp_env_cfg(play=play)
+  if not play:
+    generator = cfg.scene.terrain.terrain_generator
+    if generator is None:
+      raise RuntimeError("V3.7 training requires generated terrain")
+    names = ("flat", "slope", "stairs", "rough")
+    if tuple(generator.sub_terrains) != names:
+      raise RuntimeError("V3.7 terrain columns must keep their audited order")
+    for name, proportion in zip(names, TERRAIN_TRAIN_PROPORTIONS, strict=True):
+      generator.sub_terrains[name].proportion = proportion
+    curriculum = cfg.curriculum["terrain_levels"].params
+    curriculum["minimum_level_fractions"] = (0.75, 0.25, 0.0, 0.0)
+    curriculum["maximum_terrain_level"] = 1
+
   edge_event = EventTermCfg(
     func=mdp.sample_terrain_edge_reset,
     mode="reset",

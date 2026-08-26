@@ -125,3 +125,40 @@ Each result records the requested cohort, actual reset-offset range, local
 support-height change, success and recovery time, secondary falls, terrain
 exit, invalid dynamics, planar drift/descent, foot slip, joint speed, torque,
 and power.
+## Stage-A result and controlled retry
+
+The first 50-update Stage-A run, W&B `psj7jtvi`, produced
+`model_102098.pt` (SHA-256
+`4abb07b0accb41fb256589b015132267bf07100a0c6623c92d707335cf30d2bc`).
+It is rejected and must not be deployed. It had zero invalid dynamics, but the
+frozen benchmark showed edge regression rather than learning:
+
+| level | cohort | seed 102049 | Stage A 102098 | delta |
+|---|---|---:|---:|---:|
+| 0 | centre | 95.31% | 85.16% | -10.16 pp |
+| 0 | near edge | 91.41% | 77.34% | -14.06 pp |
+| 0 | straddle | 93.75% | 79.69% | -14.06 pp |
+| 0 | lower tread | 87.50% | 78.91% | -8.59 pp |
+| 1 | centre | 32.03% | 29.69% | -2.34 pp |
+| 1 | near edge | 25.78% | 15.62% | -10.16 pp |
+| 1 | straddle | 25.00% | 17.19% | -7.81 pp |
+| 1 | lower tread | 7.03% | 3.12% | -3.91 pp |
+
+The old-distribution retention result was 94.92% at level 0 and 76.76% at
+level 1, so both aggregate gates also failed. Training telemetry explains the
+failure: only 25% of environments were stairs, hard edge cohorts were a small
+fraction of those, while successful episodes quickly advanced the curriculum
+to levels 2 and 3. Fifty on-policy updates therefore caused general policy
+drift before sufficient edge data was collected.
+
+The controlled retry restarts from the untouched `model_102049.pt`, never from
+the rejected checkpoint. It makes the following pre-registered changes:
+
+- train with 25% flat, 20% slope, 40% stairs, and 15% rough environments;
+- within stairs use 40% centre and 20% for each edge cohort;
+- cap adaptive training at level 1 with a 75% level-0 / 25% level-1 floor;
+- reduce the learning rate to `5e-6`;
+- run only 10 updates and save at that boundary.
+
+This increases useful edge exposure while keeping 60% non-stair replay and a
+large centre cohort. The frozen evaluator and promotion gates are unchanged.
