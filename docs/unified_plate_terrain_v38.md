@@ -144,3 +144,17 @@ play 默认关闭压板，必须用 `--escape-obstacle True` 显式启用，避�
 - ablation：warm-start 与 from-scratch，同样预算、同样 seeds。
 
 最终选择 checkpoint 不能只看总 reward，必须同时满足无压板恢复保留、压板脱困成功和物理有效性三条门槛。
+
+## 2026-08-26 启动记录
+
+- 分支：`codex/unified-recovery-v38`
+- 实现提交：`de45c23`
+- 服务器工作区：`/mnt/workspace/user/luyidan/smp-v38-unified`
+- warm-start W&B：`tabletennis/smp/ysl4x4xm`
+- from-scratch W&B：`tabletennis/smp/1yw7b3os`
+- 两组均为 4096 environments、1200 iterations、每 100 iterations 保存。
+
+warm-start 初始物理健康门（约 iteration 22）：无 unstable dynamics；
+压板峰值穿透约 1 mm，峰值接触力约 128 N；terrain curriculum
+success 约 0.78。此时 escape completion 约 0.8%，仅表示旧地形 seed
+尚未学会新压板任务，不作为最终成功率。
