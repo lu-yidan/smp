@@ -71,7 +71,9 @@ actor 不包含真实 base linear velocity、terrain label/level、plate pose/ma
 
 ## 选择门槛
 
-冻结评测 model_100/200/299，选择时同时满足：
+V3.8 seed checkpoint 自带 iteration 100，因此续训后的首个百步 checkpoint
+是 model_200，之后是 model_300 和最终 model_399；model_100 仅相当于
+加载后的第一次更新。冻结评测 model_200/300/399，选择时同时满足：
 
 - prone/supine 8 kg 压板不明显低于 V3.8 model_100；
 - left/right side 压板明显高于训练前基线；
