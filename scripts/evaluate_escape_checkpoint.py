@@ -129,6 +129,9 @@ def main(cfg: EvalCfg) -> None:
     }
   )
   plate_reset = env_cfg.events["reset_escape_obstacle"].params
+  # Training may use pose-dependent obstacle probabilities. A frozen audit
+  # requests one explicit pose and must activate every eligible environment.
+  plate_reset.pop("obstacle_probability_by_reset_type", None)
   plate_reset.update(
     {
       "obstacle_probability": 1.0,

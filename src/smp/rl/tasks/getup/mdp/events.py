@@ -361,6 +361,7 @@ def reset_guided_escape_plate(
   env: ManagerBasedRlEnv,
   env_ids: torch.Tensor | None = None,
   obstacle_probability: float = 0.90,
+  obstacle_probability_by_reset_type: tuple[float, ...] | None = None,
   target_body_name: str = "torso_link",
   eligible_reset_types: tuple[int, ...] | None = None,
   eligible_terrain_names: tuple[str, ...] | None = None,
@@ -400,9 +401,27 @@ def reset_guided_escape_plate(
     raise ValueError(f"target body {target_body_name!r} must resolve exactly once")
 
   n = env_ids.numel()
-  active = torch.rand(n, device=env.device) < obstacle_probability
+  if not 0.0 <= obstacle_probability <= 1.0:
+    raise ValueError("obstacle_probability must be in [0, 1]")
+  reset_type = getattr(env, "_robust_reset_type", None)
+  probability = torch.full(
+    (n,), obstacle_probability, dtype=torch.float, device=env.device
+  )
+  if obstacle_probability_by_reset_type is not None:
+    if reset_type is None:
+      raise RuntimeError(
+        "obstacle_probability_by_reset_type requires mixed_fall_reset state"
+      )
+    probability_by_type = torch.tensor(
+      obstacle_probability_by_reset_type, dtype=torch.float, device=env.device
+    )
+    if torch.any((probability_by_type < 0.0) | (probability_by_type > 1.0)):
+      raise ValueError("per-reset-type obstacle probabilities must be in [0, 1]")
+    reset_value = reset_type[env_ids]
+    mapped = (reset_value >= 1) & (reset_value <= probability_by_type.numel())
+    probability[mapped] = probability_by_type[reset_value[mapped] - 1]
+  active = torch.rand(n, device=env.device) < probability
   if eligible_reset_types is not None:
-    reset_type = getattr(env, "_robust_reset_type", None)
     if reset_type is None:
       raise RuntimeError("eligible_reset_types requires mixed_fall_reset state")
     eligible = torch.zeros(n, dtype=torch.bool, device=env.device)
