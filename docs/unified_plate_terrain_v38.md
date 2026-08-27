@@ -179,3 +179,46 @@ V3.4 plate seed 迁移到完全相同的 384 维 deploy actor 后，未微调即
 
 这说明两个 seed 能力互补。后续主 warm-start 改为 plate seed，在统一
 任务中补复杂地形和安全性；from-scratch 保留为同任务对照。
+
+## 2026-08-27 完成训练与冻结审计
+
+两组 1200-iteration 训练均正常结束：
+
+- plate-seed warm-start：`tabletennis/smp/uejfq9qh`；
+- from-scratch control：`tabletennis/smp/1yw7b3os`。
+
+from-scratch 的 `model_1199.pt` 在 8 kg 全覆盖压板与 flat/stairs
+L0/L1 冻结评测中均为 0% 成功。这个结果支持“统一任务需要 recovery
+RL seed”的结论；这里的 from-scratch 仍共享冻结 SMP prior。
+
+plate-seed 路线的冻结结果如下。压板列为 512 environments、mixed
+prone/supine、8 kg、750 steps；地形列为 flat/stairs、L0/L1、
+prone/supine 的 8 个 case。
+
+| checkpoint | escape-and-stable-stand | prone | supine | terrain mean | 结论 |
+|---|---:|---:|---:|---:|---|
+| seed/model_0 | 60.95% | 61.39% | 60.55% | 51.95% | 原始基线 |
+| model_100 | 60.48% | 55.45% | 65.14% | 54.69% | V3.8 主候选 |
+| model_200 | 42.38% | 29.70% | 54.13% | 55.86% | 出现 13.1 kN 接触峰值，拒绝 |
+| model_300 | 32.38% | 5.94% | 56.88% | 57.23% | 俯卧脱困退化，拒绝 |
+| model_600 | 29.05% | 1.98% | 54.13% | 57.42% | 明显遗忘，拒绝 |
+| model_1199 | 23.33% | 0% | 44.95% | 55.86% | 明显遗忘，拒绝 |
+
+因此最后一个 checkpoint 不是最佳 checkpoint。联合训练过程中出现了
+压板能力遗忘；`model_100.pt` 是当前 Pareto 折中，并被固化为 V3.8
+基线。相对 seed，它保持总体压板成功率，平地仍为 100%，stairs L0
+supine 从 12.5% 提高到 29.7%，同时地形审计的最大平均关节速度从
+21.3 rad/s 降到 17.0 rad/s，最大平均功率从 660 W 降到 600 W。
+
+`model_100.pt` 的扩展无压板审计：
+
+- rough L0：75.0%–90.6%；rough L1：29.7%–75.0%；
+- slope L0：45.3%–67.2%；slope L1：0%–3.1%，会明显滑出 patch；
+- stairs edge（near-edge/straddle/lower-tread）总均值 10.94%；
+- 所有审计 case 均无 invalid dynamics。
+
+这证明 deploy-only 384 维历史观测下可以保留压板技能并获得有限地形
+适应，但尚未解决高难斜坡、台阶边缘和俯卧台阶恢复。下一阶段应从
+`model_100.pt` 开始，使用 ability-balanced sampling / replay，分别设置
+plate、prone-stairs、slope-L1 的最低采样比例，并以冻结评测门控保存，
+避免再次用单一总 reward 选择模型。
