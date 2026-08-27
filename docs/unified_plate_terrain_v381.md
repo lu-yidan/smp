@@ -84,3 +84,29 @@ V3.8 seed checkpoint 自带 iteration 100，因此续训后的首个百步 check
 - 站立后脚间距和 foot speed 继续记录。
 
 若第一个 100-iteration checkpoint 已出现压板遗忘，立即停止，不继续跑满 300。
+## 2026-08-27 训练与早停结果
+
+- W&B：tabletennis/smp/t7x0jb1d；
+- 从 V3.8 model_100（iteration 100）续训；
+- model_200 生成后立即冻结评测；
+- 训练进程在 W&B step 243 终止，未继续生成 model_300/399。
+
+同一 512-env、8 kg、四姿态、750-step 压板评测：
+
+| checkpoint | overall | prone | supine | left side | right side |
+|---|---:|---:|---:|---:|---:|
+| V3.8 seed | 33.50% | 55.10% | 46.94% | 28.33% | 0% |
+| V3.8.1 model_200 | 19.00% | 20.41% | 40.82% | 13.33% | 0% |
+
+model_200 的 flat/stairs L0/L1 prone/supine 均值为 56.05%，只比 seed
+的 54.69% 高 1.36 个百分点；同时最大压板接触力达到 12.49 kN，
+penetration 达到 19.2 mm。因此该 checkpoint 不满足任何综合选择门槛。
+
+本次失败的主要采样原因：总压板 episode 约 23%，但四姿态共享后，
+原有 prone/supine 压板 cohort 下降到约 15%，低于 V3.8 的约 26%。
+全局 obstacle probability 不能同时“保留旧压板技能”和“增加侧卧技能”。
+
+model_200 仅作为 rejected audit 保存在服务器：
+/mnt/workspace/user/luyidan/baselines/G1_Recovery_Below_Block/v381/audit/，
+SHA256 为 d3c03b735768ec5bb02bf42dc4d3a3f890e52032638210d680b674f8201c478b。
+V3.8 model_100 继续作为有效部署基线。
