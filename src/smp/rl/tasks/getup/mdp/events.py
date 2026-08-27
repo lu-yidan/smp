@@ -710,6 +710,7 @@ def update_escape_phase(
   max_penetration: float | None = None,
   max_contact_force: float | None = None,
   max_wait_steps: int | None = None,
+  max_wait_steps_by_reset_type: tuple[int, ...] | None = None,
   max_initial_contact_head_height: float | None = None,
   relative_to_env_origin: bool = False,
   hand_sensor_name: str | None = None,
@@ -807,7 +808,35 @@ def update_escape_phase(
   if max_initial_contact_head_height is not None:
     late_contact = first_contact & (head_height > max_initial_contact_head_height)
   setup_timeout = torch.zeros_like(contact)
-  if max_wait_steps is not None:
+  if max_wait_steps_by_reset_type is not None:
+    if not max_wait_steps_by_reset_type or any(
+      limit <= 0 for limit in max_wait_steps_by_reset_type
+    ):
+      raise ValueError("per-reset contact wait limits must be positive")
+    reset_type = getattr(env, "_robust_reset_type", None)
+    if reset_type is None:
+      raise RuntimeError("per-reset contact wait limits require reset types")
+    local_reset_type = reset_type[env_ids]
+    waiting_types = local_reset_type[waiting_for_contact]
+    if waiting_types.numel() > 0 and (
+      torch.any(waiting_types < 1)
+      or torch.any(waiting_types > len(max_wait_steps_by_reset_type))
+    ):
+      raise ValueError("active plate reset type has no contact wait limit")
+    limits_key = tuple(max_wait_steps_by_reset_type)
+    limits = getattr(env, "_escape_wait_limits_by_reset_type", None)
+    if limits is None or getattr(env, "_escape_wait_limits_key", None) != limits_key:
+      limits = torch.tensor(limits_key, device=env.device)
+      env._escape_wait_limits_by_reset_type = limits  # type: ignore[attr-defined]
+      env._escape_wait_limits_key = limits_key  # type: ignore[attr-defined]
+    local_index = torch.clamp(
+      local_reset_type - 1,
+      min=0,
+      max=len(max_wait_steps_by_reset_type) - 1,
+    )
+    local_limit = limits[local_index]
+    setup_timeout = waiting_for_contact & (wait_steps[env_ids] > local_limit)
+  elif max_wait_steps is not None:
     setup_timeout = waiting_for_contact & (wait_steps[env_ids] > max_wait_steps)
   setup_invalid = late_contact | setup_timeout
   invalid_setup[env_ids] |= setup_invalid

@@ -89,6 +89,9 @@ def main(cfg: EvalCfg) -> None:
     "supine": ((0.0, 1.0, 0.0, 0.0), (2,)),
     "prone": ((1.0, 0.0, 0.0, 0.0), (1,)),
     "mixed": ((1.0, 1.0, 0.0, 0.0), (1, 2)),
+    "left_side": ((0.0, 0.0, 1.0, 0.0), (3,)),
+    "right_side": ((0.0, 0.0, 0.0, 1.0), (4,)),
+    "all": ((1.0, 1.0, 1.0, 1.0), (1, 2, 3, 4)),
   }
   if cfg.reset_pose not in pose_specs:
     choices = ", ".join(pose_specs)
@@ -381,7 +384,12 @@ def main(cfg: EvalCfg) -> None:
     "max_torque_mean_nm": float(max_torque[active].mean()),
     "max_power_mean_w": float(max_power[active].mean()),
   }
-  for pose_name, pose_type in (("supine", 2), ("prone", 1)):
+  for pose_name, pose_type in (
+    ("supine", 2),
+    ("prone", 1),
+    ("left_side", 3),
+    ("right_side", 4),
+  ):
     pose_active = active & (reset_type == pose_type)
     pose_stable = stable_stand & pose_active
     pose_invalid = any_invalid & pose_active
