@@ -99,3 +99,24 @@ Recovery-Core 没有压板随机变量，因此不会出现“先定位压板、
 - 站立后再次跌倒率。
 
 Bootstrap checkpoint 必须在纯程序化测试环境中评测，禁止 LAFAN milestone 覆盖测试姿态。
+
+## R1 健康门与 R2 from-scratch 长训
+
+R1 的 500 updates 不是收敛训练，而是进入数千轮训练前的健康门。冻结评测显示：
+
+| checkpoint | 四姿态平均正式成功率 | 四姿态平均有序阶段成功率 | 结论 |
+|---|---:|---:|---|
+| adapted model 0 | 97.46% | 89.06% | 真机 V3.3 起点，动作较剧烈 |
+| R1 model 250 | 99.90% | 76.12% | 保留恢复能力且明显降低速度和功率 |
+| R1 model 499 | 99.90% | 13.82% | 学会绕过坐/蹲阶段的站立捷径 |
+
+健康门发现原有稳定站立 reward 可以绕过有序阶段。因此 Recovery-Core R2 将
+`scratch_stable_stand` 改为只有完成有序恢复阶段后才生效，并惩罚“已经稳定站立但
+尚未完成有序阶段”的状态。
+
+正式 R2 主实验不加载 V3.3、R1 或其他 PPO checkpoint，actor/critic 与 observation
+normalizer 均从随机初始化开始；SMP prior 与 GSI generator 仍保留，因为它们是方法的
+组成部分而不是 PPO warm start。训练使用 4096 environments、初始学习率 `3e-4`、
+5000 updates，并每 250 updates 保存一次。500/1000 updates 仅为中途诊断，
+不能作为最终结论；最终 checkpoint 必须通过固定四姿态成功率、有序阶段、关节速度、
+功率和脚步位移评测。

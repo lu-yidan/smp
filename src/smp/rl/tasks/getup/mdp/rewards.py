@@ -67,6 +67,7 @@ __all__ = [
   "max_joint_torque_metric",
   "mean_foot_speed_metric",
   "mean_knee_flexion_metric",
+  "ordered_stable_stand_metric",
   "post_stand_knockdown_metric",
   "prone_reset_metric",
   "procedural_reset_metric",
@@ -93,6 +94,7 @@ __all__ = [
   "terrain_reset_offset_metric",
   "terrain_stance_width_excess_l2",
   "track_head_velocity_profile",
+  "unordered_stable_stand_metric",
   "upright_posture",
   "upward_velocity",
   "v6_active_wrench_metric",
@@ -881,6 +883,46 @@ def stable_stand_metric(
     & (lin_speed < max_linear_speed)
     & (ang_speed < max_angular_speed)
   ).float()
+
+
+def ordered_stable_stand_metric(
+  env: ManagerBasedRlEnv,
+  head_height: float = 1.2,
+  min_upright: float = 0.85,
+  max_linear_speed: float = 0.5,
+  max_angular_speed: float = 0.5,
+  relative_to_env_origin: bool = False,
+) -> torch.Tensor:
+  """Reward stable standing only after completing the ordered recovery route."""
+  stable = stable_stand_metric(
+    env,
+    head_height=head_height,
+    min_upright=min_upright,
+    max_linear_speed=max_linear_speed,
+    max_angular_speed=max_angular_speed,
+    relative_to_env_origin=relative_to_env_origin,
+  )
+  return stable * recovery_stage_complete_metric(env)
+
+
+def unordered_stable_stand_metric(
+  env: ManagerBasedRlEnv,
+  head_height: float = 1.2,
+  min_upright: float = 0.85,
+  max_linear_speed: float = 0.5,
+  max_angular_speed: float = 0.5,
+  relative_to_env_origin: bool = False,
+) -> torch.Tensor:
+  """Detect stable standing reached before the ordered recovery route completed."""
+  stable = stable_stand_metric(
+    env,
+    head_height=head_height,
+    min_upright=min_upright,
+    max_linear_speed=max_linear_speed,
+    max_angular_speed=max_angular_speed,
+    relative_to_env_origin=relative_to_env_origin,
+  )
+  return stable * (1.0 - recovery_stage_complete_metric(env))
 
 
 def active_wrench_metric(env: ManagerBasedRlEnv) -> torch.Tensor:

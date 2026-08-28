@@ -57,6 +57,9 @@ from smp.rl.tasks.getup.plate_terrain_v3874_gsi_milestone_env_cfg import (
 from smp.rl.tasks.getup.recovery_core_r1_env_cfg import (
   g1_recovery_core_r1_smp_env_cfg,
 )
+from smp.rl.tasks.getup.recovery_core_r2_ordered_env_cfg import (
+  g1_recovery_core_r2_ordered_smp_env_cfg,
+)
 from smp.rl.tasks.getup.robust_env_cfg import g1_getup_robust_smp_env_cfg
 from smp.rl.tasks.getup.safe_env_cfg import g1_getup_robust_safe_smp_env_cfg
 from smp.rl.tasks.getup.smooth_env_cfg import g1_getup_robust_smooth_smp_env_cfg
@@ -657,6 +660,24 @@ register_mjlab_task(
   rl_cfg=_recovery_core_r1_rl,
 )
 
+
+def _recovery_core_r2_ordered_runner_cfg():
+  cfg = _recovery_core_r1_runner_cfg()
+  cfg.experiment_name = "smp_recovery_core_r2_ordered_g1"
+  cfg.algorithm.learning_rate = 3.0e-4
+  cfg.save_interval = 250
+  return cfg
+
+
+_recovery_core_r2_ordered_rl = _recovery_core_r2_ordered_runner_cfg()
+
+register_mjlab_task(
+  task_id="Smp-Recovery-Core-R2-Ordered-G1",
+  env_cfg=g1_recovery_core_r2_ordered_smp_env_cfg(False),
+  play_env_cfg=g1_recovery_core_r2_ordered_smp_env_cfg(True),
+  rl_cfg=_recovery_core_r2_ordered_rl,
+)
+
 __all__ = [
   "g1_getup_plate_terrain_v38_deploy_smp_env_cfg",
   "g1_getup_plate_terrain_v381_deploy_smp_env_cfg",
@@ -672,6 +693,7 @@ __all__ = [
   "g1_getup_robust_smooth_smp_env_cfg",
   "g1_getup_robust_staged_smp_env_cfg",
   "g1_recovery_core_r1_smp_env_cfg",
+  "g1_recovery_core_r2_ordered_smp_env_cfg",
   "g1_getup_terrain_v35_smp_env_cfg",
   "g1_getup_terrain_v36_smp_env_cfg",
   "g1_getup_terrain_v361_smp_env_cfg",
