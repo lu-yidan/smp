@@ -117,13 +117,15 @@ R1 的 500 updates 不是收敛训练，而是进入数千轮训练前的健康�
 正式 R2 主实验不加载 V3.3、R1 或其他 PPO checkpoint，actor/critic 与 observation
 normalizer 均从随机初始化开始；SMP prior 与 GSI generator 仍保留，因为它们是方法的
 组成部分而不是 PPO warm start。训练使用 4096 environments、初始学习率 `3e-4`、
-5000 updates，并每 250 updates 保存一次。500/1000 updates 仅为中途诊断，
+20000 updates，并每 250 updates 保存一次。500/1000 updates 仅为中途诊断，
 不能作为最终结论；最终 checkpoint 必须通过固定四姿态成功率、有序阶段、关节速度、
 功率和脚步位移评测。
 
 实际长训于 2026-08-28 启动：
 
-- W&B：`tabletennis/smp/hn29fn14`；
-- server run：`2026-08-28_23-55-47_recovery_core_r2_ordered_scratch_4096_seed3883`；
-- GPU 7，seed 3883，4096 environments，5000 updates；
+- W&B：`tabletennis/smp/u2hmbkmr`；
+- server run：`2026-08-28_23-59-17_recovery_core_r2_ordered_scratch_20k_4096_seed3883`；
+- GPU 7，seed 3883，4096 environments，20000 updates；
 - 启动时未设置 resume、run path 或 checkpoint，确认为 PPO from scratch。
+
+较早启动的 5000-update run `hn29fn14` 已主动终止，由上述 20k run 替代。
