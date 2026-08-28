@@ -241,11 +241,11 @@ def main(cfg: EvalCfg) -> None:
   joint_indices, joint_signs = _joint_mirror_spec(robot.joint_names, raw_env.device)
   if cfg.mirror_policy:
     mirrored_twice = _mirror_actor_observation(
-      _mirror_actor_observation(obs, joint_indices, joint_signs),
+      _mirror_actor_observation(obs["actor"], joint_indices, joint_signs),
       joint_indices,
       joint_signs,
     )
-    torch.testing.assert_close(mirrored_twice, obs)
+    torch.testing.assert_close(mirrored_twice, obs["actor"])
   foot_ids = robot.find_sites(["left_foot", "right_foot"], preserve_order=True)[0]
   head_idx = robot.find_sites(["head"], preserve_order=True)[0][0]
   active = (raw_env._escape_phase > 0).clone()  # type: ignore[attr-defined]
@@ -268,7 +268,10 @@ def main(cfg: EvalCfg) -> None:
     with torch.inference_mode():
       policy_obs = obs
       if cfg.mirror_policy:
-        policy_obs = _mirror_actor_observation(obs, joint_indices, joint_signs)
+        policy_obs = obs.clone()
+        policy_obs["actor"] = _mirror_actor_observation(
+          obs["actor"], joint_indices, joint_signs
+        )
       actions = policy(policy_obs)
       if cfg.mirror_policy:
         actions = _mirror_action(actions, joint_indices, joint_signs)
