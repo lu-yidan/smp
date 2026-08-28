@@ -34,6 +34,27 @@ V3.8.7.2--V3.8.7.4 为了帮助随机 actor 探索，曾把 `task_smp_product`
 
 LAFAN 里程碑只属于 bootstrap 诊断，不属于 Recovery-Core 最终方法。
 
+## Bootstrap 审计与正式起点
+
+V3.8.7.4 的 `model_2997`、`model_3250` 和最终 `model_3496` 已在
+512 个纯程序化环境、四种姿态、500 steps 的统一协议下评测。所有 checkpoint 的
+有序阶段完成率均为 0%；`model_3250` 和 `model_3496` 的四姿态正式成功率也均为
+0%。因此 V3.8.7.4 被记录为失败的 bootstrap 诊断，不能作为 Recovery-Core 起点。
+
+正式起点改为真机已验证的 V3.3 balanced `model_95000.pt`：
+
+- source SHA-256:
+  `38063879c144bd29af8e792bb7547b0e6c99e4043ba9b4c3c08219dab16ef81a`；
+- 使用 `scripts/adapt_checkpoint_actor_history.py` 将 actor 从 96 维单帧扩展为
+  384 维四帧，critic 保持 960 维；
+- adapter first-layer equivalence 最大绝对误差为 `9.537e-06`；
+- optimizer 重置，checkpoint iteration 重置为 0；
+- adapted checkpoint SHA-256:
+  `7f774491893a3a95ab02e2cb712f5ffc1d5e70342450958d86d972096aef69d5`。
+
+当前正式训练：W&B `tabletennis/smp/2jlopob8`，4096 environments，
+seed 3881，GPU 7，500 updates，每 250 updates 保存。
+
 ## Reset 路由
 
 每个环境只选择一种恢复初始化：
