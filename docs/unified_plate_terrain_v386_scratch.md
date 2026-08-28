@@ -72,3 +72,40 @@ update 产生 16384 x 24 = 393216 条真实 transition；因此 model_100 已约
 
 本地 RTX 4090、64 environments、1 update 已通过：actor 384、critic 960，
 随机策略 mean reward -0.36，symmetry loss 0.0189，无 NaN 或 solver overflow。
+
+## 16384-environment S1 结果（拒绝）
+
+W&B：`tabletennis/smp/0erhlfpq`。600 updates 在 GPU7 用时约 1 小时 51 分，
+约 11.2 秒/update、3.5 万 steps/s；总 rollout 约 2.36 亿 transitions。保存了
+model_0/100/200/300/400/500/599。
+
+训练末期 mean reward 为 0.55，symmetry loss 约 0.0001，但关键训练指标为：
+
+- `stable_stand = 0`；
+- `recovery_stage_complete = 0`；
+- `Curriculum/terrain_levels/stand_success = 0`；
+- `escape_completion = 0`；
+- `recovery_stage` 仅 0.006。
+
+正 reward 主要来自 recovery initiation、prone support route 和很小的
+task/SMP product，是“低位支撑但不起身”的局部最优，不能解释为 recovery 成功。
+
+冻结评测：
+
+| checkpoint | flat 无压板四姿态均值 | 8 kg 压板 | invalid | penetration max | power mean |
+|---|---:|---:|---:|---:|---:|
+| model_100 | 0% | 0% | 62.96% | 24.01 mm | 82.95 W |
+| model_300 | 0% | 0% | 22.22% | 26.51 mm | 93.79 W |
+| model_599 | 0% | 0% | 17.78% | 21.55 mm | 122.76 W |
+
+model_599 在更接近早期课程的 6 kg、longitudinal/lateral offset
+0.18/0.22 m 条件下仍为 0%。它的 hand-support median 达 602 steps、invalid
+降到 3.70%，但 escape separation median 只有 0.324 m，仍无完整脱困或站立。
+
+结论：S1 已完成但不晋级，不保存部署副本。16384 environments 增加了每次
+rollout 的覆盖，却没有增加每 update 的 PPO optimizer step 数；当前 2 epochs x
+4 minibatches 只有 8 次梯度更新/update，巨大 batch 不能代替足够的策略优化。
+
+下一轮先增加 S0：flat、无压板、同一 384 维 deploy actor 和冻结 V7 prior，
+只在四姿态 stable stand 明显非零后逐步加入轻压板与 L0 terrain。同时重新配平
+num mini-batches/learning epochs，使 16K rollout 不再形成过大的单个 minibatch。
