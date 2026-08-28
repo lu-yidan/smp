@@ -20,6 +20,9 @@ __all__ = [
   "failure_buffer_fill_metric",
   "failure_replay_reset_metric",
   "ground_support_contact_metric",
+  "gsi_reset_metric",
+  "lafan_milestone_reset_metric",
+  "lafan_milestone_stage_metric",
   "prone_leg_splay_excess_l2",
   "prone_support_route",
   "recovery_initiation_progress",
@@ -70,6 +73,7 @@ __all__ = [
   "quiet_stance_gate",
   "recovery_stage_complete_metric",
   "recovery_stage_metric",
+  "recovery_stage_transition_reward",
   "smooth_action",
   "staged_action_acc_l2",
   "staged_action_rate_l2",
@@ -79,6 +83,7 @@ __all__ = [
   "staged_joint_torques_l2",
   "staged_head_velocity_profile",
   "staged_recovery_pose",
+  "staged_recovery_pose_band",
   "stable_stand_metric",
   "supine_reset_metric",
   "track_head_height",
@@ -1135,3 +1140,72 @@ def hand_support_contact_metric(
 ) -> torch.Tensor:
   """Fraction of left/right hands currently supporting on the ground."""
   return _contact_found(env, sensor_name).float().mean(dim=-1)
+
+
+def staged_recovery_pose_band(
+  env: ManagerBasedRlEnv,
+  height_scale: float = 8.0,
+  upright_scale: float = 6.0,
+  knee_scale: float = 10.0,
+  knee_targets: tuple[float, float, float, float] = (1.05, 0.85, 0.15, 0.10),
+  knee_tolerances: tuple[float, float, float, float] = (0.35, 0.20, 0.20, 0.20),
+  relative_to_env_origin: bool = False,
+) -> torch.Tensor:
+  """Track ordered waypoints while penalizing both under- and over-flexion."""
+  robot = env.scene["robot"]
+  knee_ids = robot.find_joints(
+    ["left_knee_joint", "right_knee_joint"], preserve_order=True
+  )[0]
+  head_z = _head_height(env, relative_to_env_origin=relative_to_env_origin)
+  upright = upright_posture(env, power=1.0)
+  knee_flexion = robot.data.joint_pos[:, knee_ids].mean(dim=-1)
+  stage = _recovery_stage(env)
+  target_height = head_z.new_tensor((0.62, 0.86, 1.15, 1.15))[stage]
+  target_upright = upright.new_tensor((0.60, 0.76, 0.90, 0.90))[stage]
+  target_knee = knee_flexion.new_tensor(knee_targets)[stage]
+  knee_tolerance = knee_flexion.new_tensor(knee_tolerances)[stage]
+  height_shortfall = torch.clamp(target_height - head_z, min=0.0)
+  upright_shortfall = torch.clamp(target_upright - upright, min=0.0)
+  knee_band_error = torch.clamp(
+    torch.abs(knee_flexion - target_knee) - knee_tolerance, min=0.0
+  )
+  return torch.exp(
+    -height_scale * torch.square(height_shortfall)
+    - upright_scale * torch.square(upright_shortfall)
+    - knee_scale * torch.square(knee_band_error)
+  )
+
+
+def recovery_stage_transition_reward(
+  env: ManagerBasedRlEnv,
+  bonuses: tuple[float, float, float, float] = (0.0, 1.0, 2.0, 4.0),
+) -> torch.Tensor:
+  """Pay once after each ordered stage transition instead of for stage occupancy."""
+  transition = getattr(env, "_v4_stage_transition", None)
+  if transition is None:
+    return torch.zeros(env.num_envs, device=env.device)
+  return transition.new_tensor(bonuses, dtype=torch.float)[transition]
+
+
+def lafan_milestone_reset_metric(env: ManagerBasedRlEnv) -> torch.Tensor:
+  stage = getattr(env, "_lafan_milestone_stage", None)
+  if stage is None:
+    return torch.zeros(env.num_envs, device=env.device)
+  return (stage > 0).float()
+
+
+def lafan_milestone_stage_metric(env: ManagerBasedRlEnv) -> torch.Tensor:
+  stage = getattr(env, "_lafan_milestone_stage", None)
+  if stage is None:
+    return torch.zeros(env.num_envs, device=env.device)
+  return stage.float() / 3.0
+
+
+def gsi_reset_metric(env: ManagerBasedRlEnv) -> torch.Tensor:
+  reset_type = getattr(env, "_robust_reset_type", None)
+  if reset_type is None:
+    return torch.ones(env.num_envs, device=env.device)
+  milestone = getattr(env, "_lafan_milestone_stage", None)
+  if milestone is None:
+    return (reset_type == 0).float()
+  return ((reset_type == 0) & (milestone == 0)).float()

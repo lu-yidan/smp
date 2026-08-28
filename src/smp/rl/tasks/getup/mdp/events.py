@@ -2,16 +2,23 @@
 
 from __future__ import annotations
 
+import json
+from pathlib import Path
+
 import mujoco
+import numpy as np
 import torch
 from mjlab.envs import ManagerBasedRlEnv
 from mjlab.managers.event_manager import RecomputeLevel, requires_model_fields
 from mjlab.utils.lab_api.math import quat_from_euler_xyz, quat_mul
 
+from smp.rl.events import prime_sim_and_buffer
+
 __all__ = [
   "apply_sustained_constraint",
   "failure_state_replay_reset",
   "ground_procedural_fall_on_terrain",
+  "lafan_milestone_reset",
   "mixed_fall_reset",
   "sample_terrain_edge_reset",
   "post_stand_body_wrench",
@@ -1587,6 +1594,10 @@ def reset_recovery_stage(
     env._v4_stage_hold = torch.zeros(  # type: ignore[attr-defined]
       env.num_envs, dtype=torch.long, device=env.device
     )
+  if not hasattr(env, "_v4_stage_transition"):
+    env._v4_stage_transition = torch.zeros(  # type: ignore[attr-defined]
+      env.num_envs, dtype=torch.long, device=env.device
+    )
 
   head_z, _, upright, knee_flexion = _head_height_and_upright(
     env, env_ids, relative_to_env_origin=relative_to_env_origin
@@ -1607,6 +1618,7 @@ def reset_recovery_stage(
   )
   env._v4_recovery_stage[env_ids] = stage  # type: ignore[attr-defined]
   env._v4_stage_hold[env_ids] = 0  # type: ignore[attr-defined]
+  env._v4_stage_transition[env_ids] = 0  # type: ignore[attr-defined]
 
 
 @torch.no_grad()
@@ -1628,6 +1640,8 @@ def update_recovery_stage(
 
   stage = env._v4_recovery_stage  # type: ignore[attr-defined]
   hold = env._v4_stage_hold  # type: ignore[attr-defined]
+  transition = env._v4_stage_transition  # type: ignore[attr-defined]
+  transition[env_ids] = 0
   head_z, head_vz, upright, knee_flexion = _head_height_and_upright(
     env, env_ids, relative_to_env_origin=relative_to_env_origin
   )
@@ -1669,6 +1683,9 @@ def update_recovery_stage(
   stage[advance_seated] = 1
   stage[advance_crouched] = 2
   stage[advance_standing] = 3
+  transition[advance_seated] = 1
+  transition[advance_crouched] = 2
+  transition[advance_standing] = 3
   advanced = torch.cat([advance_seated, advance_crouched, advance_standing])
   hold[advanced] = 0
 
@@ -2194,3 +2211,127 @@ def stratified_post_stand_wrench(
     active[active_ids] -= 1
     finished = active_ids[active[active_ids] == 0]
     wait[finished] = -2
+
+
+_LAFAN_MILESTONE_IDS = {
+  "kneeling_or_half_kneeling": 1,
+  "crouched": 2,
+  "standing": 3,
+}
+
+
+def _load_lafan_milestone_bank(
+  env: ManagerBasedRlEnv,
+  manifest_path: str,
+  npz_dir: str,
+  stage_names: tuple[str, ...],
+) -> tuple[torch.Tensor, ...]:
+  """Load approved route windows whose final frame lies in each stage span."""
+  cache_key = (manifest_path, npz_dir, stage_names)
+  if getattr(env, "_lafan_milestone_cache_key", None) == cache_key:
+    return env._lafan_milestone_windows  # type: ignore[attr-defined]
+
+  manifest_file = Path(manifest_path).expanduser().resolve()
+  payload = json.loads(manifest_file.read_text())
+  if not payload.get("approved_for_training", False):
+    raise ValueError(f"LAFAN milestone manifest is not approved: {manifest_file}")
+  input_fps = float(payload["input_fps"])
+  requested = set(stage_names)
+  if requested - _LAFAN_MILESTONE_IDS.keys():
+    unknown = ", ".join(sorted(requested - _LAFAN_MILESTONE_IDS.keys()))
+    raise ValueError(f"unknown LAFAN milestone stages: {unknown}")
+
+  route_dir = Path(npz_dir).expanduser().resolve()
+  by_stage: dict[str, list[np.ndarray]] = {name: [] for name in stage_names}
+  for clip in payload["clips"]:
+    npz_path = route_dir / Path(clip["output"]).with_suffix(".npz")
+    with np.load(npz_path, allow_pickle=False) as data:
+      windows = data["windows"]
+      output_fps = float(data["fps"][0])
+      window_size = int(data["window_size"][0])
+      for span in clip["stage_spans"]:
+        name = str(span["name"])
+        if name not in requested:
+          continue
+        start, end = (int(value) for value in span["frame_span"])
+        output_start = round(start * output_fps / input_fps)
+        output_end = round(end * output_fps / input_fps)
+        # Window index i ends at interpolated frame i + window_size - 1.
+        lo = max(0, output_start - window_size + 1)
+        hi = min(len(windows), output_end - window_size + 1)
+        if hi > lo:
+          by_stage[name].append(windows[lo:hi].copy())
+
+  bank: list[torch.Tensor] = []
+  for name in stage_names:
+    chunks = by_stage[name]
+    if not chunks:
+      raise ValueError(f"no LAFAN milestone windows found for stage {name!r}")
+    values = np.concatenate(chunks, axis=0).astype(np.float32, copy=False)
+    bank.append(torch.from_numpy(values).to(env.device))
+
+  result = tuple(bank)
+  env._lafan_milestone_cache_key = cache_key  # type: ignore[attr-defined]
+  env._lafan_milestone_windows = result  # type: ignore[attr-defined]
+  return result
+
+
+@torch.no_grad()
+def lafan_milestone_reset(
+  env: ManagerBasedRlEnv,
+  env_ids: torch.Tensor | None = None,
+  probability: float = 0.20,
+  manifest_path: str = "datasets/csv/getup_lafan_prone_routes_v7/manifest.json",
+  npz_dir: str = "datasets/npz/getup_lafan_prone_routes_v7",
+  stage_names: tuple[str, ...] = (
+    "kneeling_or_half_kneeling",
+    "crouched",
+    "standing",
+  ),
+  stage_weights: tuple[float, ...] = (0.45, 0.35, 0.20),
+) -> None:
+  """Replace a reset subset with phase-balanced, reviewed LAFAN milestones.
+
+  The complete feature window primes the SMP history while its final state seeds
+  physics. The phase id is training-only state and never enters actor observations.
+  This event must run after reset_recovery_stage so it can override the ordered
+  stage without reading stale derived quantities after a simulator state write.
+  """
+  if not 0.0 <= probability <= 1.0:
+    raise ValueError(f"probability must be in [0, 1], got {probability}")
+  if len(stage_names) != len(stage_weights) or not stage_names:
+    raise ValueError("stage_names and stage_weights must have equal non-zero length")
+  weights = torch.tensor(stage_weights, dtype=torch.float, device=env.device)
+  if torch.any(weights < 0.0) or weights.sum() <= 0.0:
+    raise ValueError("stage_weights must be non-negative with positive sum")
+  weights /= weights.sum()
+
+  if env_ids is None:
+    env_ids = torch.arange(env.num_envs, device=env.device)
+  if not hasattr(env, "_lafan_milestone_stage"):
+    env._lafan_milestone_stage = torch.zeros(  # type: ignore[attr-defined]
+      env.num_envs, dtype=torch.long, device=env.device
+    )
+  milestone_stage = env._lafan_milestone_stage  # type: ignore[attr-defined]
+  milestone_stage[env_ids] = 0
+  chosen = torch.rand(env_ids.numel(), device=env.device) < probability
+  chosen_ids = env_ids[chosen]
+  if chosen_ids.numel() == 0:
+    return
+
+  bank = _load_lafan_milestone_bank(env, manifest_path, npz_dir, stage_names)
+  slots = torch.multinomial(weights, chosen_ids.numel(), replacement=True)
+  for slot, (name, windows) in enumerate(zip(stage_names, bank, strict=True)):
+    stage_ids = chosen_ids[slots == slot]
+    if stage_ids.numel() == 0:
+      continue
+    sample_ids = torch.randint(
+      0, windows.shape[0], (stage_ids.numel(),), device=env.device
+    )
+    prime_sim_and_buffer(env, stage_ids, windows[sample_ids])
+    stage = _LAFAN_MILESTONE_IDS[name]
+    milestone_stage[stage_ids] = stage
+    env._v4_recovery_stage[stage_ids] = stage  # type: ignore[attr-defined]
+    env._v4_stage_hold[stage_ids] = 0  # type: ignore[attr-defined]
+    if hasattr(env, "_robust_reset_type"):
+      env._robust_reset_type[stage_ids] = 0  # type: ignore[attr-defined]

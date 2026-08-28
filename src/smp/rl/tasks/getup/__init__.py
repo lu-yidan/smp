@@ -51,6 +51,9 @@ from smp.rl.tasks.getup.plate_terrain_v3872_scratch_s0_dense_env_cfg import (
 from smp.rl.tasks.getup.plate_terrain_v3873_scratch_stage_bridge_env_cfg import (
   g1_getup_plate_terrain_v3873_scratch_stage_bridge_deploy_smp_env_cfg,
 )
+from smp.rl.tasks.getup.plate_terrain_v3874_gsi_milestone_env_cfg import (
+  g1_getup_plate_terrain_v3874_gsi_milestone_deploy_smp_env_cfg,
+)
 from smp.rl.tasks.getup.robust_env_cfg import g1_getup_robust_smp_env_cfg
 from smp.rl.tasks.getup.safe_env_cfg import g1_getup_robust_safe_smp_env_cfg
 from smp.rl.tasks.getup.smooth_env_cfg import g1_getup_robust_smooth_smp_env_cfg
@@ -615,6 +618,25 @@ register_mjlab_task(
   rl_cfg=_plate_terrain_v3873_scratch_stage_bridge_getup_rl,
 )
 
+
+def _plate_terrain_v3874_gsi_milestone_runner_cfg():
+  cfg = _plate_terrain_v3873_scratch_stage_bridge_runner_cfg()
+  cfg.experiment_name = "smp_getup_plate_terrain_v3874_gsi_milestone_deploy_g1"
+  cfg.save_interval = 250
+  return cfg
+
+
+_plate_terrain_v3874_gsi_milestone_getup_rl = (
+  _plate_terrain_v3874_gsi_milestone_runner_cfg()
+)
+
+register_mjlab_task(
+  task_id="Smp-Getup-Plate-Terrain-V3874-GSI-Milestone-Deploy-G1",
+  env_cfg=g1_getup_plate_terrain_v3874_gsi_milestone_deploy_smp_env_cfg(False),
+  play_env_cfg=g1_getup_plate_terrain_v3874_gsi_milestone_deploy_smp_env_cfg(True),
+  rl_cfg=_plate_terrain_v3874_gsi_milestone_getup_rl,
+)
+
 __all__ = [
   "g1_getup_plate_terrain_v38_deploy_smp_env_cfg",
   "g1_getup_plate_terrain_v381_deploy_smp_env_cfg",
@@ -624,6 +646,7 @@ __all__ = [
   "g1_getup_plate_terrain_v384_symmetric_deploy_smp_env_cfg",
   "g1_getup_plate_terrain_v386_scratch_s1_deploy_smp_env_cfg",
   "g1_getup_plate_terrain_v387_scratch_s0_deploy_smp_env_cfg",
+  "g1_getup_plate_terrain_v3874_gsi_milestone_deploy_smp_env_cfg",
   "g1_getup_robust_smp_env_cfg",
   "g1_getup_robust_safe_smp_env_cfg",
   "g1_getup_robust_smooth_smp_env_cfg",

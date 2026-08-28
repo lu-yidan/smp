@@ -108,7 +108,7 @@ def init_smp_state(
   gsi_reset(env)
 
 
-def _prime_sim_and_buffer(
+def prime_sim_and_buffer(
   env: ManagerBasedRlEnv,
   env_ids: torch.Tensor,
   window: torch.Tensor,
@@ -245,4 +245,4 @@ def gsi_reset(env: ManagerBasedRlEnv, env_ids: torch.Tensor | None = None) -> No
   pool: torch.Tensor = env._smp_gsi_pool  # type: ignore[attr-defined]
   idx = torch.randint(0, pool.shape[0], (n,), device=env.device)
   window = pool[idx]
-  _prime_sim_and_buffer(env, env_ids, window)
+  prime_sim_and_buffer(env, env_ids, window)
