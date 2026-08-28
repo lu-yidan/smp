@@ -541,6 +541,28 @@ register_mjlab_task(
   rl_cfg=_plate_terrain_v387_scratch_s0_getup_rl,
 )
 
+
+def _plate_terrain_v3871_scratch_s0_runner_cfg():
+  """Fast scratch gate with a non-collapsing PPO learning rate."""
+  cfg = _plate_terrain_v387_scratch_s0_runner_cfg()
+  cfg.experiment_name = "smp_getup_plate_terrain_v3871_scratch_s0_fixed_deploy_g1"
+  cfg.algorithm.learning_rate = 1.0e-4
+  cfg.algorithm.schedule = "fixed"
+  cfg.save_interval = 50
+  return cfg
+
+
+_plate_terrain_v3871_scratch_s0_getup_rl = (
+  _plate_terrain_v3871_scratch_s0_runner_cfg()
+)
+
+register_mjlab_task(
+  task_id="Smp-Getup-Plate-Terrain-V3871-Scratch-S0-Fixed-Deploy-G1",
+  env_cfg=g1_getup_plate_terrain_v387_scratch_s0_deploy_smp_env_cfg(play=False),
+  play_env_cfg=g1_getup_plate_terrain_v387_scratch_s0_deploy_smp_env_cfg(play=True),
+  rl_cfg=_plate_terrain_v3871_scratch_s0_getup_rl,
+)
+
 __all__ = [
   "g1_getup_plate_terrain_v38_deploy_smp_env_cfg",
   "g1_getup_plate_terrain_v381_deploy_smp_env_cfg",
