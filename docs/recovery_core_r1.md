@@ -121,6 +121,10 @@ normalizer 均从随机初始化开始；SMP prior 与 GSI generator 仍保留�
 不能作为最终结论；最终 checkpoint 必须通过固定四姿态成功率、有序阶段、关节速度、
 功率和脚步位移评测。
 
+R2 from-scratch actor 删除 R1 中恒为零的三维 `base_lin_vel` 占位项。单帧从
+96 维变为 93 维，四帧 actor 从 384 维变为 372 维；IMU 角速度、projected gravity、
+关节位置、关节速度和上一动作保持不变，critic 继续使用训练期 privileged velocity。
+
 实际长训于 2026-08-28 启动：
 
 - W&B：`tabletennis/smp/u2hmbkmr`；

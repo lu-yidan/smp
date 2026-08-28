@@ -4,6 +4,9 @@
 平地环境一致，每次只改变一个因素。统一使用 4096 environments、20000 updates、
 seed 3883 和每 250 updates 保存。
 
+Full R2 和全部 R2 消融统一使用 372 维四帧 actor observation；恒为零的
+`base_lin_vel` 已完全删除，critic 的 privileged velocity 保留。
+
 ## 核心消融
 
 | ID | Reset | SMP reward | 有序恢复约束 | 目的 |

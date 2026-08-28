@@ -22,6 +22,11 @@ def g1_recovery_core_r2_ordered_smp_env_cfg(play: bool = False):
   """Return R1 with standing gated by ordered recovery-stage completion."""
   cfg = g1_recovery_core_r1_smp_env_cfg(play=play)
 
+  # R1 retained a three-dimensional all-zero compatibility placeholder for
+  # base linear velocity. R2 is trained from scratch, so remove that input from
+  # the deployable actor entirely. The critic keeps its privileged velocity.
+  cfg.observations["actor"].terms.pop("base_lin_vel", None)
+
   if "scratch_stable_stand" in cfg.rewards:
     cfg.rewards["scratch_stable_stand"].func = mdp.ordered_stable_stand_metric
     cfg.rewards["scratch_stable_stand"].params = dict(_STABLE_STAND_PARAMS)
