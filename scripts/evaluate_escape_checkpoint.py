@@ -31,6 +31,7 @@ class EvalCfg:
   steps: int = 1000
   seed: int = 20260814
   device: str = "cuda:0"
+  mirror_policy: bool = False
   plate_mass_kg: float = 8.0
   plate_length_m: float = 0.90
   plate_width_m: float = 0.64
@@ -48,6 +49,71 @@ class EvalCfg:
   stand_max_linear_speed_m_s: float = 0.50
   stand_max_angular_speed_rad_s: float = 1.0
   wide_stance_threshold_m: float = 0.45
+
+
+def _joint_mirror_spec(joint_names: tuple[str, ...], device: torch.device):
+  """Return the involutive G1 sagittal joint permutation and signs."""
+  name_to_index = {name: i for i, name in enumerate(joint_names)}
+  indices = []
+  signs = []
+  for name in joint_names:
+    source = name
+    if name.startswith("left_"):
+      source = "right_" + name.removeprefix("left_")
+    elif name.startswith("right_"):
+      source = "left_" + name.removeprefix("right_")
+    if source not in name_to_index:
+      raise RuntimeError(f"missing mirrored joint for {name}: {source}")
+    indices.append(name_to_index[source])
+    signs.append(-1.0 if name.endswith(("_roll_joint", "_yaw_joint")) else 1.0)
+  if sorted(indices) != list(range(len(joint_names))):
+    raise RuntimeError("joint mirror mapping must be a permutation")
+  return (
+    torch.tensor(indices, dtype=torch.long, device=device),
+    torch.tensor(signs, dtype=torch.float, device=device),
+  )
+
+
+def _mirror_actor_observation(
+  obs: torch.Tensor,
+  joint_indices: torch.Tensor,
+  joint_signs: torch.Tensor,
+) -> torch.Tensor:
+  """Mirror term-wise flattened 4-frame deployable observations."""
+  history = obs.shape[-1] // 96
+  if history * 96 != obs.shape[-1]:
+    raise ValueError(
+      f"expected a multiple of 96 actor observations, got {obs.shape[-1]}"
+    )
+  result = obs.clone()
+  offset = 0
+  for dim, signs in (
+    (3, (1.0, -1.0, 1.0)),
+    (3, (-1.0, 1.0, -1.0)),
+    (3, (1.0, -1.0, 1.0)),
+  ):
+    size = history * dim
+    term = obs[:, offset : offset + size].reshape(-1, history, dim)
+    sign = torch.tensor(signs, dtype=obs.dtype, device=obs.device)
+    result[:, offset : offset + size] = (term * sign).reshape(-1, size)
+    offset += size
+  for _ in range(3):
+    size = history * joint_indices.numel()
+    term = obs[:, offset : offset + size].reshape(-1, history, joint_indices.numel())
+    mirrored = term[:, :, joint_indices] * joint_signs
+    result[:, offset : offset + size] = mirrored.reshape(-1, size)
+    offset += size
+  if offset != obs.shape[-1]:
+    raise RuntimeError("actor observation mirror did not consume every dimension")
+  return result
+
+
+def _mirror_action(
+  action: torch.Tensor,
+  joint_indices: torch.Tensor,
+  joint_signs: torch.Tensor,
+) -> torch.Tensor:
+  return action[:, joint_indices] * joint_signs
 
 
 def _get_evaluation_plate_spec(
@@ -172,6 +238,14 @@ def main(cfg: EvalCfg) -> None:
   obs = env.get_observations()
 
   robot = raw_env.scene["robot"]
+  joint_indices, joint_signs = _joint_mirror_spec(robot.joint_names, raw_env.device)
+  if cfg.mirror_policy:
+    mirrored_twice = _mirror_actor_observation(
+      _mirror_actor_observation(obs, joint_indices, joint_signs),
+      joint_indices,
+      joint_signs,
+    )
+    torch.testing.assert_close(mirrored_twice, obs)
   foot_ids = robot.find_sites(["left_foot", "right_foot"], preserve_order=True)[0]
   head_idx = robot.find_sites(["head"], preserve_order=True)[0][0]
   active = (raw_env._escape_phase > 0).clone()  # type: ignore[attr-defined]
@@ -192,7 +266,12 @@ def main(cfg: EvalCfg) -> None:
 
   for step in range(cfg.steps):
     with torch.inference_mode():
-      actions = policy(obs)
+      policy_obs = obs
+      if cfg.mirror_policy:
+        policy_obs = _mirror_actor_observation(obs, joint_indices, joint_signs)
+      actions = policy(policy_obs)
+      if cfg.mirror_policy:
+        actions = _mirror_action(actions, joint_indices, joint_signs)
       obs, _, _, _ = env.step(actions)
     obstacle_found = raw_env.scene["robot_obstacle_contact"].data.found
     assert obstacle_found is not None
@@ -283,6 +362,7 @@ def main(cfg: EvalCfg) -> None:
 
   result = {
     "checkpoint": cfg.checkpoint.name,
+    "mirror_policy": cfg.mirror_policy,
     "seed": cfg.seed,
     "num_envs": cfg.num_envs,
     "steps": cfg.steps,
