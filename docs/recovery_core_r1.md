@@ -120,3 +120,10 @@ normalizer 均从随机初始化开始；SMP prior 与 GSI generator 仍保留�
 5000 updates，并每 250 updates 保存一次。500/1000 updates 仅为中途诊断，
 不能作为最终结论；最终 checkpoint 必须通过固定四姿态成功率、有序阶段、关节速度、
 功率和脚步位移评测。
+
+实际长训于 2026-08-28 启动：
+
+- W&B：`tabletennis/smp/hn29fn14`；
+- server run：`2026-08-28_23-55-47_recovery_core_r2_ordered_scratch_4096_seed3883`；
+- GPU 7，seed 3883，4096 environments，5000 updates；
+- 启动时未设置 resume、run path 或 checkpoint，确认为 PPO from scratch。
