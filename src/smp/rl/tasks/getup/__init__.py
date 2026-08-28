@@ -45,6 +45,9 @@ from smp.rl.tasks.getup.plate_terrain_v386_scratch_env_cfg import (
 from smp.rl.tasks.getup.plate_terrain_v387_scratch_s0_env_cfg import (
   g1_getup_plate_terrain_v387_scratch_s0_deploy_smp_env_cfg,
 )
+from smp.rl.tasks.getup.plate_terrain_v3872_scratch_s0_dense_env_cfg import (
+  g1_getup_plate_terrain_v3872_scratch_s0_dense_deploy_smp_env_cfg,
+)
 from smp.rl.tasks.getup.robust_env_cfg import g1_getup_robust_smp_env_cfg
 from smp.rl.tasks.getup.safe_env_cfg import g1_getup_robust_safe_smp_env_cfg
 from smp.rl.tasks.getup.smooth_env_cfg import g1_getup_robust_smooth_smp_env_cfg
@@ -561,6 +564,28 @@ register_mjlab_task(
   env_cfg=g1_getup_plate_terrain_v387_scratch_s0_deploy_smp_env_cfg(play=False),
   play_env_cfg=g1_getup_plate_terrain_v387_scratch_s0_deploy_smp_env_cfg(play=True),
   rl_cfg=_plate_terrain_v3871_scratch_s0_getup_rl,
+)
+
+
+def _plate_terrain_v3872_scratch_s0_dense_runner_cfg():
+  cfg = _plate_terrain_v3871_scratch_s0_runner_cfg()
+  cfg.experiment_name = "smp_getup_plate_terrain_v3872_scratch_s0_dense_deploy_g1"
+  return cfg
+
+
+_plate_terrain_v3872_scratch_s0_dense_getup_rl = (
+  _plate_terrain_v3872_scratch_s0_dense_runner_cfg()
+)
+
+register_mjlab_task(
+  task_id="Smp-Getup-Plate-Terrain-V3872-Scratch-S0-Dense-Deploy-G1",
+  env_cfg=(
+    g1_getup_plate_terrain_v3872_scratch_s0_dense_deploy_smp_env_cfg(play=False)
+  ),
+  play_env_cfg=(
+    g1_getup_plate_terrain_v3872_scratch_s0_dense_deploy_smp_env_cfg(play=True)
+  ),
+  rl_cfg=_plate_terrain_v3872_scratch_s0_dense_getup_rl,
 )
 
 __all__ = [
