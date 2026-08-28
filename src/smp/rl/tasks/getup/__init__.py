@@ -42,6 +42,9 @@ from smp.rl.tasks.getup.plate_terrain_v384_env_cfg import (
 from smp.rl.tasks.getup.plate_terrain_v386_scratch_env_cfg import (
   g1_getup_plate_terrain_v386_scratch_s1_deploy_smp_env_cfg,
 )
+from smp.rl.tasks.getup.plate_terrain_v387_scratch_s0_env_cfg import (
+  g1_getup_plate_terrain_v387_scratch_s0_deploy_smp_env_cfg,
+)
 from smp.rl.tasks.getup.robust_env_cfg import g1_getup_robust_smp_env_cfg
 from smp.rl.tasks.getup.safe_env_cfg import g1_getup_robust_safe_smp_env_cfg
 from smp.rl.tasks.getup.smooth_env_cfg import g1_getup_robust_smooth_smp_env_cfg
@@ -513,6 +516,31 @@ register_mjlab_task(
   rl_cfg=_plate_terrain_v386_scratch_s1_getup_rl,
 )
 
+
+def _plate_terrain_v387_scratch_s0_runner_cfg():
+  cfg = _terrain_v363_runner_cfg("smp_getup_plate_terrain_v387_scratch_s0_deploy_g1")
+  cfg.save_interval = 25
+  cfg.algorithm.learning_rate = 3.0e-4
+  cfg.algorithm.num_learning_epochs = 5
+  cfg.algorithm.num_mini_batches = 8
+  cfg.algorithm.symmetry_cfg = {
+    "data_augmentation_func": "smp.rl.symmetry:g1_sagittal_data_augmentation",
+    "use_data_augmentation": True,
+    "use_mirror_loss": True,
+    "mirror_loss_coeff": 0.02,
+  }
+  return cfg
+
+
+_plate_terrain_v387_scratch_s0_getup_rl = _plate_terrain_v387_scratch_s0_runner_cfg()
+
+register_mjlab_task(
+  task_id="Smp-Getup-Plate-Terrain-V387-Scratch-S0-Deploy-G1",
+  env_cfg=g1_getup_plate_terrain_v387_scratch_s0_deploy_smp_env_cfg(play=False),
+  play_env_cfg=g1_getup_plate_terrain_v387_scratch_s0_deploy_smp_env_cfg(play=True),
+  rl_cfg=_plate_terrain_v387_scratch_s0_getup_rl,
+)
+
 __all__ = [
   "g1_getup_plate_terrain_v38_deploy_smp_env_cfg",
   "g1_getup_plate_terrain_v381_deploy_smp_env_cfg",
@@ -521,6 +549,7 @@ __all__ = [
   "g1_getup_plate_terrain_v383_right_deploy_smp_env_cfg",
   "g1_getup_plate_terrain_v384_symmetric_deploy_smp_env_cfg",
   "g1_getup_plate_terrain_v386_scratch_s1_deploy_smp_env_cfg",
+  "g1_getup_plate_terrain_v387_scratch_s0_deploy_smp_env_cfg",
   "g1_getup_robust_smp_env_cfg",
   "g1_getup_robust_safe_smp_env_cfg",
   "g1_getup_robust_smooth_smp_env_cfg",
