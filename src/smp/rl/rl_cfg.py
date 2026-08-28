@@ -1,8 +1,17 @@
+from dataclasses import dataclass
+
 from mjlab.rl import (
   RslRlModelCfg,
   RslRlOnPolicyRunnerCfg,
   RslRlPpoAlgorithmCfg,
 )
+
+
+@dataclass
+class SmpRslRlPpoAlgorithmCfg(RslRlPpoAlgorithmCfg):
+  """PPO config with RSL-RL's optional sagittal symmetry extension."""
+
+  symmetry_cfg: dict[str, object] | None = None
 
 
 def unitree_g1_smp_ppo_runner_cfg():
@@ -23,7 +32,7 @@ def unitree_g1_smp_ppo_runner_cfg():
       activation="elu",
       obs_normalization=True,
     ),
-    algorithm=RslRlPpoAlgorithmCfg(
+    algorithm=SmpRslRlPpoAlgorithmCfg(
       value_loss_coef=1.0,
       use_clipped_value_loss=True,
       clip_param=0.2,
