@@ -31,15 +31,20 @@ route motion prior。重训 prior 属于单独 ablation。
 ## 启动命令
 
 ```bash
-CUDA_VISIBLE_DEVICES=4 uv run scripts/train.py \
+CUDA_VISIBLE_DEVICES=7 uv run scripts/train.py \
   Smp-Getup-Plate-Terrain-V386-Scratch-S1-Deploy-G1 \
-  --env.scene.num-envs 4096 \
+  --env.scene.num-envs 16384 \
   --agent.max-iterations 600 \
-  --agent.run-name v386_scratch_s1_health_gate
+  --agent.run-name v386_scratch_s1_16384_health_gate
 ```
 
 命令不包含 `--agent.resume` 或 checkpoint 参数，所以 actor/critic 确实随机
 初始化。600 updates 是健康门，不是最终训练预算。
+
+实际运行：W&B `tabletennis/smp/0erhlfpq`，seed 386。16384 environments 每个
+update 产生 16384 x 24 = 393216 条真实 transition；因此 model_100 已约为
+4096-environment 训练的 model_400 采样量。checkpoint 仍在 100/300/599 做冻结
+评测，但横向比较同时报告 environment transitions，不能只比较 update 编号。
 
 ## S1 晋级门槛
 
