@@ -10,7 +10,9 @@ from tensordict import TensorDict
 if TYPE_CHECKING:
   from rsl_rl.env import VecEnv
 
+# Legacy deploy frame includes a leading zero/estimated base linear velocity.
 FRAME_DIM = 96
+NO_LINEAR_VELOCITY_FRAME_DIM = 93
 JOINT_DIM = 29
 
 
@@ -45,19 +47,32 @@ def mirror_g1_actor_tensor(
   joint_signs: torch.Tensor,
 ) -> torch.Tensor:
   """Mirror term-wise flattened deployment observations for any history length."""
-  history = obs.shape[-1] // FRAME_DIM
-  if history * FRAME_DIM != obs.shape[-1]:
-    raise ValueError(
-      f"expected a multiple of {FRAME_DIM} observation dimensions, got {obs.shape[-1]}"
+  obs_dim = obs.shape[-1]
+  if obs_dim % FRAME_DIM == 0:
+    frame_dim = FRAME_DIM
+    vector_specs = (
+      ((1.0, -1.0, 1.0), "linear velocity"),
+      ((-1.0, 1.0, -1.0), "angular velocity"),
+      ((1.0, -1.0, 1.0), "projected gravity"),
     )
+  elif obs_dim % NO_LINEAR_VELOCITY_FRAME_DIM == 0:
+    frame_dim = NO_LINEAR_VELOCITY_FRAME_DIM
+    vector_specs = (
+      ((-1.0, 1.0, -1.0), "angular velocity"),
+      ((1.0, -1.0, 1.0), "projected gravity"),
+    )
+  else:
+    raise ValueError(
+      "expected a multiple of either "
+      f"{FRAME_DIM} or {NO_LINEAR_VELOCITY_FRAME_DIM} observation dimensions, "
+      f"got {obs_dim}"
+    )
+  history = obs_dim // frame_dim
   result = obs.clone()
   offset = 0
   # Linear velocity and gravity are polar vectors. Angular velocity is axial.
-  for dim, signs in (
-    (3, (1.0, -1.0, 1.0)),
-    (3, (-1.0, 1.0, -1.0)),
-    (3, (1.0, -1.0, 1.0)),
-  ):
+  for signs, _name in vector_specs:
+    dim = 3
     size = history * dim
     term = obs[..., offset : offset + size].reshape(*obs.shape[:-1], history, dim)
     sign = torch.tensor(signs, dtype=obs.dtype, device=obs.device)
@@ -113,6 +128,7 @@ def g1_sagittal_data_augmentation(
 __all__ = [
   "FRAME_DIM",
   "JOINT_DIM",
+  "NO_LINEAR_VELOCITY_FRAME_DIM",
   "g1_sagittal_data_augmentation",
   "mirror_g1_actions",
   "mirror_g1_actor_tensor",
