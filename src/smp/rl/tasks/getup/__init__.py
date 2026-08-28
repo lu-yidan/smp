@@ -595,7 +595,7 @@ register_mjlab_task(
 def _plate_terrain_v3873_scratch_stage_bridge_runner_cfg():
   cfg = _plate_terrain_v3872_scratch_s0_dense_runner_cfg()
   cfg.experiment_name = "smp_getup_plate_terrain_v3873_scratch_stage_bridge_deploy_g1"
-  cfg.algorithm.learning_rate = 5.0e-5
+  cfg.algorithm.learning_rate = 1.0e-4
   cfg.save_interval = 250
   return cfg
 
