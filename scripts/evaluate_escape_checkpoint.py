@@ -32,6 +32,9 @@ class EvalCfg:
   seed: int = 20260814
   device: str = "cuda:0"
   mirror_policy: bool = False
+  canonicalize_right_side: bool = False
+  canonicalize_enter_gravity_y: float = 0.65
+  canonicalize_detection_steps: int = 8
   plate_mass_kg: float = 8.0
   plate_length_m: float = 0.90
   plate_width_m: float = 0.64
@@ -151,6 +154,12 @@ def main(cfg: EvalCfg) -> None:
     raise ValueError("plate dimensions must be positive")
   if cfg.plate_friction <= 0.0:
     raise ValueError("plate_friction must be positive")
+  if cfg.mirror_policy and cfg.canonicalize_right_side:
+    raise ValueError("mirror_policy and canonicalize_right_side are mutually exclusive")
+  if not 0.0 < cfg.canonicalize_enter_gravity_y < 1.0:
+    raise ValueError("canonicalize_enter_gravity_y must be between zero and one")
+  if cfg.canonicalize_detection_steps <= 0:
+    raise ValueError("canonicalize_detection_steps must be positive")
   pose_specs = {
     "supine": ((0.0, 1.0, 0.0, 0.0), (2,)),
     "prone": ((1.0, 0.0, 0.0, 0.0), (1,)),
@@ -246,6 +255,7 @@ def main(cfg: EvalCfg) -> None:
       joint_signs,
     )
     torch.testing.assert_close(mirrored_twice, obs["actor"])
+  canonicalized = torch.zeros(raw_env.num_envs, dtype=torch.bool, device=raw_env.device)
   foot_ids = robot.find_sites(["left_foot", "right_foot"], preserve_order=True)[0]
   head_idx = robot.find_sites(["head"], preserve_order=True)[0][0]
   active = (raw_env._escape_phase > 0).clone()  # type: ignore[attr-defined]
@@ -267,14 +277,36 @@ def main(cfg: EvalCfg) -> None:
   for step in range(cfg.steps):
     with torch.inference_mode():
       policy_obs = obs
-      if cfg.mirror_policy:
+      mirror_mask = None
+      if cfg.canonicalize_right_side:
+        actor_obs = obs["actor"]
+        history = actor_obs.shape[-1] // 96
+        gravity_offset = history * 6
+        gravity = actor_obs[:, gravity_offset : gravity_offset + history * 3]
+        gravity = gravity.reshape(-1, history, 3)
+        # Right-side lying produces positive body-frame gravity-y. Latch the
+        # convention for the episode so rolling cannot switch it mid-rise.
+        if step < cfg.canonicalize_detection_steps:
+          canonicalized |= torch.amax(gravity[:, :, 1], dim=1) >= (
+            cfg.canonicalize_enter_gravity_y
+          )
+        mirror_mask = canonicalized
+      elif cfg.mirror_policy:
+        mirror_mask = torch.ones(
+          raw_env.num_envs, dtype=torch.bool, device=raw_env.device
+        )
+      if mirror_mask is not None:
         policy_obs = obs.clone()
-        policy_obs["actor"] = _mirror_actor_observation(
+        mirrored_actor = _mirror_actor_observation(
           obs["actor"], joint_indices, joint_signs
         )
+        policy_obs["actor"] = torch.where(
+          mirror_mask[:, None], mirrored_actor, obs["actor"]
+        )
       actions = policy(policy_obs)
-      if cfg.mirror_policy:
-        actions = _mirror_action(actions, joint_indices, joint_signs)
+      if mirror_mask is not None:
+        mirrored_actions = _mirror_action(actions, joint_indices, joint_signs)
+        actions = torch.where(mirror_mask[:, None], mirrored_actions, actions)
       obs, _, _, _ = env.step(actions)
     obstacle_found = raw_env.scene["robot_obstacle_contact"].data.found
     assert obstacle_found is not None
@@ -366,6 +398,10 @@ def main(cfg: EvalCfg) -> None:
   result = {
     "checkpoint": cfg.checkpoint.name,
     "mirror_policy": cfg.mirror_policy,
+    "canonicalize_right_side": cfg.canonicalize_right_side,
+    "canonicalize_enter_gravity_y": cfg.canonicalize_enter_gravity_y,
+    "canonicalize_detection_steps": cfg.canonicalize_detection_steps,
+    "canonicalized_count": int((canonicalized & active).sum()),
     "seed": cfg.seed,
     "num_envs": cfg.num_envs,
     "steps": cfg.steps,
