@@ -54,7 +54,33 @@ Audit JSONL files are stored under:
 - Retain joint-speed, joint-power, vertical-speed, action-smoothing, and torque
   constraints.
 
-Gate rule: evaluate model 50 and 100 on all four reset poses. Only after a
-non-zero recovery rate and improving task metrics should the run continue or
-expand to three seeds. Plate and terrain curricula are added only after this
-clean-recovery foundation passes.
+The same seed was resumed from model 199 to iteration 1998 in W&B run
+`tabletennis/smp/utng5pwo`. Upright increased to 0.966 and recovery initiation
+to 0.955, but ordered-stage completion and frozen success remained zero for all
+four poses. Mean knee flexion was only 0.479 rad, below the 1.0 rad seated
+waypoint. Frozen model 1998 also reached 10.59 rad/s and 168.8 W in prone
+evaluation. This configuration learned an upright-torso, straight-knee
+shortcut and must not be expanded to additional seeds.
+
+Audit JSONL files are stored under:
+
+`/mnt/workspace/user/luyidan/baselines/G1_Recovery_Below_Block/v3872`
+
+## V3.8.7.3 stage bridge
+
+- Task: `Smp-Getup-Plate-Terrain-V3873-Scratch-Stage-Bridge-Deploy-G1`
+- W&B: `tabletennis/smp/m355n8gg`
+- Commits: `41a6ac3`, `22eb17f`
+- Resume source: V3.8.7.2 model 1998 with matching SHA-256 copies.
+- 4096 environments, seed 3872, 1000 additional updates, fixed `1e-4` rate.
+- Remove the standalone head-height and upright rewards that admitted the
+  straight-knee shortcut.
+- Add the existing seated-crouched-standing staged pose at weight 1.20 and the
+  slow staged head-velocity profile at weight 0.15.
+- Raise ordered-stage progress to 2.00 and stable standing to 3.00.
+- Tighten joint-speed and power excess penalties without reducing physical
+  actuator limits.
+
+Gate rule: frozen model 2248/2498/2748/2997 evaluations must show stage
+advancement, non-zero formal recovery, and reduced prone speed/power before
+this curriculum can add the motion prior, terrain, plates, or extra seeds.
