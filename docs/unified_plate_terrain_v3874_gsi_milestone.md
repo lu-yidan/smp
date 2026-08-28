@@ -53,6 +53,13 @@ V3.8.7.1--V3.8.7.3 证明：仅靠随机初始化的策略和全程倒地 reset�
 
 ## 快速验证计划
 
+当前快速续训：
+
+- Commit: `2c32b64`
+- W&B: `tabletennis/smp/lr35qear`
+- 4096 environments，seed 3874，GPU 7；
+- 从 V3.8.7.3 `model_2997.pt` 续训 500 updates，每 250 updates 保存。
+
 1. 先从 V3.8.7.3 `model_2997.pt` 续训，4096 环境、单 seed、每 250 update 保存。
 2. 固定 checkpoint 分别评测俯卧、仰卧、左右侧卧，记录恢复成功率、阶段完成率、
    恢复时间、最大关节速度、最大功率和脚步位移。
