@@ -20,6 +20,13 @@ Full R2 和全部 R2 消融统一使用 372 维四帧 actor observation；恒为
 A 与 B 当前并行运行。C、D、E 应在完成固定 checkpoint 健康门后依次启动，不能把压板、
 地形或不同网络结构混进核心消融。
 
+当前正式配对实验：
+
+- A Full R2：GPU 7，W&B `tabletennis/smp/7vr43k0b`；
+- B GSI-only：GPU 6，W&B `tabletennis/smp/u96c3ezl`；
+- 二者均为 seed 3883、4096 environments、20000 updates、372 维四帧 actor；
+- B 的 `procedural_probability=0`，其余配置与 A 相同。
+
 ## 部署相关补充实验
 
 以下是补充分析，不必都作为同等规模的主消融：
