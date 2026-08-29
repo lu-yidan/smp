@@ -58,6 +58,7 @@ class PipelineStateTest(unittest.TestCase):
     completed: bool,
     gpu_processes: list[str],
     completed_gates: set[int] | None = None,
+    active_evaluation: dict | None = None,
   ) -> tuple[dict, mock.Mock]:
     completed_gates = completed_gates or set()
     launcher = mock.Mock(return_value={"pid": 12345})
@@ -66,7 +67,7 @@ class PipelineStateTest(unittest.TestCase):
       mock.patch.object(
         pipeline, "_ensure_manifests", return_value=(self.manifests, [])
       ),
-      mock.patch.object(pipeline, "_active_eval", return_value=None),
+      mock.patch.object(pipeline, "_active_eval", return_value=active_evaluation),
       mock.patch.object(pipeline, "_gpu_processes", return_value=gpu_processes),
       mock.patch.object(
         pipeline,
@@ -99,6 +100,38 @@ class PipelineStateTest(unittest.TestCase):
     self.assertEqual(state["active_evaluation"], {"pid": 12345})
     launcher.assert_called_once()
     self.assertEqual(launcher.call_args.args[2], 15000)
+
+  def test_dead_incomplete_evaluator_is_alerted_not_relaunched(self) -> None:
+    state, launcher = self._advance(
+      completed=True,
+      gpu_processes=[],
+      active_evaluation={"gate": 8000, "pid": 999999, "process_alive": False},
+    )
+    self.assertEqual(state["status"], "EVAL_ALERT")
+    self.assertEqual(state["active_evaluation"]["gate"], 8000)
+    launcher.assert_not_called()
+
+  def test_dead_successful_evaluator_clears_marker_and_advances(self) -> None:
+    self.cfg.evidence_dir.mkdir(parents=True)
+    (self.cfg.evidence_dir / "active_evaluation.json").write_text("{}")
+    state, launcher = self._advance(
+      completed=True,
+      gpu_processes=[],
+      completed_gates={8000},
+      active_evaluation={"gate": 8000, "pid": 999999, "process_alive": False},
+    )
+    self.assertEqual(state["status"], "EVAL_RUNNING")
+    self.assertFalse((self.cfg.evidence_dir / "active_evaluation.json").exists())
+    self.assertEqual(launcher.call_args.args[2], 15000)
+
+  def test_active_eval_preserves_dead_marker_for_reconciliation(self) -> None:
+    self.cfg.evidence_dir.mkdir(parents=True)
+    marker = self.cfg.evidence_dir / "active_evaluation.json"
+    marker.write_text(json.dumps({"gate": 8000, "pid": 999999}))
+    with mock.patch.object(pipeline, "_pid_alive", return_value=False):
+      active = pipeline._active_eval(self.cfg.evidence_dir)
+    self.assertFalse(active["process_alive"])
+    self.assertTrue(marker.is_file())
 
 
 class CompletionValidationTest(unittest.TestCase):

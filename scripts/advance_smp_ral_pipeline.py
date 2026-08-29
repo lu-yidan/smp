@@ -306,10 +306,29 @@ def _active_eval(evidence_dir: Path) -> dict[str, Any] | None:
     return None
   payload = json.loads(launch_state.read_text())
   pid = int(payload["pid"])
-  if _pid_alive(pid):
-    return payload
-  launch_state.unlink()
-  return None
+  payload["process_alive"] = _pid_alive(pid)
+  return payload
+
+
+def _reconcile_active_eval(
+  evidence_dir: Path,
+  active: dict[str, Any] | None,
+  evaluations: list[dict[str, Any]],
+  *,
+  identity_key: str,
+) -> tuple[dict[str, Any] | None, bool]:
+  """Clear a successful worker marker or retain a dead incomplete worker."""
+  if active is None or active.get("process_alive", True):
+    return active, False
+  identity = int(active["gate"])
+  complete = any(
+    int(row[identity_key]) == identity and row["analysis_complete"]
+    for row in evaluations
+  )
+  if complete:
+    (evidence_dir / "active_evaluation.json").unlink()
+    return None, False
+  return active, True
 
 
 def _launch_evaluation(
@@ -1505,6 +1524,26 @@ def _advance_confirmation(
     if not complete and next_seed is None:
       next_seed = seed
 
+  active, evaluation_alert = _reconcile_active_eval(
+    cfg.confirmation_evidence_dir,
+    active,
+    evaluations,
+    identity_key="policy_seed",
+  )
+
+  if evaluation_alert:
+    return {
+      "status": "CONFIRMATION_EVAL_ALERT",
+      "action": (
+        "Confirmation evaluator exited before a complete valid matrix and "
+        "analysis; inspect the log and partial results before any explicit retry."
+      ),
+      "health": health,
+      "manifest_index": index,
+      "evaluations": evaluations,
+      "active_evaluation": active,
+      "aggregate": None,
+    }
   if active is not None:
     return {
       "status": "CONFIRMATION_EVAL_RUNNING",
@@ -1603,6 +1642,12 @@ def advance(cfg: PipelineCfg) -> dict[str, Any]:
     )
     if not complete and next_gate is None:
       next_gate = gate
+  active, evaluation_alert = _reconcile_active_eval(
+    cfg.evidence_dir,
+    active,
+    evaluations,
+    identity_key="gate",
+  )
 
   gpu_processes = _gpu_processes()
   stable_selection = None
@@ -1651,6 +1696,12 @@ def advance(cfg: PipelineCfg) -> dict[str, Any]:
   if not health["healthy"]:
     status = "TRAINING_ALERT"
     action = "Inspect health alerts before changing or stopping any job."
+  elif evaluation_alert:
+    status = "EVAL_ALERT"
+    action = (
+      "Frozen evaluation process exited before a complete valid matrix and "
+      "analysis; inspect its log and partial results before any explicit retry."
+    )
   elif active is not None:
     status = "EVAL_RUNNING"
     action = "Wait for the resumable frozen matrix and analyzer to finish."

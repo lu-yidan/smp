@@ -89,6 +89,26 @@ class ConfirmationEvidencePipelineTest(unittest.TestCase):
     self.assertEqual(result["status"], "CONFIRMATION_ANALYSIS_COMPLETE")
     self.assertEqual(result["aggregate"]["status"], "MINIMUM_POLICY_SEEDS_MET")
 
+  def test_dead_incomplete_seed_evaluator_is_fail_closed(self) -> None:
+    with (
+      mock.patch.object(pipeline, "_pid_alive", return_value=False),
+      mock.patch.object(pipeline, "inspect", return_value=_health()),
+      mock.patch.object(
+        pipeline, "write_confirmation_manifests", return_value=self.index
+      ),
+      mock.patch.object(
+        pipeline,
+        "_active_eval",
+        return_value={"gate": 11, "pid": 999999, "process_alive": False},
+      ),
+      mock.patch.object(pipeline, "_analysis_complete", return_value=False),
+      mock.patch.object(pipeline, "_launch_evaluation") as launcher,
+    ):
+      result = pipeline._advance_confirmation(self.cfg, self.confirmation, [])
+    self.assertEqual(result["status"], "CONFIRMATION_EVAL_ALERT")
+    self.assertEqual(result["active_evaluation"]["gate"], 11)
+    launcher.assert_not_called()
+
 
 if __name__ == "__main__":
   unittest.main()
