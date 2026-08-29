@@ -46,6 +46,16 @@
     "manifest_path": null,
     "manifest_sha256": null
   },
+  "held_out_evaluation_banks": {
+    "status": "preregistered",
+    "generation_seed": 20260829,
+    "num_states_per_mode": 512,
+    "modes": ["native_gsi", "prone", "supine", "left_side", "right_side"],
+    "source": "selected_flat_arm_gsi_and_frozen_procedural_poses",
+    "training_bank_disjoint_required": true,
+    "result_manifest": null,
+    "manifest_sha256": null
+  },
   "evaluation": {
     "schema_version": 2,
     "seed": 20260829,

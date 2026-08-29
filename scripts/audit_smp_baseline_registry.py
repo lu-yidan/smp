@@ -185,6 +185,32 @@ def audit(registry: dict[str, Any], registry_path: Path) -> dict[str, Any]:
 
   repo_root = _repo_root(registry_path)
   bank_ready = _validate_reset_bank(registry.get("shared_reset_bank", {}), repo_root)
+  held_out = registry.get("held_out_evaluation_banks", {})
+  _require(held_out.get("status") == "preregistered", "held-out bank status drifted")
+  _require(
+    held_out.get("generation_seed") == 20260829,
+    "held-out bank generation seed drifted",
+  )
+  _require(
+    held_out.get("num_states_per_mode") == 512,
+    "held-out bank size drifted",
+  )
+  _require(
+    tuple(held_out.get("modes", ())) == EXPECTED_MODES,
+    "held-out bank modes drifted",
+  )
+  _require(
+    held_out.get("source") == "selected_flat_arm_gsi_and_frozen_procedural_poses",
+    "held-out bank source drifted",
+  )
+  _require(
+    held_out.get("training_bank_disjoint_required") is True,
+    "held-out bank must remain disjoint from training",
+  )
+  _require(
+    held_out.get("result_manifest") is None and held_out.get("manifest_sha256") is None,
+    "preregistered held-out bank cannot contain mutable result fields",
+  )
   methods = registry.get("methods")
   _require(isinstance(methods, list), "methods must be a list")
   ids = [method.get("id") for method in methods]

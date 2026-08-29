@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import csv
+import hashlib
 import json
 import re
 import subprocess
@@ -16,6 +17,14 @@ import tyro
 
 _DEFAULT_MODES = ("native_gsi", "prone", "supine", "left_side", "right_side")
 _EVALUATION_SCHEMA_VERSION = 2
+
+
+def _sha256(path: Path) -> str:
+  digest = hashlib.sha256()
+  with path.open("rb") as stream:
+    for chunk in iter(lambda: stream.read(1024 * 1024), b""):
+      digest.update(chunk)
+  return digest.hexdigest()
 
 
 @dataclass(frozen=True)
@@ -56,6 +65,21 @@ def _load_manifest(path: Path) -> tuple[dict[str, Any], list[dict[str, Any]]]:
     checkpoint = Path(run["checkpoint"])
     if not checkpoint.is_file():
       raise FileNotFoundError(checkpoint)
+    expected_hash = run.get("checkpoint_sha256")
+    if expected_hash is not None and _sha256(checkpoint) != expected_hash:
+      raise ValueError(f"manifest checkpoint changed: {checkpoint}")
+  if str(metadata.get("evaluation_status", "")).startswith("BLOCKED_"):
+    raise ValueError(
+      f"manifest is not evaluation-ready: {metadata['evaluation_status']}"
+    )
+  held_out = metadata.get("matched_eval_manifest")
+  held_out_hash = metadata.get("matched_eval_manifest_sha256")
+  if (held_out is None) != (held_out_hash is None):
+    raise ValueError("matched evaluation manifest provenance is incomplete")
+  if held_out is not None:
+    path = Path(held_out)
+    if not path.is_file() or _sha256(path) != held_out_hash:
+      raise ValueError("matched evaluation manifest changed")
   return metadata, runs
 
 
@@ -85,9 +109,7 @@ def _assign_commands(
     device_index = index % len(devices)
     buckets[device_index].append(command + ["--device", devices[device_index]])
   return [
-    (device, bucket)
-    for device, bucket in zip(devices, buckets, strict=True)
-    if bucket
+    (device, bucket) for device, bucket in zip(devices, buckets, strict=True) if bucket
   ]
 
 
@@ -111,9 +133,7 @@ def _write_summary(
   for (arm, checkpoint, policy_seed), group in sorted(grouped.items()):
     rates_by_mode: dict[str, list[float]] = {}
     for row in group:
-      rates_by_mode.setdefault(row["reset_mode"], []).append(
-        row["strict_success_rate"]
-      )
+      rates_by_mode.setdefault(row["reset_mode"], []).append(row["strict_success_rate"])
     mode_means = {
       mode: sum(values) / len(values) for mode, values in rates_by_mode.items()
     }
@@ -159,14 +179,17 @@ def main(cfg: MatrixCfg) -> None:
     policy_seed = run.get("policy_seed")
     for mode in cfg.modes:
       for eval_seed in cfg.eval_seeds:
-        filename = "__".join(
-          (
-            _slug(run["name"]),
-            _slug(checkpoint.stem),
-            _slug(mode),
-            f"eval{eval_seed}",
+        filename = (
+          "__".join(
+            (
+              _slug(run["name"]),
+              _slug(checkpoint.stem),
+              _slug(mode),
+              f"eval{eval_seed}",
+            )
           )
-        ) + ".json"
+          + ".json"
+        )
         output = cfg.output_dir / filename
         expected = {
           "evaluation_schema_version": _EVALUATION_SCHEMA_VERSION,
@@ -177,6 +200,7 @@ def main(cfg: MatrixCfg) -> None:
           "num_envs": cfg.num_envs,
           "steps": cfg.steps,
           "policy_seed": policy_seed,
+          "matched_eval_manifest_sha256": metadata.get("matched_eval_manifest_sha256"),
         }
         result_paths.append(output)
         if not cfg.overwrite and _valid_result(output, expected):
@@ -205,6 +229,15 @@ def main(cfg: MatrixCfg) -> None:
           command.extend(("--policy-seed", str(policy_seed)))
         if cfg.include_per_env:
           command.append("--include-per-env")
+        if metadata.get("matched_eval_manifest") is not None:
+          command.extend(
+            (
+              "--matched-eval-manifest",
+              str(Path(metadata["matched_eval_manifest"]).resolve()),
+              "--matched-eval-manifest-sha256",
+              metadata["matched_eval_manifest_sha256"],
+            )
+          )
         commands.append(command)
 
   devices = cfg.devices or (cfg.device,)
@@ -218,8 +251,7 @@ def main(cfg: MatrixCfg) -> None:
   if assignments:
     with ThreadPoolExecutor(max_workers=len(assignments)) as executor:
       futures = [
-        executor.submit(_run_bucket, device, bucket)
-        for device, bucket in assignments
+        executor.submit(_run_bucket, device, bucket) for device, bucket in assignments
       ]
       for future in futures:
         future.result()

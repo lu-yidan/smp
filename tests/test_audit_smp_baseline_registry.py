@@ -38,6 +38,10 @@ class BaselineRegistryTest(unittest.TestCase):
     interval["training_budget"]["save_interval"] = 500
     with self.assertRaisesRegex(ValueError, "save interval"):
       audit(interval, self.registry_path)
+    held_out = copy.deepcopy(self.registry)
+    held_out["held_out_evaluation_banks"]["num_states_per_mode"] = 256
+    with self.assertRaisesRegex(ValueError, "held-out bank size"):
+      audit(held_out, self.registry_path)
     objective = copy.deepcopy(self.registry)
     objective["methods"][0]["uses_motion_prior_objective"] = True
     with self.assertRaisesRegex(ValueError, "objective contract"):

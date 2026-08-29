@@ -175,6 +175,26 @@ until a separate SHA-locked held-out reset bank, disjoint from the training
 bank, is generated and bound. Training checkpoints or their manifests are not
 performance evidence.
 
+`generate_smp_matched_eval_banks.py` materializes that held-out fixture only
+after flat promotion and the training bank are SHA-valid. It creates 512 states
+for each of native GSI, prone, supine, left-side, and right-side using frozen
+seed 20260829 and the selected prior/procedural parameters. Every bank carries
+the exact 10x59 history, mode counts, tensor shapes, and source hashes. The
+generator verifies the reset-family counts separately, then compares root
+state, joints, and velocities against the entire training bank and rejects any
+exact physical-state overlap or duplicate held-out state. Partial outputs,
+changed hashes, a live GPU process, or a different promotion fail closed.
+
+`bind_smp_native_eval_banks.py` is the only promotion path from the 12 blocked
+native checkpoint manifests to formal matrix manifests. It verifies every
+checkpoint and held-out-bank hash, the complete 3-seed by 4-gate factorial, the
+method set, protocol dimensions, selected-promotion lineage, training-bank SHA,
+and zero exact overlap. It then emits a second immutable 12-manifest set with
+status `READY_WITH_MATCHED_HELD_OUT_RESET_BANK`. The source checkpoint
+manifests remain blocked and are never rewritten. Only the bound READY
+manifests may enter `run_smp_frozen_eval_matrix.py`; the binding itself is still
+not performance evidence.
+
 ## Frozen flat evaluation
 
 Use `evaluate_smp_baseline.py` schema 2 for every compatible policy:

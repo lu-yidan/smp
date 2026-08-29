@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 import math
 from dataclasses import asdict, dataclass
@@ -50,6 +51,8 @@ class EvalCfg:
   stair_edge_cohort: str = ""
   plate_mode: str = ""
   plate_mass_kg: float = 0.0
+  matched_eval_manifest: Path | None = None
+  matched_eval_manifest_sha256: str = ""
 
 
 def _quantile(values: torch.Tensor, q: float) -> float:
@@ -73,6 +76,86 @@ def _wilson_interval(successes: int, total: int) -> tuple[float, float]:
     min(rate, max(0.0, center - radius)),
     max(rate, min(1.0, center + radius)),
   )
+
+
+def _sha256(path: Path) -> str:
+  digest = hashlib.sha256()
+  with path.open("rb") as stream:
+    for chunk in iter(lambda: stream.read(1024 * 1024), b""):
+      digest.update(chunk)
+  return digest.hexdigest()
+
+
+def _configure_matched_eval_bank(env_cfg, cfg: EvalCfg) -> dict | None:
+  """Bind one held-out bank to a native Tier-A task, or reject ambiguity."""
+  is_native_baseline = "init_matched_reset_bank" in env_cfg.events
+  if cfg.matched_eval_manifest is None:
+    if is_native_baseline:
+      raise ValueError(
+        "native Tier-A evaluation requires a matched held-out reset-bank manifest"
+      )
+    if cfg.matched_eval_manifest_sha256:
+      raise ValueError("held-out manifest SHA was provided without a manifest")
+    return None
+  if not is_native_baseline:
+    raise ValueError("matched held-out banks are only valid for native Tier-A tasks")
+  if cfg.evaluation_profile != "flat":
+    raise ValueError("matched held-out banks are only defined for flat evaluation")
+  path = cfg.matched_eval_manifest
+  if (
+    not path.is_file()
+    or len(cfg.matched_eval_manifest_sha256) != 64
+    or _sha256(path) != cfg.matched_eval_manifest_sha256
+  ):
+    raise ValueError("matched held-out reset-bank manifest SHA-256 mismatch")
+  manifest = json.loads(path.read_text())
+  if (
+    manifest.get("status") != "READY"
+    or manifest.get("generation_seed") != cfg.seed
+    or manifest.get("num_states_per_mode") != cfg.num_envs
+    or tuple(manifest.get("modes", ())) != ("native_gsi", *_RESET_WEIGHTS)
+    or manifest.get("exact_training_overlap_count") != 0
+    or not isinstance(manifest.get("training_bank_sha256"), str)
+    or len(manifest["training_bank_sha256"]) != 64
+  ):
+    raise ValueError("matched held-out reset-bank manifest violates the protocol")
+  row = manifest.get("banks", {}).get(cfg.reset_mode)
+  if not isinstance(row, dict):
+    raise ValueError(f"held-out manifest lacks reset mode {cfg.reset_mode}")
+  bank = Path(row.get("path", ""))
+  bank_sha = row.get("sha256")
+  expected_type = (
+    0
+    if cfg.reset_mode == "native_gsi"
+    else list(_RESET_WEIGHTS).index(cfg.reset_mode) + 1
+  )
+  expected_counts = [0] * 5
+  expected_counts[expected_type] = cfg.num_envs
+  if (
+    not bank.is_file()
+    or not isinstance(bank_sha, str)
+    or _sha256(bank) != bank_sha
+    or row.get("num_states") != cfg.num_envs
+    or row.get("reset_type_counts") != expected_counts
+  ):
+    raise ValueError(f"held-out {cfg.reset_mode} bank or provenance changed")
+  loader = env_cfg.events["init_matched_reset_bank"]
+  loader.params.update(
+    {
+      "bank_path": str(bank.resolve()),
+      "bank_sha256": bank_sha,
+      "expected_num_states": cfg.num_envs,
+      "sampling_seed": cfg.seed,
+    }
+  )
+  return {
+    "manifest": str(path.resolve()),
+    "manifest_sha256": cfg.matched_eval_manifest_sha256,
+    "bank": str(bank.resolve()),
+    "bank_sha256": bank_sha,
+    "training_bank_sha256": manifest["training_bank_sha256"],
+    "exact_training_overlap_count": 0,
+  }
 
 
 def _configure_specialist_stratum(env_cfg, cfg: EvalCfg) -> None:
@@ -166,20 +249,26 @@ def main(cfg: EvalCfg) -> None:
   configure_torch_backends()
   env_cfg = load_env_cfg(cfg.task)
   agent_cfg = load_rl_cfg(cfg.task)
+  matched_eval = _configure_matched_eval_bank(env_cfg, cfg)
   _configure_specialist_stratum(env_cfg, cfg)
   env_cfg.scene.num_envs = cfg.num_envs
   env_cfg.seed = cfg.seed
   env_cfg.terminations = {}
   env_cfg.episode_length_s = 1.0e9
   env_cfg.events.pop("gsi_refresh", None)
-  env_cfg.events["init_smp_state"].params.update(
-    {
+  if "init_smp_state" in env_cfg.events:
+    prior_params = {
       "compile_model": False,
-      "gsi_buffer_size": max(1024, cfg.num_envs),
+      "gsi_buffer_size": 1 if matched_eval is not None else max(1024, cfg.num_envs),
     }
-  )
+    if matched_eval is not None:
+      prior_params["gsi_batch_size"] = 1
+    env_cfg.events["init_smp_state"].params.update(prior_params)
 
-  if cfg.evaluation_profile != "flat":
+  if matched_eval is not None:
+    if cfg.reset_mode != "native_gsi" or not cfg.native_pushes:
+      env_cfg.events.pop("push_robot", None)
+  elif cfg.evaluation_profile != "flat":
     pass
   elif cfg.reset_mode == "native_gsi":
     if not cfg.native_pushes:
@@ -229,6 +318,8 @@ def main(cfg: EvalCfg) -> None:
     map_location=cfg.device,
   )
   policy = runner.get_inference_policy(device=cfg.device)
+  rollout_rng_seed = cfg.seed + 1000003
+  torch.manual_seed(rollout_rng_seed)
   obs = env.get_observations()
 
   terrain_type_ids = torch.full(
@@ -503,6 +594,19 @@ def main(cfg: EvalCfg) -> None:
     "native_pushes": cfg.native_pushes if cfg.reset_mode == "native_gsi" else False,
     "policy_seed": cfg.policy_seed,
     "seed": cfg.seed,
+    "rollout_rng_seed": rollout_rng_seed,
+    "matched_eval_manifest": matched_eval["manifest"] if matched_eval else None,
+    "matched_eval_manifest_sha256": (
+      matched_eval["manifest_sha256"] if matched_eval else None
+    ),
+    "matched_eval_bank": matched_eval["bank"] if matched_eval else None,
+    "matched_eval_bank_sha256": matched_eval["bank_sha256"] if matched_eval else None,
+    "matched_eval_training_bank_sha256": (
+      matched_eval["training_bank_sha256"] if matched_eval else None
+    ),
+    "matched_eval_exact_training_overlap_count": (
+      matched_eval["exact_training_overlap_count"] if matched_eval else None
+    ),
     "num_envs": cfg.num_envs,
     "steps": cfg.steps,
     "physics_dt_s": float(raw_env.physics_dt),
