@@ -23,6 +23,12 @@ from build_smp_confirmation_manifests import (
 from build_smp_confirmation_manifests import (
   write_manifests as write_confirmation_manifests,
 )
+from build_smp_specialist_manifests import (
+  SpecialistManifestCfg,
+)
+from build_smp_specialist_manifests import (
+  write_manifests as write_specialist_manifests,
+)
 from launch_smp_policy_seed_confirmation import (
   ConfirmationCfg,
   launch_confirmation,
@@ -80,6 +86,7 @@ class PipelineCfg:
   )
   confirmation_evidence_dir: Path = Path("run_control/scratch_causal_policy_seed_eval")
   specialist_control_dir: Path = Path("run_control/ral_tp_specialists")
+  specialist_evidence_dir: Path = Path("run_control/ral_tp_specialist_eval")
   specialist_smoke_work_dir: Path = Path("run_control/ral_tp_smoke")
   specialist_smoke_output: Path = Path("run_control/ral_tp_smoke/result.json")
   progression_protocol: Path = Path("docs/ral_terrain_plate_protocol.json")
@@ -369,16 +376,53 @@ def _advance_specialists(cfg: PipelineCfg, gpu_processes: list[str]) -> dict[str
       for job in launched.get("jobs", [])
       if job.get("pid") is not None and _pid_alive(int(job["pid"]))
     ]
+    if alive:
+      return {
+        "status": "TP_SPECIALIST_TRAINING",
+        "action": (
+          f"T/P specialist training is running: {len(alive)}/{len(launched['jobs'])}."
+        ),
+        "promotion": promotion,
+        "smoke": None,
+        "launch": launched,
+        "health": None,
+        "manifest_index": None,
+      }
+    health = inspect(
+      HealthCfg(
+        control_dir=cfg.specialist_control_dir,
+        output=cfg.state.with_name("tp_specialist_health_latest.json"),
+        expected_jobs=len(launched["jobs"]),
+      )
+    )
+    _atomic_json(cfg.state.with_name("tp_specialist_health_latest.json"), health)
+    if not health["jobs"] or not all(job["completed"] for job in health["jobs"]):
+      return {
+        "status": "TP_SPECIALIST_ALERT",
+        "action": "T/P processes exited before every specialist completed; inspect logs.",
+        "promotion": promotion,
+        "smoke": None,
+        "launch": launched,
+        "health": health,
+        "manifest_index": None,
+      }
+    index = write_specialist_manifests(
+      SpecialistManifestCfg(
+        launch_manifest=launch_manifest,
+        output_dir=cfg.specialist_evidence_dir / "manifests",
+      )
+    )
     return {
-      "status": "TP_SPECIALIST_TRAINING" if alive else "TP_SPECIALIST_PROCESSES_EXITED",
+      "status": "TP_SPECIALIST_READY_FOR_EVAL",
       "action": (
-        f"T/P specialist training is running: {len(alive)}/{len(launched['jobs'])}."
-        if alive
-        else "T/P processes exited; validate all six jobs before evaluation."
+        "All six T/P jobs and 24 immutable phase/seed/gate manifests are "
+        "validated; run the preregistered stratified matrices next."
       ),
       "promotion": promotion,
       "smoke": None,
       "launch": launched,
+      "health": health,
+      "manifest_index": index,
     }
 
   active_smoke = _active_tp_smoke(cfg)
@@ -389,6 +433,8 @@ def _advance_specialists(cfg: PipelineCfg, gpu_processes: list[str]) -> dict[str
       "promotion": promotion,
       "smoke": active_smoke,
       "launch": None,
+      "health": None,
+      "manifest_index": None,
     }
   smoke = None
   if cfg.specialist_smoke_output.is_file():
@@ -400,6 +446,8 @@ def _advance_specialists(cfg: PipelineCfg, gpu_processes: list[str]) -> dict[str
         "promotion": promotion,
         "smoke": smoke,
         "launch": None,
+        "health": None,
+        "manifest_index": None,
       }
   if smoke is None:
     if gpu_processes:
@@ -409,6 +457,8 @@ def _advance_specialists(cfg: PipelineCfg, gpu_processes: list[str]) -> dict[str
         "promotion": promotion,
         "smoke": None,
         "launch": None,
+        "health": None,
+        "manifest_index": None,
       }
     if not cfg.launch_specialists_when_ready:
       return {
@@ -417,6 +467,8 @@ def _advance_specialists(cfg: PipelineCfg, gpu_processes: list[str]) -> dict[str
         "promotion": promotion,
         "smoke": None,
         "launch": None,
+        "health": None,
+        "manifest_index": None,
       }
     active_smoke = _launch_tp_smoke(cfg, promotion_path)
     return {
@@ -425,6 +477,8 @@ def _advance_specialists(cfg: PipelineCfg, gpu_processes: list[str]) -> dict[str
       "promotion": promotion,
       "smoke": active_smoke,
       "launch": None,
+      "health": None,
+      "manifest_index": None,
     }
 
   if gpu_processes:
@@ -434,6 +488,8 @@ def _advance_specialists(cfg: PipelineCfg, gpu_processes: list[str]) -> dict[str
       "promotion": promotion,
       "smoke": smoke,
       "launch": None,
+      "health": None,
+      "manifest_index": None,
     }
   planned = launch_specialists(
     SpecialistLaunchCfg(
@@ -456,6 +512,8 @@ def _advance_specialists(cfg: PipelineCfg, gpu_processes: list[str]) -> dict[str
     "promotion": promotion,
     "smoke": smoke,
     "launch": planned,
+    "health": None,
+    "manifest_index": None,
   }
 
 

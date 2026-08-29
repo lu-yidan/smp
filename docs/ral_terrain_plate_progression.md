@@ -140,3 +140,15 @@ environments from the matched flat checkpoint on an otherwise idle GPU and
 produce a commit- and promotion-bound `PASS` artifact. Only then may
 `launch_smp_tp_specialists.py` start the six matched-seed jobs. This selection
 is an allocation rule, not a statistical superiority claim.
+
+After all six specialist processes exit, the controller does not infer success
+from training reward or process exit. It first audits all six logs, verifies the
+saved policy and environment seeds, re-hashes the matched flat source, and
+requires every frozen 2k/5k/10k/final checkpoint. Only then does
+`build_smp_specialist_manifests.py` atomically record the full
+T/P x three-seed x four-gate factorial as 24 immutable manifests. Missing,
+duplicate, seed-mismatched, or changed checkpoints produce
+`TP_SPECIALIST_ALERT`; a valid set produces `TP_SPECIALIST_READY_FOR_EVAL`.
+This status means only that evaluation inputs are auditable. It is not a T/P
+performance pass and does not unblock U until the separately stratified
+matrices and frozen promotion gates are implemented and satisfied.
