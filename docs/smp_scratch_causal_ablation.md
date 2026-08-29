@@ -175,6 +175,31 @@ metrics, and throughput below half of the eight-job median. The JSON explicitly
 states that reward, SMP score, and termination counts are diagnostics only and
 cannot rank policies without the frozen evaluator.
 
+The recurring job advances the complete evidence pipeline with one idempotent
+controller:
+
+```bash
+uv run scripts/advance_smp_ral_pipeline.py \
+  --control-dir run_control/scratch_causal_30k_seed20260830 \
+  --evidence-dir run_control/scratch_causal_eval \
+  --state run_control/automation_state/ral_pipeline_latest.json \
+  --launch-when-ready
+```
+
+While any training job is active, the controller only updates health and
+manifest state. It never launches evaluation against busy training GPUs. A
+manifest is created only after all eight checkpoints for that gate exist, and
+every recorded checkpoint hash is revalidated on later invocations. The 8k
+manifest is additionally protected by its frozen manifest hash. After all
+eight 30k jobs finish and the GPU process table is empty, the controller
+launches the earliest incomplete gate as a detached, resumable eight-GPU
+matrix followed by the analyzer. It records `TRAINING_ACTIVE`,
+`WAITING_FREE_GPU`, `EVAL_RUNNING`, or `ANALYSIS_COMPLETE` atomically. A gate
+counts as complete only when its schema-v2 completion marker, protocol fields,
+40 expected cases, summary, and admissible analysis decision all validate.
+Interrupted work therefore resumes missing cases instead of overwriting valid
+evidence or being mistaken for a finished experiment.
+
 Safety is reported but is not optimized in this first causal screen. The
 winning recovery configuration must later receive a separate speed/power
 ablation before real-robot use.
