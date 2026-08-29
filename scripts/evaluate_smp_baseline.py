@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import math
 from dataclasses import asdict, dataclass
 from pathlib import Path
 
@@ -35,10 +36,29 @@ class EvalCfg:
   seed: int = 20260829
   device: str = "cuda:0"
   native_pushes: bool = True
+  output: Path | None = None
+  policy_seed: int | None = None
+  include_per_env: bool = False
 
 
 def _quantile(values: torch.Tensor, q: float) -> float:
   return float(torch.quantile(values, q)) if values.numel() else 0.0
+
+
+def _wilson_interval(successes: int, total: int) -> tuple[float, float]:
+  """Return a 95% Wilson interval for rollout-level Bernoulli outcomes."""
+  if total <= 0:
+    return (0.0, 0.0)
+  z = 1.959963984540054
+  rate = successes / total
+  denominator = 1.0 + z**2 / total
+  center = (rate + z**2 / (2.0 * total)) / denominator
+  radius = (
+    z
+    * math.sqrt(rate * (1.0 - rate) / total + z**2 / (4.0 * total**2))
+    / denominator
+  )
+  return (max(0.0, center - radius), min(1.0, center + radius))
 
 
 def main(cfg: EvalCfg) -> None:
@@ -156,16 +176,28 @@ def main(cfg: EvalCfg) -> None:
   strict_success = strict_first >= 0
   baseline_success = baseline_first >= 0
   recovery_steps = strict_first[strict_success].float()
+  strict_successes = int(strict_success.sum())
+  baseline_successes = int(baseline_success.sum())
+  strict_ci = _wilson_interval(strict_successes, raw_env.num_envs)
+  baseline_ci = _wilson_interval(baseline_successes, raw_env.num_envs)
   result = {
     "checkpoint": cfg.checkpoint.name,
+    "checkpoint_path": str(cfg.checkpoint.resolve()),
     "task": cfg.task,
     "reset_mode": cfg.reset_mode,
     "native_pushes": cfg.native_pushes if cfg.reset_mode == "native_gsi" else False,
+    "policy_seed": cfg.policy_seed,
     "seed": cfg.seed,
     "num_envs": cfg.num_envs,
     "steps": cfg.steps,
+    "strict_successes": strict_successes,
     "strict_success_rate": float(strict_success.float().mean()),
+    "strict_success_rate_ci95_low": strict_ci[0],
+    "strict_success_rate_ci95_high": strict_ci[1],
+    "baseline_successes": baseline_successes,
     "baseline_success_rate": float(baseline_success.float().mean()),
+    "baseline_success_rate_ci95_low": baseline_ci[0],
+    "baseline_success_rate_ci95_high": baseline_ci[1],
     "strict_recovery_time_median_s": (
       float(recovery_steps.median() * raw_env.step_dt)
       if recovery_steps.numel()
@@ -186,7 +218,27 @@ def main(cfg: EvalCfg) -> None:
     "max_torque_mean_nm": float(max_torque.mean()),
     "max_power_mean_w": float(max_power.mean()),
   }
-  print("SMP_BASELINE_EVAL_JSON=" + json.dumps(result, sort_keys=True))
+  if cfg.include_per_env:
+    result["per_env"] = {
+      "strict_first_step": strict_first.cpu().tolist(),
+      "baseline_first_step": baseline_first.cpu().tolist(),
+      "finite_action": finite.cpu().tolist(),
+      "initial_head_z_m": initial_head_z.cpu().tolist(),
+      "initial_upright": initial_upright.cpu().tolist(),
+      "max_joint_speed_rad_s": max_joint_speed.cpu().tolist(),
+      "max_root_linear_speed_m_s": max_root_linear_speed.cpu().tolist(),
+      "max_root_angular_speed_rad_s": max_root_angular_speed.cpu().tolist(),
+      "max_torque_nm": max_torque.cpu().tolist(),
+      "max_power_w": max_power.cpu().tolist(),
+    }
+  if cfg.output is not None:
+    cfg.output.parent.mkdir(parents=True, exist_ok=True)
+    temporary = cfg.output.with_suffix(cfg.output.suffix + ".tmp")
+    temporary.write_text(json.dumps(result, indent=2, sort_keys=True) + "\n")
+    temporary.replace(cfg.output)
+  logged_result = dict(result)
+  logged_result.pop("per_env", None)
+  print("SMP_BASELINE_EVAL_JSON=" + json.dumps(logged_result, sort_keys=True))
   raw_env.close()
 
 

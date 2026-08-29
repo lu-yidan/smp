@@ -89,6 +89,41 @@ Rapid screen gates:
 - worst fixed pose >= 20%;
 - finite actions and no late numerical collapse.
 
+The frozen matrix is resumable and writes one atomic JSON file per arm, reset
+mode, and evaluation seed. A manifest contains the policy-training seed
+separately from the rollout evaluation seed, for example:
+
+```json
+{
+  "experiment": "scratch-causal-8k",
+  "commit": "207c956",
+  "runs": [
+    {
+      "name": "a0_f2s2_gsi",
+      "task": "Smp-Getup-Scratch-A0-F2S2-GSI-G1",
+      "checkpoint": "/absolute/path/to/model_8000.pt",
+      "policy_seed": 20260830
+    }
+  ]
+}
+```
+
+Run it with:
+
+```bash
+uv run scripts/run_smp_frozen_eval_matrix.py \
+  --manifest run_control/scratch_causal_8k_manifest.json \
+  --output-dir run_control/scratch_causal_eval/8k \
+  --device cuda:0
+```
+
+Existing valid result files are skipped. `summary.json`, `summary.csv`, and
+`_COMPLETE.json` are written only after the full matrix succeeds. Each result
+includes rollout-level success counts and Wilson 95% intervals plus optional
+per-environment outcomes. These rollout intervals quantify evaluation noise;
+they do not replace the three independent policy-training seeds required for
+RAL evidence.
+
 Safety is reported but is not optimized in this first causal screen. The
 winning recovery configuration must later receive a separate speed/power
 ablation before real-robot use.
