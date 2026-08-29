@@ -111,6 +111,10 @@ separately from the rollout evaluation seed, for example:
 Run it with:
 
 ```bash
+uv run scripts/build_smp_causal_manifest.py \
+  --checkpoint-step 8000 \
+  --output run_control/scratch_causal_8k_manifest.json
+
 uv run scripts/run_smp_frozen_eval_matrix.py \
   --manifest run_control/scratch_causal_8k_manifest.json \
   --output-dir run_control/scratch_causal_eval/8k \
@@ -122,7 +126,10 @@ Existing valid result files are skipped. `summary.json`, `summary.csv`, and
 includes rollout-level success counts and Wilson 95% intervals plus optional
 per-environment outcomes. These rollout intervals quantify evaluation noise;
 they do not replace the three independent policy-training seeds required for
-RAL evidence.
+RAL evidence. Manifest construction is also all-or-nothing: it refuses to
+write a file until the same requested checkpoint exists for all eight arms,
+and records each checkpoint SHA-256, training seed, W&B run, task, run
+directory, and code commit.
 
 Safety is reported but is not optimized in this first causal screen. The
 winning recovery configuration must later receive a separate speed/power
