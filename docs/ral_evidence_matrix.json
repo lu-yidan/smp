@@ -74,6 +74,11 @@
           "type": "file",
           "target": "docs/terrain_recovery_v37_plan.md",
           "description": "Historical stair-edge protocol and failure boundary"
+        },
+        {
+          "type": "file",
+          "target": "docs/ral_terrain_plate_protocol.json",
+          "description": "Frozen deployable T/P/U terrain progression and promotion gates"
         }
       ],
       "missing": "Evaluate the selected 93D from-scratch policy on flat, slope, stair, and rough terrain with pose and difficulty strata."
@@ -89,6 +94,11 @@
           "type": "file",
           "target": "docs/escape_geometry_v33.md",
           "description": "Historical physically valid plate baseline; actor still used true base velocity"
+        },
+        {
+          "type": "file",
+          "target": "docs/ral_terrain_plate_protocol.json",
+          "description": "Frozen deployable flat-plate strata and physics contract"
         }
       ],
       "missing": "Train and evaluate plate escape using the selected 93D actor across pose, mass, coverage, friction, and geometry strata."
@@ -99,7 +109,13 @@
       "priority": 1,
       "required": true,
       "status": "not_started",
-      "evidence": [],
+      "evidence": [
+        {
+          "type": "file",
+          "target": "docs/ral_terrain_plate_progression.md",
+          "description": "Preregistered unified phase blocked on independent T and P evidence"
+        }
+      ],
       "missing": "Demonstrate one deployable policy or a deployable selector without privileged obstacle or terrain labels."
     },
     {

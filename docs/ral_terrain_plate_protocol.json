@@ -1,0 +1,210 @@
+{
+  "schema_version": 1,
+  "protocol_id": "smp-ral-terrain-plate-progression-v1",
+  "frozen_at": "2026-08-29",
+  "target": "IEEE Robotics and Automation Letters",
+  "actor_contract": {
+    "dimension": 93,
+    "history_frames": 1,
+    "allowed": [
+      "base_angular_velocity",
+      "projected_gravity",
+      "joint_position",
+      "joint_velocity",
+      "previous_action"
+    ],
+    "forbidden": [
+      "true_base_linear_velocity",
+      "terrain_type_or_level",
+      "terrain_height_map",
+      "plate_pose_mass_or_geometry",
+      "reset_or_motion_phase",
+      "simulator_contact_force_or_label",
+      "reference_identity_or_future_state"
+    ]
+  },
+  "prerequisites": {
+    "aggregate_status": "MINIMUM_POLICY_SEEDS_MET",
+    "policy_seed_count": 3,
+    "policy_seeds": [20260901, 20260902, 20260903],
+    "candidate_flat_gates": {
+      "mean_native_gsi_success_min": 0.95,
+      "mean_fixed_macro_success_min": 0.8,
+      "each_seed_fixed_macro_success_min": 0.7,
+      "mean_fixed_worst_success_min": 0.6,
+      "each_seed_fixed_worst_success_min": 0.45,
+      "finite_action_rate": 1.0
+    },
+    "selection_order": [
+      "fixed_worst_bootstrap_ci95_low_desc",
+      "fixed_macro_bootstrap_ci95_low_desc",
+      "secondary_fall_rate_asc",
+      "post_success_root_drift_asc",
+      "contact_foot_slip_asc",
+      "max_power_asc",
+      "max_joint_speed_asc"
+    ],
+    "selection_claim_boundary": "A deterministic winner is selected only to allocate compute. Overlapping policy-seed intervals do not establish statistical superiority."
+  },
+  "shared_training": {
+    "initialization": "Continue each of the three independently trained flat-policy checkpoints; no historical V3.3/V3.8 policy checkpoint is allowed.",
+    "num_envs": 4096,
+    "steps_per_update": 24,
+    "max_updates": 20000,
+    "transitions_per_run": 1966080000,
+    "checkpoint_updates": [2000, 5000, 10000, 19999],
+    "save_interval": 1000,
+    "learning_rate": 0.0001,
+    "automatic_pushes": false,
+    "policy_seeds": [20260901, 20260902, 20260903],
+    "formal_eval_seed": 20260910,
+    "formal_eval_envs_per_stratum": 256,
+    "formal_eval_steps": 750,
+    "selection_rule": "Use complete frozen matrices, never training reward or selected videos."
+  },
+  "phases": {
+    "T": {
+      "name": "terrain_without_plate",
+      "may_start_when": "Flat three-seed prerequisite passes.",
+      "training_distribution": {
+        "flat": 0.3,
+        "slope": 0.2,
+        "stairs": 0.35,
+        "rough": 0.15,
+        "stairs_edge_cohorts": {
+          "center": 0.4,
+          "near_edge": 0.25,
+          "straddle": 0.2,
+          "lower_tread": 0.15
+        },
+        "terrain_levels": {
+          "level_0": 0.55,
+          "level_1": 0.3,
+          "level_2": 0.15
+        },
+        "fall_poses": {
+          "prone": 0.25,
+          "supine": 0.25,
+          "left_side": 0.25,
+          "right_side": 0.25
+        },
+        "plate_probability": 0.0
+      },
+      "promotion_gates": {
+        "flat_macro_success_min": 0.75,
+        "flat_worst_pose_success_min": 0.55,
+        "level_0_nonflat_macro_success_min": 0.6,
+        "level_0_nonflat_worst_pose_success_min": 0.4,
+        "level_1_nonflat_macro_success_min": 0.4,
+        "level_1_each_terrain_macro_success_min": 0.2,
+        "level_0_stair_edge_macro_success_min": 0.5,
+        "level_1_stair_edge_macro_success_min": 0.2,
+        "terrain_exit_rate_max": 0.02,
+        "invalid_dynamics_rate": 0.0,
+        "secondary_fall_rate_max": 0.1,
+        "safety_p95_relative_to_flat_seed_max": 1.2
+      }
+    },
+    "P": {
+      "name": "flat_plate_without_terrain",
+      "may_start_when": "Flat three-seed prerequisite passes; run concurrently with T on distinct GPUs.",
+      "training_distribution": {
+        "flat_without_plate": 0.5,
+        "flat_with_plate": 0.5,
+        "unpinned_fall_poses": {
+          "prone": 0.25,
+          "supine": 0.25,
+          "left_side": 0.25,
+          "right_side": 0.25
+        },
+        "pinned_fall_poses": {
+          "prone": 0.5,
+          "supine": 0.5
+        },
+        "plate_mass_kg": {
+          "4": 0.25,
+          "8": 0.5,
+          "12": 0.25
+        },
+        "plate_friction_range": [0.4, 1.2],
+        "plate_longitudinal_offset_m": [-0.12, 0.12],
+        "plate_lateral_offset_m": [-0.12, 0.12]
+      },
+      "physical_contract": {
+        "plate_size_m": [0.9, 0.64, 0.07],
+        "passive_motion": "vertical_prismatic_only",
+        "robot_plate_initial_gap_m_min": 0.001,
+        "no_robot_or_plate_teleport_after_contact": true
+      },
+      "promotion_gates": {
+        "unpinned_flat_macro_success_min": 0.75,
+        "unpinned_flat_worst_pose_success_min": 0.55,
+        "plate_4_8kg_escape_and_stand_macro_min": 0.7,
+        "plate_12kg_escape_and_stand_macro_min": 0.5,
+        "plate_worst_pose_success_min": 0.5,
+        "invalid_setup_rate_max": 0.02,
+        "invalid_dynamics_rate": 0.0,
+        "secondary_fall_rate_max": 0.1,
+        "safety_p95_relative_to_flat_seed_max": 1.2
+      }
+    },
+    "U": {
+      "name": "unified_terrain_and_plate",
+      "may_start_when": "The same three policy seeds pass both T and P frozen promotion gates.",
+      "initialization": "Restart from the matched confirmed flat checkpoint for each seed, not from a cherry-picked T or P checkpoint.",
+      "training_distribution": {
+        "flat_without_plate": 0.25,
+        "terrain_without_plate": 0.45,
+        "flat_with_plate": 0.2,
+        "stair_center_with_plate": 0.1,
+        "plate_on_slope_rough_or_stair_edge": 0.0
+      },
+      "promotion_gates": {
+        "must_pass_all_T_gates": true,
+        "must_pass_all_P_gates": true,
+        "T_macro_regression_from_specialist_max": 0.05,
+        "P_macro_regression_from_specialist_max": 0.05,
+        "invalid_dynamics_rate": 0.0,
+        "unmodeled_privileged_selector": false
+      }
+    }
+  },
+  "reporting": {
+    "mandatory_stratification": [
+      "policy_seed",
+      "checkpoint",
+      "terrain_type",
+      "terrain_level",
+      "stair_edge_cohort",
+      "fall_pose",
+      "plate_present",
+      "plate_mass",
+      "plate_friction",
+      "plate_offset"
+    ],
+    "mandatory_metrics": [
+      "strict_success",
+      "recovery_time",
+      "escape_time",
+      "secondary_fall",
+      "terrain_exit_or_rolloff",
+      "invalid_dynamics_or_setup",
+      "hand_support",
+      "root_drift",
+      "foot_slip",
+      "final_foot_separation",
+      "joint_speed",
+      "torque",
+      "power",
+      "action_first_and_second_difference"
+    ],
+    "prohibited_shortcuts": [
+      "pooling strata into one easy average",
+      "selecting checkpoints from training reward",
+      "changing thresholds after viewing held-out results",
+      "calling curriculum continuation an independently random from-scratch policy",
+      "using mouse dragging as a publication evaluation",
+      "using simulator-only observations in the deployed actor"
+    ]
+  }
+}
