@@ -111,6 +111,22 @@ def _arm_metrics(rows: list[dict[str, Any]], cfg: AnalysisCfg) -> dict[str, Any]
     ),
     "max_power_mean_w": max(float(row["max_power_mean_w"]) for row in rows),
     "max_torque_mean_nm": max(float(row["max_torque_mean_nm"]) for row in rows),
+    "contact_foot_slip_p95_m_s": max(
+      float(row["contact_foot_slip_p95_m_s"]) for row in rows
+    ),
+    "post_success_root_drift_p95_m": max(
+      float(row["post_success_root_drift_p95_m"]) for row in rows
+    ),
+    "secondary_fall_rate_after_success_max": max(
+      float(row["secondary_fall_rate_after_success"]) for row in rows
+    ),
+    "foot_separation_at_success_p95_m": max(
+      float(row["foot_separation_at_success_p95_m"]) for row in rows
+    ),
+    "action_delta_rms_p95": max(float(row["action_delta_rms_p95"]) for row in rows),
+    "action_second_difference_rms_p95": max(
+      float(row["action_second_difference_rms_p95"]) for row in rows
+    ),
     "gates": gates,
     "screen_pass": all(gates.values()),
   }
@@ -169,6 +185,9 @@ def analyze(payload: dict[str, Any], cfg: AnalysisCfg) -> dict[str, Any]:
     key=lambda arm: (
       -arms[arm]["fixed_worst"],
       -arms[arm]["fixed_macro"],
+      arms[arm]["secondary_fall_rate_after_success_max"],
+      arms[arm]["contact_foot_slip_p95_m_s"],
+      arms[arm]["post_success_root_drift_p95_m"],
       arms[arm]["max_power_mean_w"],
       arms[arm]["max_joint_speed_p95_rad_s"],
     )
@@ -209,16 +228,18 @@ def _markdown(analysis: dict[str, Any]) -> str:
     "",
     f"Decision: **{analysis['status']}**",
     "",
-    "| Arm | GSI | Fixed macro | Fixed worst | Finite | Pass | Peak power mean | Peak qvel p95 |",
-    "| --- | ---: | ---: | ---: | ---: | :---: | ---: | ---: |",
+    "| Arm | GSI | Fixed macro | Worst | Pass | Foot slip p95 | Post-stand drift p95 | Secondary fall | Peak power |",
+    "| --- | ---: | ---: | ---: | :---: | ---: | ---: | ---: | ---: |",
   ]
   for arm, metrics in analysis["arms"].items():
     lines.append(
       f"| {arm} | {metrics['gsi']:.1%} | {metrics['fixed_macro']:.1%} | "
-      f"{metrics['fixed_worst']:.1%} | {metrics['finite_action_rate_min']:.1%} | "
+      f"{metrics['fixed_worst']:.1%} | "
       f"{'yes' if metrics['screen_pass'] else 'no'} | "
-      f"{metrics['max_power_mean_w']:.1f} W | "
-      f"{metrics['max_joint_speed_p95_rad_s']:.1f} rad/s |"
+      f"{metrics['contact_foot_slip_p95_m_s']:.2f} m/s | "
+      f"{metrics['post_success_root_drift_p95_m']:.2f} m | "
+      f"{metrics['secondary_fall_rate_after_success_max']:.1%} | "
+      f"{metrics['max_power_mean_w']:.1f} W |"
     )
   lines.extend(("", "## Ranked screen candidates", ""))
   if analysis["screen_candidates_ranked"]:

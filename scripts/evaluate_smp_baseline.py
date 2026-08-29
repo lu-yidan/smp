@@ -12,6 +12,7 @@ import tyro
 from mjlab.envs import ManagerBasedRlEnv
 from mjlab.managers.event_manager import EventTermCfg
 from mjlab.rl import MjlabOnPolicyRunner, RslRlVecEnvWrapper
+from mjlab.sensor.contact_sensor import ContactMatch, ContactSensorCfg
 from mjlab.tasks.registry import load_env_cfg, load_rl_cfg, load_runner_cls
 from mjlab.utils.torch import configure_torch_backends
 
@@ -107,6 +108,23 @@ def main(cfg: EvalCfg) -> None:
       },
     )
 
+  foot_ground = ContactSensorCfg(
+    name="baseline_foot_ground_contact",
+    primary=ContactMatch(
+      mode="geom",
+      pattern=r"(left|right)_foot[1-7]_collision$",
+      entity="robot",
+    ),
+    secondary=ContactMatch(mode="body", pattern="terrain"),
+    fields=("found",),
+    reduce="maxforce",
+    num_slots=1,
+    history_length=2,
+  )
+  sensors = tuple(env_cfg.scene.sensors or ())
+  if not any(sensor.name == foot_ground.name for sensor in sensors):
+    env_cfg.scene.sensors = sensors + (foot_ground,)
+
   raw_env = ManagerBasedRlEnv(env_cfg, device=cfg.device)
   env = RslRlVecEnvWrapper(raw_env, clip_actions=agent_cfg.clip_actions)
   runner_cls = load_runner_cls(cfg.task) or MjlabOnPolicyRunner
@@ -121,6 +139,7 @@ def main(cfg: EvalCfg) -> None:
   obs = env.get_observations()
 
   robot = raw_env.scene["robot"]
+  foot_ids = robot.find_sites(["left_foot", "right_foot"], preserve_order=True)[0]
   head_idx = robot.find_sites(["head"], preserve_order=True)[0][0]
   strict_first = torch.full(
     (raw_env.num_envs,), -1, dtype=torch.long, device=raw_env.device
@@ -133,6 +152,21 @@ def main(cfg: EvalCfg) -> None:
   max_root_angular_speed = torch.zeros_like(max_joint_speed)
   max_torque = torch.zeros_like(max_joint_speed)
   max_power = torch.zeros_like(max_joint_speed)
+  foot_slip_sum = torch.zeros_like(max_joint_speed)
+  foot_contact_steps = torch.zeros_like(max_joint_speed)
+  root_xy_start = robot.data.root_link_pos_w[:, :2].clone()
+  max_root_planar_excursion = torch.zeros_like(max_joint_speed)
+  root_xy_at_success = torch.zeros_like(root_xy_start)
+  post_success_root_drift = torch.zeros_like(max_joint_speed)
+  foot_separation_at_success = torch.full_like(max_joint_speed, torch.nan)
+  secondary_fall_hold = torch.zeros_like(strict_first)
+  secondary_fall = torch.zeros(
+    raw_env.num_envs, dtype=torch.bool, device=raw_env.device
+  )
+  action_delta_sum = torch.zeros_like(max_joint_speed)
+  action_second_difference_sum = torch.zeros_like(max_joint_speed)
+  previous_actions: torch.Tensor | None = None
+  previous_action_delta: torch.Tensor | None = None
   finite = torch.ones(raw_env.num_envs, dtype=torch.bool, device=raw_env.device)
 
   initial_head_z = robot.data.site_pos_w[:, head_idx, 2].clone()
@@ -144,6 +178,17 @@ def main(cfg: EvalCfg) -> None:
     with torch.inference_mode():
       actions = policy(obs)
       finite &= torch.isfinite(actions).all(dim=-1)
+      if previous_actions is None:
+        action_delta = actions
+      else:
+        action_delta = actions - previous_actions
+      action_delta_sum += torch.sqrt(torch.mean(action_delta**2, dim=-1))
+      if previous_action_delta is not None:
+        action_second_difference_sum += torch.sqrt(
+          torch.mean((action_delta - previous_action_delta) ** 2, dim=-1)
+        )
+      previous_actions = actions.clone()
+      previous_action_delta = action_delta.clone()
       obs, _, _, _ = env.step(actions)
 
     head_z = robot.data.site_pos_w[:, head_idx, 2]
@@ -167,8 +212,46 @@ def main(cfg: EvalCfg) -> None:
     baseline_hold = torch.where(
       baseline_standing, baseline_hold + 1, torch.zeros_like(baseline_hold)
     )
-    strict_first[(strict_first < 0) & (strict_hold >= 25)] = step + 1
+    newly_strict = (strict_first < 0) & (strict_hold >= 25)
+    strict_first[newly_strict] = step + 1
+    root_xy_at_success[newly_strict] = robot.data.root_link_pos_w[newly_strict, :2]
+    foot_xy = robot.data.site_pos_w[:, foot_ids, :2]
+    foot_separation = torch.linalg.vector_norm(foot_xy[:, 0] - foot_xy[:, 1], dim=-1)
+    foot_separation_at_success[newly_strict] = foot_separation[newly_strict]
     baseline_first[(baseline_first < 0) & (baseline_hold >= 25)] = step + 1
+
+    root_excursion = torch.linalg.vector_norm(
+      robot.data.root_link_pos_w[:, :2] - root_xy_start, dim=-1
+    )
+    max_root_planar_excursion = torch.maximum(
+      max_root_planar_excursion, root_excursion
+    )
+    after_success = strict_first >= 0
+    root_drift = torch.linalg.vector_norm(
+      robot.data.root_link_pos_w[:, :2] - root_xy_at_success, dim=-1
+    )
+    post_success_root_drift = torch.where(
+      after_success,
+      torch.maximum(post_success_root_drift, root_drift),
+      post_success_root_drift,
+    )
+    fallen_after_success = after_success & ((head_z < 0.75) | (upright < 0.40))
+    secondary_fall_hold = torch.where(
+      fallen_after_success,
+      secondary_fall_hold + 1,
+      torch.zeros_like(secondary_fall_hold),
+    )
+    secondary_fall |= secondary_fall_hold >= 10
+
+    found = raw_env.scene["baseline_foot_ground_contact"].data.found
+    if found is None:
+      raise RuntimeError("baseline foot contact sensor must expose found")
+    in_contact = found.reshape(raw_env.num_envs, -1).any(dim=-1)
+    foot_speed_xy = torch.linalg.vector_norm(
+      robot.data.site_lin_vel_w[:, foot_ids, :2], dim=-1
+    ).amax(dim=-1)
+    foot_slip_sum += torch.where(in_contact, foot_speed_xy, 0.0)
+    foot_contact_steps += in_contact.float()
 
     max_joint_speed = torch.maximum(
       max_joint_speed, torch.abs(robot.data.joint_vel).amax(dim=-1)
@@ -185,6 +268,13 @@ def main(cfg: EvalCfg) -> None:
   baseline_successes = int(baseline_success.sum())
   strict_ci = _wilson_interval(strict_successes, raw_env.num_envs)
   baseline_ci = _wilson_interval(baseline_successes, raw_env.num_envs)
+  foot_slip = foot_slip_sum / torch.clamp(foot_contact_steps, min=1.0)
+  action_delta_rms = action_delta_sum / cfg.steps
+  action_second_difference_rms = action_second_difference_sum / max(
+    cfg.steps - 1, 1
+  )
+  successful_secondary_fall = secondary_fall & strict_success
+  successful_foot_separation = foot_separation_at_success[strict_success]
   result = {
     "checkpoint": cfg.checkpoint.name,
     "checkpoint_path": str(cfg.checkpoint.resolve()),
@@ -222,6 +312,43 @@ def main(cfg: EvalCfg) -> None:
     "max_root_angular_speed_mean_rad_s": float(max_root_angular_speed.mean()),
     "max_torque_mean_nm": float(max_torque.mean()),
     "max_power_mean_w": float(max_power.mean()),
+    "contact_foot_slip_mean_m_s": float(foot_slip.mean()),
+    "contact_foot_slip_p95_m_s": _quantile(foot_slip, 0.95),
+    "root_planar_excursion_median_m": float(max_root_planar_excursion.median()),
+    "root_planar_excursion_p95_m": _quantile(max_root_planar_excursion, 0.95),
+    "post_success_root_drift_median_m": (
+      float(post_success_root_drift[strict_success].median())
+      if strict_success.any()
+      else -1.0
+    ),
+    "post_success_root_drift_p95_m": (
+      _quantile(post_success_root_drift[strict_success], 0.95)
+      if strict_success.any()
+      else -1.0
+    ),
+    "secondary_fall_rate_after_success": (
+      float(successful_secondary_fall.sum() / strict_success.sum())
+      if strict_success.any()
+      else -1.0
+    ),
+    "foot_separation_at_success_median_m": (
+      float(successful_foot_separation.median())
+      if successful_foot_separation.numel()
+      else -1.0
+    ),
+    "foot_separation_at_success_p95_m": (
+      _quantile(successful_foot_separation, 0.95)
+      if successful_foot_separation.numel()
+      else -1.0
+    ),
+    "action_delta_rms_mean": float(action_delta_rms.mean()),
+    "action_delta_rms_p95": _quantile(action_delta_rms, 0.95),
+    "action_second_difference_rms_mean": float(
+      action_second_difference_rms.mean()
+    ),
+    "action_second_difference_rms_p95": _quantile(
+      action_second_difference_rms, 0.95
+    ),
   }
   if cfg.include_per_env:
     result["per_env"] = {
@@ -235,6 +362,13 @@ def main(cfg: EvalCfg) -> None:
       "max_root_angular_speed_rad_s": max_root_angular_speed.cpu().tolist(),
       "max_torque_nm": max_torque.cpu().tolist(),
       "max_power_w": max_power.cpu().tolist(),
+      "contact_foot_slip_m_s": foot_slip.cpu().tolist(),
+      "root_planar_excursion_m": max_root_planar_excursion.cpu().tolist(),
+      "post_success_root_drift_m": post_success_root_drift.cpu().tolist(),
+      "secondary_fall_after_success": secondary_fall.cpu().tolist(),
+      "foot_separation_at_success_m": foot_separation_at_success.cpu().tolist(),
+      "action_delta_rms": action_delta_rms.cpu().tolist(),
+      "action_second_difference_rms": action_second_difference_rms.cpu().tolist(),
     }
   if cfg.output is not None:
     cfg.output.parent.mkdir(parents=True, exist_ok=True)

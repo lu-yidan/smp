@@ -143,6 +143,14 @@ the reward bridge with conservative rollout intervals. A screen pass never
 authorizes a RAL claim or terrain/plate promotion before checkpoint stability
 and three independently trained policy seeds are available.
 
+The base evaluator also records contact-conditioned foot slip, root planar
+excursion, post-success root drift, secondary falls, foot separation at first
+stable stand, action first differences, and action second differences. This
+closes the gap between simulation success and the real-robot failure modes
+observed as pelvic sliding, repeated struggling, wide final stance, small
+steps, and backward falls. These measures are used for Pareto ranking; they do
+not silently change the task reward in the causal screen.
+
 Safety is reported but is not optimized in this first causal screen. The
 winning recovery configuration must later receive a separate speed/power
 ablation before real-robot use.
