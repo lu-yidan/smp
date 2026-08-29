@@ -24,6 +24,15 @@ their interaction prevents learning.
 | 6 | `Smp-Getup-Obs-F4-Vel-G1` | 4 frames, true `base_lin_vel` | 384 |
 | 7 | `Smp-Getup-Obs-F4-NoLinVel-G1` | 4 frames, no `base_lin_vel` | 372 |
 
+Formal runs started from commit `72daf14` on 2026-08-29:
+
+| GPU | W&B run | Run ID |
+| --- | --- | --- |
+| 4 | [F1 + velocity](https://wandb.ai/tabletennis/smp/runs/12ov66ix) | `12ov66ix` |
+| 5 | [F1 without velocity](https://wandb.ai/tabletennis/smp/runs/3yjov31t) | `3yjov31t` |
+| 6 | [F4 + velocity](https://wandb.ai/tabletennis/smp/runs/zukwvixl) | `zukwvixl` |
+| 7 | [F4 without velocity](https://wandb.ai/tabletennis/smp/runs/axme25ls) | `axme25ls` |
+
 All four runs use the same:
 
 - `pretrained_getup_f2s2.pt` state-dependent motion prior;
