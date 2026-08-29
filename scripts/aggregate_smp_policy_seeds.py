@@ -94,8 +94,7 @@ def _load_policy_summary(path: Path) -> tuple[int, dict[str, dict[str, Any]]]:
     arm_metrics["fixed_worst"] = min(fixed)
     arm_metrics["gsi"] = arm_metrics["modes"].get("native_gsi", 0.0)
     arm_metrics["safety_worst"] = {
-      metric: max(values.values())
-      for metric, values in arm_metrics["safety"].items()
+      metric: max(values.values()) for metric, values in arm_metrics["safety"].items()
     }
   return policy_seed, arms
 
@@ -142,9 +141,7 @@ def aggregate(payloads: list[tuple[int, dict[str, dict[str, Any]]]], cfg: Aggreg
     }
   enough = len(seeds) >= cfg.minimum_policy_seeds
   return {
-    "status": (
-      "MINIMUM_POLICY_SEEDS_MET" if enough else "INSUFFICIENT_POLICY_SEEDS"
-    ),
+    "status": ("MINIMUM_POLICY_SEEDS_MET" if enough else "INSUFFICIENT_POLICY_SEEDS"),
     "policy_seeds": sorted(seeds),
     "policy_seed_count": len(seeds),
     "minimum_policy_seeds": cfg.minimum_policy_seeds,
@@ -163,8 +160,7 @@ def aggregate(payloads: list[tuple[int, dict[str, dict[str, Any]]]], cfg: Aggreg
 def _metric_cell(metric: dict[str, Any], name: str, suffix: str = "") -> str:
   value = metric[name]
   return (
-    f"{value['mean']:.3f} [{value['ci95_low']:.3f}, "
-    f"{value['ci95_high']:.3f}]{suffix}"
+    f"{value['mean']:.3f} [{value['ci95_low']:.3f}, {value['ci95_high']:.3f}]{suffix}"
   )
 
 
@@ -206,12 +202,17 @@ def _atomic_write(path: Path, content: str) -> None:
   temporary.replace(path)
 
 
-def main(cfg: AggregateCfg) -> None:
+def write_aggregate(cfg: AggregateCfg) -> dict[str, Any]:
   payloads = [_load_policy_summary(path) for path in cfg.summaries]
   result = aggregate(payloads, cfg)
   output_markdown = cfg.output_markdown or cfg.output_json.with_suffix(".md")
   _atomic_write(cfg.output_json, json.dumps(result, indent=2, sort_keys=True) + "\n")
   _atomic_write(output_markdown, _markdown(result))
+  return result
+
+
+def main(cfg: AggregateCfg) -> None:
+  result = write_aggregate(cfg)
   print(f"{result['status']}: seeds={result['policy_seeds']}")
 
 

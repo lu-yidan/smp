@@ -15,7 +15,14 @@ from typing import Any
 
 import tyro
 
+from aggregate_smp_policy_seeds import AggregateCfg, write_aggregate
 from build_smp_causal_manifest import ManifestCfg, build_manifest
+from build_smp_confirmation_manifests import (
+  ConfirmationManifestCfg,
+)
+from build_smp_confirmation_manifests import (
+  write_manifests as write_confirmation_manifests,
+)
 from launch_smp_policy_seed_confirmation import (
   ConfirmationCfg,
   launch_confirmation,
@@ -63,6 +70,7 @@ class PipelineCfg:
   confirmation_control_dir: Path = Path(
     "run_control/scratch_causal_policy_seed_confirmation"
   )
+  confirmation_evidence_dir: Path = Path("run_control/scratch_causal_policy_seed_eval")
 
 
 def _atomic_json(path: Path, payload: dict[str, Any]) -> None:
@@ -183,9 +191,13 @@ def _analysis_complete(cfg: PipelineCfg, output_dir: Path, manifest: Path) -> bo
   try:
     complete = json.loads((output_dir / "_COMPLETE.json").read_text())
     analysis = json.loads((output_dir / "analysis.json").read_text())
+    manifest_payload = json.loads(manifest.read_text())
   except (json.JSONDecodeError, OSError):
     return False
-  expected_count = 8 * len(cfg.modes)
+  runs = manifest_payload.get("runs")
+  if not isinstance(runs, list) or not runs:
+    return False
+  expected_count = len(runs) * len(cfg.modes)
   return (
     complete.get("evaluation_schema_version") == _EVALUATION_SCHEMA_VERSION
     and complete.get("manifest") == str(manifest.resolve())
@@ -198,8 +210,8 @@ def _analysis_complete(cfg: PipelineCfg, output_dir: Path, manifest: Path) -> bo
   )
 
 
-def _active_eval(cfg: PipelineCfg) -> dict[str, Any] | None:
-  launch_state = cfg.evidence_dir / "active_evaluation.json"
+def _active_eval(evidence_dir: Path) -> dict[str, Any] | None:
+  launch_state = evidence_dir / "active_evaluation.json"
   if not launch_state.exists():
     return None
   payload = json.loads(launch_state.read_text())
@@ -211,7 +223,11 @@ def _active_eval(cfg: PipelineCfg) -> dict[str, Any] | None:
 
 
 def _launch_evaluation(
-  cfg: PipelineCfg, manifest: Path, gate: int, output_dir: Path
+  cfg: PipelineCfg,
+  manifest: Path,
+  gate: int,
+  output_dir: Path,
+  state_dir: Path | None = None,
 ) -> dict[str, Any]:
   matrix = Path(__file__).with_name("run_smp_frozen_eval_matrix.py").resolve()
   analyzer = Path(__file__).with_name("analyze_smp_frozen_matrix.py").resolve()
@@ -262,8 +278,139 @@ def _launch_evaluation(
     "log": str(log.resolve()),
     "started_at_utc": datetime.now(timezone.utc).isoformat(),
   }
-  _atomic_json(cfg.evidence_dir / "active_evaluation.json", payload)
+  _atomic_json((state_dir or cfg.evidence_dir) / "active_evaluation.json", payload)
   return payload
+
+
+def _advance_confirmation(
+  cfg: PipelineCfg,
+  confirmation: dict[str, Any],
+  gpu_processes: list[str],
+) -> dict[str, Any]:
+  alive = [job for job in confirmation["jobs"] if _pid_alive(int(job["pid"]))]
+  if alive:
+    return {
+      "status": "CONFIRMATION_TRAINING",
+      "action": (
+        f"Policy-seed confirmation is running: {len(alive)}/"
+        f"{len(confirmation['jobs'])} processes alive."
+      ),
+      "health": None,
+      "manifest_index": None,
+      "evaluations": [],
+      "active_evaluation": None,
+      "aggregate": None,
+    }
+
+  health = inspect(
+    HealthCfg(
+      control_dir=cfg.confirmation_control_dir,
+      output=cfg.state.with_name("confirmation_health_latest.json"),
+      expected_jobs=len(confirmation["jobs"]),
+    )
+  )
+  _atomic_json(cfg.state.with_name("confirmation_health_latest.json"), health)
+  if not health["jobs"] or not all(job["completed"] for job in health["jobs"]):
+    return {
+      "status": "CONFIRMATION_ALERT",
+      "action": "Confirmation processes exited before every job completed; inspect logs.",
+      "health": health,
+      "manifest_index": None,
+      "evaluations": [],
+      "active_evaluation": None,
+      "aggregate": None,
+    }
+
+  index = write_confirmation_manifests(
+    ConfirmationManifestCfg(
+      launch_manifest=cfg.confirmation_control_dir / "launch_manifest.json",
+      output_dir=cfg.confirmation_evidence_dir / "manifests",
+    )
+  )
+  active = _active_eval(cfg.confirmation_evidence_dir)
+  evaluations = []
+  next_seed = None
+  for row in index["manifests"]:
+    seed = int(row["policy_seed"])
+    manifest = Path(row["path"])
+    output_dir = cfg.confirmation_evidence_dir / f"seed_{seed}"
+    complete = _analysis_complete(cfg, output_dir, manifest)
+    evaluations.append(
+      {
+        "policy_seed": seed,
+        "output_dir": str(output_dir.resolve()),
+        "analysis_complete": complete,
+      }
+    )
+    if not complete and next_seed is None:
+      next_seed = seed
+
+  if active is not None:
+    return {
+      "status": "CONFIRMATION_EVAL_RUNNING",
+      "action": "Wait for the current confirmation-seed matrix to finish.",
+      "health": health,
+      "manifest_index": index,
+      "evaluations": evaluations,
+      "active_evaluation": active,
+      "aggregate": None,
+    }
+  if next_seed is not None and gpu_processes:
+    return {
+      "status": "WAITING_FREE_GPU",
+      "action": "Confirmation checkpoints are ready; wait for free evaluation GPUs.",
+      "health": health,
+      "manifest_index": index,
+      "evaluations": evaluations,
+      "active_evaluation": None,
+      "aggregate": None,
+    }
+  if next_seed is not None:
+    launched = None
+    status = "CONFIRMATION_READY_FOR_EVAL"
+    action = f"Run the frozen confirmation matrix for policy seed {next_seed}."
+    if cfg.launch_when_ready:
+      manifest = cfg.confirmation_evidence_dir / "manifests" / f"seed_{next_seed}.json"
+      launched = _launch_evaluation(
+        cfg,
+        manifest,
+        next_seed,
+        cfg.confirmation_evidence_dir / f"seed_{next_seed}",
+        state_dir=cfg.confirmation_evidence_dir,
+      )
+      status = "CONFIRMATION_EVAL_RUNNING"
+      action = f"Launched frozen confirmation matrix for policy seed {next_seed}."
+    return {
+      "status": status,
+      "action": action,
+      "health": health,
+      "manifest_index": index,
+      "evaluations": evaluations,
+      "active_evaluation": launched,
+      "aggregate": None,
+    }
+
+  summaries = tuple(
+    cfg.confirmation_evidence_dir / f"seed_{seed}" / "summary.json"
+    for seed in index["policy_seeds"]
+  )
+  aggregate_path = cfg.confirmation_evidence_dir / "policy_seed_aggregate.json"
+  aggregate = write_aggregate(
+    AggregateCfg(summaries=summaries, output_json=aggregate_path)
+  )
+  return {
+    "status": "CONFIRMATION_ANALYSIS_COMPLETE",
+    "action": "Three-seed frozen aggregate is complete; audit promotion evidence.",
+    "health": health,
+    "manifest_index": index,
+    "evaluations": evaluations,
+    "active_evaluation": None,
+    "aggregate": {
+      "status": aggregate["status"],
+      "policy_seeds": aggregate["policy_seeds"],
+      "path": str(aggregate_path.resolve()),
+    },
+  }
 
 
 def advance(cfg: PipelineCfg) -> dict[str, Any]:
@@ -279,7 +426,7 @@ def advance(cfg: PipelineCfg) -> dict[str, Any]:
   completed_training = bool(health["jobs"]) and all(
     job["completed"] for job in health["jobs"]
   )
-  active = _active_eval(cfg)
+  active = _active_eval(cfg.evidence_dir)
   evaluations = []
   next_gate = None
   for manifest_info in manifests:
@@ -300,6 +447,7 @@ def advance(cfg: PipelineCfg) -> dict[str, Any]:
   gpu_processes = _gpu_processes()
   stable_selection = None
   confirmation = None
+  confirmation_progress = None
   confirmation_waiting_for_gpu = False
   if completed_training and next_gate is None:
     stable_selection = write_selection(SelectionCfg(evidence_dir=cfg.evidence_dir))
@@ -316,6 +464,7 @@ def advance(cfg: PipelineCfg) -> dict[str, Any]:
           launch=True,
         )
       )
+      confirmation_progress = _advance_confirmation(cfg, confirmation, gpu_processes)
   status = "TRAINING_ACTIVE"
   action = "Continue health monitoring; do not contend with training GPUs."
   launched = None
@@ -327,37 +476,8 @@ def advance(cfg: PipelineCfg) -> dict[str, Any]:
     action = "Wait for the resumable frozen matrix and analyzer to finish."
   elif completed_training and next_gate is None:
     if confirmation is not None:
-      alive = [job for job in confirmation["jobs"] if _pid_alive(int(job["pid"]))]
-      if alive:
-        status = "CONFIRMATION_TRAINING"
-        action = (
-          f"Policy-seed confirmation is running: {len(alive)}/"
-          f"{len(confirmation['jobs'])} processes alive."
-        )
-      else:
-        confirmation_health = inspect(
-          HealthCfg(
-            control_dir=cfg.confirmation_control_dir,
-            output=cfg.state.with_name("confirmation_health_latest.json"),
-            expected_jobs=len(confirmation["jobs"]),
-          )
-        )
-        _atomic_json(
-          cfg.state.with_name("confirmation_health_latest.json"),
-          confirmation_health,
-        )
-        if confirmation_health["jobs"] and all(
-          job["completed"] for job in confirmation_health["jobs"]
-        ):
-          status = "CONFIRMATION_COMPLETE"
-          action = (
-            "Policy-seed training is complete; freeze seed-level evaluation manifests."
-          )
-        else:
-          status = "CONFIRMATION_ALERT"
-          action = (
-            "Confirmation processes exited before every job completed; inspect logs."
-          )
+      status = confirmation_progress["status"]
+      action = confirmation_progress["action"]
     elif confirmation_waiting_for_gpu:
       status = "WAITING_FREE_GPU"
       action = "Stable candidates are ready; wait for all GPU processes to exit."
@@ -415,6 +535,7 @@ def advance(cfg: PipelineCfg) -> dict[str, Any]:
         "plan_id": confirmation["plan_id"],
         "job_count": len(confirmation["jobs"]),
         "path": str((cfg.confirmation_control_dir / "launch_manifest.json").resolve()),
+        "progress": confirmation_progress,
       }
       if confirmation is not None
       else None

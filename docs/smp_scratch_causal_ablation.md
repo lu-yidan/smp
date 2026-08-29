@@ -261,6 +261,16 @@ arms create six jobs. A changed source analysis, unknown arm, reused seed,
 insufficient GPU set, active GPU process, or conflicting prior launch plan
 causes a hard refusal rather than an altered experiment.
 
+When all confirmation jobs reach update 29999, the controller verifies their
+saved agent/environment seeds and checkpoint hashes, then creates one immutable
+manifest per policy seed. Each seed receives the same five-mode, 512-environment
+frozen evaluation in its own output directory. Keeping each summary to one
+trained seed prevents the rollout matrix from being mistaken for independent
+training replication. After all three matrices pass schema and completion
+checks, `aggregate_smp_policy_seeds.py` bootstraps across the three policy-level
+summaries and writes `policy_seed_aggregate.json`; only
+`MINIMUM_POLICY_SEEDS_MET` can advance to terrain and plate experiments.
+
 Safety is reported but is not optimized in this first causal screen. The
 winning recovery configuration must later receive a separate speed/power
 ablation before real-robot use.
