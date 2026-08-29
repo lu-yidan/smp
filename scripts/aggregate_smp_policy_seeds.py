@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 import random
 from dataclasses import dataclass
@@ -22,6 +23,7 @@ _SAFETY_METRICS = (
   "action_delta_rms_p95",
   "action_second_difference_rms_p95",
 )
+_MIN_METRICS = ("finite_action_rate",)
 
 
 @dataclass(frozen=True)
@@ -88,6 +90,10 @@ def _load_policy_summary(path: Path) -> tuple[int, dict[str, dict[str, Any]]]:
       arm_metrics["safety"].setdefault(metric, {})[mode] = max(
         float(row[metric]) for row in rows
       )
+    for metric in _MIN_METRICS:
+      arm_metrics["safety"].setdefault(metric, {})[mode] = min(
+        float(row[metric]) for row in rows
+      )
   for arm_metrics in arms.values():
     fixed = [arm_metrics["modes"].get(mode, 0.0) for mode in _FIXED_MODES]
     arm_metrics["fixed_macro"] = sum(fixed) / len(fixed)
@@ -96,6 +102,8 @@ def _load_policy_summary(path: Path) -> tuple[int, dict[str, dict[str, Any]]]:
     arm_metrics["safety_worst"] = {
       metric: max(values.values()) for metric, values in arm_metrics["safety"].items()
     }
+    for metric in _MIN_METRICS:
+      arm_metrics["safety_worst"][metric] = min(arm_metrics["safety"][metric].values())
   return policy_seed, arms
 
 
@@ -119,6 +127,7 @@ def aggregate(payloads: list[tuple[int, dict[str, dict[str, Any]]]], cfg: Aggreg
       "fixed_worst": [],
     }
     metrics.update({metric: [] for metric in _SAFETY_METRICS})
+    metrics.update({metric: [] for metric in _MIN_METRICS})
     mode_values = {mode: [] for mode in ("native_gsi", *_FIXED_MODES)}
     for _, arms in payloads:
       arm_data = arms[arm]
@@ -126,6 +135,8 @@ def aggregate(payloads: list[tuple[int, dict[str, dict[str, Any]]]], cfg: Aggreg
       metrics["fixed_macro"].append(arm_data["fixed_macro"])
       metrics["fixed_worst"].append(arm_data["fixed_worst"])
       for metric in _SAFETY_METRICS:
+        metrics[metric].append(arm_data["safety_worst"][metric])
+      for metric in _MIN_METRICS:
         metrics[metric].append(arm_data["safety_worst"][metric])
       for mode in mode_values:
         mode_values[mode].append(arm_data["modes"].get(mode, 0.0))
@@ -202,9 +213,20 @@ def _atomic_write(path: Path, content: str) -> None:
   temporary.replace(path)
 
 
+def _sha256(path: Path) -> str:
+  digest = hashlib.sha256()
+  with path.open("rb") as stream:
+    for chunk in iter(lambda: stream.read(1024 * 1024), b""):
+      digest.update(chunk)
+  return digest.hexdigest()
+
+
 def write_aggregate(cfg: AggregateCfg) -> dict[str, Any]:
   payloads = [_load_policy_summary(path) for path in cfg.summaries]
   result = aggregate(payloads, cfg)
+  result["source_summaries"] = [
+    {"path": str(path.resolve()), "sha256": _sha256(path)} for path in cfg.summaries
+  ]
   output_markdown = cfg.output_markdown or cfg.output_json.with_suffix(".md")
   _atomic_write(cfg.output_json, json.dumps(result, indent=2, sort_keys=True) + "\n")
   _atomic_write(output_markdown, _markdown(result))

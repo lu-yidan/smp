@@ -124,3 +124,19 @@ configurations. Structural tests in `tests/test_ral_progression_cfg.py` verify
 the observation contract, distribution parameters, event order, and reward
 bridge inheritance. A successful structural test is prerequisite engineering
 evidence, not a terrain or plate performance result.
+
+T/P use `SmpCurriculumWarmStartRunner`: actor, critic, and observation
+normalizers are initialized from each seed's matched confirmed-flat checkpoint,
+while optimizer state, PPO iteration, and environment curriculum time restart
+at zero. This makes the frozen specialist learning rate and relative
+2k/5k/10k/final gates effective; ordinary `resume` would silently restore the
+flat optimizer and shift every checkpoint by 30k updates.
+
+Automatic promotion is fail-closed. `select_smp_confirmed_flat_arm.py` checks
+the mean and every-seed flat gates, finite actions, source-summary hashes, seed
+provenance, and checkpoint hashes before selecting at most one arm for compute
+allocation. `run_smp_tp_physics_smoke.py` must then step the registered T and P
+environments from the matched flat checkpoint on an otherwise idle GPU and
+produce a commit- and promotion-bound `PASS` artifact. Only then may
+`launch_smp_tp_specialists.py` start the six matched-seed jobs. This selection
+is an allocation rule, not a statistical superiority claim.

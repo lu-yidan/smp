@@ -27,7 +27,14 @@ from launch_smp_policy_seed_confirmation import (
   ConfirmationCfg,
   launch_confirmation,
 )
+from launch_smp_tp_specialists import SpecialistLaunchCfg, launch_specialists
 from monitor_smp_training_health import HealthCfg, inspect
+from select_smp_confirmed_flat_arm import (
+  FlatPromotionCfg,
+)
+from select_smp_confirmed_flat_arm import (
+  write_selection as write_flat_selection,
+)
 from select_smp_stable_arm import SelectionCfg, write_selection
 
 _EVALUATION_SCHEMA_VERSION = 2
@@ -67,10 +74,15 @@ class PipelineCfg:
   steps: int = 500
   launch_when_ready: bool = False
   launch_confirmation_when_ready: bool = False
+  launch_specialists_when_ready: bool = False
   confirmation_control_dir: Path = Path(
     "run_control/scratch_causal_policy_seed_confirmation"
   )
   confirmation_evidence_dir: Path = Path("run_control/scratch_causal_policy_seed_eval")
+  specialist_control_dir: Path = Path("run_control/ral_tp_specialists")
+  specialist_smoke_work_dir: Path = Path("run_control/ral_tp_smoke")
+  specialist_smoke_output: Path = Path("run_control/ral_tp_smoke/result.json")
+  progression_protocol: Path = Path("docs/ral_terrain_plate_protocol.json")
 
 
 def _atomic_json(path: Path, payload: dict[str, Any]) -> None:
@@ -282,6 +294,171 @@ def _launch_evaluation(
   return payload
 
 
+def _active_tp_smoke(cfg: PipelineCfg) -> dict[str, Any] | None:
+  state = cfg.specialist_smoke_work_dir / "active_smoke.json"
+  if not state.is_file():
+    return None
+  payload = json.loads(state.read_text())
+  if _pid_alive(int(payload["pid"])):
+    return payload
+  state.unlink()
+  return None
+
+
+def _launch_tp_smoke(cfg: PipelineCfg, promotion: Path) -> dict[str, Any]:
+  script = Path(__file__).with_name("run_smp_tp_physics_smoke.py").resolve()
+  cfg.specialist_smoke_work_dir.mkdir(parents=True, exist_ok=True)
+  log = cfg.specialist_smoke_work_dir / "physics_smoke_launcher.log"
+  command = [
+    sys.executable,
+    str(script),
+    "--promotion",
+    str(promotion.resolve()),
+    "--output",
+    str(cfg.specialist_smoke_output.resolve()),
+    "--work-dir",
+    str(cfg.specialist_smoke_work_dir.resolve()),
+    "--protocol",
+    str(cfg.progression_protocol.resolve()),
+    "--run",
+  ]
+  with log.open("a") as stream:
+    process = subprocess.Popen(
+      command,
+      stdout=stream,
+      stderr=subprocess.STDOUT,
+      start_new_session=True,
+    )
+  payload = {
+    "pid": process.pid,
+    "promotion": str(promotion.resolve()),
+    "output": str(cfg.specialist_smoke_output.resolve()),
+    "log": str(log.resolve()),
+    "started_at_utc": datetime.now(timezone.utc).isoformat(),
+  }
+  _atomic_json(cfg.specialist_smoke_work_dir / "active_smoke.json", payload)
+  return payload
+
+
+def _advance_specialists(cfg: PipelineCfg, gpu_processes: list[str]) -> dict[str, Any]:
+  aggregate = cfg.confirmation_evidence_dir / "policy_seed_aggregate.json"
+  manifest_index = cfg.confirmation_evidence_dir / "manifests" / "index.json"
+  promotion_path = cfg.confirmation_evidence_dir / "flat_promotion.json"
+  promotion = write_flat_selection(
+    FlatPromotionCfg(
+      aggregate=aggregate,
+      confirmation_manifest_index=manifest_index,
+      protocol=cfg.progression_protocol,
+      output=promotion_path,
+    )
+  )
+  if promotion["status"] != "PROMOTE_TP_SPECIALISTS":
+    return {
+      "status": "TP_NO_PROMOTION",
+      "action": "Three-seed flat evidence failed frozen T/P prerequisites.",
+      "promotion": promotion,
+      "smoke": None,
+      "launch": None,
+    }
+
+  launch_manifest = cfg.specialist_control_dir / "launch_manifest.json"
+  if launch_manifest.is_file():
+    launched = json.loads(launch_manifest.read_text())
+    alive = [
+      job
+      for job in launched.get("jobs", [])
+      if job.get("pid") is not None and _pid_alive(int(job["pid"]))
+    ]
+    return {
+      "status": "TP_SPECIALIST_TRAINING" if alive else "TP_SPECIALIST_PROCESSES_EXITED",
+      "action": (
+        f"T/P specialist training is running: {len(alive)}/{len(launched['jobs'])}."
+        if alive
+        else "T/P processes exited; validate all six jobs before evaluation."
+      ),
+      "promotion": promotion,
+      "smoke": None,
+      "launch": launched,
+    }
+
+  active_smoke = _active_tp_smoke(cfg)
+  if active_smoke is not None:
+    return {
+      "status": "TP_SMOKE_RUNNING",
+      "action": "Wait for sequential T/P MuJoCo physics smoke tests.",
+      "promotion": promotion,
+      "smoke": active_smoke,
+      "launch": None,
+    }
+  smoke = None
+  if cfg.specialist_smoke_output.is_file():
+    smoke = json.loads(cfg.specialist_smoke_output.read_text())
+    if smoke.get("status") != "PASS":
+      return {
+        "status": "TP_SMOKE_ALERT",
+        "action": "T/P smoke artifact exists but is not PASS.",
+        "promotion": promotion,
+        "smoke": smoke,
+        "launch": None,
+      }
+  if smoke is None:
+    if gpu_processes:
+      return {
+        "status": "WAITING_FREE_GPU",
+        "action": "Flat promotion is ready; wait for a free GPU for T/P smoke.",
+        "promotion": promotion,
+        "smoke": None,
+        "launch": None,
+      }
+    if not cfg.launch_specialists_when_ready:
+      return {
+        "status": "TP_READY_FOR_SMOKE",
+        "action": "Run physical T/P smoke before specialist launch.",
+        "promotion": promotion,
+        "smoke": None,
+        "launch": None,
+      }
+    active_smoke = _launch_tp_smoke(cfg, promotion_path)
+    return {
+      "status": "TP_SMOKE_RUNNING",
+      "action": "Launched sequential T/P MuJoCo physics smoke tests.",
+      "promotion": promotion,
+      "smoke": active_smoke,
+      "launch": None,
+    }
+
+  if gpu_processes:
+    return {
+      "status": "WAITING_FREE_GPU",
+      "action": "T/P smoke passed; wait for all GPUs before six-job launch.",
+      "promotion": promotion,
+      "smoke": smoke,
+      "launch": None,
+    }
+  planned = launch_specialists(
+    SpecialistLaunchCfg(
+      promotion=promotion_path,
+      control_dir=cfg.specialist_control_dir,
+      smoke_test=cfg.specialist_smoke_output,
+      protocol=cfg.progression_protocol,
+      launch=cfg.launch_specialists_when_ready,
+    )
+  )
+  return {
+    "status": "TP_SPECIALIST_TRAINING"
+    if planned["status"] == "LAUNCHED"
+    else "TP_READY_FOR_LAUNCH",
+    "action": (
+      "Launched matched-seed T and P specialists."
+      if planned["status"] == "LAUNCHED"
+      else "T/P smoke passed; specialist launch plan is ready."
+    ),
+    "promotion": promotion,
+    "smoke": smoke,
+    "launch": planned,
+  }
+
+
 def _advance_confirmation(
   cfg: PipelineCfg,
   confirmation: dict[str, Any],
@@ -448,6 +625,7 @@ def advance(cfg: PipelineCfg) -> dict[str, Any]:
   stable_selection = None
   confirmation = None
   confirmation_progress = None
+  specialist_progress = None
   confirmation_waiting_for_gpu = False
   if completed_training and next_gate is None:
     stable_selection = write_selection(SelectionCfg(evidence_dir=cfg.evidence_dir))
@@ -455,8 +633,13 @@ def advance(cfg: PipelineCfg) -> dict[str, Any]:
       cfg.launch_confirmation_when_ready
       and stable_selection["status"] == "PROMOTE_FOR_POLICY_SEEDS"
     )
-    confirmation_waiting_for_gpu = wants_confirmation and bool(gpu_processes)
-    if wants_confirmation and not gpu_processes:
+    confirmation_manifest_exists = (
+      cfg.confirmation_control_dir / "launch_manifest.json"
+    ).is_file()
+    confirmation_waiting_for_gpu = (
+      wants_confirmation and bool(gpu_processes) and not confirmation_manifest_exists
+    )
+    if wants_confirmation and (confirmation_manifest_exists or not gpu_processes):
       confirmation = launch_confirmation(
         ConfirmationCfg(
           selection=cfg.evidence_dir / "stable_selection.json",
@@ -465,6 +648,10 @@ def advance(cfg: PipelineCfg) -> dict[str, Any]:
         )
       )
       confirmation_progress = _advance_confirmation(cfg, confirmation, gpu_processes)
+      if confirmation_progress["status"] == "CONFIRMATION_ANALYSIS_COMPLETE":
+        aggregate = confirmation_progress.get("aggregate") or {}
+        if aggregate.get("status") == "MINIMUM_POLICY_SEEDS_MET":
+          specialist_progress = _advance_specialists(cfg, gpu_processes)
   status = "TRAINING_ACTIVE"
   action = "Continue health monitoring; do not contend with training GPUs."
   launched = None
@@ -475,7 +662,10 @@ def advance(cfg: PipelineCfg) -> dict[str, Any]:
     status = "EVAL_RUNNING"
     action = "Wait for the resumable frozen matrix and analyzer to finish."
   elif completed_training and next_gate is None:
-    if confirmation is not None:
+    if specialist_progress is not None:
+      status = specialist_progress["status"]
+      action = specialist_progress["action"]
+    elif confirmation is not None:
       status = confirmation_progress["status"]
       action = confirmation_progress["action"]
     elif confirmation_waiting_for_gpu:
@@ -540,6 +730,7 @@ def advance(cfg: PipelineCfg) -> dict[str, Any]:
       if confirmation is not None
       else None
     ),
+    "specialists": specialist_progress,
   }
 
 

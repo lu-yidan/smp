@@ -114,6 +114,7 @@ from smp.rl.tasks.getup.v6_env_cfg import (
 )
 from smp.rl.tasks.getup.v7_env_cfg import g1_getup_v7_route_smp_env_cfg
 from smp.rl.tasks.getup.v8_env_cfg import g1_getup_v8_natural_smp_env_cfg
+from smp.rl.warm_start_runner import SmpCurriculumWarmStartRunner
 
 _getup_rl = unitree_g1_smp_ppo_runner_cfg()
 _getup_rl.experiment_name = "smp_getup_g1"
@@ -228,12 +229,14 @@ for _arm in SCRATCH_ARM_BUILDERS:
     env_cfg=g1_scratch_ral_terrain_env_cfg(_arm, play=False),
     play_env_cfg=g1_scratch_ral_terrain_env_cfg(_arm, play=True),
     rl_cfg=_scratch_causal_runner(f"smp_ral_t_{_arm}_g1"),
+    runner_cls=SmpCurriculumWarmStartRunner,
   )
   register_mjlab_task(
     task_id=f"Smp-Getup-RAL-P-{_arm_upper}-G1",
     env_cfg=g1_scratch_ral_plate_env_cfg(_arm, play=False),
     play_env_cfg=g1_scratch_ral_plate_env_cfg(_arm, play=True),
     rl_cfg=_scratch_causal_runner(f"smp_ral_p_{_arm}_g1"),
+    runner_cls=SmpCurriculumWarmStartRunner,
   )
 
 _robust_getup_rl = unitree_g1_smp_ppo_runner_cfg()

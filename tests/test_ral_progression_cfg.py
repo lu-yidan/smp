@@ -2,7 +2,13 @@ from __future__ import annotations
 
 import math
 import unittest
+from types import SimpleNamespace
+from unittest import mock
 
+from mjlab.rl import MjlabOnPolicyRunner
+from mjlab.tasks.registry import load_runner_cls
+
+import smp.rl.tasks  # noqa: F401
 from smp.rl.tasks.getup import mdp
 from smp.rl.tasks.getup.ral_progression_env_cfg import (
   ACTOR_TERMS,
@@ -15,9 +21,32 @@ from smp.rl.tasks.getup.ral_progression_env_cfg import (
   g1_scratch_ral_plate_env_cfg,
   g1_scratch_ral_terrain_env_cfg,
 )
+from smp.rl.warm_start_runner import SmpCurriculumWarmStartRunner
 
 
 class RalProgressionCfgTest(unittest.TestCase):
+  def test_registered_progression_uses_fresh_optimizer_warm_start(self) -> None:
+    for phase in ("T", "P"):
+      task = f"Smp-Getup-RAL-{phase}-A6-G1"
+      self.assertIs(load_runner_cls(task), SmpCurriculumWarmStartRunner)
+
+  def test_warm_start_resets_iteration_optimizer_and_curriculum_clock(self) -> None:
+    runner = object.__new__(SmpCurriculumWarmStartRunner)
+    runner.current_learning_iteration = 29999
+    runner.env = SimpleNamespace(unwrapped=SimpleNamespace(common_step_counter=123))
+    with mock.patch.object(
+      MjlabOnPolicyRunner, "load", return_value={"source": "flat"}
+    ) as parent_load:
+      infos = runner.load("flat.pt")
+    self.assertEqual(infos, {"source": "flat"})
+    self.assertEqual(runner.current_learning_iteration, 0)
+    self.assertEqual(runner.env.unwrapped.common_step_counter, 0)
+    load_cfg = parent_load.call_args.kwargs["load_cfg"]
+    self.assertTrue(load_cfg["actor"])
+    self.assertTrue(load_cfg["critic"])
+    self.assertFalse(load_cfg["optimizer"])
+    self.assertFalse(load_cfg["iteration"])
+
   def test_progression_actor_is_one_frame_93d_contract(self) -> None:
     for arm in SCRATCH_ARM_BUILDERS:
       for builder in (
