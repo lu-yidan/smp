@@ -22,6 +22,7 @@ from aggregate_smp_specialist_seeds import (
 from aggregate_smp_specialist_seeds import (
   write_aggregate as write_specialist_aggregate,
 )
+from audit_smp_baseline_registry import audit as audit_baseline_registry
 from build_smp_causal_manifest import ManifestCfg, build_manifest
 from build_smp_confirmation_manifests import (
   ConfirmationManifestCfg,
@@ -34,6 +35,12 @@ from build_smp_specialist_manifests import (
 )
 from build_smp_specialist_manifests import (
   write_manifests as write_specialist_manifests,
+)
+from generate_smp_matched_reset_bank import (
+  ResetBankCfg,
+)
+from generate_smp_matched_reset_bank import (
+  build_plan as build_reset_bank_plan,
 )
 from launch_smp_policy_seed_confirmation import (
   ConfirmationCfg,
@@ -93,6 +100,7 @@ class PipelineCfg:
   launch_when_ready: bool = False
   launch_confirmation_when_ready: bool = False
   launch_specialists_when_ready: bool = False
+  launch_baseline_bank_when_ready: bool = False
   confirmation_control_dir: Path = Path(
     "run_control/scratch_causal_policy_seed_confirmation"
   )
@@ -102,6 +110,14 @@ class PipelineCfg:
   specialist_smoke_work_dir: Path = Path("run_control/ral_tp_smoke")
   specialist_smoke_output: Path = Path("run_control/ral_tp_smoke/result.json")
   progression_protocol: Path = Path("docs/ral_terrain_plate_protocol.json")
+  baseline_control_dir: Path = Path("run_control/ral_baselines")
+  baseline_registry_template: Path = Path("docs/ral_baseline_registry.json")
+  baseline_runtime_registry: Path = Path("run_control/ral_baselines/registry.json")
+  baseline_bank_output: Path = Path("run_control/ral_baselines/matched_reset_bank.pt")
+  baseline_bank_manifest: Path = Path(
+    "run_control/ral_baselines/matched_reset_bank.json"
+  )
+  baseline_bank_device: str = "cuda:6"
   specialist_eval_seed: int = 20260910
   specialist_eval_num_envs: int = 256
   specialist_eval_steps: int = 750
@@ -359,6 +375,111 @@ def _launch_tp_smoke(cfg: PipelineCfg, promotion: Path) -> dict[str, Any]:
     "started_at_utc": datetime.now(timezone.utc).isoformat(),
   }
   _atomic_json(cfg.specialist_smoke_work_dir / "active_smoke.json", payload)
+  return payload
+
+
+def _reset_bank_cfg(
+  cfg: PipelineCfg, promotion: Path, *, run: bool = False
+) -> ResetBankCfg:
+  return ResetBankCfg(
+    promotion=promotion,
+    output=cfg.baseline_bank_output,
+    manifest=cfg.baseline_bank_manifest,
+    registry_template=cfg.baseline_registry_template,
+    runtime_registry=cfg.baseline_runtime_registry,
+    device=cfg.baseline_bank_device,
+    run=run,
+  )
+
+
+def _validate_reset_bank_artifacts(
+  cfg: PipelineCfg, promotion: Path
+) -> dict[str, Any] | None:
+  paths = (
+    cfg.baseline_bank_output,
+    cfg.baseline_bank_manifest,
+    cfg.baseline_runtime_registry,
+  )
+  exists = tuple(path.is_file() for path in paths)
+  if not any(exists):
+    return None
+  if not all(exists):
+    raise ValueError("partial matched reset-bank artifacts exist")
+  plan = build_reset_bank_plan(_reset_bank_cfg(cfg, promotion))
+  manifest = json.loads(cfg.baseline_bank_manifest.read_text())
+  if (
+    manifest.get("status") != "READY"
+    or manifest.get("plan_id") != plan["plan_id"]
+    or manifest.get("promotion_id") != plan["promotion_id"]
+    or manifest.get("generator_code_sha256") != plan["generator_code_sha256"]
+    or manifest.get("bank") != str(cfg.baseline_bank_output.resolve())
+    or manifest.get("bank_sha256") != _sha256(cfg.baseline_bank_output)
+  ):
+    raise ValueError("matched reset-bank manifest conflicts with frozen plan")
+  runtime_registry = json.loads(cfg.baseline_runtime_registry.read_text())
+  readiness = audit_baseline_registry(runtime_registry, cfg.baseline_runtime_registry)
+  if not readiness["reset_bank_ready"]:
+    raise ValueError("runtime baseline registry did not validate the reset bank")
+  return {"manifest": manifest, "readiness": readiness}
+
+
+def _active_reset_bank(cfg: PipelineCfg, promotion: Path) -> dict[str, Any] | None:
+  state = cfg.baseline_control_dir / "active_generation.json"
+  if not state.is_file():
+    return None
+  payload = json.loads(state.read_text())
+  if _pid_alive(int(payload["pid"])):
+    return payload
+  try:
+    complete = _validate_reset_bank_artifacts(cfg, promotion)
+  except (FileNotFoundError, ValueError, json.JSONDecodeError) as error:
+    return {**payload, "failed": True, "error": str(error)}
+  if complete is None:
+    return {**payload, "failed": True, "error": "generator exited without artifacts"}
+  state.unlink()
+  return None
+
+
+def _launch_reset_bank(cfg: PipelineCfg, promotion: Path) -> dict[str, Any]:
+  script = Path(__file__).with_name("generate_smp_matched_reset_bank.py").resolve()
+  plan = build_reset_bank_plan(_reset_bank_cfg(cfg, promotion))
+  cfg.baseline_control_dir.mkdir(parents=True, exist_ok=True)
+  log = cfg.baseline_control_dir / "matched_reset_bank.log"
+  command = [
+    sys.executable,
+    str(script),
+    "--promotion",
+    str(promotion.resolve()),
+    "--output",
+    str(cfg.baseline_bank_output.resolve()),
+    "--manifest",
+    str(cfg.baseline_bank_manifest.resolve()),
+    "--registry-template",
+    str(cfg.baseline_registry_template.resolve()),
+    "--runtime-registry",
+    str(cfg.baseline_runtime_registry.resolve()),
+    "--device",
+    cfg.baseline_bank_device,
+    "--run",
+  ]
+  with log.open("a") as stream:
+    process = subprocess.Popen(
+      command,
+      stdout=stream,
+      stderr=subprocess.STDOUT,
+      start_new_session=True,
+    )
+  payload = {
+    "pid": process.pid,
+    "plan_id": plan["plan_id"],
+    "promotion": str(promotion.resolve()),
+    "output": str(cfg.baseline_bank_output.resolve()),
+    "manifest": str(cfg.baseline_bank_manifest.resolve()),
+    "runtime_registry": str(cfg.baseline_runtime_registry.resolve()),
+    "log": str(log.resolve()),
+    "started_at_utc": datetime.now(timezone.utc).isoformat(),
+  }
+  _atomic_json(cfg.baseline_control_dir / "active_generation.json", payload)
   return payload
 
 
@@ -637,6 +758,62 @@ def _advance_specialists(cfg: PipelineCfg, gpu_processes: list[str]) -> dict[str
       "status": "TP_NO_PROMOTION",
       "action": "Three-seed flat evidence failed frozen T/P prerequisites.",
       "promotion": promotion,
+      "smoke": None,
+      "launch": None,
+    }
+
+  active_bank = _active_reset_bank(cfg, promotion_path)
+  if active_bank is not None:
+    return {
+      "status": (
+        "RESET_BANK_ALERT" if active_bank.get("failed") else "RESET_BANK_RUNNING"
+      ),
+      "action": (
+        "Matched reset-bank generator exited without valid immutable artifacts."
+        if active_bank.get("failed")
+        else "Wait for the promotion-bound matched reset bank."
+      ),
+      "promotion": promotion,
+      "reset_bank": active_bank,
+      "smoke": None,
+      "launch": None,
+    }
+  try:
+    reset_bank = _validate_reset_bank_artifacts(cfg, promotion_path)
+  except (FileNotFoundError, ValueError, json.JSONDecodeError) as error:
+    return {
+      "status": "RESET_BANK_ALERT",
+      "action": f"Matched reset-bank validation failed: {error}",
+      "promotion": promotion,
+      "reset_bank": None,
+      "smoke": None,
+      "launch": None,
+    }
+  if reset_bank is None:
+    if gpu_processes:
+      return {
+        "status": "WAITING_FREE_GPU",
+        "action": "Flat promotion is ready; wait for an idle GPU before reset-bank generation.",
+        "promotion": promotion,
+        "reset_bank": None,
+        "smoke": None,
+        "launch": None,
+      }
+    if not cfg.launch_baseline_bank_when_ready:
+      return {
+        "status": "RESET_BANK_READY",
+        "action": "Generate the frozen matched reset bank before T/P smoke or Tier-A baselines.",
+        "promotion": promotion,
+        "reset_bank": None,
+        "smoke": None,
+        "launch": None,
+      }
+    launched_bank = _launch_reset_bank(cfg, promotion_path)
+    return {
+      "status": "RESET_BANK_RUNNING",
+      "action": "Launched promotion-bound matched reset-bank generation.",
+      "promotion": promotion,
+      "reset_bank": launched_bank,
       "smoke": None,
       "launch": None,
     }

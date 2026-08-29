@@ -125,6 +125,12 @@ native reference rather than being placed in the main Tier-A ranking.
 The machine-readable preregistration is
 `docs/ral_baseline_registry.json`; `scripts/audit_smp_baseline_registry.py`
 must report `BASELINES_READY_FOR_TRAINING` before any Tier-A baseline launch.
+After the three-seed flat promotion and only when all training GPUs are idle,
+`advance_smp_ral_pipeline.py --launch-baseline-bank-when-ready` backgrounds
+the bank generator, records its PID/log/plan ID, and refuses T/P smoke until
+the bank, manifest, runtime registry, hashes, state shapes, and 10-frame
+history all validate. A dead process with partial artifacts remains an alert;
+it is never silently relaunched or regenerated.
 
 ## Frozen flat evaluation
 

@@ -136,6 +136,7 @@ def build_plan(cfg: ResetBankCfg) -> dict[str, Any]:
     "registry_template": str(cfg.registry_template.resolve()),
     "registry_template_sha256": _sha256(cfg.registry_template),
     "generator_code_commit": _git_commit(),
+    "generator_code_sha256": _sha256(Path(__file__).resolve()),
     "num_states": cfg.num_states,
     "batch_size": cfg.batch_size,
     "generation_seed": cfg.seed,
@@ -144,8 +145,11 @@ def build_plan(cfg: ResetBankCfg) -> dict[str, Any]:
     "window_size": 10,
     "feature_dim": 59,
   }
+  stable_material = {
+    key: value for key, value in material.items() if key != "generator_code_commit"
+  }
   material["plan_id"] = hashlib.sha256(
-    json.dumps(material, sort_keys=True).encode()
+    json.dumps(stable_material, sort_keys=True).encode()
   ).hexdigest()
   return material
 
