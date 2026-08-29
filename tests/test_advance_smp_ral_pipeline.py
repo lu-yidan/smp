@@ -135,6 +135,43 @@ class PipelineStateTest(unittest.TestCase):
 
 
 class CompletionValidationTest(unittest.TestCase):
+  def test_rejects_modified_locked_15k_manifest(self) -> None:
+    with tempfile.TemporaryDirectory() as temporary:
+      root = Path(temporary)
+      runs = []
+      for index in range(8):
+        checkpoint = root / f"model_{index}.pt"
+        checkpoint.write_bytes(b"checkpoint")
+        runs.append(
+          {
+            "name": f"arm_{index}",
+            "checkpoint": str(checkpoint),
+            "checkpoint_sha256": "checkpoint-hash",
+            "policy_seed": 42,
+            "environment_seed": 42,
+          }
+        )
+      manifest = root / "gate_15000.json"
+      manifest.write_text(
+        json.dumps(
+          {
+            "checkpoint_step": 15000,
+            "policy_seed": 42,
+            "environment_seed": 42,
+            "runs": runs,
+          }
+        )
+      )
+
+      def fake_sha256(path: Path) -> str:
+        return "tampered-manifest" if path == manifest else "checkpoint-hash"
+
+      with (
+        mock.patch.object(pipeline, "_sha256", side_effect=fake_sha256),
+        self.assertRaisesRegex(ValueError, "locked gate 15000 manifest hash changed"),
+      ):
+        pipeline._validate_manifest(manifest, 15000, 42, 42)
+
   def test_rejects_incomplete_or_wrong_protocol_marker(self) -> None:
     with tempfile.TemporaryDirectory() as temporary:
       root = Path(temporary)
