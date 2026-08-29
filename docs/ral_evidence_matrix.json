@@ -108,7 +108,13 @@
       "priority": 1,
       "required": true,
       "status": "not_started",
-      "evidence": [],
+      "evidence": [
+        {
+          "type": "file",
+          "target": "docs/ral_baseline_comparison_protocol.md",
+          "description": "Frozen matched-deployable, native-reference, and external-method comparison protocol"
+        }
+      ],
       "missing": "Freeze matched comparisons to original SMP, FIRM-style tracking/diffusion, and key ablations under the same observation and evaluation protocol."
     },
     {
