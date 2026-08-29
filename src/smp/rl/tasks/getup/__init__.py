@@ -66,6 +66,11 @@ from smp.rl.tasks.getup.recovery_core_r2_ordered_env_cfg import (
 from smp.rl.tasks.getup.robust_env_cfg import g1_getup_robust_smp_env_cfg
 from smp.rl.tasks.getup.safe_env_cfg import g1_getup_robust_safe_smp_env_cfg
 from smp.rl.tasks.getup.smooth_env_cfg import g1_getup_robust_smooth_smp_env_cfg
+from smp.rl.tasks.getup.smp_observation_factorial_env_cfg import (
+  g1_getup_obs_f1_nolinvel_smp_env_cfg,
+  g1_getup_obs_f4_nolinvel_smp_env_cfg,
+  g1_getup_obs_f4_vel_smp_env_cfg,
+)
 from smp.rl.tasks.getup.staged_env_cfg import g1_getup_robust_staged_smp_env_cfg
 from smp.rl.tasks.getup.terrain_v35_env_cfg import (
   g1_getup_terrain_v35_smp_env_cfg,
@@ -104,6 +109,36 @@ register_mjlab_task(
   env_cfg=g1_getup_smp_env_cfg(play=False),
   play_env_cfg=g1_getup_smp_env_cfg(play=True),
   rl_cfg=_getup_rl,
+)
+
+
+def _observation_factorial_runner(experiment_name: str):
+  cfg = unitree_g1_smp_ppo_runner_cfg()
+  cfg.experiment_name = experiment_name
+  cfg.run_name = experiment_name
+  cfg.save_interval = 500
+  return cfg
+
+
+register_mjlab_task(
+  task_id="Smp-Getup-Obs-F1-NoLinVel-G1",
+  env_cfg=g1_getup_obs_f1_nolinvel_smp_env_cfg(play=False),
+  play_env_cfg=g1_getup_obs_f1_nolinvel_smp_env_cfg(play=True),
+  rl_cfg=_observation_factorial_runner("smp_getup_obs_f1_nolinvel_g1"),
+)
+
+register_mjlab_task(
+  task_id="Smp-Getup-Obs-F4-Vel-G1",
+  env_cfg=g1_getup_obs_f4_vel_smp_env_cfg(play=False),
+  play_env_cfg=g1_getup_obs_f4_vel_smp_env_cfg(play=True),
+  rl_cfg=_observation_factorial_runner("smp_getup_obs_f4_vel_g1"),
+)
+
+register_mjlab_task(
+  task_id="Smp-Getup-Obs-F4-NoLinVel-G1",
+  env_cfg=g1_getup_obs_f4_nolinvel_smp_env_cfg(play=False),
+  play_env_cfg=g1_getup_obs_f4_nolinvel_smp_env_cfg(play=True),
+  rl_cfg=_observation_factorial_runner("smp_getup_obs_f4_nolinvel_g1"),
 )
 
 _robust_getup_rl = unitree_g1_smp_ppo_runner_cfg()
