@@ -29,17 +29,30 @@ def _evidence_valid(evidence: dict[str, Any], repo_root: Path) -> tuple[bool, st
     return False, "missing target"
   if not isinstance(description, str) or not description:
     return False, "missing description"
-  if evidence_type == "file":
+  if evidence_type in {"file", "result", "runtime"}:
     path = Path(target)
     resolved = path if path.is_absolute() else repo_root / path
-    return (resolved.exists(), f"missing file: {resolved}")
+    if not resolved.exists():
+      return False, f"missing path: {resolved}"
+    if evidence_type == "file":
+      return True, f"path exists: {resolved}"
+    if not resolved.is_file() or resolved.stat().st_size == 0:
+      return False, f"result must be a non-empty file: {resolved}"
+    if resolved.suffix == ".json":
+      try:
+        json.loads(resolved.read_text())
+      except (json.JSONDecodeError, OSError) as error:
+        return False, f"invalid result JSON {resolved}: {error}"
+    return True, f"non-empty result exists: {resolved}"
   if evidence_type == "url":
     valid = target.startswith(("https://", "http://"))
-    return valid, "URL must start with http:// or https://"
+    detail = (
+      f"URL recorded: {target}" if valid else "URL must start with http:// or https://"
+    )
+    return valid, detail
   if evidence_type == "git_commit":
-    return bool(_COMMIT.fullmatch(target)), "invalid Git commit"
-  if evidence_type == "runtime":
-    return True, "runtime evidence existence is checked by the owning evaluator"
+    valid = bool(_COMMIT.fullmatch(target))
+    return valid, f"commit recorded: {target}" if valid else "invalid Git commit"
   return False, f"unknown evidence type: {evidence_type}"
 
 
@@ -65,13 +78,15 @@ def audit(ledger: dict[str, Any], ledger_path: Path) -> dict[str, Any]:
     evidence_results = []
     for evidence in criterion.get("evidence", []):
       valid, detail = _evidence_valid(evidence, repo_root)
-      evidence_results.append(
-        {"valid": valid, "detail": detail, "evidence": evidence}
-      )
+      evidence_results.append({"valid": valid, "detail": detail, "evidence": evidence})
     evidence_valid = bool(evidence_results) and all(
       result["valid"] for result in evidence_results
     )
-    proven = status == "met" and evidence_valid
+    result_evidence_valid = any(
+      result["valid"] and result["evidence"].get("type") in {"result", "runtime"}
+      for result in evidence_results
+    )
+    proven = status == "met" and evidence_valid and result_evidence_valid
     audited.append(
       {
         "id": criterion_id,
@@ -80,6 +95,7 @@ def audit(ledger: dict[str, Any], ledger_path: Path) -> dict[str, Any]:
         "required": bool(criterion.get("required", True)),
         "declared_status": status,
         "evidence_valid": evidence_valid,
+        "result_evidence_valid": result_evidence_valid,
         "proven": proven,
         "missing": criterion.get("missing", ""),
         "evidence": evidence_results,
@@ -99,8 +115,10 @@ def audit(ledger: dict[str, Any], ledger_path: Path) -> dict[str, Any]:
     "next_priority": unresolved[0] if unresolved else None,
     "criteria": audited,
     "completion_rule": (
-      "RAL_READY requires every required criterion to be declared met and to "
-      "contain valid evidence. In-progress or historical proxy evidence does not pass."
+      "RAL_READY requires every required criterion to be declared met, all "
+      "referenced evidence to exist, and at least one non-empty result/runtime "
+      "artifact per criterion. In-progress, implementation-only, or historical "
+      "proxy evidence does not pass."
     ),
   }
 
@@ -113,13 +131,14 @@ def _markdown(report: dict[str, Any]) -> str:
     "",
     f"Proven required criteria: {report['proven_required_count']}/{report['required_count']}",
     "",
-    "| ID | Criterion | Declared | Evidence valid | Proven | Missing |",
-    "| --- | --- | --- | :---: | :---: | --- |",
+    "| ID | Criterion | Declared | Evidence valid | Result artifact | Proven | Missing |",
+    "| --- | --- | --- | :---: | :---: | :---: | --- |",
   ]
   for item in report["criteria"]:
     lines.append(
       f"| {item['id']} | {item['name']} | {item['declared_status']} | "
       f"{'yes' if item['evidence_valid'] else 'no'} | "
+      f"{'yes' if item['result_evidence_valid'] else 'no'} | "
       f"{'yes' if item['proven'] else 'no'} | {item['missing']} |"
     )
   lines.extend(("", report["completion_rule"], ""))
