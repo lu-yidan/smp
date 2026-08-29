@@ -93,6 +93,19 @@ documentation and recorded with their source. The Unitree G1 developer guide
 is the primary operational reference:
 https://support.unitree.com/home/en/G1_developer/basic_motion_development
 
+Analyze the completed ledger with:
+
+```bash
+uv run scripts/analyze_smp_hardware_trials.py \
+  --trials results/real_g1_flat_core/trials.csv \
+  --output-json results/real_g1_flat_core/analysis.json
+```
+
+The analyzer rejects duplicate or incomplete trials, dirty deployment code,
+old logger schemas, inconsistent hashes, missing raw logs, invalid success
+labels, non-finite safety values, and outcomes outside the frozen taxonomy.
+
+
 The row schema is frozen in `docs/ral_hardware_trial_template.csv`. Completed
 rows and raw logs become `result` evidence for C09/C10 only after validation;
 this protocol and an empty template are implementation evidence, not results.
