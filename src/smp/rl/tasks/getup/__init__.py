@@ -65,6 +65,16 @@ from smp.rl.tasks.getup.recovery_core_r2_ordered_env_cfg import (
 )
 from smp.rl.tasks.getup.robust_env_cfg import g1_getup_robust_smp_env_cfg
 from smp.rl.tasks.getup.safe_env_cfg import g1_getup_robust_safe_smp_env_cfg
+from smp.rl.tasks.getup.scratch_causal_ablation_env_cfg import (
+  g1_scratch_a0_f2s2_gsi_env_cfg,
+  g1_scratch_a1_v7_gsi_env_cfg,
+  g1_scratch_a2_f2s2_mix_strict_env_cfg,
+  g1_scratch_a3_v7_mix_strict_env_cfg,
+  g1_scratch_a4_f2s2_mix_reset_aware_env_cfg,
+  g1_scratch_a5_v7_mix_reset_aware_env_cfg,
+  g1_scratch_a6_f2s2_mix_bridge_env_cfg,
+  g1_scratch_a7_v7_mix_bridge_env_cfg,
+)
 from smp.rl.tasks.getup.smooth_env_cfg import g1_getup_robust_smooth_smp_env_cfg
 from smp.rl.tasks.getup.smp_observation_factorial_env_cfg import (
   g1_getup_obs_f1_nolinvel_smp_env_cfg,
@@ -139,6 +149,71 @@ register_mjlab_task(
   env_cfg=g1_getup_obs_f4_nolinvel_smp_env_cfg(play=False),
   play_env_cfg=g1_getup_obs_f4_nolinvel_smp_env_cfg(play=True),
   rl_cfg=_observation_factorial_runner("smp_getup_obs_f4_nolinvel_g1"),
+)
+
+
+def _scratch_causal_runner(experiment_name: str):
+  cfg = unitree_g1_smp_ppo_runner_cfg()
+  cfg.experiment_name = experiment_name
+  cfg.run_name = experiment_name
+  cfg.save_interval = 1000
+  return cfg
+
+
+register_mjlab_task(
+  task_id="Smp-Getup-Scratch-A0-F2S2-GSI-G1",
+  env_cfg=g1_scratch_a0_f2s2_gsi_env_cfg(play=False),
+  play_env_cfg=g1_scratch_a0_f2s2_gsi_env_cfg(play=True),
+  rl_cfg=_scratch_causal_runner("smp_scratch_a0_f2s2_gsi_g1"),
+)
+
+register_mjlab_task(
+  task_id="Smp-Getup-Scratch-A1-V7-GSI-G1",
+  env_cfg=g1_scratch_a1_v7_gsi_env_cfg(play=False),
+  play_env_cfg=g1_scratch_a1_v7_gsi_env_cfg(play=True),
+  rl_cfg=_scratch_causal_runner("smp_scratch_a1_v7_gsi_g1"),
+)
+
+register_mjlab_task(
+  task_id="Smp-Getup-Scratch-A2-F2S2-Mix-Strict-G1",
+  env_cfg=g1_scratch_a2_f2s2_mix_strict_env_cfg(play=False),
+  play_env_cfg=g1_scratch_a2_f2s2_mix_strict_env_cfg(play=True),
+  rl_cfg=_scratch_causal_runner("smp_scratch_a2_f2s2_mix_strict_g1"),
+)
+
+register_mjlab_task(
+  task_id="Smp-Getup-Scratch-A3-V7-Mix-Strict-G1",
+  env_cfg=g1_scratch_a3_v7_mix_strict_env_cfg(play=False),
+  play_env_cfg=g1_scratch_a3_v7_mix_strict_env_cfg(play=True),
+  rl_cfg=_scratch_causal_runner("smp_scratch_a3_v7_mix_strict_g1"),
+)
+
+register_mjlab_task(
+  task_id="Smp-Getup-Scratch-A4-F2S2-Mix-ResetAware-G1",
+  env_cfg=g1_scratch_a4_f2s2_mix_reset_aware_env_cfg(play=False),
+  play_env_cfg=g1_scratch_a4_f2s2_mix_reset_aware_env_cfg(play=True),
+  rl_cfg=_scratch_causal_runner("smp_scratch_a4_f2s2_mix_reset_aware_g1"),
+)
+
+register_mjlab_task(
+  task_id="Smp-Getup-Scratch-A5-V7-Mix-ResetAware-G1",
+  env_cfg=g1_scratch_a5_v7_mix_reset_aware_env_cfg(play=False),
+  play_env_cfg=g1_scratch_a5_v7_mix_reset_aware_env_cfg(play=True),
+  rl_cfg=_scratch_causal_runner("smp_scratch_a5_v7_mix_reset_aware_g1"),
+)
+
+register_mjlab_task(
+  task_id="Smp-Getup-Scratch-A6-F2S2-Mix-Bridge-G1",
+  env_cfg=g1_scratch_a6_f2s2_mix_bridge_env_cfg(play=False),
+  play_env_cfg=g1_scratch_a6_f2s2_mix_bridge_env_cfg(play=True),
+  rl_cfg=_scratch_causal_runner("smp_scratch_a6_f2s2_mix_bridge_g1"),
+)
+
+register_mjlab_task(
+  task_id="Smp-Getup-Scratch-A7-V7-Mix-Bridge-G1",
+  env_cfg=g1_scratch_a7_v7_mix_bridge_env_cfg(play=False),
+  play_env_cfg=g1_scratch_a7_v7_mix_bridge_env_cfg(play=True),
+  rl_cfg=_scratch_causal_runner("smp_scratch_a7_v7_mix_bridge_g1"),
 )
 
 _robust_getup_rl = unitree_g1_smp_ppo_runner_cfg()

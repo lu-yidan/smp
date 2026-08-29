@@ -70,6 +70,7 @@ __all__ = [
   "ordered_stable_stand_metric",
   "post_stand_knockdown_metric",
   "prone_reset_metric",
+  "procedural_bridge_task_smp_product",
   "procedural_reset_metric",
   "quiet_stance_gate",
   "recovery_stage_complete_metric",
@@ -101,6 +102,44 @@ __all__ = [
   "v6_push_cohort_metric",
   "v6_push_count_metric",
 ]
+
+
+def procedural_bridge_task_smp_product(
+  env: ManagerBasedRlEnv,
+  task_terms: tuple,
+  fixed_timesteps: tuple[int, ...] = (8, 15, 22),
+  ws: float = 6.0,
+  procedural_smp_floor: float = 0.10,
+) -> torch.Tensor:
+  """Keep the original SMP product on GSI resets and bridge procedural resets.
+
+  Procedural poses can initially be far outside the pretrained prior, making an
+  exact task-times-SMP product effectively zero. The small floor supplies an
+  exploration gradient only to reset types 1--4. GSI reset type zero remains
+  bit-for-bit the original product.
+  """
+  if not 0.0 <= procedural_smp_floor <= 1.0:
+    raise ValueError(
+      "procedural_smp_floor must be in [0, 1], "
+      f"got {procedural_smp_floor}"
+    )
+  product = _task_smp_product(
+    env,
+    task_terms=task_terms,
+    fixed_timesteps=fixed_timesteps,
+    ws=ws,
+    smp_floor=0.0,
+  )
+  reset_type = getattr(env, "_robust_reset_type", None)
+  if reset_type is None:
+    return product
+  procedural = (reset_type >= 1) & (reset_type <= 4)
+  task = env._smp_task_score  # type: ignore[attr-defined]
+  smp = env._smp_score  # type: ignore[attr-defined]
+  bridged = task * (procedural_smp_floor + (1.0 - procedural_smp_floor) * smp)
+  result = torch.where(procedural, bridged, product)
+  env._smp_product_score = result  # type: ignore[attr-defined]
+  return result
 
 
 def escape_gated_task_smp_product(

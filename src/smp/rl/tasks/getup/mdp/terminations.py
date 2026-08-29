@@ -9,6 +9,7 @@ __all__ = [
   "invalid_escape_contact",
   "invalid_escape_episode",
   "smp_too_low",
+  "smp_too_low_gsi_only",
   "stood_up",
   "terrain_patch_exit",
   "unstable_sim_state",
@@ -138,3 +139,24 @@ def smp_too_low(
   raw_smp = torch.exp(-ws * raw_err)
   past_grace = env.episode_length_buf >= grace_steps
   return (raw_smp < threshold) & past_grace
+
+
+def smp_too_low_gsi_only(
+  env: ManagerBasedRlEnv,
+  threshold: float = 0.02,
+  ws: float = 6.0,
+  grace_steps: int = 15,
+) -> torch.Tensor:
+  """Apply the original off-manifold termination only to GSI reset samples.
+
+  Reset type zero is GSI; types one through four are procedural prone, supine,
+  left-side, and right-side poses. If no reset labels exist, preserve the
+  original termination behavior.
+  """
+  low = smp_too_low(
+    env, threshold=threshold, ws=ws, grace_steps=grace_steps
+  )
+  reset_type = getattr(env, "_robust_reset_type", None)
+  if reset_type is None:
+    return low
+  return low & (reset_type == 0)
