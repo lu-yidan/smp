@@ -1,0 +1,180 @@
+{
+  "schema_version": 1,
+  "target": "IEEE Robotics and Automation Letters",
+  "updated_at": "2026-08-29",
+  "policy_scope": "93D single-frame deployable actor without true base linear velocity",
+  "criteria": [
+    {
+      "id": "C01",
+      "name": "From-scratch deployable flat recovery baseline",
+      "priority": 0,
+      "required": true,
+      "status": "in_progress",
+      "evidence": [
+        {
+          "type": "file",
+          "target": "docs/smp_scratch_causal_ablation.md",
+          "description": "Eight-arm causal screen protocol and W&B run mapping"
+        }
+      ],
+      "missing": "Complete frozen 8k/15k/25k/final matrices and select a checkpoint-stable arm."
+    },
+    {
+      "id": "C02",
+      "name": "Independent policy-seed replication",
+      "priority": 0,
+      "required": true,
+      "status": "not_started",
+      "evidence": [],
+      "missing": "Train and freeze at least three independent policy seeds for the selected configuration."
+    },
+    {
+      "id": "C03",
+      "name": "Policy-level uncertainty and worst-pose reporting",
+      "priority": 0,
+      "required": true,
+      "status": "in_progress",
+      "evidence": [
+        {
+          "type": "file",
+          "target": "scripts/aggregate_smp_policy_seeds.py",
+          "description": "Policy-seed bootstrap implementation"
+        },
+        {
+          "type": "file",
+          "target": "scripts/analyze_smp_frozen_matrix.py",
+          "description": "Macro and worst-pose frozen analysis"
+        }
+      ],
+      "missing": "Populate bootstrap intervals from three independently trained policies."
+    },
+    {
+      "id": "C04",
+      "name": "Core prior, reset, termination, and reward ablations",
+      "priority": 0,
+      "required": true,
+      "status": "in_progress",
+      "evidence": [
+        {
+          "type": "file",
+          "target": "docs/smp_scratch_causal_ablation.md",
+          "description": "Paired two-prior, four-training-condition experiment"
+        }
+      ],
+      "missing": "Complete frozen matrices and repeat decisive contrasts across policy seeds."
+    },
+    {
+      "id": "C05",
+      "name": "Complex-terrain stratified evaluation",
+      "priority": 1,
+      "required": true,
+      "status": "in_progress",
+      "evidence": [
+        {
+          "type": "file",
+          "target": "docs/terrain_recovery_v37_plan.md",
+          "description": "Historical stair-edge protocol and failure boundary"
+        }
+      ],
+      "missing": "Evaluate the selected 93D from-scratch policy on flat, slope, stair, and rough terrain with pose and difficulty strata."
+    },
+    {
+      "id": "C06",
+      "name": "Physical plate escape with deployable observations",
+      "priority": 1,
+      "required": true,
+      "status": "in_progress",
+      "evidence": [
+        {
+          "type": "file",
+          "target": "docs/escape_geometry_v33.md",
+          "description": "Historical physically valid plate baseline; actor still used true base velocity"
+        }
+      ],
+      "missing": "Train and evaluate plate escape using the selected 93D actor across pose, mass, coverage, friction, and geometry strata."
+    },
+    {
+      "id": "C07",
+      "name": "Unified terrain-plus-constraint recovery",
+      "priority": 1,
+      "required": true,
+      "status": "not_started",
+      "evidence": [],
+      "missing": "Demonstrate one deployable policy or a deployable selector without privileged obstacle or terrain labels."
+    },
+    {
+      "id": "C08",
+      "name": "Strong and fair baseline comparison",
+      "priority": 1,
+      "required": true,
+      "status": "not_started",
+      "evidence": [],
+      "missing": "Freeze matched comparisons to original SMP, FIRM-style tracking/diffusion, and key ablations under the same observation and evaluation protocol."
+    },
+    {
+      "id": "C09",
+      "name": "Safety, stability, and naturalness evidence",
+      "priority": 0,
+      "required": true,
+      "status": "in_progress",
+      "evidence": [
+        {
+          "type": "file",
+          "target": "scripts/evaluate_smp_baseline.py",
+          "description": "Versioned power, speed, slip, drift, secondary-fall, stance, and action-smoothness metrics"
+        }
+      ],
+      "missing": "Define hardware-safe thresholds and report distributions for all promoted policies."
+    },
+    {
+      "id": "C10",
+      "name": "Repeated real-G1 validation",
+      "priority": 0,
+      "required": true,
+      "status": "in_progress",
+      "evidence": [
+        {
+          "type": "file",
+          "target": "../RoboMimic_Deploy/logs/20260828_180517_freekick.bin",
+          "description": "Qualitative deployment log; not a frozen quantitative result"
+        }
+      ],
+      "missing": "Run a preregistered multi-trial protocol with success, recovery time, safety peaks, and failure taxonomy."
+    },
+    {
+      "id": "C11",
+      "name": "Reproducible artifacts and immutable provenance",
+      "priority": 0,
+      "required": true,
+      "status": "in_progress",
+      "evidence": [
+        {
+          "type": "file",
+          "target": "scripts/build_smp_causal_manifest.py",
+          "description": "All-or-nothing checkpoint manifests with SHA-256 and run provenance"
+        },
+        {
+          "type": "file",
+          "target": "scripts/run_smp_frozen_eval_matrix.py",
+          "description": "Resumable schema-versioned frozen evaluation"
+        }
+      ],
+      "missing": "Publish final configs, checkpoints or retrieval instructions, seeds, raw tables, and evaluation commands."
+    },
+    {
+      "id": "C12",
+      "name": "Paper, failure analysis, and limitations",
+      "priority": 2,
+      "required": true,
+      "status": "in_progress",
+      "evidence": [
+        {
+          "type": "file",
+          "target": "/home/d080/workspace/G1_Recovery_Below_Block/project_record_zh.tex",
+          "description": "Chinese RA-L project record and evidence-gap table"
+        }
+      ],
+      "missing": "Convert verified evidence into the final RA-L manuscript, figures, video, limitations, and reproducibility package."
+    }
+  ]
+}

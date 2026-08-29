@@ -203,6 +203,19 @@ policy-seed identifiers and reports `INSUFFICIENT_POLICY_SEEDS` until at least
 three are present. This prevents thousands of parallel environments from
 being misreported as thousands of independent training replicates.
 
+RA-L readiness is separately tracked in `docs/ral_evidence_matrix.json` and
+audited with:
+
+```bash
+uv run scripts/audit_smp_ral_readiness.py
+```
+
+The audit returns `RAL_READY` only when every required criterion is explicitly
+`met` and has valid evidence. Historical 96D simulation policies, qualitative
+real-robot logs, an implemented evaluator without results, or an
+`in_progress` experiment cannot satisfy a criterion for the current 93D
+deployable policy.
+
 Continuing a policy that originally began randomly through a curriculum is
 still a from-scratch training pipeline. Loading V3.3, V8, or another external
 policy checkpoint is finetuning and is excluded from the baseline evidence.
