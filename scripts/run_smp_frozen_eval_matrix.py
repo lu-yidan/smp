@@ -68,6 +68,20 @@ def _load_manifest(path: Path) -> tuple[dict[str, Any], list[dict[str, Any]]]:
     expected_hash = run.get("checkpoint_sha256")
     if expected_hash is not None and _sha256(checkpoint) != expected_hash:
       raise ValueError(f"manifest checkpoint changed: {checkpoint}")
+    policy_kind = run.get("policy_kind", "rsl_rl")
+    if policy_kind not in ("rsl_rl", "firm_r"):
+      raise ValueError(f"manifest run {index} has unknown policy_kind: {policy_kind}")
+    adapter_value = run.get("firm_adapter_checkpoint")
+    adapter_hash = run.get("firm_adapter_checkpoint_sha256")
+    if policy_kind == "rsl_rl":
+      if adapter_value is not None or adapter_hash is not None:
+        raise ValueError("rsl_rl manifest run cannot carry a FIRM adapter")
+    else:
+      if not isinstance(adapter_value, str) or not isinstance(adapter_hash, str):
+        raise ValueError("firm_r manifest run requires an adapter and SHA-256")
+      adapter = Path(adapter_value)
+      if not adapter.is_file() or _sha256(adapter) != adapter_hash:
+        raise ValueError(f"manifest FIRM adapter changed: {adapter}")
   if str(metadata.get("evaluation_status", "")).startswith("BLOCKED_"):
     raise ValueError(
       f"manifest is not evaluation-ready: {metadata['evaluation_status']}"
@@ -202,6 +216,14 @@ def main(cfg: MatrixCfg) -> None:
           "policy_seed": policy_seed,
           "matched_eval_manifest_sha256": metadata.get("matched_eval_manifest_sha256"),
         }
+        policy_kind = run.get("policy_kind", "rsl_rl")
+        if policy_kind == "firm_r":
+          expected.update(
+            {
+              "policy_kind": "firm_r",
+              "firm_adapter_checkpoint_sha256": run["firm_adapter_checkpoint_sha256"],
+            }
+          )
         result_paths.append(output)
         if not cfg.overwrite and _valid_result(output, expected):
           print(f"[SKIP] {output.name}")
@@ -227,6 +249,19 @@ def main(cfg: MatrixCfg) -> None:
         ]
         if policy_seed is not None:
           command.extend(("--policy-seed", str(policy_seed)))
+        if policy_kind == "firm_r":
+          command.extend(
+            (
+              "--policy-kind",
+              "firm_r",
+              "--firm-adapter-checkpoint",
+              str(Path(run["firm_adapter_checkpoint"]).resolve()),
+              "--firm-goal-refresh-steps",
+              str(run.get("firm_goal_refresh_steps", 5)),
+              "--firm-num-action-samples",
+              str(run.get("firm_num_action_samples", 1)),
+            )
+          )
         if cfg.include_per_env:
           command.append("--include-per-env")
         if metadata.get("matched_eval_manifest") is not None:

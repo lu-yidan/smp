@@ -5,6 +5,7 @@ from __future__ import annotations
 import hashlib
 import json
 import math
+import time
 from dataclasses import asdict, dataclass
 from pathlib import Path
 
@@ -18,6 +19,7 @@ from mjlab.tasks.registry import load_env_cfg, load_rl_cfg, load_runner_cls
 from mjlab.utils.torch import configure_torch_backends
 
 import smp.rl.tasks  # noqa: F401
+from smp.firm.deployable_policy import FirmDeployablePolicy
 from smp.rl.tasks.getup import mdp
 
 _RESET_WEIGHTS = {
@@ -35,6 +37,10 @@ _STAIR_EDGE_COHORTS = ("center", "near_edge", "straddle", "lower_tread")
 @dataclass(frozen=True)
 class EvalCfg:
   checkpoint: Path
+  policy_kind: str = "rsl_rl"
+  firm_adapter_checkpoint: Path | None = None
+  firm_goal_refresh_steps: int = 5
+  firm_num_action_samples: int = 1
   task: str = "Smp-Getup-G1"
   reset_mode: str = "native_gsi"
   num_envs: int = 512
@@ -53,6 +59,19 @@ class EvalCfg:
   plate_mass_kg: float = 0.0
   matched_eval_manifest: Path | None = None
   matched_eval_manifest_sha256: str = ""
+
+
+def _validate_policy_configuration(cfg: EvalCfg) -> None:
+  if cfg.policy_kind not in ("rsl_rl", "firm_r"):
+    raise ValueError("policy_kind must be rsl_rl or firm_r")
+  if cfg.policy_kind == "rsl_rl":
+    if cfg.firm_adapter_checkpoint is not None:
+      raise ValueError("rsl_rl policy cannot carry a FIRM adapter")
+    return
+  if cfg.firm_adapter_checkpoint is None:
+    raise ValueError("firm_r policy requires a deployable adapter checkpoint")
+  if cfg.firm_goal_refresh_steps <= 0 or cfg.firm_num_action_samples <= 0:
+    raise ValueError("FIRM refresh steps and action samples must be positive")
 
 
 def _quantile(values: torch.Tensor, q: float) -> float:
@@ -241,6 +260,7 @@ def _configure_specialist_stratum(env_cfg, cfg: EvalCfg) -> None:
 
 
 def main(cfg: EvalCfg) -> None:
+  _validate_policy_configuration(cfg)
   valid_modes = ("native_gsi", *_RESET_WEIGHTS)
   if cfg.reset_mode not in valid_modes:
     choices = ", ".join(valid_modes)
@@ -309,15 +329,28 @@ def main(cfg: EvalCfg) -> None:
 
   raw_env = ManagerBasedRlEnv(env_cfg, device=cfg.device)
   env = RslRlVecEnvWrapper(raw_env, clip_actions=agent_cfg.clip_actions)
-  runner_cls = load_runner_cls(cfg.task) or MjlabOnPolicyRunner
-  runner = runner_cls(env, asdict(agent_cfg), device=cfg.device)
-  runner.load(
-    str(cfg.checkpoint),
-    load_cfg={"actor": True},
-    strict=True,
-    map_location=cfg.device,
-  )
-  policy = runner.get_inference_policy(device=cfg.device)
+  firm_policy: FirmDeployablePolicy | None = None
+  if cfg.policy_kind == "rsl_rl":
+    runner_cls = load_runner_cls(cfg.task) or MjlabOnPolicyRunner
+    runner = runner_cls(env, asdict(agent_cfg), device=cfg.device)
+    runner.load(
+      str(cfg.checkpoint),
+      load_cfg={"actor": True},
+      strict=True,
+      map_location=cfg.device,
+    )
+    policy = runner.get_inference_policy(device=cfg.device)
+  else:
+    assert cfg.firm_adapter_checkpoint is not None
+    firm_policy = FirmDeployablePolicy(
+      cfg.checkpoint,
+      cfg.firm_adapter_checkpoint,
+      device=cfg.device,
+      expected_seed=cfg.policy_seed,
+      goal_refresh_steps=cfg.firm_goal_refresh_steps,
+      num_action_samples=cfg.firm_num_action_samples,
+    )
+    policy = firm_policy
   rollout_rng_seed = cfg.seed + 1000003
   torch.manual_seed(rollout_rng_seed)
   obs = env.get_observations()
@@ -410,6 +443,8 @@ def main(cfg: EvalCfg) -> None:
   invalid_escape_setup = torch.zeros_like(finite)
   invalid_escape_contact = torch.zeros_like(finite)
   hand_support = torch.zeros_like(finite)
+  policy_inference_wall_s = 0.0
+  policy_inference_steps = 0
 
   initial_head_z = robot.data.site_pos_w[:, head_idx, 2].clone()
   if cfg.evaluation_profile == "terrain":
@@ -418,7 +453,14 @@ def main(cfg: EvalCfg) -> None:
 
   for step in range(cfg.steps):
     with torch.inference_mode():
+      if raw_env.device.type == "cuda":
+        torch.cuda.synchronize(raw_env.device)
+      inference_start = time.perf_counter()
       actions = policy(obs)
+      if raw_env.device.type == "cuda":
+        torch.cuda.synchronize(raw_env.device)
+      policy_inference_wall_s += time.perf_counter() - inference_start
+      policy_inference_steps += 1
       finite &= torch.isfinite(actions).all(dim=-1)
       if previous_actions is None:
         action_delta = actions
@@ -585,8 +627,21 @@ def main(cfg: EvalCfg) -> None:
   }
   result = {
     "evaluation_schema_version": _EVALUATION_SCHEMA_VERSION,
+    "policy_kind": cfg.policy_kind,
     "checkpoint": cfg.checkpoint.name,
     "checkpoint_path": str(cfg.checkpoint.resolve()),
+    "checkpoint_sha256": _sha256(cfg.checkpoint),
+    "firm_adapter_checkpoint": (
+      str(cfg.firm_adapter_checkpoint.resolve())
+      if cfg.firm_adapter_checkpoint is not None
+      else None
+    ),
+    "firm_adapter_checkpoint_sha256": (
+      _sha256(cfg.firm_adapter_checkpoint)
+      if cfg.firm_adapter_checkpoint is not None
+      else None
+    ),
+    "policy_metadata": firm_policy.metadata() if firm_policy is not None else None,
     "task": cfg.task,
     "reset_mode": cfg.reset_mode,
     "evaluation_profile": cfg.evaluation_profile,
@@ -716,6 +771,13 @@ def main(cfg: EvalCfg) -> None:
     "action_delta_rms_p95": _quantile(action_delta_rms, 0.95),
     "action_second_difference_rms_mean": float(action_second_difference_rms.mean()),
     "action_second_difference_rms_p95": _quantile(action_second_difference_rms, 0.95),
+    "policy_inference_wall_s": policy_inference_wall_s,
+    "policy_inference_batch_mean_ms": (
+      1000.0 * policy_inference_wall_s / max(policy_inference_steps, 1)
+    ),
+    "policy_inference_env_actions_per_s": (
+      raw_env.num_envs * policy_inference_steps / max(policy_inference_wall_s, 1.0e-12)
+    ),
   }
   if cfg.include_per_env:
     result["per_env"] = {

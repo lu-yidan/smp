@@ -149,6 +149,16 @@
           "type": "file",
           "target": "scripts/analyze_smp_native_baseline_effects.py",
           "description": "Preregistered policy-seed paired effects and checkpoint-stability analysis"
+        },
+        {
+          "type": "file",
+          "target": "scripts/build_firm_matched_eval_manifest.py",
+          "description": "Fail-closed binding of three-seed 93D FIRM action/adapter artifacts to the shared held-out reset bank"
+        },
+        {
+          "type": "file",
+          "target": "src/smp/firm/deployable_policy.py",
+          "description": "Causal 93D FIRM-R inference adapter for the common schema-2 evaluator"
         }
       ],
       "missing": "Freeze matched comparisons to original SMP, FIRM-style tracking/diffusion, and key ablations under the same observation and evaluation protocol."

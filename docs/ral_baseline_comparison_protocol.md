@@ -216,6 +216,25 @@ all Proposed seeds passing the 15k/25k/final stability contract. A complete
 null comparison is retained and reported; it does not trigger threshold changes
 or selective reruns.
 
+The gravity-aware FIRM reproduction is evaluated through a separate,
+fail-closed external-reference path. FIRM commit `cfa8572` trains three 93D
+action models and both a one-frame adapter (`firm_r_1f`) and the method-faithful
+50-frame causal adapter (`firm_r_50f`). Once those artifacts are complete,
+`build_firm_matched_eval_manifest.py` verifies their policy seeds, dimensions,
+action/adapter hashes, and frozen FIRM protocol before binding all six runs to
+the same disjoint held-out reset manifest used below. The common evaluator then
+loads `policy_kind=firm_r`, starts causal history by repeating the first
+observed frame, and records the exact history length, retrieval settings, and
+checkpoint hashes in schema-2 output.
+
+This shared evaluation fixture improves comparability but does not make either
+FIRM run Tier A: their action policies are distilled from route-conditioned
+expert rollouts rather than the 262,144-state matched training bank, and the
+50-frame version receives more temporal information. Even `firm_r_1f` remains
+an external training-budget reference. Consequently these results do not
+unblock the separately preregistered `firm_r_deployable` Tier-A row and are
+never pooled into the native Proposed-versus-Original paired effect.
+
 ## Frozen flat evaluation
 
 Use `evaluate_smp_baseline.py` schema 2 for every compatible policy:
