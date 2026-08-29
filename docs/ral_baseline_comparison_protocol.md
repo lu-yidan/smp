@@ -139,14 +139,30 @@ termination times differ. Common friction, encoder-bias, and centre-of-mass
 randomization also runs before method-specific SMP initialization.
 
 The machine-readable preregistration is
-`docs/ral_baseline_registry.json`; `scripts/audit_smp_baseline_registry.py`
-must report `BASELINES_READY_FOR_TRAINING` before any Tier-A baseline launch.
+`docs/ral_baseline_registry.json`. Before the three native methods launch,
+`scripts/audit_smp_baseline_registry.py` must validate the reset bank and mark
+their individual rows `ready_for_training`; the full-registry status correctly
+remains `BASELINES_BLOCKED` while FIRM-R or tracking still lacks an accepted
+adapter. A full `BASELINES_READY_FOR_TRAINING` report is required only when all
+five Tier-A rows enter one launch campaign.
 After the three-seed flat promotion and only when all training GPUs are idle,
 `advance_smp_ral_pipeline.py --launch-baseline-bank-when-ready` backgrounds
 the bank generator, records its PID/log/plan ID, and refuses T/P smoke until
 the bank, manifest, runtime registry, hashes, state shapes, and 10-frame
 history all validate. A dead process with partial artifacts remains an alert;
 it is never silently relaunched or regenerated.
+
+After the reset bank is ready, `launch_smp_native_baselines.py` creates one
+immutable plan for Task-only PPO, Original-product SMP, and Proposed SMP over
+the three registered policy/environment seeds. It binds the flat-promotion,
+runtime-registry, reset-bank, bank-manifest, and code hashes; forces random
+actor/critic initialization; and records every command, GPU, log, seed, task,
+and run name. Nine jobs are assigned round-robin to at most eight physical-GPU
+workers, so a worker may run a second job only after its first job exits
+successfully. The launcher refuses any active GPU process. T/P specialists have
+queue priority; native baselines are launched only after the specialist jobs
+and their GPU processes have exited. FIRM-R and tracking remain adapter-blocked
+and are never silently substituted by these three native tasks.
 
 ## Frozen flat evaluation
 

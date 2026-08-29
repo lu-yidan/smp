@@ -34,6 +34,10 @@ class BaselineRegistryTest(unittest.TestCase):
     budget["training_budget"]["max_updates"] = 40000
     with self.assertRaisesRegex(ValueError, "update budget"):
       audit(budget, self.registry_path)
+    interval = copy.deepcopy(self.registry)
+    interval["training_budget"]["save_interval"] = 500
+    with self.assertRaisesRegex(ValueError, "save interval"):
+      audit(interval, self.registry_path)
     objective = copy.deepcopy(self.registry)
     objective["methods"][0]["uses_motion_prior_objective"] = True
     with self.assertRaisesRegex(ValueError, "objective contract"):

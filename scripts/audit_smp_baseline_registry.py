@@ -167,6 +167,7 @@ def audit(registry: dict[str, Any], registry_path: Path) -> dict[str, Any]:
   _require(budget.get("num_envs") == 4096, "environment budget drifted")
   _require(budget.get("transitions_per_env_per_update") == 24, "rollout budget drifted")
   _require(budget.get("max_updates") == 30000, "update budget drifted")
+  _require(budget.get("save_interval") == 1000, "save interval drifted")
   _require(budget.get("checkpoint_gates") == [8000, 15000, 25000, 29999], "gate drift")
 
   evaluation = registry.get("evaluation", {})
