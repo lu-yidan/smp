@@ -119,6 +119,9 @@ uv run scripts/run_smp_frozen_eval_matrix.py \
   --manifest run_control/scratch_causal_8k_manifest.json \
   --output-dir run_control/scratch_causal_eval/8k \
   --device cuda:0
+
+uv run scripts/analyze_smp_frozen_matrix.py \
+  --summary run_control/scratch_causal_eval/8k/summary.json
 ```
 
 Existing valid result files are skipped. `summary.json`, `summary.csv`, and
@@ -130,6 +133,15 @@ RAL evidence. Manifest construction is also all-or-nothing: it refuses to
 write a file until the same requested checkpoint exists for all eight arms,
 and records each checkpoint SHA-256, training seed, W&B run, task, run
 directory, and code commit.
+
+The analyzer applies the frozen rapid-screen thresholds, produces
+`analysis.json` and `analysis.md`, and emits either `NO_PROMOTION` or
+`SCREEN_PASS_NOT_FINAL`. Passing arms are Pareto-ranked by worst-pose success,
+fixed-pose macro success, power, and joint speed. It also reports the planned
+paired contrasts for prior, procedural resets, reset-aware termination, and
+the reward bridge with conservative rollout intervals. A screen pass never
+authorizes a RAL claim or terrain/plate promotion before checkpoint stability
+and three independently trained policy seeds are available.
 
 Safety is reported but is not optimized in this first causal screen. The
 winning recovery configuration must later receive a separate speed/power
