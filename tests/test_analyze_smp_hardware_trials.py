@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import csv
+import hashlib
 import json
 import sys
 import tempfile
@@ -15,6 +16,37 @@ from analyze_smp_hardware_trials import _POSE_COUNTS, HardwareAnalysisCfg, analy
 
 
 class HardwareTrialAnalysisTest(unittest.TestCase):
+  def _plan(self, root: Path) -> Path:
+    path = root / "trial_plan.json"
+    assignments = []
+    slot = 0
+    for pose, count in _POSE_COUNTS.items():
+      for _ in range(count):
+        assignments.append({"planned_slot": slot, "initial_pose": pose})
+        slot += 1
+    path.write_text(
+      json.dumps(
+        {
+          "schema_version": 1,
+          "protocol": "real_g1_flat_core_v3",
+          "frozen_before_trial_utc": "2026-08-29T22:00:00Z",
+          "provenance": {
+            "block_id": "block-01",
+            "randomization_seed": 123,
+            "policy_seed": 456,
+            "checkpoint_sha256": "a" * 64,
+            "onnx_sha256": "b" * 64,
+            "deploy_git_commit": "abcdef1",
+            "robot_id": "g1-test",
+            "condition": "flat_core",
+            "surface": "mat-a",
+          },
+          "assignments": assignments,
+        }
+      )
+    )
+    return path
+
   def _limits(self, root: Path, *, joint_velocity: float = 4.0) -> Path:
     path = root / "safety_limits.json"
     path.write_text(
@@ -45,6 +77,8 @@ class HardwareTrialAnalysisTest(unittest.TestCase):
 
   def _ledger(self, root: Path, *, dirty: bool = False) -> Path:
     ledger = root / "trials.csv"
+    plan = self._plan(root)
+    plan_sha = hashlib.sha256(plan.read_bytes()).hexdigest()
     rows = []
     order = 0
     for pose, count in _POSE_COUNTS.items():
@@ -92,7 +126,9 @@ class HardwareTrialAnalysisTest(unittest.TestCase):
             "block_id": "block-01",
             "trial_id": trial_id,
             "order_index": order,
+            "planned_slot": order,
             "randomization_seed": 123,
+            "trial_plan_sha256": plan_sha,
             "policy_seed": 456,
             "checkpoint_sha256": "a" * 64,
             "onnx_sha256": "b" * 64,
@@ -143,6 +179,7 @@ class HardwareTrialAnalysisTest(unittest.TestCase):
         HardwareAnalysisCfg(
           trials=ledger,
           output_json=root / "result.json",
+          trial_plan=root / "trial_plan.json",
           safety_limits=self._limits(root),
         )
       )
@@ -161,6 +198,7 @@ class HardwareTrialAnalysisTest(unittest.TestCase):
           HardwareAnalysisCfg(
             trials=ledger,
             output_json=root / "result.json",
+            trial_plan=root / "trial_plan.json",
             safety_limits=self._limits(root),
           )
         )
@@ -180,6 +218,7 @@ class HardwareTrialAnalysisTest(unittest.TestCase):
           HardwareAnalysisCfg(
             trials=ledger,
             output_json=root / "result.json",
+            trial_plan=root / "trial_plan.json",
             safety_limits=self._limits(root),
           )
         )
@@ -187,6 +226,7 @@ class HardwareTrialAnalysisTest(unittest.TestCase):
         HardwareAnalysisCfg(
           trials=ledger,
           output_json=root / "result.json",
+          trial_plan=root / "trial_plan.json",
           safety_limits=self._limits(root),
           require_complete=False,
         )
@@ -201,6 +241,7 @@ class HardwareTrialAnalysisTest(unittest.TestCase):
         HardwareAnalysisCfg(
           trials=ledger,
           output_json=root / "result.json",
+          trial_plan=root / "trial_plan.json",
           safety_limits=self._limits(root, joint_velocity=2.5),
         )
       )
@@ -224,6 +265,7 @@ class HardwareTrialAnalysisTest(unittest.TestCase):
           HardwareAnalysisCfg(
             trials=ledger,
             output_json=root / "result.json",
+            trial_plan=root / "trial_plan.json",
             safety_limits=self._limits(root),
           )
         )
@@ -241,7 +283,26 @@ class HardwareTrialAnalysisTest(unittest.TestCase):
           HardwareAnalysisCfg(
             trials=ledger,
             output_json=root / "result.json",
+            trial_plan=root / "trial_plan.json",
             safety_limits=limits,
+          )
+        )
+
+  def test_trial_plan_tampering_is_rejected_by_sha(self) -> None:
+    with tempfile.TemporaryDirectory() as temporary:
+      root = Path(temporary)
+      ledger = self._ledger(root)
+      plan = root / "trial_plan.json"
+      content = json.loads(plan.read_text())
+      content["assignments"][0]["initial_pose"] = "supine"
+      plan.write_text(json.dumps(content))
+      with self.assertRaisesRegex(ValueError, "trial-plan SHA-256"):
+        analyze(
+          HardwareAnalysisCfg(
+            trials=ledger,
+            output_json=root / "result.json",
+            trial_plan=plan,
+            safety_limits=self._limits(root),
           )
         )
 

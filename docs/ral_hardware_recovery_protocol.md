@@ -24,6 +24,28 @@ not a calibrated torque sensor measurement, and must be labeled accordingly.
 
 Run one preregistered block of 80 trials for the frozen final policy:
 
+Before any policy activation, generate and commit the randomized plan. The
+timestamp, policy/checkpoint/ONNX identity, deployment commit, robot, surface,
+and seed are part of the immutable file:
+
+```bash
+uv run scripts/generate_smp_hardware_trial_plan.py \
+  --output-json results/real_g1_flat_core/trial_plan.json \
+  --block-id BLOCK_ID \
+  --frozen-before-trial-utc 2026-09-01T00:00:00Z \
+  --randomization-seed SEED \
+  --policy-seed POLICY_SEED \
+  --checkpoint-sha256 CHECKPOINT_SHA256 \
+  --onnx-sha256 ONNX_SHA256 \
+  --deploy-git-commit DEPLOY_COMMIT \
+  --robot-id ROBOT_ID \
+  --surface SURFACE_ID
+```
+
+Record the printed plan SHA-256 in every ledger row. `planned_slot` is the
+0--79 slot in this plan, whereas `order_index` is the chronological index of
+every physical attempt, including invalid initializations.
+
 | Stratum | Trials | Placement |
 | --- | ---: | --- |
 | Prone | 15 | chest down, limbs randomized within the safe envelope |
@@ -36,7 +58,10 @@ Randomize the execution order once using the recorded seed. Do not repeat a
 failed trial merely because its initialization looked unfavorable. If an
 initialization violates the preregistered physical envelope, mark it
 `invalid_initialization` before policy activation and rerun it at the end with
-the same stratum; preserve both records.
+the same stratum and `planned_slot`; preserve both records. Each planned slot
+must end with exactly one valid trial. The analyzer rejects a modified plan,
+an unplanned pose, a plan frozen after trial start, a missing slot, or more than
+one valid result for a slot.
 
 Use the same flat test surface and slack safety tether throughout the core
 matrix. Plate, stair, slope, rough-terrain, and push tests belong to separately
@@ -116,6 +141,7 @@ Analyze the completed ledger with:
 ```bash
 uv run scripts/analyze_smp_hardware_trials.py \
   --trials results/real_g1_flat_core/trials.csv \
+  --trial-plan results/real_g1_flat_core/trial_plan.json \
   --safety-limits results/real_g1_flat_core/safety_limits.json \
   --output-json results/real_g1_flat_core/analysis.json
 ```

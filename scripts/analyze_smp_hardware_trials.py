@@ -45,6 +45,7 @@ _SAFETY_FIELDS = (
 _PROVENANCE_FIELDS = (
   "block_id",
   "randomization_seed",
+  "trial_plan_sha256",
   "policy_seed",
   "checkpoint_sha256",
   "onnx_sha256",
@@ -57,6 +58,7 @@ _PROVENANCE_FIELDS = (
 _REQUIRED_FIELDS = {
   "trial_id",
   "order_index",
+  "planned_slot",
   "deploy_repository_dirty",
   "recovery_time_s",
   "failure_class",
@@ -108,9 +110,11 @@ class HardwareAnalysisCfg:
   trials: Path
   output_json: Path
   output_markdown: Path | None = None
+  trial_plan: Path | None = None
   safety_limits: Path | None = None
   require_complete: bool = True
   require_clean_deploy: bool = True
+  require_trial_plan: bool = True
   require_safety_limits: bool = True
   required_logger_schema: int = 2
   expected_condition: str = "flat_core"
@@ -209,6 +213,94 @@ def _load_safety_limits(
     "source": source,
     "frozen_at": frozen_at,
     "limits": normalized,
+  }
+
+
+def _load_trial_plan(
+  cfg: HardwareAnalysisCfg,
+  provenance: dict[str, str],
+  rows: list[dict[str, Any]],
+) -> dict[str, Any] | None:
+  if cfg.trial_plan is None:
+    if cfg.require_trial_plan:
+      raise ValueError("a frozen trial plan is required for final hardware evidence")
+    return None
+  path = cfg.trial_plan.resolve()
+  if not path.is_file():
+    raise FileNotFoundError(path)
+  plan_sha = _sha256(path)
+  if plan_sha != provenance["trial_plan_sha256"]:
+    raise ValueError("trial-plan SHA-256 does not match the ledger")
+  plan = json.loads(path.read_text())
+  if plan.get("schema_version") != 1:
+    raise ValueError("trial-plan schema_version must be 1")
+  if plan.get("protocol") != "real_g1_flat_core_v3":
+    raise ValueError("trial-plan protocol is not real_g1_flat_core_v3")
+  frozen_at = _timestamp(
+    plan.get("frozen_before_trial_utc"), "trial-plan frozen_before_trial_utc"
+  )
+  plan_provenance = plan.get("provenance")
+  if not isinstance(plan_provenance, dict):
+    raise ValueError("trial-plan provenance object is required")
+  for field in (
+    "block_id",
+    "randomization_seed",
+    "policy_seed",
+    "checkpoint_sha256",
+    "onnx_sha256",
+    "deploy_git_commit",
+    "robot_id",
+    "condition",
+    "surface",
+  ):
+    if str(plan_provenance.get(field, "")) != provenance[field]:
+      raise ValueError(f"trial-plan {field} does not match the ledger")
+
+  assignments = plan.get("assignments")
+  expected_total = sum(_POSE_COUNTS.values())
+  if not isinstance(assignments, list) or len(assignments) != expected_total:
+    raise ValueError(f"trial-plan must contain {expected_total} assignments")
+  by_slot: dict[int, str] = {}
+  for assignment in assignments:
+    if not isinstance(assignment, dict):
+      raise ValueError("trial-plan assignment must be an object")
+    slot = assignment.get("planned_slot")
+    pose = assignment.get("initial_pose")
+    if not isinstance(slot, int) or slot in by_slot:
+      raise ValueError("trial-plan planned_slot values must be unique integers")
+    if pose not in _POSE_COUNTS:
+      raise ValueError(f"trial-plan contains an unknown pose: {pose!r}")
+    by_slot[slot] = pose
+  if set(by_slot) != set(range(expected_total)):
+    raise ValueError("trial-plan planned_slot must contain every integer from 0 to 79")
+  plan_counts = Counter(by_slot.values())
+  if dict(plan_counts) != _POSE_COUNTS:
+    raise ValueError(
+      f"trial-plan pose counts are {dict(plan_counts)}, expected {_POSE_COUNTS}"
+    )
+
+  valid_slots: Counter[int] = Counter()
+  for row in rows:
+    slot = row["planned_slot"]
+    if slot not in by_slot:
+      raise ValueError(f"{row['trial_id']}: planned_slot is not in the trial plan")
+    if row["initial_pose"] != by_slot[slot]:
+      raise ValueError(f"{row['trial_id']}: initial_pose does not match planned_slot")
+    if row["valid_initialization"]:
+      trial_at = _timestamp(
+        row["policy_start_time_utc"], f"{row['trial_id']}: policy_start_time_utc"
+      )
+      if trial_at <= frozen_at:
+        raise ValueError(f"{row['trial_id']}: trial plan was not frozen before the trial")
+      valid_slots[slot] += 1
+  if any(count > 1 for count in valid_slots.values()):
+    raise ValueError("each planned_slot can have at most one valid trial")
+  return {
+    "path": str(path),
+    "sha256": plan_sha,
+    "frozen_before_trial_utc": plan["frozen_before_trial_utc"],
+    "provenance": plan_provenance,
+    "assignments": assignments,
   }
 
 
@@ -410,6 +502,7 @@ def _load_rows(
   list[dict[str, Any]],
   dict[str, str],
   dict[str, Any] | None,
+  dict[str, Any] | None,
   list[dict[str, Any]],
 ]:
   with cfg.trials.open(newline="") as stream:
@@ -436,6 +529,10 @@ def _load_rows(
     row: dict[str, Any] = dict(raw)
     row["trial_id"] = trial_id
     row["order_index"] = order
+    try:
+      row["planned_slot"] = int(raw["planned_slot"])
+    except ValueError as error:
+      raise ValueError(f"{trial_id}: planned_slot must be an integer") from error
     for field in _BOOLEAN_FIELDS:
       row[field] = _boolean(raw[field], field, trial_id)
     row["deploy_repository_dirty"] = _boolean(
@@ -498,6 +595,8 @@ def _load_rows(
     raise ValueError("checkpoint_sha256 must contain 64 lowercase hexadecimal digits")
   if not _SHA256.fullmatch(provenance["onnx_sha256"]):
     raise ValueError("onnx_sha256 must contain 64 lowercase hexadecimal digits")
+  if not _SHA256.fullmatch(provenance["trial_plan_sha256"]):
+    raise ValueError("trial_plan_sha256 must contain 64 lowercase hexadecimal digits")
   if not _COMMIT.fullmatch(provenance["deploy_git_commit"]):
     raise ValueError("deploy_git_commit is not a valid commit identifier")
   if cfg.require_clean_deploy and any(
@@ -505,6 +604,7 @@ def _load_rows(
   ):
     raise ValueError("final evidence contains a dirty deployment worktree")
 
+  trial_plan = _load_trial_plan(cfg, provenance, rows)
   safety_limits = _load_safety_limits(cfg, provenance)
   if safety_limits is not None:
     for row in rows:
@@ -546,11 +646,11 @@ def _load_rows(
     row["_recomputed_safety"] = recomputed
     if safety_limits is not None:
       violations.extend(_safety_violations(row, recomputed, safety_limits))
-  return rows, provenance, safety_limits, violations
+  return rows, provenance, trial_plan, safety_limits, violations
 
 
 def analyze(cfg: HardwareAnalysisCfg) -> dict[str, Any]:
-  rows, provenance, safety_limits, violations = _load_rows(cfg)
+  rows, provenance, trial_plan, safety_limits, violations = _load_rows(cfg)
   valid = [row for row in rows if row["valid_initialization"]]
   counts = Counter(row["initial_pose"] for row in valid)
   unknown = set(counts) - set(_POSE_COUNTS)
@@ -601,9 +701,16 @@ def analyze(cfg: HardwareAnalysisCfg) -> dict[str, Any]:
     status = "COMPLETE" if complete else "VALID_PARTIAL"
   return {
     "status": status,
-    "protocol": "real_g1_flat_core_v2",
+    "protocol": "real_g1_flat_core_v3",
     "ledger": str(cfg.trials.resolve()),
     "provenance": provenance,
+    "trial_plan": None
+    if trial_plan is None
+    else {
+      "path": trial_plan["path"],
+      "sha256": trial_plan["sha256"],
+      "frozen_before_trial_utc": trial_plan["frozen_before_trial_utc"],
+    },
     "raw_row_count": len(rows),
     "valid_trial_count": len(valid),
     "invalid_initialization_count": len(rows) - len(valid),

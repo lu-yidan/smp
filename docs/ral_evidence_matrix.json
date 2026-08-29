@@ -218,6 +218,11 @@
         },
         {
           "type": "file",
+          "target": "scripts/generate_smp_hardware_trial_plan.py",
+          "description": "Seeded immutable 80-slot pose plan frozen before real-G1 trials"
+        },
+        {
+          "type": "file",
           "target": "scripts/analyze_smp_hardware_trials.py",
           "description": "Strict real-G1 provenance, outcome, confidence-interval, safety, and failure analyzer"
         }
@@ -240,6 +245,11 @@
           "type": "file",
           "target": "scripts/run_smp_frozen_eval_matrix.py",
           "description": "Resumable schema-versioned frozen evaluation"
+        },
+        {
+          "type": "file",
+          "target": "scripts/generate_smp_hardware_trial_plan.py",
+          "description": "Immutable pretrial plan binding order, policy, checkpoint, deployment, robot, and surface"
         }
       ],
       "missing": "Publish final configs, checkpoints or retrieval instructions, seeds, raw tables, and evaluation commands."
