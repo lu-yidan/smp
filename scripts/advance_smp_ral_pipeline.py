@@ -23,6 +23,7 @@ from aggregate_smp_specialist_seeds import (
   write_aggregate as write_specialist_aggregate,
 )
 from audit_smp_baseline_registry import audit as audit_baseline_registry
+from bind_smp_native_eval_banks import EvalBindingCfg, write_bindings
 from build_smp_causal_manifest import ManifestCfg, build_manifest
 from build_smp_confirmation_manifests import (
   ConfirmationManifestCfg,
@@ -30,17 +31,30 @@ from build_smp_confirmation_manifests import (
 from build_smp_confirmation_manifests import (
   write_manifests as write_confirmation_manifests,
 )
+from build_smp_native_baseline_manifests import (
+  NativeBaselineManifestCfg,
+)
+from build_smp_native_baseline_manifests import (
+  write_manifests as write_native_baseline_manifests,
+)
 from build_smp_specialist_manifests import (
   SpecialistManifestCfg,
 )
 from build_smp_specialist_manifests import (
   write_manifests as write_specialist_manifests,
 )
+from generate_smp_matched_eval_banks import EvalBankCfg
+from generate_smp_matched_eval_banks import generate as generate_eval_banks
 from generate_smp_matched_reset_bank import (
   ResetBankCfg,
 )
 from generate_smp_matched_reset_bank import (
   build_plan as build_reset_bank_plan,
+)
+from launch_smp_native_baselines import (
+  NativeBaselineLaunchCfg,
+  _job_log_completed,
+  launch_baselines,
 )
 from launch_smp_policy_seed_confirmation import (
   ConfirmationCfg,
@@ -101,6 +115,9 @@ class PipelineCfg:
   launch_confirmation_when_ready: bool = False
   launch_specialists_when_ready: bool = False
   launch_baseline_bank_when_ready: bool = False
+  launch_native_eval_bank_when_ready: bool = False
+  launch_native_baselines_when_ready: bool = False
+  launch_native_evaluations_when_ready: bool = False
   confirmation_control_dir: Path = Path(
     "run_control/scratch_causal_policy_seed_confirmation"
   )
@@ -118,6 +135,20 @@ class PipelineCfg:
     "run_control/ral_baselines/matched_reset_bank.json"
   )
   baseline_bank_device: str = "cuda:6"
+  baseline_native_control_dir: Path = Path("run_control/ral_baselines/native_training")
+  baseline_native_manifest_dir: Path = Path(
+    "run_control/ral_baselines/native_checkpoint_manifests"
+  )
+  baseline_eval_bank_output_dir: Path = Path(
+    "run_control/ral_baselines/held_out_eval_banks"
+  )
+  baseline_eval_bank_manifest: Path = Path(
+    "run_control/ral_baselines/held_out_eval_banks.json"
+  )
+  baseline_formal_manifest_dir: Path = Path(
+    "run_control/ral_baselines/formal_manifests"
+  )
+  baseline_evidence_dir: Path = Path("run_control/ral_baselines/native_eval")
   specialist_eval_seed: int = 20260910
   specialist_eval_num_envs: int = 256
   specialist_eval_steps: int = 750
@@ -966,6 +997,411 @@ def _advance_specialists(cfg: PipelineCfg, gpu_processes: list[str]) -> dict[str
   }
 
 
+def _eval_bank_cfg(
+  cfg: PipelineCfg, promotion: Path, *, run: bool = False
+) -> EvalBankCfg:
+  return EvalBankCfg(
+    promotion=promotion,
+    training_bank=cfg.baseline_bank_output,
+    training_bank_manifest=cfg.baseline_bank_manifest,
+    registry=cfg.baseline_registry_template,
+    output_dir=cfg.baseline_eval_bank_output_dir,
+    manifest=cfg.baseline_eval_bank_manifest,
+    num_states_per_mode=cfg.num_envs,
+    seed=cfg.eval_seed,
+    device=cfg.baseline_bank_device,
+    run=run,
+  )
+
+
+def _validate_eval_bank_artifacts(
+  cfg: PipelineCfg, promotion: Path
+) -> dict[str, Any] | None:
+  result = generate_eval_banks(_eval_bank_cfg(cfg, promotion))
+  if result.get("status") == "PLANNED":
+    return None
+  if result.get("status") != "READY":
+    raise ValueError(f"inadmissible held-out bank status: {result.get('status')}")
+  return result
+
+
+def _active_eval_bank(cfg: PipelineCfg, promotion: Path) -> dict[str, Any] | None:
+  state = cfg.baseline_control_dir / "active_held_out_generation.json"
+  if not state.is_file():
+    return None
+  payload = json.loads(state.read_text())
+  if _pid_alive(int(payload["pid"])):
+    return payload
+  try:
+    complete = _validate_eval_bank_artifacts(cfg, promotion)
+  except (FileNotFoundError, ValueError, json.JSONDecodeError) as error:
+    return {**payload, "failed": True, "error": str(error)}
+  if complete is None:
+    return {
+      **payload,
+      "failed": True,
+      "error": "held-out generator exited without complete immutable artifacts",
+    }
+  state.unlink()
+  return None
+
+
+def _launch_eval_bank(cfg: PipelineCfg, promotion: Path) -> dict[str, Any]:
+  planned = generate_eval_banks(_eval_bank_cfg(cfg, promotion))
+  if planned.get("status") != "PLANNED":
+    raise ValueError("held-out bank launch expected a PLANNED artifact set")
+  script = Path(__file__).with_name("generate_smp_matched_eval_banks.py").resolve()
+  cfg.baseline_control_dir.mkdir(parents=True, exist_ok=True)
+  log = cfg.baseline_control_dir / "held_out_eval_bank.log"
+  command = [
+    sys.executable,
+    str(script),
+    "--promotion",
+    str(promotion.resolve()),
+    "--training-bank",
+    str(cfg.baseline_bank_output.resolve()),
+    "--training-bank-manifest",
+    str(cfg.baseline_bank_manifest.resolve()),
+    "--registry",
+    str(cfg.baseline_registry_template.resolve()),
+    "--output-dir",
+    str(cfg.baseline_eval_bank_output_dir.resolve()),
+    "--manifest",
+    str(cfg.baseline_eval_bank_manifest.resolve()),
+    "--num-states-per-mode",
+    str(cfg.num_envs),
+    "--seed",
+    str(cfg.eval_seed),
+    "--device",
+    cfg.baseline_bank_device,
+    "--run",
+  ]
+  with log.open("a") as stream:
+    process = subprocess.Popen(
+      command,
+      stdout=stream,
+      stderr=subprocess.STDOUT,
+      start_new_session=True,
+    )
+  payload = {
+    "pid": process.pid,
+    "plan_id": planned["plan_id"],
+    "promotion": str(promotion.resolve()),
+    "manifest": str(cfg.baseline_eval_bank_manifest.resolve()),
+    "log": str(log.resolve()),
+    "started_at_utc": datetime.now(timezone.utc).isoformat(),
+  }
+  _atomic_json(cfg.baseline_control_dir / "active_held_out_generation.json", payload)
+  return payload
+
+
+def _active_native_evaluation(cfg: PipelineCfg) -> dict[str, Any] | None:
+  state = cfg.baseline_evidence_dir / "active_evaluation.json"
+  if not state.is_file():
+    return None
+  payload = json.loads(state.read_text())
+  if _pid_alive(int(payload["pid"])):
+    return payload
+  manifest = Path(payload["manifest"])
+  output_dir = Path(payload["output_dir"])
+  if _analysis_complete(cfg, output_dir, manifest):
+    state.unlink()
+    return None
+  return {
+    **payload,
+    "failed": True,
+    "error": "native evaluator exited without complete matrix and analysis",
+  }
+
+
+def _advance_native_baselines(
+  cfg: PipelineCfg, gpu_processes: list[str], promotion: Path
+) -> dict[str, Any]:
+  active_bank = _active_eval_bank(cfg, promotion)
+  if active_bank is not None:
+    return {
+      "status": (
+        "NATIVE_HELD_OUT_ALERT"
+        if active_bank.get("failed")
+        else "NATIVE_HELD_OUT_RUNNING"
+      ),
+      "action": (
+        "Held-out generator failed closed; inspect its immutable state and log."
+        if active_bank.get("failed")
+        else "Wait for the disjoint held-out reset banks to finish."
+      ),
+      "held_out_bank": active_bank,
+      "launch": None,
+      "manifest_index": None,
+      "formal_index": None,
+      "evaluations": [],
+      "aggregates": None,
+    }
+  try:
+    held_out = _validate_eval_bank_artifacts(cfg, promotion)
+  except (FileNotFoundError, ValueError, json.JSONDecodeError) as error:
+    return {
+      "status": "NATIVE_HELD_OUT_ALERT",
+      "action": f"Held-out reset-bank validation failed: {error}",
+      "held_out_bank": None,
+      "launch": None,
+      "manifest_index": None,
+      "formal_index": None,
+      "evaluations": [],
+      "aggregates": None,
+    }
+  if held_out is None:
+    if gpu_processes:
+      status = "WAITING_FREE_GPU"
+      action = "Wait for free GPUs before freezing held-out baseline states."
+      launched = None
+    elif not cfg.launch_native_eval_bank_when_ready:
+      status = "NATIVE_HELD_OUT_READY"
+      action = "Generate the preregistered disjoint held-out baseline states."
+      launched = None
+    else:
+      launched = _launch_eval_bank(cfg, promotion)
+      status = "NATIVE_HELD_OUT_RUNNING"
+      action = "Launched preregistered held-out reset-bank generation."
+    return {
+      "status": status,
+      "action": action,
+      "held_out_bank": launched,
+      "launch": None,
+      "manifest_index": None,
+      "formal_index": None,
+      "evaluations": [],
+      "aggregates": None,
+    }
+
+  launch_cfg = NativeBaselineLaunchCfg(
+    promotion=promotion,
+    runtime_registry=cfg.baseline_runtime_registry,
+    control_dir=cfg.baseline_native_control_dir,
+    launch=cfg.launch_native_baselines_when_ready,
+  )
+  launch_path = cfg.baseline_native_control_dir / "launch_manifest.json"
+  if not launch_path.is_file() and gpu_processes:
+    return {
+      "status": "WAITING_FREE_GPU",
+      "action": "Held-out states are frozen; wait for free GPUs before Tier-A training.",
+      "held_out_bank": held_out,
+      "launch": None,
+      "manifest_index": None,
+      "formal_index": None,
+      "evaluations": [],
+      "aggregates": None,
+    }
+  try:
+    launch = launch_baselines(launch_cfg)
+  except (FileNotFoundError, RuntimeError, ValueError, json.JSONDecodeError) as error:
+    return {
+      "status": "NATIVE_BASELINE_ALERT",
+      "action": f"Native Tier-A training failed closed: {error}",
+      "held_out_bank": held_out,
+      "launch": None,
+      "manifest_index": None,
+      "formal_index": None,
+      "evaluations": [],
+      "aggregates": None,
+    }
+  if launch.get("status") != "LAUNCHED":
+    return {
+      "status": "NATIVE_BASELINE_READY",
+      "action": "Held-out states are frozen; launch the nine native Tier-A jobs.",
+      "held_out_bank": held_out,
+      "launch": launch,
+      "manifest_index": None,
+      "formal_index": None,
+      "evaluations": [],
+      "aggregates": None,
+    }
+  alive = [
+    worker
+    for worker in launch["workers"]
+    if worker.get("pid") is not None and _pid_alive(int(worker["pid"]))
+  ]
+  completed = [
+    job
+    for job in launch["jobs"]
+    if _job_log_completed(Path(job["log"]), int(launch["max_updates"]))
+  ]
+  if alive:
+    return {
+      "status": "NATIVE_BASELINE_TRAINING",
+      "action": (
+        f"Native Tier-A training is running: {len(completed)}/9 jobs complete, "
+        f"{len(alive)} workers alive."
+      ),
+      "held_out_bank": held_out,
+      "launch": launch,
+      "manifest_index": None,
+      "formal_index": None,
+      "evaluations": [],
+      "aggregates": None,
+    }
+  if len(completed) != len(launch["jobs"]):
+    return {
+      "status": "NATIVE_BASELINE_ALERT",
+      "action": "All native workers exited before all nine immutable jobs completed.",
+      "held_out_bank": held_out,
+      "launch": launch,
+      "manifest_index": None,
+      "formal_index": None,
+      "evaluations": [],
+      "aggregates": None,
+    }
+
+  try:
+    checkpoint_index = write_native_baseline_manifests(
+      NativeBaselineManifestCfg(
+        launch_manifest=launch_path,
+        output_dir=cfg.baseline_native_manifest_dir,
+      )
+    )
+    formal_index = write_bindings(
+      EvalBindingCfg(
+        checkpoint_index=cfg.baseline_native_manifest_dir / "index.json",
+        eval_bank_manifest=cfg.baseline_eval_bank_manifest,
+        output_dir=cfg.baseline_formal_manifest_dir,
+      )
+    )
+  except (FileNotFoundError, RuntimeError, ValueError, json.JSONDecodeError) as error:
+    return {
+      "status": "NATIVE_BINDING_ALERT",
+      "action": f"Native checkpoint or held-out binding failed closed: {error}",
+      "held_out_bank": held_out,
+      "launch": launch,
+      "manifest_index": None,
+      "formal_index": None,
+      "evaluations": [],
+      "aggregates": None,
+    }
+
+  active = _active_native_evaluation(cfg)
+  evaluations = []
+  next_row = None
+  for row in sorted(
+    formal_index["manifests"],
+    key=lambda item: (int(item["checkpoint_step"]), int(item["policy_seed"])),
+  ):
+    gate = int(row["checkpoint_step"])
+    seed = int(row["policy_seed"])
+    manifest = Path(row["path"])
+    output_dir = cfg.baseline_evidence_dir / f"gate_{gate}" / f"seed_{seed}"
+    complete = _analysis_complete(cfg, output_dir, manifest)
+    evaluations.append(
+      {
+        "checkpoint_step": gate,
+        "policy_seed": seed,
+        "manifest": str(manifest.resolve()),
+        "output_dir": str(output_dir.resolve()),
+        "analysis_complete": complete,
+      }
+    )
+    if not complete and next_row is None:
+      next_row = (gate, seed, manifest, output_dir)
+  if active is not None:
+    return {
+      "status": (
+        "NATIVE_BASELINE_EVAL_ALERT"
+        if active.get("failed")
+        else "NATIVE_BASELINE_EVAL_RUNNING"
+      ),
+      "action": (
+        "Native evaluator failed closed; inspect its log before an explicit retry."
+        if active.get("failed")
+        else "Wait for the active native Tier-A frozen matrix."
+      ),
+      "held_out_bank": held_out,
+      "launch": launch,
+      "manifest_index": checkpoint_index,
+      "formal_index": formal_index,
+      "evaluations": evaluations,
+      "active_evaluation": active,
+      "aggregates": None,
+    }
+  if next_row is not None:
+    gate, seed, manifest, output_dir = next_row
+    if gpu_processes:
+      status = "WAITING_FREE_GPU"
+      action = "Native manifests are bound; wait for free GPUs for formal evaluation."
+      launched = None
+    elif not cfg.launch_native_evaluations_when_ready:
+      status = "NATIVE_BASELINE_READY_FOR_EVAL"
+      action = f"Run native Tier-A gate {gate}, policy seed {seed}."
+      launched = None
+    else:
+      launched = _launch_evaluation(
+        cfg,
+        manifest,
+        gate,
+        output_dir,
+        state_dir=cfg.baseline_evidence_dir,
+      )
+      status = "NATIVE_BASELINE_EVAL_RUNNING"
+      action = f"Launched native Tier-A gate {gate}, policy seed {seed}."
+    return {
+      "status": status,
+      "action": action,
+      "held_out_bank": held_out,
+      "launch": launch,
+      "manifest_index": checkpoint_index,
+      "formal_index": formal_index,
+      "evaluations": evaluations,
+      "active_evaluation": launched,
+      "aggregates": None,
+    }
+
+  aggregates = {}
+  seeds = tuple(int(seed) for seed in formal_index["policy_seeds"])
+  try:
+    for gate in (8000, 15000, 25000, 29999):
+      output = cfg.baseline_evidence_dir / f"gate_{gate}" / "policy_seed_aggregate.json"
+      aggregate = write_aggregate(
+        AggregateCfg(
+          summaries=tuple(
+            cfg.baseline_evidence_dir / f"gate_{gate}" / f"seed_{seed}" / "summary.json"
+            for seed in seeds
+          ),
+          output_json=output,
+        )
+      )
+      if aggregate.get("status") != "MINIMUM_POLICY_SEEDS_MET":
+        raise ValueError(f"native gate {gate} lacks three policy seeds")
+      aggregates[str(gate)] = {
+        "path": str(output.resolve()),
+        "sha256": _sha256(output),
+        "status": aggregate["status"],
+      }
+  except (FileNotFoundError, ValueError, json.JSONDecodeError) as error:
+    return {
+      "status": "NATIVE_AGGREGATE_ALERT",
+      "action": f"Native policy-seed aggregation failed closed: {error}",
+      "held_out_bank": held_out,
+      "launch": launch,
+      "manifest_index": checkpoint_index,
+      "formal_index": formal_index,
+      "evaluations": evaluations,
+      "active_evaluation": None,
+      "aggregates": None,
+    }
+  return {
+    "status": "NATIVE_BASELINE_EVIDENCE_COMPLETE",
+    "action": (
+      "Native Task-only, Original SMP, and Proposed SMP have complete frozen "
+      "three-seed evidence; audit paired effects and adapter baselines next."
+    ),
+    "held_out_bank": held_out,
+    "launch": launch,
+    "manifest_index": checkpoint_index,
+    "formal_index": formal_index,
+    "evaluations": evaluations,
+    "active_evaluation": None,
+    "aggregates": aggregates,
+  }
+
+
 def _advance_confirmation(
   cfg: PipelineCfg,
   confirmation: dict[str, Any],
@@ -1133,6 +1569,7 @@ def advance(cfg: PipelineCfg) -> dict[str, Any]:
   confirmation = None
   confirmation_progress = None
   specialist_progress = None
+  native_baseline_progress = None
   confirmation_waiting_for_gpu = False
   if completed_training and next_gate is None:
     stable_selection = write_selection(SelectionCfg(evidence_dir=cfg.evidence_dir))
@@ -1159,6 +1596,15 @@ def advance(cfg: PipelineCfg) -> dict[str, Any]:
         aggregate = confirmation_progress.get("aggregate") or {}
         if aggregate.get("status") == "MINIMUM_POLICY_SEEDS_MET":
           specialist_progress = _advance_specialists(cfg, gpu_processes)
+          if specialist_progress["status"] in {
+            "U_PREREQUISITES_MET",
+            "TP_SPECIALIST_NO_PROMOTION",
+          }:
+            native_baseline_progress = _advance_native_baselines(
+              cfg,
+              gpu_processes,
+              cfg.confirmation_evidence_dir / "flat_promotion.json",
+            )
   status = "TRAINING_ACTIVE"
   action = "Continue health monitoring; do not contend with training GPUs."
   launched = None
@@ -1169,7 +1615,10 @@ def advance(cfg: PipelineCfg) -> dict[str, Any]:
     status = "EVAL_RUNNING"
     action = "Wait for the resumable frozen matrix and analyzer to finish."
   elif completed_training and next_gate is None:
-    if specialist_progress is not None:
+    if native_baseline_progress is not None:
+      status = native_baseline_progress["status"]
+      action = native_baseline_progress["action"]
+    elif specialist_progress is not None:
       status = specialist_progress["status"]
       action = specialist_progress["action"]
     elif confirmation is not None:
@@ -1238,6 +1687,7 @@ def advance(cfg: PipelineCfg) -> dict[str, Any]:
       else None
     ),
     "specialists": specialist_progress,
+    "native_baselines": native_baseline_progress,
   }
 
 

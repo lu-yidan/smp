@@ -195,6 +195,16 @@ manifests remain blocked and are never rewritten. Only the bound READY
 manifests may enter `run_smp_frozen_eval_matrix.py`; the binding itself is still
 not performance evidence.
 
+The main evidence controller advances this branch only after the T/P specialist
+queue reaches a terminal evaluated state. With no GPU process active, it first
+freezes the held-out bank (before native baseline optimization), then launches
+the nine native jobs. After all immutable worker queues finish, it builds and
+binds the 12 seed-by-gate manifests, evaluates one bound manifest at a time, and
+aggregates each gate with independently trained policy seed as the sampling
+unit. A dead generator, worker, evaluator, partial artifact, or changed hash is
+an alert state; the controller never silently restarts it. T/P retains queue
+priority, and adapter baselines remain separately blocked.
+
 ## Frozen flat evaluation
 
 Use `evaluate_smp_baseline.py` schema 2 for every compatible policy:
