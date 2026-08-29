@@ -67,6 +67,37 @@ class SeedProvenanceTest(unittest.TestCase):
         with self.assertRaisesRegex(FileNotFoundError, "recorded policy/environment"):
           manifest.build_manifest(cfg)
 
+  def test_gate_selects_run_segment_that_contains_checkpoint(self) -> None:
+    with tempfile.TemporaryDirectory() as temporary:
+      root = Path(temporary)
+      self._fixture(root, 42, 42)
+      resumed = root / "task" / "newer_run_suffix"
+      (resumed / "params").mkdir(parents=True)
+      (resumed / "params" / "agent.yaml").write_text("seed: 42\n")
+      (resumed / "params" / "env.yaml").write_text("seed: 42\n")
+      (resumed / "model_29999.pt").write_bytes(b"resumed-final")
+      arm = {
+        "name": "arm",
+        "task": "Task",
+        "log_dir": "task",
+        "run_suffix": "run_suffix",
+        "wandb_run_id": "run",
+      }
+      cfg = manifest.ManifestCfg(
+        checkpoint_step=8000,
+        output=root / "manifest.json",
+        logs_root=root,
+      )
+      with (
+        mock.patch.object(manifest, "_ARMS", (arm,)),
+        mock.patch.object(manifest, "_git_commit", return_value="commit"),
+      ):
+        payload = manifest.build_manifest(cfg)
+      self.assertEqual(Path(payload["runs"][0]["run_dir"]).name, "run_suffix")
+      self.assertEqual(
+        Path(payload["runs"][0]["checkpoint"]).read_bytes(), b"checkpoint"
+      )
+
 
 if __name__ == "__main__":
   unittest.main()

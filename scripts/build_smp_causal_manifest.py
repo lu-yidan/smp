@@ -101,20 +101,28 @@ def _git_commit() -> str:
   return result.stdout.strip()
 
 
-def _discover_run(logs_root: Path, arm: dict[str, str]) -> Path:
+def _discover_run(
+  logs_root: Path, arm: dict[str, str], checkpoint_step: int
+) -> Path:
   task_dir = logs_root / arm["log_dir"]
   if not task_dir.is_dir():
     raise FileNotFoundError(f"missing task log directory: {task_dir}")
+  checkpoint_name = f"model_{checkpoint_step}.pt"
   candidates = sorted(
     (
       path
       for path in task_dir.iterdir()
-      if path.is_dir() and path.name.endswith(arm["run_suffix"])
+      if path.is_dir()
+      and path.name.endswith(arm["run_suffix"])
+      and (path / checkpoint_name).is_file()
     ),
     key=lambda path: path.stat().st_mtime,
   )
   if not candidates:
-    raise FileNotFoundError(f"no run ending in {arm['run_suffix']!r} under {task_dir}")
+    raise FileNotFoundError(
+      f"no run ending in {arm['run_suffix']!r} with {checkpoint_name} "
+      f"under {task_dir}"
+    )
   return candidates[-1]
 
 
@@ -133,14 +141,11 @@ def build_manifest(cfg: ManifestCfg) -> dict[str, Any]:
   missing: list[str] = []
   for arm in _ARMS:
     try:
-      run_dir = _discover_run(cfg.logs_root, arm)
+      run_dir = _discover_run(cfg.logs_root, arm, cfg.checkpoint_step)
     except FileNotFoundError as error:
       missing.append(f"{arm['name']}: {error}")
       continue
     checkpoint = run_dir / f"model_{cfg.checkpoint_step}.pt"
-    if not checkpoint.is_file():
-      missing.append(f"{arm['name']}: {checkpoint}")
-      continue
     try:
       policy_seed = _recorded_seed(run_dir, "agent.yaml")
       environment_seed = _recorded_seed(run_dir, "env.yaml")
