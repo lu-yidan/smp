@@ -1,0 +1,125 @@
+{
+  "schema_version": 1,
+  "protocol_id": "smp-ral-tier-a-baselines-v1",
+  "frozen_before_selection": true,
+  "actor_observation": {
+    "id": "g1-deployable-proprio-f1-v1",
+    "dimension": 93,
+    "history_frames": 1,
+    "fields": [
+      "base_angular_velocity",
+      "projected_gravity",
+      "joint_position",
+      "joint_velocity",
+      "previous_action"
+    ],
+    "forbidden_fields": [
+      "true_base_linear_velocity",
+      "terrain_label",
+      "terrain_heightmap",
+      "plate_pose",
+      "plate_contact",
+      "reset_family",
+      "reference_identity",
+      "future_reference",
+      "simulator_contact_force"
+    ]
+  },
+  "training_budget": {
+    "policy_seeds": [20260901, 20260902, 20260903],
+    "num_envs": 4096,
+    "transitions_per_env_per_update": 24,
+    "max_updates": 30000,
+    "checkpoint_gates": [8000, 15000, 25000, 29999]
+  },
+  "shared_reset_bank": {
+    "status": "missing",
+    "num_states": 262144,
+    "generation_seed": 20260920,
+    "source": "selected_flat_arm_exact_gsi_procedural_mixture",
+    "actor_exposes_reset_family": false,
+    "result_path": null,
+    "sha256": null
+  },
+  "evaluation": {
+    "schema_version": 2,
+    "seed": 20260829,
+    "num_envs_per_mode": 512,
+    "num_steps": 500,
+    "modes": [
+      "native_gsi",
+      "prone",
+      "supine",
+      "left_side",
+      "right_side"
+    ],
+    "success_definition": "stable_standing_hold_25_steps"
+  },
+  "methods": [
+    {
+      "id": "task_only_ppo",
+      "tier": "A",
+      "status": "blocked",
+      "observation_id": "g1-deployable-proprio-f1-v1",
+      "uses_motion_prior_objective": false,
+      "uses_motion_prior_termination": false,
+      "uses_runtime_motion_prior": false,
+      "actor_extra_inputs": [],
+      "implementation": {},
+      "blocked_on": ["matched_reset_bank", "task_registration"],
+      "result_path": null
+    },
+    {
+      "id": "original_product_smp",
+      "tier": "A",
+      "status": "blocked",
+      "observation_id": "g1-deployable-proprio-f1-v1",
+      "uses_motion_prior_objective": true,
+      "uses_motion_prior_termination": true,
+      "uses_runtime_motion_prior": false,
+      "actor_extra_inputs": [],
+      "implementation": {},
+      "blocked_on": ["confirmed_flat_arm", "matched_reset_bank", "task_registration"],
+      "result_path": null
+    },
+    {
+      "id": "proposed_smp_recovery",
+      "tier": "A",
+      "status": "blocked",
+      "observation_id": "g1-deployable-proprio-f1-v1",
+      "uses_motion_prior_objective": true,
+      "uses_motion_prior_termination": true,
+      "uses_runtime_motion_prior": false,
+      "actor_extra_inputs": [],
+      "implementation": {},
+      "blocked_on": ["confirmed_flat_arm"],
+      "result_path": null
+    },
+    {
+      "id": "firm_r_deployable",
+      "tier": "A",
+      "status": "blocked",
+      "observation_id": "g1-deployable-proprio-f1-v1",
+      "uses_motion_prior_objective": false,
+      "uses_motion_prior_termination": false,
+      "uses_runtime_motion_prior": false,
+      "actor_extra_inputs": [],
+      "implementation": {},
+      "blocked_on": ["accepted_firm_adapter", "matched_reset_bank"],
+      "result_path": null
+    },
+    {
+      "id": "recovery_tracking",
+      "tier": "A",
+      "status": "blocked",
+      "observation_id": "g1-deployable-proprio-f1-v1",
+      "uses_motion_prior_objective": false,
+      "uses_motion_prior_termination": false,
+      "uses_runtime_motion_prior": false,
+      "actor_extra_inputs": [],
+      "implementation": {},
+      "blocked_on": ["accepted_tracking_adapter", "matched_reset_bank"],
+      "result_path": null
+    }
+  ]
+}

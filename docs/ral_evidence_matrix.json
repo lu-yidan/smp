@@ -123,12 +123,22 @@
       "name": "Strong and fair baseline comparison",
       "priority": 1,
       "required": true,
-      "status": "not_started",
+      "status": "in_progress",
       "evidence": [
         {
           "type": "file",
           "target": "docs/ral_baseline_comparison_protocol.md",
           "description": "Frozen matched-deployable, native-reference, and external-method comparison protocol"
+        },
+        {
+          "type": "file",
+          "target": "docs/ral_baseline_registry.json",
+          "description": "Machine-readable Tier-A method, observation, reset, budget, and evaluation registry"
+        },
+        {
+          "type": "file",
+          "target": "scripts/audit_smp_baseline_registry.py",
+          "description": "Fail-closed baseline preregistration and readiness auditor"
         }
       ],
       "missing": "Freeze matched comparisons to original SMP, FIRM-style tracking/diffusion, and key ablations under the same observation and evaluation protocol."
