@@ -178,6 +178,20 @@ After selecting one or two arms:
 4. combine a small terrain-plus-plate cohort only after both components pass
    independently.
 
+Three-seed confirmation must aggregate at the policy level:
+
+```bash
+uv run scripts/aggregate_smp_policy_seeds.py \
+  --summaries seed_1/summary.json seed_2/summary.json seed_3/summary.json \
+  --output-json policy_seed_aggregate.json
+```
+
+The tool first pools repeated evaluation rollouts within each trained policy,
+then bootstraps the mean across independent policy seeds. It refuses duplicate
+policy-seed identifiers and reports `INSUFFICIENT_POLICY_SEEDS` until at least
+three are present. This prevents thousands of parallel environments from
+being misreported as thousands of independent training replicates.
+
 Continuing a policy that originally began randomly through a curriculum is
 still a from-scratch training pipeline. Loading V3.3, V8, or another external
 policy checkpoint is finetuning and is excluded from the baseline evidence.
