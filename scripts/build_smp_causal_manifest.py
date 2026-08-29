@@ -72,6 +72,12 @@ _ARMS: tuple[dict[str, str], ...] = (
   },
 )
 
+_LOCKED_CONTINUATION_PROVENANCE_HASHES = {
+  "a6_f2s2_mix_bridge": (
+    "35f88b665ee514a714cc676f33b8886f03f8b70d00b105021994402f03094213"
+  ),
+}
+
 
 @dataclass(frozen=True)
 class ManifestCfg:
@@ -145,6 +151,16 @@ def _continuation_provenance(
   path = run_dir / "resume_provenance.json"
   if not path.is_file():
     return None
+  actual_provenance_sha = _sha256(path)
+  locked_provenance_sha = _LOCKED_CONTINUATION_PROVENANCE_HASHES.get(arm["name"])
+  if (
+    locked_provenance_sha is not None
+    and actual_provenance_sha != locked_provenance_sha
+  ):
+    raise ValueError(
+      f"locked continuation provenance hash changed: expected "
+      f"{locked_provenance_sha}, got {actual_provenance_sha} for {path}"
+    )
   payload = json.loads(path.read_text())
   expected = {
     "status": "AUDITED_CONTINUATION",

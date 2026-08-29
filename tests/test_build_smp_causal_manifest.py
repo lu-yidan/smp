@@ -68,6 +68,32 @@ class SeedProvenanceTest(unittest.TestCase):
         with self.assertRaisesRegex(FileNotFoundError, "recorded policy/environment"):
           manifest.build_manifest(cfg)
 
+  def test_rejects_modified_locked_a6_continuation_provenance(self) -> None:
+    with tempfile.TemporaryDirectory() as temporary:
+      root = Path(temporary)
+      run = root / "run"
+      run.mkdir()
+      source = root / "model_25000.pt"
+      source.write_bytes(b"source")
+      (run / "resume_provenance.json").write_text(
+        json.dumps(
+          {
+            "status": "AUDITED_CONTINUATION",
+            "arm": "a6_f2s2_mix_bridge",
+            "policy_seed": 42,
+            "environment_seed": 42,
+            "continuation_wandb_run_id": "resume",
+            "source_checkpoint": str(source),
+            "source_checkpoint_sha256": manifest._sha256(source),
+          }
+        )
+      )
+      arm = {"name": "a6_f2s2_mix_bridge"}
+      with self.assertRaisesRegex(
+        ValueError, "locked continuation provenance hash changed"
+      ):
+        manifest._continuation_provenance(run, arm, 42, 42)
+
   def test_gate_selects_run_segment_that_contains_checkpoint(self) -> None:
     with tempfile.TemporaryDirectory() as temporary:
       root = Path(temporary)
