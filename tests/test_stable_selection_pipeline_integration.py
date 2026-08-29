@@ -47,6 +47,11 @@ class StableSelectionPipelineTest(unittest.TestCase):
       with (
         mock.patch.object(pipeline, "inspect", return_value=health),
         mock.patch.object(pipeline, "_ensure_manifests", return_value=(manifests, [])),
+        mock.patch.object(
+          pipeline,
+          "_LOCKED_MANIFEST_HASHES",
+          {gate: f"hash-{gate}" for gate in cfg.gates},
+        ),
         mock.patch.object(pipeline, "_active_eval", return_value=None),
         mock.patch.object(pipeline, "_gpu_processes", return_value=[]),
         mock.patch.object(pipeline, "_analysis_complete", return_value=True),
@@ -96,6 +101,11 @@ class StableSelectionPipelineTest(unittest.TestCase):
       with (
         mock.patch.object(pipeline, "inspect", return_value=health),
         mock.patch.object(pipeline, "_ensure_manifests", return_value=(manifests, [])),
+        mock.patch.object(
+          pipeline,
+          "_LOCKED_MANIFEST_HASHES",
+          {gate: f"hash-{gate}" for gate in cfg.gates},
+        ),
         mock.patch.object(pipeline, "_active_eval", return_value=None),
         mock.patch.object(pipeline, "_gpu_processes", return_value=["101"]),
         mock.patch.object(pipeline, "_analysis_complete", return_value=True),

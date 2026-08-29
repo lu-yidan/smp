@@ -34,6 +34,7 @@ class PipelineStateTest(unittest.TestCase):
       control_dir=root / "control",
       evidence_dir=root / "evidence",
       state=root / "state.json",
+      gates=(8000, 15000),
       launch_when_ready=True,
     )
     self.manifests = [
@@ -59,13 +60,15 @@ class PipelineStateTest(unittest.TestCase):
     gpu_processes: list[str],
     completed_gates: set[int] | None = None,
     active_evaluation: dict | None = None,
+    pending_gates: list[int] | None = None,
   ) -> tuple[dict, mock.Mock]:
     completed_gates = completed_gates or set()
+    pending_gates = pending_gates or []
     launcher = mock.Mock(return_value={"pid": 12345})
     with (
       mock.patch.object(pipeline, "inspect", return_value=_health(completed=completed)),
       mock.patch.object(
-        pipeline, "_ensure_manifests", return_value=(self.manifests, [])
+        pipeline, "_ensure_manifests", return_value=(self.manifests, pending_gates)
       ),
       mock.patch.object(pipeline, "_active_eval", return_value=active_evaluation),
       mock.patch.object(pipeline, "_gpu_processes", return_value=gpu_processes),
@@ -132,6 +135,42 @@ class PipelineStateTest(unittest.TestCase):
       active = pipeline._active_eval(self.cfg.evidence_dir)
     self.assertFalse(active["process_alive"])
     self.assertTrue(marker.is_file())
+
+  def test_completed_training_rejects_missing_gate_manifest(self) -> None:
+    self.cfg = pipeline.PipelineCfg(
+      control_dir=self.cfg.control_dir,
+      evidence_dir=self.cfg.evidence_dir,
+      state=self.cfg.state,
+      gates=(8000, 15000, 25000),
+      launch_when_ready=True,
+    )
+    state, launcher = self._advance(
+      completed=True,
+      gpu_processes=[],
+      pending_gates=[25000],
+    )
+    self.assertEqual(state["status"], "MANIFESTS_INCOMPLETE_ALERT")
+    launcher.assert_not_called()
+
+  def test_completed_training_requires_versioned_manifest_lock(self) -> None:
+    self.cfg = pipeline.PipelineCfg(
+      control_dir=self.cfg.control_dir,
+      evidence_dir=self.cfg.evidence_dir,
+      state=self.cfg.state,
+      gates=(8000, 15000, 25000),
+      launch_when_ready=True,
+    )
+    self.manifests.append(
+      {
+        "gate": 25000,
+        "path": str(self.cfg.evidence_dir / "manifests/gate_25000.json"),
+        "sha256": "hash-25000",
+      }
+    )
+    state, launcher = self._advance(completed=True, gpu_processes=[])
+    self.assertEqual(state["status"], "MANIFEST_LOCK_REQUIRED")
+    self.assertEqual(state["unlocked_manifest_gates"], [25000])
+    launcher.assert_not_called()
 
 
 class CompletionValidationTest(unittest.TestCase):

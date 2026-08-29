@@ -1623,6 +1623,13 @@ def advance(cfg: PipelineCfg) -> dict[str, Any]:
   )
   _atomic_json(cfg.state.with_name("training_health_latest.json"), health)
   manifests, pending_gates = _ensure_manifests(cfg)
+  manifest_set_complete = not pending_gates and len(manifests) == len(cfg.gates)
+  unlocked_manifest_gates = [
+    int(manifest["gate"])
+    for manifest in manifests
+    if int(manifest["gate"]) not in _LOCKED_MANIFEST_HASHES
+  ]
+  manifests_locked = manifest_set_complete and not unlocked_manifest_gates
   completed_training = bool(health["jobs"]) and all(
     job["completed"] for job in health["jobs"]
   )
@@ -1657,7 +1664,7 @@ def advance(cfg: PipelineCfg) -> dict[str, Any]:
   specialist_progress = None
   native_baseline_progress = None
   confirmation_waiting_for_gpu = False
-  if completed_training and next_gate is None:
+  if completed_training and manifests_locked and next_gate is None:
     stable_selection = write_selection(SelectionCfg(evidence_dir=cfg.evidence_dir))
     wants_confirmation = (
       cfg.launch_confirmation_when_ready
@@ -1706,6 +1713,25 @@ def advance(cfg: PipelineCfg) -> dict[str, Any]:
   elif active is not None:
     status = "EVAL_RUNNING"
     action = "Wait for the resumable frozen matrix and analyzer to finish."
+  elif (
+    completed_training
+    and gpu_processes
+    and not (manifests_locked and next_gate is None)
+  ):
+    status = "WAITING_FREE_GPU"
+    action = "Training is complete; wait for remaining compute processes to exit."
+  elif completed_training and not manifest_set_complete:
+    status = "MANIFESTS_INCOMPLETE_ALERT"
+    action = (
+      "Training is complete but not every frozen gate has an eight-arm manifest; "
+      "inspect missing checkpoints before evaluation."
+    )
+  elif completed_training and unlocked_manifest_gates:
+    status = "MANIFEST_LOCK_REQUIRED"
+    action = (
+      "Commit the observed manifest SHA-256 values to the versioned lock table "
+      "before launching any frozen evaluation."
+    )
   elif completed_training and next_gate is None:
     if native_baseline_progress is not None:
       status = native_baseline_progress["status"]
@@ -1731,9 +1757,6 @@ def advance(cfg: PipelineCfg) -> dict[str, Any]:
         "Frozen cross-gate selection found no eligible arm; do not relax "
         "thresholds post hoc."
       )
-  elif completed_training and gpu_processes:
-    status = "WAITING_FREE_GPU"
-    action = "Training is complete; wait for remaining compute processes to exit."
   elif completed_training and next_gate is not None:
     status = "READY_FOR_EVAL"
     action = f"Run the frozen matrix for gate {next_gate}."
@@ -1755,6 +1778,8 @@ def advance(cfg: PipelineCfg) -> dict[str, Any]:
     "iterations": {job["log"]: job["iteration"] for job in health["jobs"]},
     "gpu_process_count": len(gpu_processes),
     "manifests": manifests,
+    "manifest_set_complete": manifest_set_complete,
+    "unlocked_manifest_gates": unlocked_manifest_gates,
     "pending_manifest_gates": pending_gates,
     "evaluations": evaluations,
     "active_evaluation": active or launched,
