@@ -240,6 +240,27 @@ thresholds and late-regression rule, writes `stable_selection.json` and
 independent policy-seed training. Overlapping rollout intervals are explicitly
 reported as unresolved rather than converted into a winner claim.
 
+For each promoted configuration, confirmatory policy seeds are frozen to
+`20260901`, `20260902`, and `20260903`. Both `--agent.seed` and `--env.seed`
+must be set to the same declared value; changing only the environment seed does
+not create an independent policy initialization. The idempotent launcher
+records the stable-selection hash, code commit, full commands, GPU assignment,
+PIDs, logs, and transition budget before reporting a launch as complete:
+
+```bash
+uv run scripts/launch_smp_policy_seed_confirmation.py \
+  --selection run_control/scratch_causal_eval/stable_selection.json \
+  --control-dir run_control/scratch_causal_policy_seed_confirmation \
+  --launch
+```
+
+The recurring controller passes `--launch-confirmation-when-ready` and invokes
+this launcher only after every frozen screen gate is complete and no GPU
+process remains. One promoted arm creates three jobs; two unresolved promoted
+arms create six jobs. A changed source analysis, unknown arm, reused seed,
+insufficient GPU set, active GPU process, or conflicting prior launch plan
+causes a hard refusal rather than an altered experiment.
+
 Safety is reported but is not optimized in this first causal screen. The
 winning recovery configuration must later receive a separate speed/power
 ablation before real-robot use.

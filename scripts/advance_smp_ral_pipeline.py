@@ -16,6 +16,10 @@ from typing import Any
 import tyro
 
 from build_smp_causal_manifest import ManifestCfg, build_manifest
+from launch_smp_policy_seed_confirmation import (
+  ConfirmationCfg,
+  launch_confirmation,
+)
 from monitor_smp_training_health import HealthCfg, inspect
 from select_smp_stable_arm import SelectionCfg, write_selection
 
@@ -55,6 +59,10 @@ class PipelineCfg:
   num_envs: int = 512
   steps: int = 500
   launch_when_ready: bool = False
+  launch_confirmation_when_ready: bool = False
+  confirmation_control_dir: Path = Path(
+    "run_control/scratch_causal_policy_seed_confirmation"
+  )
 
 
 def _atomic_json(path: Path, payload: dict[str, Any]) -> None:
@@ -291,8 +299,23 @@ def advance(cfg: PipelineCfg) -> dict[str, Any]:
 
   gpu_processes = _gpu_processes()
   stable_selection = None
+  confirmation = None
+  confirmation_waiting_for_gpu = False
   if completed_training and next_gate is None:
     stable_selection = write_selection(SelectionCfg(evidence_dir=cfg.evidence_dir))
+    wants_confirmation = (
+      cfg.launch_confirmation_when_ready
+      and stable_selection["status"] == "PROMOTE_FOR_POLICY_SEEDS"
+    )
+    confirmation_waiting_for_gpu = wants_confirmation and bool(gpu_processes)
+    if wants_confirmation and not gpu_processes:
+      confirmation = launch_confirmation(
+        ConfirmationCfg(
+          selection=cfg.evidence_dir / "stable_selection.json",
+          control_dir=cfg.confirmation_control_dir,
+          launch=True,
+        )
+      )
   status = "TRAINING_ACTIVE"
   action = "Continue health monitoring; do not contend with training GPUs."
   launched = None
@@ -303,13 +326,49 @@ def advance(cfg: PipelineCfg) -> dict[str, Any]:
     status = "EVAL_RUNNING"
     action = "Wait for the resumable frozen matrix and analyzer to finish."
   elif completed_training and next_gate is None:
-    status = "ANALYSIS_COMPLETE"
-    if stable_selection["status"] == "PROMOTE_FOR_POLICY_SEEDS":
+    if confirmation is not None:
+      alive = [job for job in confirmation["jobs"] if _pid_alive(int(job["pid"]))]
+      if alive:
+        status = "CONFIRMATION_TRAINING"
+        action = (
+          f"Policy-seed confirmation is running: {len(alive)}/"
+          f"{len(confirmation['jobs'])} processes alive."
+        )
+      else:
+        confirmation_health = inspect(
+          HealthCfg(
+            control_dir=cfg.confirmation_control_dir,
+            output=cfg.state.with_name("confirmation_health_latest.json"),
+            expected_jobs=len(confirmation["jobs"]),
+          )
+        )
+        _atomic_json(
+          cfg.state.with_name("confirmation_health_latest.json"),
+          confirmation_health,
+        )
+        if confirmation_health["jobs"] and all(
+          job["completed"] for job in confirmation_health["jobs"]
+        ):
+          status = "CONFIRMATION_COMPLETE"
+          action = (
+            "Policy-seed training is complete; freeze seed-level evaluation manifests."
+          )
+        else:
+          status = "CONFIRMATION_ALERT"
+          action = (
+            "Confirmation processes exited before every job completed; inspect logs."
+          )
+    elif confirmation_waiting_for_gpu:
+      status = "WAITING_FREE_GPU"
+      action = "Stable candidates are ready; wait for all GPU processes to exit."
+    elif stable_selection["status"] == "PROMOTE_FOR_POLICY_SEEDS":
+      status = "ANALYSIS_COMPLETE"
       action = (
         "Frozen cross-gate selection is complete; launch independent policy "
         "seeds for the promoted configurations."
       )
     else:
+      status = "ANALYSIS_COMPLETE"
       action = (
         "Frozen cross-gate selection found no eligible arm; do not relax "
         "thresholds post hoc."
@@ -348,6 +407,16 @@ def advance(cfg: PipelineCfg) -> dict[str, Any]:
         "path": str((cfg.evidence_dir / "stable_selection.json").resolve()),
       }
       if stable_selection is not None
+      else None
+    ),
+    "confirmation": (
+      {
+        "status": confirmation["status"],
+        "plan_id": confirmation["plan_id"],
+        "job_count": len(confirmation["jobs"]),
+        "path": str((cfg.confirmation_control_dir / "launch_manifest.json").resolve()),
+      }
+      if confirmation is not None
       else None
     ),
   }
