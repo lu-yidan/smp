@@ -30,7 +30,7 @@ from analyze_smp_native_baseline_effects import (
 )
 from audit_smp_baseline_registry import audit as audit_baseline_registry
 from bind_smp_native_eval_banks import EvalBindingCfg, write_bindings
-from build_smp_causal_manifest import ManifestCfg, build_manifest
+from build_smp_causal_manifest import ManifestCfg, build_manifest, checkpoint_integrity
 from build_smp_confirmation_manifests import (
   ConfirmationManifestCfg,
 )
@@ -237,6 +237,10 @@ def _validate_manifest(
       raise FileNotFoundError(checkpoint)
     if _sha256(checkpoint) != run.get("checkpoint_sha256"):
       raise ValueError(f"checkpoint hash mismatch: {checkpoint}")
+    if gate == 29999:
+      observed_integrity = checkpoint_integrity(checkpoint, gate)
+      if run.get("checkpoint_integrity") != observed_integrity:
+        raise ValueError(f"checkpoint integrity record mismatch: {checkpoint}")
   digest = _sha256(path)
   locked = _LOCKED_MANIFEST_HASHES.get(gate)
   if locked is not None and digest != locked:

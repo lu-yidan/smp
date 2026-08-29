@@ -11,6 +11,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+import torch
 import tyro
 
 _ARMS: tuple[dict[str, str], ...] = (
@@ -95,6 +96,38 @@ def _sha256(path: Path) -> str:
     for chunk in iter(lambda: stream.read(1024 * 1024), b""):
       digest.update(chunk)
   return digest.hexdigest()
+
+
+def checkpoint_integrity(path: Path, expected_iteration: int) -> dict[str, Any]:
+  try:
+    payload = torch.load(path, map_location="cpu", weights_only=False)
+  except Exception as error:
+    raise ValueError(f"checkpoint cannot be loaded: {path}: {error}") from error
+  if not isinstance(payload, dict):
+    raise ValueError(f"checkpoint payload is not a mapping: {path}")
+  if payload.get("iter") != expected_iteration:
+    raise ValueError(
+      f"checkpoint {path} records iteration {payload.get('iter')!r}, "
+      f"expected {expected_iteration}"
+    )
+  result: dict[str, Any] = {"iteration": expected_iteration}
+  for group in ("actor_state_dict", "critic_state_dict"):
+    state = payload.get(group)
+    if not isinstance(state, dict):
+      raise ValueError(f"checkpoint lacks {group}: {path}")
+    tensors = [value for value in state.values() if torch.is_tensor(value)]
+    if not tensors:
+      raise ValueError(f"checkpoint {group} has no tensors: {path}")
+    nonfinite = [
+      name
+      for name, value in state.items()
+      if torch.is_tensor(value) and not torch.isfinite(value).all().item()
+    ]
+    if nonfinite:
+      raise ValueError(f"checkpoint {group} has nonfinite tensors {nonfinite}: {path}")
+    result[f"{group}_tensor_count"] = len(tensors)
+    result[f"{group}_all_finite"] = True
+  return result
 
 
 def _git_commit() -> str:
@@ -194,6 +227,7 @@ def build_manifest(cfg: ManifestCfg) -> dict[str, Any]:
       int,
       int,
       tuple[Path, dict[str, Any]] | None,
+      dict[str, Any],
     ]
   ] = []
   missing: list[str] = []
@@ -224,6 +258,11 @@ def build_manifest(cfg: ManifestCfg) -> dict[str, Any]:
     except (FileNotFoundError, ValueError) as error:
       missing.append(f"{arm['name']}: {error}")
       continue
+    try:
+      integrity = checkpoint_integrity(checkpoint, cfg.checkpoint_step)
+    except ValueError as error:
+      missing.append(f"{arm['name']}: {error}")
+      continue
     discovered.append(
       (
         arm,
@@ -232,6 +271,7 @@ def build_manifest(cfg: ManifestCfg) -> dict[str, Any]:
         policy_seed,
         environment_seed,
         continuation,
+        integrity,
       )
     )
 
@@ -249,6 +289,7 @@ def build_manifest(cfg: ManifestCfg) -> dict[str, Any]:
     policy_seed,
     environment_seed,
     continuation,
+    integrity,
   ) in discovered:
     wandb_run_id = (
       continuation[1]["continuation_wandb_run_id"]
@@ -260,6 +301,7 @@ def build_manifest(cfg: ManifestCfg) -> dict[str, Any]:
       "task": arm["task"],
       "checkpoint": str(checkpoint),
       "checkpoint_sha256": _sha256(checkpoint),
+      "checkpoint_integrity": integrity,
       "policy_seed": policy_seed,
       "environment_seed": environment_seed,
       "seed_provenance": {

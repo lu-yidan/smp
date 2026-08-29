@@ -7,6 +7,8 @@ import unittest
 from pathlib import Path
 from unittest import mock
 
+import torch
+
 sys.path.insert(0, str(Path(__file__).parents[1] / "scripts"))
 
 import build_smp_causal_manifest as manifest
@@ -18,7 +20,14 @@ class SeedProvenanceTest(unittest.TestCase):
     (run / "params").mkdir(parents=True)
     (run / "params" / "agent.yaml").write_text(f"seed: {agent_seed}\n")
     (run / "params" / "env.yaml").write_text(f"other: true\nseed: {environment_seed}\n")
-    (run / "model_8000.pt").write_bytes(b"checkpoint")
+    torch.save(
+      {
+        "iter": 8000,
+        "actor_state_dict": {"weight": torch.ones(1)},
+        "critic_state_dict": {"weight": torch.ones(1)},
+      },
+      run / "model_8000.pt",
+    )
 
   def test_manifest_uses_saved_effective_seeds(self) -> None:
     with tempfile.TemporaryDirectory() as temporary:
@@ -102,7 +111,14 @@ class SeedProvenanceTest(unittest.TestCase):
       (resumed / "params").mkdir(parents=True)
       (resumed / "params" / "agent.yaml").write_text("seed: 42\n")
       (resumed / "params" / "env.yaml").write_text("seed: 42\n")
-      (resumed / "model_29999.pt").write_bytes(b"resumed-final")
+      torch.save(
+        {
+          "iter": 29999,
+          "actor_state_dict": {"weight": torch.ones(1)},
+          "critic_state_dict": {"weight": torch.ones(1)},
+        },
+        resumed / "model_29999.pt",
+      )
       source = root / "task" / "run_suffix" / "model_8000.pt"
       (resumed / "resume_provenance.json").write_text(
         json.dumps(
@@ -135,9 +151,7 @@ class SeedProvenanceTest(unittest.TestCase):
       ):
         payload = manifest.build_manifest(cfg)
       self.assertEqual(Path(payload["runs"][0]["run_dir"]).name, "run_suffix")
-      self.assertEqual(
-        Path(payload["runs"][0]["checkpoint"]).read_bytes(), b"checkpoint"
-      )
+      self.assertEqual(payload["runs"][0]["checkpoint_integrity"]["iteration"], 8000)
       resumed_cfg = manifest.ManifestCfg(
         checkpoint_step=29999,
         output=root / "final_manifest.json",
@@ -154,6 +168,38 @@ class SeedProvenanceTest(unittest.TestCase):
         resumed_row["continuation_provenance"]["record"]["status"],
         "AUDITED_CONTINUATION",
       )
+      self.assertTrue(
+        resumed_row["checkpoint_integrity"]["actor_state_dict_all_finite"]
+      )
+
+  def test_manifest_rejects_nonfinite_actor_checkpoint(self) -> None:
+    with tempfile.TemporaryDirectory() as temporary:
+      root = Path(temporary)
+      self._fixture(root, 42, 42)
+      checkpoint = root / "task" / "run_suffix" / "model_8000.pt"
+      torch.save(
+        {
+          "iter": 8000,
+          "actor_state_dict": {"weight": torch.tensor([float("nan")])},
+          "critic_state_dict": {"weight": torch.ones(1)},
+        },
+        checkpoint,
+      )
+      arm = {
+        "name": "arm",
+        "task": "Task",
+        "log_dir": "task",
+        "run_suffix": "suffix",
+        "wandb_run_id": "run",
+      }
+      cfg = manifest.ManifestCfg(
+        checkpoint_step=8000,
+        output=root / "manifest.json",
+        logs_root=root,
+      )
+      with mock.patch.object(manifest, "_ARMS", (arm,)):
+        with self.assertRaisesRegex(FileNotFoundError, "nonfinite tensors"):
+          manifest.build_manifest(cfg)
 
 
 if __name__ == "__main__":
