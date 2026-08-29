@@ -152,3 +152,31 @@ duplicate, seed-mismatched, or changed checkpoints produce
 This status means only that evaluation inputs are auditable. It is not a T/P
 performance pass and does not unblock U until the separately stratified
 matrices and frozen promotion gates are implemented and satisfied.
+
+## Formal specialist matrices and U prerequisite
+
+The formal evaluator forces one stratum before constructing each MuJoCo batch;
+it does not sample a convenient mixed distribution and pool the outcomes. Each
+stratum uses 256 worlds, 750 control steps, and held-out seed 20260910. T has 76
+cells: four flat poses, slope and rough at three levels by four poses, and
+stairs at three levels by four edge cohorts by four poses. P has ten cells:
+four unpinned poses plus prone/supine under each 4/8/12 kg plate. Continuous
+friction and longitudinal/lateral offsets remain randomized within every pinned
+cell and are retained in per-world results.
+
+Pinned success requires both persistent physical escape and a subsequent
+25-step stable stand. Invalid setup/contact or non-finite dynamics invalidate
+the rollout. Terrain success uses height relative to the terrain origin and
+also reports patch exit, foot slip, secondary falls, drift, stance width,
+joint speed, power, and action differences. Safety is compared with the
+matched flat summary for the same policy seed; no pooled flat baseline or
+different seed may be substituted.
+
+Every 2k/5k/10k/final manifest is evaluated, but only checkpoint 19999 can pass
+a phase. Earlier gates are mandatory learning curves and cannot replace a
+failed final checkpoint. `aggregate_smp_specialist_seeds.py` treats the three
+independently trained policies as the sampling unit and requires every seed to
+pass; an average cannot hide one failed lineage. Only matched final
+`PHASE_PASS` decisions for both T and P produce `PROMOTE_U` through
+`select_smp_unified_prerequisites.py`. That decision authorizes only the frozen
+U compute budget and remains neither a U result nor an RA-L claim.

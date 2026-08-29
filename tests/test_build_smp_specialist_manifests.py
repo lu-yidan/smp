@@ -45,6 +45,27 @@ class SpecialistManifestTest(unittest.TestCase):
         )
     protocol = root / "protocol.json"
     protocol.write_text("{}")
+    summary_sources = []
+    for seed in seeds:
+      summary = root / f"flat_summary_{seed}.json"
+      summary.write_text(
+        json.dumps(
+          {"evaluations": [{"policy_seed": seed, "arm": "a6_f2s2_mix_bridge"}]}
+        )
+      )
+      summary_sources.append({"path": str(summary), "sha256": builder._sha256(summary)})
+    aggregate = root / "aggregate.json"
+    aggregate.write_text(json.dumps({"source_summaries": summary_sources}))
+    promotion = root / "promotion.json"
+    promotion.write_text(
+      json.dumps(
+        {
+          "promotion_id": "promotion",
+          "aggregate": str(aggregate),
+          "aggregate_sha256": builder._sha256(aggregate),
+        }
+      )
+    )
     launch = root / "launch.json"
     launch.write_text(
       json.dumps(
@@ -55,6 +76,8 @@ class SpecialistManifestTest(unittest.TestCase):
           "code_commit": "commit",
           "protocol": str(protocol),
           "protocol_sha256": builder._sha256(protocol),
+          "promotion": str(promotion),
+          "promotion_sha256": builder._sha256(promotion),
           "jobs": jobs,
         }
       )

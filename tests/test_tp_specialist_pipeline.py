@@ -10,6 +10,7 @@ from unittest import mock
 
 sys.path.insert(0, str(Path(__file__).parents[1] / "scripts"))
 
+import advance_smp_ral_pipeline as pipeline
 import launch_smp_tp_specialists as launcher
 import run_smp_tp_physics_smoke as smoke_runner
 import select_smp_confirmed_flat_arm as selector
@@ -212,6 +213,62 @@ class TpSpecialistPipelineTest(unittest.TestCase):
             run=True,
           )
         )
+
+  def test_specialist_completion_marker_is_fail_closed(self) -> None:
+    manifest = self.root / "specialist_manifest.json"
+    manifest.write_text(
+      json.dumps({"phase": "T", "policy_seed": 20260901, "checkpoint_step": 2000})
+    )
+    output = self.root / "specialist_eval"
+    output.mkdir()
+    summary = output / "summary.json"
+    summary.write_text(
+      json.dumps(
+        {
+          "manifest_sha256": _sha256(manifest),
+          "evaluations": [{} for _ in range(76)],
+        }
+      )
+    )
+    (output / "_COMPLETE.json").write_text(
+      json.dumps(
+        {
+          "specialist_matrix_schema_version": 1,
+          "base_evaluation_schema_version": 2,
+          "phase": "T",
+          "manifest": str(manifest.resolve()),
+          "manifest_sha256": _sha256(manifest),
+          "policy_seed": 20260901,
+          "checkpoint_step": 2000,
+          "stratum_count": 76,
+          "result_count": 76,
+          "eval_seed": 20260910,
+          "num_envs_per_stratum": 256,
+          "steps": 750,
+        }
+      )
+    )
+    (output / "analysis.json").write_text(
+      json.dumps(
+        {
+          "status": "PASS",
+          "summary": str(summary.resolve()),
+          "summary_sha256": _sha256(summary),
+          "manifest_sha256": _sha256(manifest),
+        }
+      )
+    )
+    (output / "analysis.md").write_text("pass\n")
+    cfg = pipeline.PipelineCfg(
+      control_dir=self.root / "control",
+      evidence_dir=self.root / "evidence",
+      state=self.root / "state.json",
+    )
+    self.assertTrue(pipeline._specialist_analysis_complete(cfg, output, manifest))
+    complete = json.loads((output / "_COMPLETE.json").read_text())
+    complete["result_count"] = 75
+    (output / "_COMPLETE.json").write_text(json.dumps(complete))
+    self.assertFalse(pipeline._specialist_analysis_complete(cfg, output, manifest))
 
 
 if __name__ == "__main__":

@@ -60,6 +60,7 @@
     "formal_eval_seed": 20260910,
     "formal_eval_envs_per_stratum": 256,
     "formal_eval_steps": 750,
+    "specialist_checkpoint_rule": "The 19999 final checkpoint is the only phase-promotion checkpoint. The 2000, 5000, and 10000 matrices are mandatory diagnostic learning curves and may not replace a failed final checkpoint.",
     "selection_rule": "Use complete frozen matrices, never training reward or selected videos."
   },
   "phases": {

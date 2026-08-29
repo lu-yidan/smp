@@ -16,6 +16,12 @@ from typing import Any
 import tyro
 
 from aggregate_smp_policy_seeds import AggregateCfg, write_aggregate
+from aggregate_smp_specialist_seeds import (
+  SpecialistAggregateCfg,
+)
+from aggregate_smp_specialist_seeds import (
+  write_aggregate as write_specialist_aggregate,
+)
 from build_smp_causal_manifest import ManifestCfg, build_manifest
 from build_smp_confirmation_manifests import (
   ConfirmationManifestCfg,
@@ -42,6 +48,12 @@ from select_smp_confirmed_flat_arm import (
   write_selection as write_flat_selection,
 )
 from select_smp_stable_arm import SelectionCfg, write_selection
+from select_smp_unified_prerequisites import (
+  UnifiedPrerequisiteCfg,
+)
+from select_smp_unified_prerequisites import (
+  write_selection as write_unified_selection,
+)
 
 _EVALUATION_SCHEMA_VERSION = 2
 _LOCKED_MANIFEST_HASHES = {
@@ -90,6 +102,9 @@ class PipelineCfg:
   specialist_smoke_work_dir: Path = Path("run_control/ral_tp_smoke")
   specialist_smoke_output: Path = Path("run_control/ral_tp_smoke/result.json")
   progression_protocol: Path = Path("docs/ral_terrain_plate_protocol.json")
+  specialist_eval_seed: int = 20260910
+  specialist_eval_num_envs: int = 256
+  specialist_eval_steps: int = 750
 
 
 def _atomic_json(path: Path, payload: dict[str, Any]) -> None:
@@ -347,6 +362,264 @@ def _launch_tp_smoke(cfg: PipelineCfg, promotion: Path) -> dict[str, Any]:
   return payload
 
 
+def _specialist_analysis_complete(
+  cfg: PipelineCfg, output_dir: Path, manifest_path: Path
+) -> bool:
+  required = ("_COMPLETE.json", "summary.json", "analysis.json", "analysis.md")
+  if not all((output_dir / name).is_file() for name in required):
+    return False
+  try:
+    manifest = json.loads(manifest_path.read_text())
+    complete = json.loads((output_dir / "_COMPLETE.json").read_text())
+    summary = json.loads((output_dir / "summary.json").read_text())
+    analysis = json.loads((output_dir / "analysis.json").read_text())
+  except (json.JSONDecodeError, OSError):
+    return False
+  phase = manifest.get("phase")
+  expected_strata = 76 if phase == "T" else 10 if phase == "P" else -1
+  return (
+    complete.get("specialist_matrix_schema_version") == 1
+    and complete.get("base_evaluation_schema_version") == _EVALUATION_SCHEMA_VERSION
+    and complete.get("phase") == phase
+    and complete.get("manifest") == str(manifest_path.resolve())
+    and complete.get("manifest_sha256") == _sha256(manifest_path)
+    and complete.get("policy_seed") == manifest.get("policy_seed")
+    and complete.get("checkpoint_step") == manifest.get("checkpoint_step")
+    and complete.get("stratum_count") == expected_strata
+    and complete.get("result_count") == expected_strata
+    and complete.get("eval_seed") == cfg.specialist_eval_seed
+    and complete.get("num_envs_per_stratum") == cfg.specialist_eval_num_envs
+    and complete.get("steps") == cfg.specialist_eval_steps
+    and summary.get("manifest_sha256") == _sha256(manifest_path)
+    and len(summary.get("evaluations", [])) == expected_strata
+    and analysis.get("status") in {"PASS", "NO_PROMOTION"}
+    and analysis.get("summary") == str((output_dir / "summary.json").resolve())
+    and analysis.get("summary_sha256") == _sha256(output_dir / "summary.json")
+    and analysis.get("manifest_sha256") == _sha256(manifest_path)
+  )
+
+
+def _active_specialist_eval(cfg: PipelineCfg) -> dict[str, Any] | None:
+  state = cfg.specialist_evidence_dir / "active_evaluation.json"
+  if not state.is_file():
+    return None
+  payload = json.loads(state.read_text())
+  if _pid_alive(int(payload["pid"])):
+    return payload
+  output_dir = Path(payload["output_dir"])
+  if all(
+    (output_dir / name).is_file()
+    for name in ("_COMPLETE.json", "summary.json", "analysis.json", "analysis.md")
+  ):
+    state.unlink()
+    return None
+  return {**payload, "failed": True}
+
+
+def _launch_specialist_evaluation(
+  cfg: PipelineCfg, manifest: Path, output_dir: Path
+) -> dict[str, Any]:
+  matrix = Path(__file__).with_name("run_smp_specialist_eval_matrix.py").resolve()
+  analyzer = Path(__file__).with_name("analyze_smp_specialist_matrix.py").resolve()
+  manifest_payload = json.loads(manifest.read_text())
+  output_dir.mkdir(parents=True, exist_ok=True)
+  matrix_command = [
+    sys.executable,
+    str(matrix),
+    "--manifest",
+    str(manifest.resolve()),
+    "--output-dir",
+    str(output_dir.resolve()),
+    "--devices",
+    *cfg.devices,
+    "--eval-seed",
+    str(cfg.specialist_eval_seed),
+    "--num-envs",
+    str(cfg.specialist_eval_num_envs),
+    "--steps",
+    str(cfg.specialist_eval_steps),
+  ]
+  analysis_command = [
+    sys.executable,
+    str(analyzer),
+    "--summary",
+    str((output_dir / "summary.json").resolve()),
+    "--protocol",
+    str(cfg.progression_protocol.resolve()),
+    "--output-json",
+    str((output_dir / "analysis.json").resolve()),
+    "--output-markdown",
+    str((output_dir / "analysis.md").resolve()),
+  ]
+  command = " ".join(shlex.quote(part) for part in matrix_command)
+  command += " && " + " ".join(shlex.quote(part) for part in analysis_command)
+  log = output_dir / "evaluation.log"
+  with log.open("a") as stream:
+    process = subprocess.Popen(
+      ("bash", "-lc", command),
+      stdout=stream,
+      stderr=subprocess.STDOUT,
+      start_new_session=True,
+    )
+  payload = {
+    "pid": process.pid,
+    "phase": manifest_payload["phase"],
+    "policy_seed": manifest_payload["policy_seed"],
+    "checkpoint_step": manifest_payload["checkpoint_step"],
+    "manifest": str(manifest.resolve()),
+    "manifest_sha256": _sha256(manifest),
+    "output_dir": str(output_dir.resolve()),
+    "log": str(log.resolve()),
+    "started_at_utc": datetime.now(timezone.utc).isoformat(),
+  }
+  _atomic_json(cfg.specialist_evidence_dir / "active_evaluation.json", payload)
+  return payload
+
+
+def _advance_specialist_evaluations(
+  cfg: PipelineCfg, index: dict[str, Any], gpu_processes: list[str]
+) -> dict[str, Any]:
+  active = _active_specialist_eval(cfg)
+  evaluations = []
+  next_row = None
+  rows = sorted(
+    index["manifests"],
+    key=lambda row: (
+      int(row["checkpoint_step"]),
+      str(row["phase"]),
+      int(row["policy_seed"]),
+    ),
+  )
+  for row in rows:
+    phase = str(row["phase"])
+    seed = int(row["policy_seed"])
+    gate = int(row["checkpoint_step"])
+    manifest = Path(row["path"])
+    output_dir = (
+      cfg.specialist_evidence_dir / phase.lower() / f"seed_{seed}" / f"gate_{gate}"
+    )
+    complete = _specialist_analysis_complete(cfg, output_dir, manifest)
+    evaluations.append(
+      {
+        "phase": phase,
+        "policy_seed": seed,
+        "checkpoint_step": gate,
+        "output_dir": str(output_dir.resolve()),
+        "analysis_complete": complete,
+      }
+    )
+    if not complete and next_row is None:
+      next_row = (row, manifest, output_dir)
+  if active is not None:
+    if active.get("failed"):
+      return {
+        "status": "TP_SPECIALIST_EVAL_ALERT",
+        "action": (
+          "Specialist evaluator exited without complete evidence; inspect its log "
+          "before an explicit resumable retry."
+        ),
+        "evaluations": evaluations,
+        "active_evaluation": active,
+        "terrain_aggregate": None,
+        "plate_aggregate": None,
+        "unified_prerequisite": None,
+      }
+    return {
+      "status": "TP_SPECIALIST_EVAL_RUNNING",
+      "action": "Wait for the active resumable specialist matrix and analyzer.",
+      "evaluations": evaluations,
+      "active_evaluation": active,
+      "terrain_aggregate": None,
+      "plate_aggregate": None,
+      "unified_prerequisite": None,
+    }
+  if next_row is not None:
+    row, manifest, output_dir = next_row
+    if gpu_processes:
+      return {
+        "status": "WAITING_FREE_GPU",
+        "action": "Specialist checkpoints are ready; wait for free evaluation GPUs.",
+        "evaluations": evaluations,
+        "active_evaluation": None,
+        "terrain_aggregate": None,
+        "plate_aggregate": None,
+        "unified_prerequisite": None,
+      }
+    if not cfg.launch_when_ready:
+      return {
+        "status": "TP_SPECIALIST_READY_FOR_EVAL",
+        "action": (
+          f"Run {row['phase']} seed {row['policy_seed']} gate "
+          f"{row['checkpoint_step']} frozen matrix."
+        ),
+        "evaluations": evaluations,
+        "active_evaluation": None,
+        "terrain_aggregate": None,
+        "plate_aggregate": None,
+        "unified_prerequisite": None,
+      }
+    launched = _launch_specialist_evaluation(cfg, manifest, output_dir)
+    return {
+      "status": "TP_SPECIALIST_EVAL_RUNNING",
+      "action": (
+        f"Launched {row['phase']} seed {row['policy_seed']} gate "
+        f"{row['checkpoint_step']} frozen matrix."
+      ),
+      "evaluations": evaluations,
+      "active_evaluation": launched,
+      "terrain_aggregate": None,
+      "plate_aggregate": None,
+      "unified_prerequisite": None,
+    }
+
+  aggregates = {}
+  for phase in ("T", "P"):
+    analyses = tuple(
+      cfg.specialist_evidence_dir
+      / phase.lower()
+      / f"seed_{seed}"
+      / "gate_19999"
+      / "analysis.json"
+      for seed in index["policy_seeds"]
+    )
+    output = cfg.specialist_evidence_dir / phase.lower() / "policy_seed_aggregate.json"
+    aggregates[phase] = write_specialist_aggregate(
+      SpecialistAggregateCfg(
+        analyses=analyses,
+        output_json=output,
+        protocol=cfg.progression_protocol,
+      )
+    )
+  unified_path = cfg.specialist_evidence_dir / "unified_prerequisite.json"
+  unified = write_unified_selection(
+    UnifiedPrerequisiteCfg(
+      terrain_aggregate=cfg.specialist_evidence_dir
+      / "t"
+      / "policy_seed_aggregate.json",
+      plate_aggregate=cfg.specialist_evidence_dir / "p" / "policy_seed_aggregate.json",
+      output=unified_path,
+      protocol=cfg.progression_protocol,
+    )
+  )
+  return {
+    "status": (
+      "U_PREREQUISITES_MET"
+      if unified["status"] == "PROMOTE_U"
+      else "TP_SPECIALIST_NO_PROMOTION"
+    ),
+    "action": (
+      "T and P matched-seed final gates passed; implement and smoke the frozen U task."
+      if unified["status"] == "PROMOTE_U"
+      else "At least one frozen T/P phase gate failed; do not launch U or relax thresholds."
+    ),
+    "evaluations": evaluations,
+    "active_evaluation": None,
+    "terrain_aggregate": aggregates["T"],
+    "plate_aggregate": aggregates["P"],
+    "unified_prerequisite": unified,
+  }
+
+
 def _advance_specialists(cfg: PipelineCfg, gpu_processes: list[str]) -> dict[str, Any]:
   aggregate = cfg.confirmation_evidence_dir / "policy_seed_aggregate.json"
   manifest_index = cfg.confirmation_evidence_dir / "manifests" / "index.json"
@@ -412,17 +685,16 @@ def _advance_specialists(cfg: PipelineCfg, gpu_processes: list[str]) -> dict[str
         output_dir=cfg.specialist_evidence_dir / "manifests",
       )
     )
+    progress = _advance_specialist_evaluations(cfg, index, gpu_processes)
     return {
-      "status": "TP_SPECIALIST_READY_FOR_EVAL",
-      "action": (
-        "All six T/P jobs and 24 immutable phase/seed/gate manifests are "
-        "validated; run the preregistered stratified matrices next."
-      ),
+      "status": progress["status"],
+      "action": progress["action"],
       "promotion": promotion,
       "smoke": None,
       "launch": launched,
       "health": health,
       "manifest_index": index,
+      "evaluation_progress": progress,
     }
 
   active_smoke = _active_tp_smoke(cfg)

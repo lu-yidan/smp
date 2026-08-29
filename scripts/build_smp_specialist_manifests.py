@@ -93,11 +93,52 @@ def _validate_launch(cfg: SpecialistManifestCfg) -> tuple[dict[str, Any], list[d
   return launch, jobs
 
 
+def _flat_summary_sources(launch: dict[str, Any]) -> dict[int, dict[str, str]]:
+  promotion_path = Path(launch["promotion"])
+  if not promotion_path.is_file() or _sha256(promotion_path) != launch.get(
+    "promotion_sha256"
+  ):
+    raise ValueError("T/P launch promotion artifact changed")
+  promotion = _load(promotion_path)
+  if promotion.get("promotion_id") != launch.get("promotion_id"):
+    raise ValueError("T/P launch promotion id changed")
+  aggregate_path = Path(promotion["aggregate"])
+  if not aggregate_path.is_file() or _sha256(aggregate_path) != promotion.get(
+    "aggregate_sha256"
+  ):
+    raise ValueError("flat aggregate artifact changed")
+  aggregate = _load(aggregate_path)
+  sources = aggregate.get("source_summaries")
+  if not isinstance(sources, list):
+    raise ValueError("flat aggregate has no frozen source summaries")
+  by_seed = {}
+  for source in sources:
+    path = Path(source["path"])
+    if not path.is_file() or _sha256(path) != source.get("sha256"):
+      raise ValueError(f"flat source summary changed: {path}")
+    payload = _load(path)
+    seeds = {
+      int(row["policy_seed"])
+      for row in payload.get("evaluations", [])
+      if row.get("policy_seed") is not None
+    }
+    if len(seeds) != 1:
+      raise ValueError(f"flat source summary has ambiguous policy seed: {path}")
+    seed = seeds.pop()
+    if seed in by_seed:
+      raise ValueError(f"duplicate flat source summary for seed {seed}")
+    by_seed[seed] = {"path": str(path.resolve()), "sha256": source["sha256"]}
+  return by_seed
+
+
 def build(
   cfg: SpecialistManifestCfg,
 ) -> tuple[dict[str, Any], dict[tuple[str, int, int], dict]]:
   launch, jobs = _validate_launch(cfg)
   launch_hash = _sha256(cfg.launch_manifest)
+  flat_summaries = _flat_summary_sources(launch)
+  if set(flat_summaries) != set(cfg.expected_seeds):
+    raise ValueError("flat summary seeds differ from specialist seeds")
   payloads: dict[tuple[str, int, int], dict] = {}
   for job in jobs:
     phase = str(job["phase"])
@@ -120,6 +161,7 @@ def build(
         raise FileNotFoundError(checkpoint)
       run = {
         "name": f"{phase.lower()}_{job['arm']}_seed{seed}",
+        "arm": job["arm"],
         "phase": phase,
         "task": job["task"],
         "checkpoint": str(checkpoint.resolve()),
@@ -154,6 +196,8 @@ def build(
         "promotion_id": launch["promotion_id"],
         "protocol": launch["protocol"],
         "protocol_sha256": launch["protocol_sha256"],
+        "flat_summary": flat_summaries[seed]["path"],
+        "flat_summary_sha256": flat_summaries[seed]["sha256"],
         "evaluation_protocol": {
           "evaluation_seed": 20260910,
           "num_envs_per_stratum": 256,
@@ -188,6 +232,7 @@ def _manifest_identity(payload: dict[str, Any]) -> tuple[Any, ...]:
     payload.get("launch_plan_id"),
     payload.get("launch_manifest_sha256"),
     payload.get("protocol_sha256"),
+    payload.get("flat_summary_sha256"),
     run.get("checkpoint"),
     run.get("checkpoint_sha256"),
     run.get("source_checkpoint_sha256"),
