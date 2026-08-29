@@ -223,6 +223,23 @@ def _materialize_runtime_registry(
       "manifest_sha256": manifest_sha256,
     }
   )
+  promotion_bound_methods = {
+    "task_only_ppo",
+    "original_product_smp",
+    "proposed_smp_recovery",
+  }
+  for method in registry.get("methods", ()):
+    blockers = [
+      blocker
+      for blocker in method.get("blocked_on", ())
+      if blocker != "matched_reset_bank"
+      and not (
+        blocker == "confirmed_flat_arm" and method.get("id") in promotion_bound_methods
+      )
+    ]
+    method["blocked_on"] = blockers
+    if not blockers and method.get("implementation"):
+      method["status"] = "ready_for_training"
   if output_path.exists():
     if _load_json(output_path) != registry:
       raise ValueError("existing runtime baseline registry conflicts with reset bank")

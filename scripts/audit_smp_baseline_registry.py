@@ -17,6 +17,13 @@ EXPECTED_METHODS = {
   "firm_r_deployable",
   "recovery_tracking",
 }
+EXPECTED_METHOD_PRIOR_CONTRACT = {
+  "task_only_ppo": (False, False),
+  "original_product_smp": (True, True),
+  "proposed_smp_recovery": (True, True),
+  "firm_r_deployable": (False, False),
+  "recovery_tracking": (False, False),
+}
 EXPECTED_FIELDS = (
   "base_angular_velocity",
   "projected_gravity",
@@ -193,6 +200,15 @@ def audit(registry: dict[str, Any], registry_path: Path) -> dict[str, Any]:
     _require(
       method.get("uses_runtime_motion_prior") is False,
       f"{method_id} uses runtime prior",
+    )
+    expected_objective, expected_termination = EXPECTED_METHOD_PRIOR_CONTRACT[method_id]
+    _require(
+      method.get("uses_motion_prior_objective") is expected_objective,
+      f"{method_id} motion-prior objective contract drifted",
+    )
+    _require(
+      method.get("uses_motion_prior_termination") is expected_termination,
+      f"{method_id} motion-prior termination contract drifted",
     )
     _require(
       method.get("actor_extra_inputs") == [], f"{method_id} exposes extra actor inputs"

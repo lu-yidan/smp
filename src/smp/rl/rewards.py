@@ -100,3 +100,18 @@ def task_smp_product(
   env._smp_score = smp  # type: ignore[attr-defined]
   env._smp_product_score = product  # type: ignore[attr-defined]
   return product
+
+
+def task_only_reward(
+  env: ManagerBasedRlEnv,
+  task_terms: tuple[TaskTerm, ...],
+) -> torch.Tensor:
+  """Evaluate the recovery task without constructing or querying an SMP.
+
+  This is the Tier-A Task-only PPO objective.  It deliberately keeps the
+  selected arm's task terms and reward scale while removing every motion-prior
+  objective, termination, startup event, and runtime dependency.
+  """
+  task = sum(weight * func(env, **params) for func, weight, params in task_terms)
+  env._smp_task_score = task  # type: ignore[attr-defined]
+  return task

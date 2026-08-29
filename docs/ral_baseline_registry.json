@@ -50,13 +50,7 @@
     "seed": 20260829,
     "num_envs_per_mode": 512,
     "num_steps": 500,
-    "modes": [
-      "native_gsi",
-      "prone",
-      "supine",
-      "left_side",
-      "right_side"
-    ],
+    "modes": ["native_gsi", "prone", "supine", "left_side", "right_side"],
     "success_definition": "stable_standing_hold_25_steps"
   },
   "methods": [
@@ -69,8 +63,12 @@
       "uses_motion_prior_termination": false,
       "uses_runtime_motion_prior": false,
       "actor_extra_inputs": [],
-      "implementation": {},
-      "blocked_on": ["matched_reset_bank", "task_registration"],
+      "implementation": {
+        "environment_factory": "src/smp/rl/tasks/getup/ral_baseline_env_cfg.py",
+        "task_registration": "src/smp/rl/tasks/getup/__init__.py",
+        "task_only_objective": "src/smp/rl/rewards.py"
+      },
+      "blocked_on": ["matched_reset_bank"],
       "result_path": null
     },
     {
@@ -82,8 +80,11 @@
       "uses_motion_prior_termination": true,
       "uses_runtime_motion_prior": false,
       "actor_extra_inputs": [],
-      "implementation": {},
-      "blocked_on": ["confirmed_flat_arm", "matched_reset_bank", "task_registration"],
+      "implementation": {
+        "environment_factory": "src/smp/rl/tasks/getup/ral_baseline_env_cfg.py",
+        "task_registration": "src/smp/rl/tasks/getup/__init__.py"
+      },
+      "blocked_on": ["confirmed_flat_arm", "matched_reset_bank"],
       "result_path": null
     },
     {
@@ -95,8 +96,11 @@
       "uses_motion_prior_termination": true,
       "uses_runtime_motion_prior": false,
       "actor_extra_inputs": [],
-      "implementation": {},
-      "blocked_on": ["confirmed_flat_arm"],
+      "implementation": {
+        "environment_factory": "src/smp/rl/tasks/getup/ral_baseline_env_cfg.py",
+        "task_registration": "src/smp/rl/tasks/getup/__init__.py"
+      },
+      "blocked_on": ["confirmed_flat_arm", "matched_reset_bank"],
       "result_path": null
     },
     {

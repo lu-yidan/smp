@@ -54,6 +54,10 @@ from smp.rl.tasks.getup.plate_terrain_v3873_scratch_stage_bridge_env_cfg import 
 from smp.rl.tasks.getup.plate_terrain_v3874_gsi_milestone_env_cfg import (
   g1_getup_plate_terrain_v3874_gsi_milestone_deploy_smp_env_cfg,
 )
+from smp.rl.tasks.getup.ral_baseline_env_cfg import (
+  BASELINE_METHOD_TASK_NAMES,
+  g1_ral_baseline_env_cfg,
+)
 from smp.rl.tasks.getup.ral_progression_env_cfg import (
   SCRATCH_ARM_BUILDERS,
   g1_scratch_ral_plate_env_cfg,
@@ -238,6 +242,16 @@ for _arm in SCRATCH_ARM_BUILDERS:
     rl_cfg=_scratch_causal_runner(f"smp_ral_p_{_arm}_g1"),
     runner_cls=SmpCurriculumWarmStartRunner,
   )
+
+for _method, _method_task_name in BASELINE_METHOD_TASK_NAMES.items():
+  for _arm in SCRATCH_ARM_BUILDERS:
+    _arm_upper = _arm.upper()
+    register_mjlab_task(
+      task_id=f"Smp-Getup-RAL-B-{_method_task_name}-{_arm_upper}-G1",
+      env_cfg=g1_ral_baseline_env_cfg(_method, _arm, play=False),
+      play_env_cfg=g1_ral_baseline_env_cfg(_method, _arm, play=True),
+      rl_cfg=_scratch_causal_runner(f"smp_ral_b_{_method}_{_arm}_g1"),
+    )
 
 _robust_getup_rl = unitree_g1_smp_ppo_runner_cfg()
 _robust_getup_rl.experiment_name = "smp_getup_robust_g1"

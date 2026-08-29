@@ -34,6 +34,14 @@ class BaselineRegistryTest(unittest.TestCase):
     budget["training_budget"]["max_updates"] = 40000
     with self.assertRaisesRegex(ValueError, "update budget"):
       audit(budget, self.registry_path)
+    objective = copy.deepcopy(self.registry)
+    objective["methods"][0]["uses_motion_prior_objective"] = True
+    with self.assertRaisesRegex(ValueError, "objective contract"):
+      audit(objective, self.registry_path)
+    termination = copy.deepcopy(self.registry)
+    termination["methods"][1]["uses_motion_prior_termination"] = False
+    with self.assertRaisesRegex(ValueError, "termination contract"):
+      audit(termination, self.registry_path)
 
   def test_ready_method_requires_hash_locked_bank_and_implementation(self) -> None:
     ready = copy.deepcopy(self.registry)

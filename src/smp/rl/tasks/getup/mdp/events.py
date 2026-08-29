@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import math
 from pathlib import Path
 
 import mujoco
@@ -107,6 +108,7 @@ def init_matched_reset_bank(
   bank_sha256: str = "",
   expected_num_states: int = 262144,
   include_smp_window: bool = True,
+  sampling_seed: int | None = None,
 ) -> None:
   """Load one SHA-locked Tier-A reset bank onto the environment device."""
   del env_ids
@@ -118,7 +120,7 @@ def init_matched_reset_bank(
   payload = torch.load(path, map_location="cpu", weights_only=True)
   if not isinstance(payload, dict):
     raise ValueError("matched reset bank must contain a tensor dictionary")
-  _validate_matched_reset_bank_payload(payload, expected_num_states)
+  num_states = _validate_matched_reset_bank_payload(payload, expected_num_states)
   selected = dict(payload)
   if not include_smp_window:
     selected.pop("smp_window")
@@ -129,6 +131,22 @@ def init_matched_reset_bank(
   }
   env._matched_reset_bank_sha256 = bank_sha256  # type: ignore[attr-defined]
   env._matched_reset_bank_has_window = include_smp_window  # type: ignore[attr-defined]
+  seed = int(env.cfg.seed if sampling_seed is None else sampling_seed)
+  generator = torch.Generator(device="cpu")
+  generator.manual_seed(seed)
+  env._matched_reset_bank_permutation = torch.randperm(  # type: ignore[attr-defined]
+    num_states, generator=generator, device="cpu"
+  ).to(env.device)
+  stride = 1 if num_states == 1 else 2 * (seed % (num_states // 2)) + 1
+  while math.gcd(stride, num_states) != 1:
+    stride = (stride + 1) % num_states
+    if stride == 0:
+      stride = 1
+  env._matched_reset_bank_stride = stride  # type: ignore[attr-defined]
+  env._matched_reset_bank_cursor = torch.zeros(  # type: ignore[attr-defined]
+    env.num_envs, dtype=torch.long, device=env.device
+  )
+  env._matched_reset_bank_sampling_seed = seed  # type: ignore[attr-defined]
 
 
 @torch.no_grad()
@@ -144,7 +162,14 @@ def matched_reset_bank_reset(
   if not isinstance(bank, dict):
     raise RuntimeError("matched reset bank was not initialized")
   num_states = int(bank["root_state"].shape[0])
-  indexes = torch.randint(0, num_states, (env_ids.numel(),), device=env.device)
+  permutation = getattr(env, "_matched_reset_bank_permutation", None)
+  cursors = getattr(env, "_matched_reset_bank_cursor", None)
+  stride = getattr(env, "_matched_reset_bank_stride", None)
+  if permutation is None or cursors is None or stride is None:
+    raise RuntimeError("matched reset-bank sampler was not initialized")
+  positions = (env_ids + cursors[env_ids] * int(stride)) % num_states
+  indexes = permutation[positions]
+  cursors[env_ids] += 1
   root_state = bank["root_state"][indexes].clone()
   joint_pos = bank["joint_pos"][indexes]
   joint_vel = bank["joint_vel"][indexes]

@@ -122,6 +122,22 @@ motion prior in its objective, termination, policy input, or deployment. If a
 method cannot consume this reset interface, it is reported as an unmatched
 native reference rather than being placed in the main Tier-A ranking.
 
+The native Task-only, Original-product SMP, and Proposed SMP tasks are
+preregistered for every candidate arm as
+`Smp-Getup-RAL-B-{TaskOnly,OriginalSMP,ProposedSMP}-A{0..7}-G1`. The launch
+process must fill the bank path and SHA placeholders from the immutable runtime
+registry; an empty placeholder is intentionally non-runnable. Task-only removes
+the SMP startup, objective, metrics, and low-prior termination. Original-product
+restores the exact product and global low-SMP termination while retaining the
+selected prior. Proposed preserves the selected arm's reset-aware termination
+and procedural bridge. All three replace GSI/procedural reset events with the
+same bank loader, and only SMP methods consume the matched 10-frame history.
+Reset sampling uses a dedicated policy-seed permutation and per-environment
+cursor, not the global Torch RNG consumed by SMP inference. Thus the same
+environment's nth reset is identical across native methods even when their
+termination times differ. Common friction, encoder-bias, and centre-of-mass
+randomization also runs before method-specific SMP initialization.
+
 The machine-readable preregistration is
 `docs/ral_baseline_registry.json`; `scripts/audit_smp_baseline_registry.py`
 must report `BASELINES_READY_FOR_TRAINING` before any Tier-A baseline launch.

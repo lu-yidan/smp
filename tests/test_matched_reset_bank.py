@@ -3,10 +3,12 @@ from __future__ import annotations
 import copy
 import hashlib
 import json
+import math
 import sys
 import tempfile
 import unittest
 from pathlib import Path
+from types import SimpleNamespace
 
 import torch
 
@@ -19,7 +21,10 @@ from generate_smp_matched_reset_bank import (
   _validate_reset_distribution,
   build_plan,
 )
-from smp.rl.tasks.getup.mdp.events import _validate_matched_reset_bank_payload
+from smp.rl.tasks.getup.mdp.events import (
+  _validate_matched_reset_bank_payload,
+  init_matched_reset_bank,
+)
 
 
 def _payload(num_states: int = 8) -> dict[str, torch.Tensor]:
@@ -61,6 +66,40 @@ class MatchedResetBankTest(unittest.TestCase):
     history["smp_window"][0, -1, 9] += 1.0
     with self.assertRaisesRegex(ValueError, "joint position disagree"):
       _validate_matched_reset_bank_payload(history)
+
+  def test_sampler_is_method_neutral_and_independent_of_global_rng(self) -> None:
+    with tempfile.TemporaryDirectory() as temporary:
+      path = Path(temporary) / "bank.pt"
+      torch.save(_payload(8), path)
+      digest = hashlib.sha256(path.read_bytes()).hexdigest()
+      permutations = []
+      for global_seed in (1, 999):
+        torch.manual_seed(global_seed)
+        env = SimpleNamespace(
+          cfg=SimpleNamespace(seed=20260901), device="cpu", num_envs=4
+        )
+        init_matched_reset_bank(
+          env,
+          bank_path=str(path),
+          bank_sha256=digest,
+          expected_num_states=8,
+          include_smp_window=False,
+        )
+        permutations.append(env._matched_reset_bank_permutation.clone())
+        self.assertEqual(env._matched_reset_bank_sampling_seed, 20260901)
+        self.assertEqual(env._matched_reset_bank_cursor.tolist(), [0, 0, 0, 0])
+        self.assertEqual(math.gcd(env._matched_reset_bank_stride, 8), 1)
+      self.assertTrue(torch.equal(*permutations))
+      other = SimpleNamespace(
+        cfg=SimpleNamespace(seed=20260902), device="cpu", num_envs=4
+      )
+      init_matched_reset_bank(
+        other,
+        bank_path=str(path),
+        bank_sha256=digest,
+        expected_num_states=8,
+        include_smp_window=False,
+      )
 
   def test_reset_distribution_must_match_frozen_mixture(self) -> None:
     reset_type = torch.tensor([0] * 800 + [1] * 50 + [2] * 50 + [3] * 50 + [4] * 50)
@@ -111,6 +150,40 @@ class MatchedResetBankTest(unittest.TestCase):
         _materialize_runtime_registry(
           template, output, bank, bank_hash, manifest, manifest_hash
         )
+
+  def test_bank_and_promotion_unlock_only_implemented_native_methods(self) -> None:
+    with tempfile.TemporaryDirectory() as temporary:
+      root = Path(temporary)
+      output = root / "runtime.json"
+      bank = root / "bank.pt"
+      manifest = root / "manifest.json"
+      bank.write_bytes(b"bank")
+      manifest.write_text("{}")
+      _materialize_runtime_registry(
+        self.repo_root / "docs/ral_baseline_registry.json",
+        output,
+        bank,
+        hashlib.sha256(bank.read_bytes()).hexdigest(),
+        manifest,
+        hashlib.sha256(manifest.read_bytes()).hexdigest(),
+      )
+      methods = {
+        method["id"]: method for method in json.loads(output.read_text())["methods"]
+      }
+      for method_id in (
+        "task_only_ppo",
+        "original_product_smp",
+        "proposed_smp_recovery",
+      ):
+        self.assertEqual(methods[method_id]["status"], "ready_for_training")
+        self.assertEqual(methods[method_id]["blocked_on"], [])
+      self.assertEqual(
+        methods["firm_r_deployable"]["blocked_on"], ["accepted_firm_adapter"]
+      )
+      self.assertEqual(
+        methods["recovery_tracking"]["blocked_on"],
+        ["accepted_tracking_adapter"],
+      )
 
   def test_plan_binds_promoted_arm_prior_and_source_hashes(self) -> None:
     with tempfile.TemporaryDirectory() as temporary:
