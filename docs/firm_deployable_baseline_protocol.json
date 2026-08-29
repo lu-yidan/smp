@@ -1,0 +1,95 @@
+{
+  "schema_version": 1,
+  "protocol_id": "firm-r-deployable-93d-v1",
+  "status": "FROZEN_BEFORE_DATA_COLLECTION",
+  "comparison_class": "external_reference",
+  "tier_a_eligible": false,
+  "eligibility_note": "FIRM-R is distilled from route-conditioned expert rollouts rather than the matched SMP reset bank. The 50-frame adapter also has more temporal information than the one-frame Tier-A contract. Report it separately and do not pool it with matched Tier-A methods.",
+  "expert": {
+    "task_id": "Firm-Keyframe-Deployable-G1",
+    "checkpoint_file": "logs/rsl_rl/firm_keyframe_deployable_g1_c003/2026-08-13_14-12-28_firm_keyframe_deployable_g1_c003/model_29999.pt",
+    "checkpoint_sha256": "258c5047e2ce4d689b0751931865131f04a9b916cf85987de0b16857abf49d21",
+    "motion_file": "datasets/firm/lafan/fallAndGetUp2_subject2_candidate_003_validated.npz",
+    "motion_sha256": "27657fe40642245b3c1d0362895c4f5a04988a6d59e05e7c0c29ab41b0f9fb1f",
+    "training_actor_dim": 123,
+    "deployable_state_dim": 93,
+    "training_only_channels": [
+      "29-D sparse-keyframe error",
+      "1-D motion phase"
+    ],
+    "deployable_components": [
+      "base angular velocity",
+      "projected gravity",
+      "joint position",
+      "joint velocity",
+      "previous action"
+    ]
+  },
+  "replicate_seeds": [
+    20260901,
+    20260902,
+    20260903
+  ],
+  "collection": {
+    "num_start_frames": 25,
+    "episodes_per_frame": 32,
+    "max_steps": 500,
+    "standing_hold_steps": 25,
+    "observation_corruption": true,
+    "physical_disturbances": true,
+    "disturbance_interval_steps": [50, 150],
+    "disturbance_duration_steps": [5, 10],
+    "disturbance_recovery_steps": 40,
+    "disturbance_force_range": [20.0, 80.0],
+    "disturbance_torque_range": [2.0, 10.0],
+    "minimum_success_fraction": 0.25,
+    "shard_size": 50000
+  },
+  "action_training": {
+    "horizon": 12,
+    "successful_only": true,
+    "train_fraction": 0.9,
+    "batch_size": 512,
+    "num_epochs": 100,
+    "learning_rate": 0.0003,
+    "weight_decay": 0.0001,
+    "num_timesteps": 50,
+    "save_interval": 50
+  },
+  "adapter_variants": [
+    {
+      "name": "firm_r_1f",
+      "history_steps": 1,
+      "reporting_class": "one_frame_input_ablation"
+    },
+    {
+      "name": "firm_r_50f",
+      "history_steps": 50,
+      "reporting_class": "method_faithful_causal_external_reference"
+    }
+  ],
+  "adapter_training": {
+    "batch_size": 1024,
+    "num_epochs": 20,
+    "learning_rate": 0.0003,
+    "weight_decay": 0.0001,
+    "train_fraction": 0.9,
+    "balance_goal_sampling": true
+  },
+  "launch": {
+    "upstream_state_file": "/mnt/workspace/user/luyidan/smp-v38-unified/run_control/automation_state/ral_pipeline_latest.json",
+    "upstream_terminal_statuses": [
+      "NATIVE_BASELINE_EVIDENCE_COMPLETE"
+    ],
+    "require_zero_gpu_processes": true,
+    "collection_gpu_ids": [0, 1, 2],
+    "action_gpu_ids": [0, 1, 2],
+    "adapter_gpu_ids": [0, 1, 2, 3, 4, 5]
+  },
+  "outputs": {
+    "control_dir": "run_control/firm_r_deployable_93d_v1",
+    "rollout_root": "/root/workspace/smp-firm-artifacts/firm_r_deployable_93d_v1/rollouts",
+    "action_root": "/root/workspace/smp-firm-artifacts/firm_r_deployable_93d_v1/action",
+    "adapter_root": "/root/workspace/smp-firm-artifacts/firm_r_deployable_93d_v1/adapter"
+  }
+}

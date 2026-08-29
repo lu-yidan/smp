@@ -1108,6 +1108,7 @@ uv run scripts/train.py Firm-Keyframe-Deployable-G1 \
 ```
 
 This observation repair alone is not claimed to solve arbitrary mouse-drag
+recovery; it only removes a deployment-observation defect.
 
 ### Gravity-aware Stage-0 training record
 
@@ -1127,3 +1128,45 @@ The first deployable-observation expert was launched on 2026-08-13:
 | captured stdout | `run_control/firm_keyframe_deployable_g1_c003.log` |
 
 At iteration 5 the run sustained about 170k steps/s with zero unsafe-velocity
+terminations. It subsequently completed all 30,000 iterations and synced the
+final checkpoint to W&B.
+
+### Frozen 93-D FIRM-R external-reference protocol
+
+The completed gravity-aware expert is now frozen at `model_29999.pt` with
+SHA256 `258c5047e2ce4d689b0751931865131f04a9b916cf85987de0b16857abf49d21`.
+It is only a data-generation teacher: its 29-D keyframe error and phase are not
+available to the deployed policy. Fresh action and adapter checkpoints must be
+trained from the 93-D state prefix. All earlier action diffusion and adapter
+checkpoints are 90-D historical diagnostics and are ineligible here.
+
+The preregistered configuration is stored in
+`docs/firm_deployable_baseline_protocol.json`. Three independent replicate
+pipelines use seeds 20260901--20260903. Each collects 25 start frames with 32
+episodes per frame and registered physical disturbances, then trains one
+action-diffusion model. Each action model receives two adapter ablations:
+
+- `firm_r_1f`: one 93-D frame, for the closest input-matched diagnostic;
+- `firm_r_50f`: 50 causal 93-D frames, matching this reproduction's intended
+  temporal adapter while remaining hardware-observable.
+
+Neither result belongs in the matched Tier-A table yet. The route-conditioned
+teacher data do not use the matched SMP reset bank, and the 50-frame variant
+has more temporal information than the frozen one-frame Tier-A contract. These
+models must be reported as external references until a held-out matched-state
+evaluation adapter is implemented. This classification is fixed before data
+collection and must not be changed after results are observed.
+
+The fail-closed controller validates the expert and motion checksums, rejects
+90-D rollout manifests, and refuses to use GPUs until the matched SMP native
+baseline pipeline is terminal and `nvidia-smi` reports no compute processes:
+
+```bash
+.venv/bin/python scripts/firm/advance_deployable_baseline.py \
+  --launch-when-ready
+```
+
+It writes state and worker logs under the ignored
+`run_control/firm_r_deployable_93d_v1/` directory. A dead worker, partial output,
+checksum mismatch, input-dimension mismatch, or post-registration protocol
+edit produces an alert and is never silently restarted.

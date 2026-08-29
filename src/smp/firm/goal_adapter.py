@@ -107,18 +107,14 @@ class FirmGoalAdapterDataset(Dataset[dict[str, torch.Tensor]]):
     count = min(max(1, round(len(episodes) * train_fraction)), len(episodes) - 1)
     train_episodes = episodes[:count]
     train = np.flatnonzero(np.isin(self.sample_episode_groups, train_episodes))
-    validation = np.flatnonzero(
-      ~np.isin(self.sample_episode_groups, train_episodes)
-    )
+    validation = np.flatnonzero(~np.isin(self.sample_episode_groups, train_episodes))
     return train, validation
 
   def codebook_goals(self) -> torch.Tensor:
     """Return unique raw joint-position goals across all selected episodes."""
     goals = []
     for source_index, episode_indices, position in self.records:
-      goals.append(
-        self.sources[source_index].arrays["goal"][episode_indices[position]]
-      )
+      goals.append(self.sources[source_index].arrays["goal"][episode_indices[position]])
     unique = np.unique(np.asarray(goals, dtype=np.float32), axis=0)
     return torch.from_numpy(unique)
 
@@ -140,14 +136,24 @@ class FirmGoalAdapter(nn.Module):
     self.history_steps = history_steps
     self.latent_dim = latent_dim
     self.channels = channels
-    self.temporal = nn.Sequential(
-      nn.Conv1d(observation_dim, channels[0], kernel_size=8, stride=4),
-      nn.SiLU(),
-      nn.Conv1d(channels[0], channels[1], kernel_size=5, stride=1),
-      nn.SiLU(),
-      nn.Conv1d(channels[1], channels[2], kernel_size=5, stride=1),
-      nn.SiLU(),
-    )
+    if history_steps >= 40:
+      self.temporal = nn.Sequential(
+        nn.Conv1d(observation_dim, channels[0], kernel_size=8, stride=4),
+        nn.SiLU(),
+        nn.Conv1d(channels[0], channels[1], kernel_size=5, stride=1),
+        nn.SiLU(),
+        nn.Conv1d(channels[1], channels[2], kernel_size=5, stride=1),
+        nn.SiLU(),
+      )
+    else:
+      self.temporal = nn.Sequential(
+        nn.Conv1d(observation_dim, channels[0], kernel_size=1),
+        nn.SiLU(),
+        nn.Conv1d(channels[0], channels[1], kernel_size=1),
+        nn.SiLU(),
+        nn.Conv1d(channels[1], channels[2], kernel_size=1),
+        nn.SiLU(),
+      )
     with torch.no_grad():
       dummy = torch.zeros(1, observation_dim, history_steps)
       flattened_dim = int(self.temporal(dummy).numel())
@@ -202,6 +208,7 @@ def retrieve_nearest_route_goal(
   selected = (nearest + lookahead).clamp(max=len(route_goals) - 1)
   scores = -distances.gather(1, selected[:, None]).squeeze(1)
   return route_goals[selected], selected, scores
+
 
 def load_goal_adapter_checkpoint(
   checkpoint_file: str | Path,

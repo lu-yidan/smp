@@ -38,6 +38,8 @@ class TrainGoalAdapterConfig:
   log_interval: int = 1
   output_root: str = "logs/firm_goal_adapter"
   run_name: str = "firm_goal_adapter"
+  output_dir: str | None = None
+  """Exact output directory for registered runs; must not already exist."""
   use_wandb: bool = True
   wandb_project: str = "smp"
   device: str = "cuda"
@@ -80,9 +82,9 @@ def _evaluate(
       history = batch["observation_history"].to(device)
       goal = batch["goal"].to(device)
       goal_index = batch["goal_index"].to(device)
-      history = (
-        history - statistics["observation_mean"]
-      ) / statistics["observation_std"]
+      history = (history - statistics["observation_mean"]) / statistics[
+        "observation_std"
+      ]
       target = _target_latent(
         action_model,
         goal,
@@ -114,9 +116,11 @@ def train(cfg: TrainGoalAdapterConfig) -> Path:
     history_steps=cfg.history_steps,
     successful_only=cfg.successful_only,
   )
-  train_ids, validation_ids = dataset.split_sample_indices(
-    cfg.train_fraction, cfg.seed
-  )
+  observation_dims = {source.observation_dim for source in dataset.sources}
+  if len(observation_dims) != 1:
+    raise ValueError(f"adapter datasets have mixed layouts: {observation_dims}")
+  observation_dim = observation_dims.pop()
+  train_ids, validation_ids = dataset.split_sample_indices(cfg.train_fraction, cfg.seed)
   generator = torch.Generator().manual_seed(cfg.seed)
   train_sampler = None
   if cfg.balance_goal_sampling:
@@ -153,11 +157,14 @@ def train(cfg: TrainGoalAdapterConfig) -> Path:
     device,
     use_ema=True,
   )
+  if action_model.observation_dim != observation_dim:
+    raise ValueError(
+      "adapter dataset and action checkpoint layouts differ: "
+      f"{observation_dim} != {action_model.observation_dim}"
+    )
   action_model.requires_grad_(False)
   with torch.no_grad():
-    latent_dim = action_model.goal_encoder(
-      torch.zeros(1, 29, device=device)
-    ).shape[-1]
+    latent_dim = action_model.goal_encoder(torch.zeros(1, 29, device=device)).shape[-1]
   codebook_goals = dataset.codebook_goals().to(device)
   with torch.no_grad():
     codebook_features = _target_latent(
@@ -167,6 +174,7 @@ def train(cfg: TrainGoalAdapterConfig) -> Path:
       statistics["joint_std"],
     )
   adapter = FirmGoalAdapter(
+    observation_dim=observation_dim,
     history_steps=cfg.history_steps,
     latent_dim=int(latent_dim),
     channels=cfg.channels,
@@ -177,8 +185,13 @@ def train(cfg: TrainGoalAdapterConfig) -> Path:
     weight_decay=cfg.weight_decay,
   )
 
-  timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-  output_dir = Path(cfg.output_root) / cfg.run_name / timestamp
+  output_dir = (
+    Path(cfg.output_dir)
+    if cfg.output_dir is not None
+    else Path(cfg.output_root)
+    / cfg.run_name
+    / datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+  )
   output_dir.mkdir(parents=True, exist_ok=False)
   wandb_run = None
   if cfg.use_wandb:
@@ -202,9 +215,9 @@ def train(cfg: TrainGoalAdapterConfig) -> Path:
     for batch in train_loader:
       history = batch["observation_history"].to(device, non_blocking=True)
       goal = batch["goal"].to(device, non_blocking=True)
-      history = (
-        history - statistics["observation_mean"]
-      ) / statistics["observation_std"]
+      history = (history - statistics["observation_mean"]) / statistics[
+        "observation_std"
+      ]
       with torch.no_grad():
         target = _target_latent(
           action_model,

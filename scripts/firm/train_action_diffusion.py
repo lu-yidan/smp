@@ -66,6 +66,8 @@ class TrainActionDiffusionConfig:
   save_interval: int = 50
   log_dir: str = "logs/firm_action_diffusion"
   run_name: str = "firm_action_diffusion_c003_pilot"
+  output_dir: str | None = None
+  """Exact output directory for registered runs; must not already exist."""
   use_wandb: bool = True
   wandb_project: str = "smp"
 
@@ -341,9 +343,11 @@ def train(cfg: TrainActionDiffusionConfig) -> Path:
   print(f"[INFO] conditional action denoiser parameters={parameter_count:,}")
 
   run_dir = (
-    Path(cfg.log_dir) / cfg.run_name / datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    Path(cfg.output_dir)
+    if cfg.output_dir is not None
+    else Path(cfg.log_dir) / cfg.run_name / datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
   )
-  run_dir.mkdir(parents=True, exist_ok=True)
+  run_dir.mkdir(parents=True, exist_ok=False)
 
   wandb_run = None
   if cfg.use_wandb:
