@@ -153,9 +153,7 @@ def _ensure_manifests(cfg: PipelineCfg) -> tuple[list[dict[str, Any]], list[int]
   return manifests, pending
 
 
-def _analysis_complete(
-  cfg: PipelineCfg, output_dir: Path, manifest: Path
-) -> bool:
+def _analysis_complete(cfg: PipelineCfg, output_dir: Path, manifest: Path) -> bool:
   required = ("_COMPLETE.json", "summary.json", "analysis.json", "analysis.md")
   if not all((output_dir / name).is_file() for name in required):
     return False
