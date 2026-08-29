@@ -105,6 +105,11 @@ def _sha256(path: Path) -> str:
   return digest.hexdigest()
 
 
+def _is_cuda_device(device: str | torch.device) -> bool:
+  """Handle mjlab versions that expose the environment device as a string."""
+  return torch.device(device).type == "cuda"
+
+
 def _configure_matched_eval_bank(env_cfg, cfg: EvalCfg) -> dict | None:
   """Bind one held-out bank to a native Tier-A task, or reject ambiguity."""
   is_native_baseline = "init_matched_reset_bank" in env_cfg.events
@@ -453,11 +458,11 @@ def main(cfg: EvalCfg) -> None:
 
   for step in range(cfg.steps):
     with torch.inference_mode():
-      if raw_env.device.type == "cuda":
+      if _is_cuda_device(raw_env.device):
         torch.cuda.synchronize(raw_env.device)
       inference_start = time.perf_counter()
       actions = policy(obs)
-      if raw_env.device.type == "cuda":
+      if _is_cuda_device(raw_env.device):
         torch.cuda.synchronize(raw_env.device)
       policy_inference_wall_s += time.perf_counter() - inference_start
       policy_inference_steps += 1

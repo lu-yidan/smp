@@ -37,6 +37,11 @@ def _env_cfg():
 
 
 class SpecialistStratumConfigTest(unittest.TestCase):
+  def test_accepts_string_and_torch_cuda_devices(self) -> None:
+    self.assertTrue(evaluator._is_cuda_device("cuda:0"))
+    self.assertTrue(evaluator._is_cuda_device(evaluator.torch.device("cuda:1")))
+    self.assertFalse(evaluator._is_cuda_device("cpu"))
+
   def test_forces_exact_terrain_level_pose_and_edge_cohort(self) -> None:
     env_cfg = _env_cfg()
     cfg = evaluator.EvalCfg(
