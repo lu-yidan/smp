@@ -38,8 +38,12 @@
     "generation_seed": 20260920,
     "source": "selected_flat_arm_exact_gsi_procedural_mixture",
     "actor_exposes_reset_family": false,
+    "state_fields": ["root_state", "joint_pos", "joint_vel", "reset_type"],
+    "smp_history": {"window_size": 10, "feature_dim": 59},
     "result_path": null,
-    "sha256": null
+    "sha256": null,
+    "manifest_path": null,
+    "manifest_sha256": null
   },
   "evaluation": {
     "schema_version": 2,

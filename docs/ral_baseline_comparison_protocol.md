@@ -104,11 +104,18 @@ Tier-A training, generate one immutable reset-state bank from the selected
 flat arm's exact GSI/procedural mixture. The frozen contract is:
 
 - 262,144 states, generation seed 20260920, with SHA-256 and source-prior hash;
-- root pose, root velocity, joint position, joint velocity, and reset family;
+- root pose, root velocity, joint position, joint velocity, reset family, and
+  the exact 10-frame, 59D SMP history used at that state;
 - identical bank and sampling weights for every Tier-A method, with only the
   per-policy-seed permutation differing;
 - reset family is logged for analysis but never exposed to the actor;
 - held-out frozen evaluation states are disjoint from this training bank.
+
+The bank is an input artifact, not a rollout result. Its manifest must bind the
+selected three-seed flat promotion, source-prior hash, generator code commit,
+state/history tensor shapes, reset-family counts, bank hash, and frozen
+registry hash. A current-state-only bank is invalid because it would give SMP
+methods a different history from the state that Task-only PPO receives.
 
 Task-only PPO therefore receives the same state distribution without using a
 motion prior in its objective, termination, policy input, or deployment. If a

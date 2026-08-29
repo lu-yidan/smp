@@ -112,11 +112,15 @@ def prime_sim_and_buffer(
   env: ManagerBasedRlEnv,
   env_ids: torch.Tensor,
   window: torch.Tensor,
+  placement_xy: torch.Tensor | None = None,
+  placement_yaw: torch.Tensor | None = None,
 ) -> None:
   """Common GSI tail: write the window's last frame to sim, fill the feature
   buffer.  The buffer is env-origin-RELATIVE (placement-invariant features) while
   the sim write adds each env's origin so robots spread across the grid.
-  ``joint_vel`` is finite-differenced from ``joint_pos`` (not in the window)."""
+  ``joint_vel`` is finite-differenced from ``joint_pos`` (not in the window).
+  Optional placement tensors restore a banked global XY/yaw while preserving
+  the same yaw-invariant motion window."""
   n, W, _ = window.shape
   E = NUM_EE
   parts = slice_features(window)
@@ -139,15 +143,22 @@ def prime_sim_and_buffer(
   default_root = robot.data.default_root_state[env_ids].clone()
   default_pos = default_root[:, 0:3]
   default_quat = default_root[:, 3:7]
-  yaw_T = yaw_quat(default_quat)
+  if placement_xy is not None and placement_xy.shape != (n, 2):
+    raise ValueError(f"placement_xy must have shape {(n, 2)}")
+  if placement_yaw is not None and placement_yaw.shape != (n, 4):
+    raise ValueError(f"placement_yaw must have shape {(n, 4)}")
+  yaw_T = yaw_quat(default_quat) if placement_yaw is None else placement_yaw
   yaw_T_W = yaw_T[:, None, :].expand(n, W, 4).reshape(-1, 4)
 
   local_xy = root_pos_local.clone()
   local_xy[..., 2] = 0.0
   world_offset_xy = quat_apply(yaw_T_W, local_xy.reshape(-1, 3)).reshape(n, W, 3)
   pelvis_pos_w = world_offset_xy.clone()
-  pelvis_pos_w[..., 0] += default_pos[:, None, 0]
-  pelvis_pos_w[..., 1] += default_pos[:, None, 1]
+  placement_origin_xy = default_pos[:, :2]
+  if placement_xy is not None:
+    placement_origin_xy = placement_origin_xy + placement_xy
+  pelvis_pos_w[..., 0] += placement_origin_xy[:, None, 0]
+  pelvis_pos_w[..., 1] += placement_origin_xy[:, None, 1]
   pelvis_pos_w[..., 2] = root_pos_local[..., 2]
 
   root_rot_local_quat = rot6d_to_quat(root_rot_6d.reshape(-1, 6)).reshape(n, W, 4)

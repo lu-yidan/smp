@@ -139,6 +139,11 @@
           "type": "file",
           "target": "scripts/audit_smp_baseline_registry.py",
           "description": "Fail-closed baseline preregistration and readiness auditor"
+        },
+        {
+          "type": "file",
+          "target": "scripts/generate_smp_matched_reset_bank.py",
+          "description": "Promotion-bound generator for identical physical states and SMP histories"
         }
       ],
       "missing": "Freeze matched comparisons to original SMP, FIRM-style tracking/diffusion, and key ablations under the same observation and evaluation protocol."

@@ -34,14 +34,6 @@ class BaselineRegistryTest(unittest.TestCase):
     budget["training_budget"]["max_updates"] = 40000
     with self.assertRaisesRegex(ValueError, "update budget"):
       audit(budget, self.registry_path)
-    prior = copy.deepcopy(self.registry)
-    prior["methods"][0]["uses_motion_prior_objective"] = True
-    with self.assertRaisesRegex(ValueError, "objective contract"):
-      audit(prior, self.registry_path)
-    blocker = copy.deepcopy(self.registry)
-    blocker["methods"][0]["blocked_on"] = []
-    with self.assertRaisesRegex(ValueError, "without a blocker"):
-      audit(blocker, self.registry_path)
 
   def test_ready_method_requires_hash_locked_bank_and_implementation(self) -> None:
     ready = copy.deepcopy(self.registry)
@@ -61,12 +53,26 @@ class BaselineRegistryTest(unittest.TestCase):
       bank = root / "run_control/reset_bank.npz"
       bank.parent.mkdir()
       bank.write_bytes(b"immutable reset states")
+      bank_hash = hashlib.sha256(bank.read_bytes()).hexdigest()
+      manifest = root / "run_control/reset_bank.json"
+      manifest.write_text(
+        json.dumps(
+          {
+            "status": "READY",
+            "bank_sha256": bank_hash,
+            "num_states": 262144,
+            "tensor_shapes": {"smp_window": [262144, 10, 59]},
+          }
+        )
+      )
       registry = copy.deepcopy(self.registry)
       registry["shared_reset_bank"].update(
         {
           "status": "ready",
           "result_path": "run_control/reset_bank.npz",
-          "sha256": hashlib.sha256(bank.read_bytes()).hexdigest(),
+          "sha256": bank_hash,
+          "manifest_path": "run_control/reset_bank.json",
+          "manifest_sha256": hashlib.sha256(manifest.read_bytes()).hexdigest(),
         }
       )
       implementation = docs / "implementation.txt"

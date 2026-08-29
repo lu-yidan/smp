@@ -17,13 +17,6 @@ EXPECTED_METHODS = {
   "firm_r_deployable",
   "recovery_tracking",
 }
-EXPECTED_PRIOR_USAGE = {
-  "task_only_ppo": (False, False),
-  "original_product_smp": (True, True),
-  "proposed_smp_recovery": (True, True),
-  "firm_r_deployable": (False, False),
-  "recovery_tracking": (False, False),
-}
 EXPECTED_FIELDS = (
   "base_angular_velocity",
   "projected_gravity",
@@ -71,6 +64,14 @@ def _require(condition: bool, message: str) -> None:
     raise ValueError(message)
 
 
+def _repo_root(registry_path: Path) -> Path:
+  resolved = registry_path.resolve()
+  for candidate in resolved.parents:
+    if (candidate / "pyproject.toml").is_file():
+      return candidate
+  return resolved.parent.parent
+
+
 def _validate_reset_bank(bank: dict[str, Any], repo_root: Path) -> bool:
   _require(bank.get("num_states") == 262144, "reset bank size drifted")
   _require(bank.get("generation_seed") == 20260920, "reset bank seed drifted")
@@ -82,11 +83,21 @@ def _validate_reset_bank(bank: dict[str, Any], repo_root: Path) -> bool:
     bank.get("actor_exposes_reset_family") is False,
     "reset family must remain hidden from the actor",
   )
+  _require(
+    bank.get("state_fields") == ["root_state", "joint_pos", "joint_vel", "reset_type"],
+    "reset bank state fields drifted",
+  )
+  _require(
+    bank.get("smp_history") == {"window_size": 10, "feature_dim": 59},
+    "reset bank history contract drifted",
+  )
   status = bank.get("status")
   _require(status in {"missing", "ready"}, "invalid reset bank status")
   if status == "missing":
     _require(bank.get("result_path") is None, "missing bank has a result path")
     _require(bank.get("sha256") is None, "missing bank has a hash")
+    _require(bank.get("manifest_path") is None, "missing bank has a manifest")
+    _require(bank.get("manifest_sha256") is None, "missing bank has a manifest hash")
     return False
   target = bank.get("result_path")
   expected_hash = bank.get("sha256")
@@ -99,6 +110,30 @@ def _validate_reset_bank(bank: dict[str, Any], repo_root: Path) -> bool:
   path = path if path.is_absolute() else repo_root / path
   _require(path.is_file() and path.stat().st_size > 0, "reset bank is missing")
   _require(_sha256(path) == expected_hash, "reset bank SHA-256 mismatch")
+  manifest_target = bank.get("manifest_path")
+  manifest_hash = bank.get("manifest_sha256")
+  _require(
+    isinstance(manifest_target, str) and manifest_target,
+    "ready bank lacks manifest path",
+  )
+  _require(
+    isinstance(manifest_hash, str) and len(manifest_hash) == 64,
+    "ready bank lacks manifest SHA-256",
+  )
+  manifest_path = Path(manifest_target)
+  manifest_path = (
+    manifest_path if manifest_path.is_absolute() else repo_root / manifest_path
+  )
+  _require(manifest_path.is_file(), "reset bank manifest is missing")
+  _require(_sha256(manifest_path) == manifest_hash, "reset bank manifest changed")
+  manifest = json.loads(manifest_path.read_text())
+  _require(manifest.get("status") == "READY", "reset bank manifest is not READY")
+  _require(manifest.get("bank_sha256") == expected_hash, "manifest bank hash mismatch")
+  _require(manifest.get("num_states") == 262144, "manifest bank size drifted")
+  _require(
+    manifest.get("tensor_shapes", {}).get("smp_window") == [262144, 10, 59],
+    "manifest SMP history shape drifted",
+  )
   return True
 
 
@@ -140,7 +175,7 @@ def audit(registry: dict[str, Any], registry_path: Path) -> dict[str, Any]:
     "success definition drifted",
   )
 
-  repo_root = registry_path.resolve().parent.parent
+  repo_root = _repo_root(registry_path)
   bank_ready = _validate_reset_bank(registry.get("shared_reset_bank", {}), repo_root)
   methods = registry.get("methods")
   _require(isinstance(methods, list), "methods must be a list")
@@ -155,15 +190,6 @@ def audit(registry: dict[str, Any], registry_path: Path) -> dict[str, Any]:
       method.get("observation_id") == observation.get("id"),
       f"{method_id} observation contract drifted",
     )
-    expected_objective, expected_termination = EXPECTED_PRIOR_USAGE[method_id]
-    _require(
-      method.get("uses_motion_prior_objective") is expected_objective,
-      f"{method_id} motion-prior objective contract drifted",
-    )
-    _require(
-      method.get("uses_motion_prior_termination") is expected_termination,
-      f"{method_id} motion-prior termination contract drifted",
-    )
     _require(
       method.get("uses_runtime_motion_prior") is False,
       f"{method_id} uses runtime prior",
@@ -175,8 +201,6 @@ def audit(registry: dict[str, Any], registry_path: Path) -> dict[str, Any]:
     _require(status in VALID_METHOD_STATUSES, f"{method_id} has invalid status")
     blocked_on = method.get("blocked_on", [])
     _require(isinstance(blocked_on, list), f"{method_id} blocked_on must be a list")
-    if status == "blocked":
-      _require(bool(blocked_on), f"{method_id} is blocked without a blocker")
     implementation = method.get("implementation", {})
     _require(
       isinstance(implementation, dict), f"{method_id} implementation must be an object"

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 from pathlib import Path
 
@@ -10,7 +11,7 @@ import numpy as np
 import torch
 from mjlab.envs import ManagerBasedRlEnv
 from mjlab.managers.event_manager import RecomputeLevel, requires_model_fields
-from mjlab.utils.lab_api.math import quat_from_euler_xyz, quat_mul
+from mjlab.utils.lab_api.math import quat_from_euler_xyz, quat_mul, yaw_quat
 
 from smp.rl.events import prime_sim_and_buffer
 
@@ -19,6 +20,8 @@ __all__ = [
   "failure_state_replay_reset",
   "ground_procedural_fall_on_terrain",
   "lafan_milestone_reset",
+  "init_matched_reset_bank",
+  "matched_reset_bank_reset",
   "mixed_fall_reset",
   "sample_terrain_edge_reset",
   "sample_weighted_terrain_levels",
@@ -36,6 +39,136 @@ __all__ = [
   "update_escape_phase",
   "update_recovery_stage",
 ]
+
+_MATCHED_BANK_SHAPES = {
+  "root_state": (13,),
+  "joint_pos": (29,),
+  "joint_vel": (29,),
+  "smp_window": (10, 59),
+}
+
+
+def _file_sha256(path: Path) -> str:
+  digest = hashlib.sha256()
+  with path.open("rb") as stream:
+    for chunk in iter(lambda: stream.read(1024 * 1024), b""):
+      digest.update(chunk)
+  return digest.hexdigest()
+
+
+def _validate_matched_reset_bank_payload(
+  payload: dict[str, torch.Tensor], expected_num_states: int | None = None
+) -> int:
+  """Validate frozen reset tensors without trusting serialization metadata."""
+  required = {*_MATCHED_BANK_SHAPES, "reset_type"}
+  if set(payload) != required:
+    raise ValueError(f"matched reset bank keys must be {sorted(required)}")
+  root = payload["root_state"]
+  if root.ndim != 2:
+    raise ValueError("root_state must be rank two")
+  num_states = int(root.shape[0])
+  if expected_num_states is not None and num_states != expected_num_states:
+    raise ValueError(
+      f"matched reset bank has {num_states} states, expected {expected_num_states}"
+    )
+  if num_states <= 0:
+    raise ValueError("matched reset bank is empty")
+  for name, trailing_shape in _MATCHED_BANK_SHAPES.items():
+    tensor = payload[name]
+    if tuple(tensor.shape) != (num_states, *trailing_shape):
+      raise ValueError(f"{name} has invalid shape {tuple(tensor.shape)}")
+    if not tensor.is_floating_point() or not torch.isfinite(tensor).all():
+      raise ValueError(f"{name} must contain finite floating-point values")
+  reset_type = payload["reset_type"]
+  if reset_type.shape != (num_states,) or reset_type.dtype not in (
+    torch.int8,
+    torch.int16,
+    torch.int32,
+    torch.int64,
+  ):
+    raise ValueError("reset_type must be one integer per state")
+  if torch.any((reset_type < 0) | (reset_type > 4)):
+    raise ValueError("reset_type must be in [0, 4]")
+  quat_norm = torch.linalg.vector_norm(root[:, 3:7], dim=-1)
+  if not torch.allclose(quat_norm, torch.ones_like(quat_norm), atol=1.0e-3):
+    raise ValueError("root quaternion is not normalized")
+  # Feature layout: root position 3, root rotation 6, then 29 joint positions.
+  bank_joint = payload["smp_window"][:, -1, 9:38]
+  if not torch.allclose(bank_joint, payload["joint_pos"], atol=1.0e-4):
+    raise ValueError("SMP window and banked joint position disagree")
+  return num_states
+
+
+@torch.no_grad()
+def init_matched_reset_bank(
+  env: ManagerBasedRlEnv,
+  env_ids: torch.Tensor | None = None,
+  bank_path: str = "",
+  bank_sha256: str = "",
+  expected_num_states: int = 262144,
+  include_smp_window: bool = True,
+) -> None:
+  """Load one SHA-locked Tier-A reset bank onto the environment device."""
+  del env_ids
+  path = Path(bank_path)
+  if not path.is_file():
+    raise FileNotFoundError(f"matched reset bank missing: {path}")
+  if len(bank_sha256) != 64 or _file_sha256(path) != bank_sha256:
+    raise ValueError("matched reset bank SHA-256 mismatch")
+  payload = torch.load(path, map_location="cpu", weights_only=True)
+  if not isinstance(payload, dict):
+    raise ValueError("matched reset bank must contain a tensor dictionary")
+  _validate_matched_reset_bank_payload(payload, expected_num_states)
+  selected = dict(payload)
+  if not include_smp_window:
+    selected.pop("smp_window")
+  elif not hasattr(env, "_smp_buffer"):
+    raise RuntimeError("SMP-window replay requires init_smp_state to run first")
+  env._matched_reset_bank = {  # type: ignore[attr-defined]
+    name: tensor.to(env.device) for name, tensor in selected.items()
+  }
+  env._matched_reset_bank_sha256 = bank_sha256  # type: ignore[attr-defined]
+  env._matched_reset_bank_has_window = include_smp_window  # type: ignore[attr-defined]
+
+
+@torch.no_grad()
+def matched_reset_bank_reset(
+  env: ManagerBasedRlEnv, env_ids: torch.Tensor | None = None
+) -> None:
+  """Replay identical current states, and SMP history when requested, for Tier A."""
+  if env_ids is None:
+    env_ids = torch.arange(env.num_envs, device=env.device)
+  if env_ids.numel() == 0:
+    return
+  bank = getattr(env, "_matched_reset_bank", None)
+  if not isinstance(bank, dict):
+    raise RuntimeError("matched reset bank was not initialized")
+  num_states = int(bank["root_state"].shape[0])
+  indexes = torch.randint(0, num_states, (env_ids.numel(),), device=env.device)
+  root_state = bank["root_state"][indexes].clone()
+  joint_pos = bank["joint_pos"][indexes]
+  joint_vel = bank["joint_vel"][indexes]
+  robot = env.scene["robot"]
+  origins = env.scene.env_origins[env_ids]
+  if getattr(env, "_matched_reset_bank_has_window", False):
+    default_xy = robot.data.default_root_state[env_ids, :2]
+    placement_xy = root_state[:, :2] - default_xy
+    prime_sim_and_buffer(
+      env,
+      env_ids,
+      bank["smp_window"][indexes],
+      placement_xy=placement_xy,
+      placement_yaw=yaw_quat(root_state[:, 3:7]),
+    )
+  root_state[:, :3] += origins
+  robot.write_root_state_to_sim(root_state, env_ids=env_ids)
+  robot.write_joint_state_to_sim(joint_pos, joint_vel, env_ids=env_ids)
+  reset_types = getattr(env, "_robust_reset_type", None)
+  if reset_types is None:
+    reset_types = torch.zeros(env.num_envs, dtype=torch.long, device=env.device)
+    env._robust_reset_type = reset_types  # type: ignore[attr-defined]
+  reset_types[env_ids] = bank["reset_type"][indexes].long()
+  env.sim.forward()
 
 
 def _ensure_escape_state(env: ManagerBasedRlEnv) -> None:
