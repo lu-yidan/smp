@@ -93,11 +93,30 @@ documentation and recorded with their source. The Unitree G1 developer guide
 is the primary operational reference:
 https://support.unitree.com/home/en/G1_developer/basic_motion_development
 
+Before checkpoint selection and before the first reported trial, copy
+`docs/ral_hardware_safety_limits_template.json` into the result directory,
+replace every placeholder, and commit the completed file. Its `robot_id` must
+match the ledger, its source configuration or document must be bound by
+SHA-256, and all 29 joints must have positive finite velocity, measured-torque,
+and command-torque-estimate limits. The IMU angular-speed, action first-
+difference, and action second-difference thresholds must also be frozen. Pilot
+trials may inform the action-smoothness thresholds, but the pilot block and the
+rule used to choose them must be disclosed and must not overlap the final 80
+trials.
+
+The analyzer reads each schema-2 binary log and recomputes the 29 per-joint
+velocity and torque peaks plus the scalar IMU/action metrics. A ledger value
+that does not match the raw log is rejected. A threshold exceedance is retained
+as evidence and yields `COMPLETE_WITH_SAFETY_LIMIT_EXCEEDANCE`, never silently
+discarded or converted into an invalid trial. Only `safety_gate.pass=true` can
+support the C09 safety claim.
+
 Analyze the completed ledger with:
 
 ```bash
 uv run scripts/analyze_smp_hardware_trials.py \
   --trials results/real_g1_flat_core/trials.csv \
+  --safety-limits results/real_g1_flat_core/safety_limits.json \
   --output-json results/real_g1_flat_core/analysis.json
 ```
 

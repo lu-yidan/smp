@@ -179,9 +179,19 @@
           "type": "file",
           "target": "docs/ral_hardware_recovery_protocol.md",
           "description": "Preregistered hardware safety metrics, stopping rules, and reporting protocol"
+        },
+        {
+          "type": "file",
+          "target": "docs/ral_hardware_safety_limits_template.json",
+          "description": "Per-joint hardware safety-limit manifest that must be populated and frozen before final trials"
+        },
+        {
+          "type": "file",
+          "target": "scripts/analyze_smp_hardware_trials.py",
+          "description": "Raw schema-2 log recomputation and fail-visible per-joint safety-limit analysis"
         }
       ],
-      "missing": "Define hardware-safe thresholds and report distributions for all promoted policies."
+      "missing": "Populate and freeze sourced hardware-safe thresholds before trials, then report distributions for all promoted policies."
     },
     {
       "id": "C10",
