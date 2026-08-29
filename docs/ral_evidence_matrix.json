@@ -214,7 +214,7 @@
         {
           "type": "file",
           "target": "docs/ral_hardware_trial_template.csv",
-          "description": "Per-trial provenance, outcome, safety, and failure-taxonomy schema"
+          "description": "Per-trial provenance, raw-artifact SHA, outcome, safety, and failure-taxonomy schema"
         },
         {
           "type": "file",
@@ -224,7 +224,7 @@
         {
           "type": "file",
           "target": "scripts/analyze_smp_hardware_trials.py",
-          "description": "Strict real-G1 provenance, outcome, confidence-interval, safety, and failure analyzer"
+          "description": "Strict real-G1 provenance, raw artifact integrity, outcome, confidence-interval, safety, and failure analyzer"
         }
       ],
       "missing": "Run a preregistered multi-trial protocol with success, recovery time, safety peaks, and failure taxonomy."

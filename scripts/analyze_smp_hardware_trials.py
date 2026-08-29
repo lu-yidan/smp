@@ -63,8 +63,11 @@ _REQUIRED_FIELDS = {
   "recovery_time_s",
   "failure_class",
   "log_bin_path",
+  "log_bin_sha256",
   "log_json_path",
+  "log_json_sha256",
   "video_uri",
+  "video_sha256",
   "operator_id",
   "policy_start_time_utc",
   "initial_pose",
@@ -573,8 +576,17 @@ def _load_rows(
         raise ValueError(f"{trial_id}: invalid or missing failure_class")
     elif row["success"] and failure_class:
       raise ValueError(f"{trial_id}: successful trial cannot have failure_class")
-    if not raw["video_uri"].strip():
-      raise ValueError(f"{trial_id}: video_uri is required")
+    if row["valid_initialization"]:
+      for field in (
+        "log_bin_sha256",
+        "log_json_sha256",
+        "video_sha256",
+      ):
+        row[field] = raw[field].strip()
+        if not _SHA256.fullmatch(row[field]):
+          raise ValueError(f"{trial_id}: {field} must be a SHA-256 digest")
+      if not raw["video_uri"].strip():
+        raise ValueError(f"{trial_id}: video_uri is required")
     rows.append(row)
   if seen_orders != set(range(len(rows))):
     raise ValueError("order_index must contain every integer from 0 through N-1")
@@ -624,10 +636,23 @@ def _load_rows(
       continue
     binary = _resolve(row["log_bin_path"], cfg.trials)
     metadata = _resolve(row["log_json_path"], cfg.trials)
+    video = _resolve(row["video_uri"], cfg.trials)
     if not binary.is_file() or binary.stat().st_size == 0:
       raise FileNotFoundError(binary)
     if not metadata.is_file():
       raise FileNotFoundError(metadata)
+    if not video.is_file() or video.stat().st_size == 0:
+      raise FileNotFoundError(video)
+    for artifact, field in (
+      (binary, "log_bin_sha256"),
+      (metadata, "log_json_sha256"),
+      (video, "video_sha256"),
+    ):
+      actual_sha = _sha256(artifact)
+      if actual_sha != row[field]:
+        raise ValueError(
+          f"{row['trial_id']}: {field} does not match {artifact}"
+        )
     meta = json.loads(metadata.read_text())
     if int(meta.get("logger_schema_version", 0)) < cfg.required_logger_schema:
       raise ValueError(f"{row['trial_id']}: log metadata has an old logger schema")
@@ -644,6 +669,14 @@ def _load_rows(
     recomputed = _recompute_safety(binary, metadata)
     _verify_ledger_safety(row, recomputed)
     row["_recomputed_safety"] = recomputed
+    row["_artifacts"] = {
+      "log_bin_path": str(binary.resolve()),
+      "log_bin_sha256": row["log_bin_sha256"],
+      "log_json_path": str(metadata.resolve()),
+      "log_json_sha256": row["log_json_sha256"],
+      "video_path": str(video.resolve()),
+      "video_sha256": row["video_sha256"],
+    }
     if safety_limits is not None:
       violations.extend(_safety_violations(row, recomputed, safety_limits))
   return rows, provenance, trial_plan, safety_limits, violations
@@ -714,6 +747,9 @@ def analyze(cfg: HardwareAnalysisCfg) -> dict[str, Any]:
     "raw_row_count": len(rows),
     "valid_trial_count": len(valid),
     "invalid_initialization_count": len(rows) - len(valid),
+    "artifact_hashes": [
+      {"trial_id": row["trial_id"], **row["_artifacts"]} for row in valid
+    ],
     "pose_counts": dict(counts),
     "overall_success": _wilson(overall_success, len(valid)),
     "fixed_pose_macro_success": sum(fixed_rates) / len(fixed_rates),

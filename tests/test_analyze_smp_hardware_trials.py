@@ -86,6 +86,7 @@ class HardwareTrialAnalysisTest(unittest.TestCase):
         trial_id = f"{pose}-{index:02d}"
         binary = root / f"{trial_id}.bin"
         metadata = root / f"{trial_id}.json"
+        video = root / f"{trial_id}.mp4"
         fields = {
           "dq": 29,
           "tau_est": 29,
@@ -120,6 +121,7 @@ class HardwareTrialAnalysisTest(unittest.TestCase):
             }
           )
         )
+        video.write_bytes(b"synchronized-video-evidence")
         success = index % 2 == 0
         rows.append(
           {
@@ -159,8 +161,11 @@ class HardwareTrialAnalysisTest(unittest.TestCase):
             "final_stance_width_m": 0.3,
             "failure_class": "no_progress" if not success else "",
             "log_bin_path": binary.name,
+            "log_bin_sha256": hashlib.sha256(binary.read_bytes()).hexdigest(),
             "log_json_path": metadata.name,
-            "video_uri": f"video://{trial_id}",
+            "log_json_sha256": hashlib.sha256(metadata.read_bytes()).hexdigest(),
+            "video_uri": video.name,
+            "video_sha256": hashlib.sha256(video.read_bytes()).hexdigest(),
             "notes": "",
           }
         )
@@ -302,6 +307,22 @@ class HardwareTrialAnalysisTest(unittest.TestCase):
             trials=ledger,
             output_json=root / "result.json",
             trial_plan=plan,
+            safety_limits=self._limits(root),
+          )
+        )
+
+  def test_raw_artifact_tampering_is_rejected_by_sha(self) -> None:
+    with tempfile.TemporaryDirectory() as temporary:
+      root = Path(temporary)
+      ledger = self._ledger(root)
+      video = root / "prone-00.mp4"
+      video.write_bytes(video.read_bytes() + b"tampered")
+      with self.assertRaisesRegex(ValueError, "video_sha256 does not match"):
+        analyze(
+          HardwareAnalysisCfg(
+            trials=ledger,
+            output_json=root / "result.json",
+            trial_plan=root / "trial_plan.json",
             safety_limits=self._limits(root),
           )
         )

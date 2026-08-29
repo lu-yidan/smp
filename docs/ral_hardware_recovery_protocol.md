@@ -20,6 +20,14 @@ PD-command torque estimate, position targets, kp/kd, projected gravity, IMU
 angular velocity, and FSM command. `tau_cmd_est` is a controller-side estimate,
 not a calibrated torque sensor measurement, and must be labeled accordingly.
 
+Every valid trial must bind its binary log, metadata JSON, and synchronized
+video by SHA-256 in the ledger. Keep all three as local files while running the
+analysis; a URL without a locally verifiable video artifact is insufficient for
+final evidence. The analyzer recomputes every digest and includes the 80-trial
+artifact map in `analysis.json`. Invalid initializations that never activate
+the policy may leave artifact paths and hashes empty, but their ledger rows
+must remain.
+
 ## Flat-ground core matrix
 
 Run one preregistered block of 80 trials for the frozen final policy:
