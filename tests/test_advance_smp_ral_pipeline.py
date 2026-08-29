@@ -167,7 +167,17 @@ class PipelineStateTest(unittest.TestCase):
         "sha256": "hash-29999",
       }
     )
-    state, launcher = self._advance(completed=True, gpu_processes=[])
+    locks_without_final = {
+      gate: sha256
+      for gate, sha256 in pipeline._LOCKED_MANIFEST_HASHES.items()
+      if gate != 29999
+    }
+    with mock.patch.object(
+      pipeline,
+      "_LOCKED_MANIFEST_HASHES",
+      locks_without_final,
+    ):
+      state, launcher = self._advance(completed=True, gpu_processes=[])
     self.assertEqual(state["status"], "MANIFEST_LOCK_REQUIRED")
     self.assertEqual(state["unlocked_manifest_gates"], [29999])
     launcher.assert_not_called()
@@ -181,6 +191,7 @@ class CompletionValidationTest(unittest.TestCase):
         8000: "64506f71e85b69b58bb5579621b10a8aa6969a172428c2d213115fb54a08c333",
         15000: "2e99d3af1bc6a3f9d5c01bf17f15d3588b73b673853af78a6dd711820382f7d9",
         25000: "1709b96d2a71f0821315cc98a43412a7f71af4181d367110233b59410ea93029",
+        29999: "154d59b92489c73398918dd08a06b5057d4338be7bf5dd208b397db218a5a404",
       },
     )
 
