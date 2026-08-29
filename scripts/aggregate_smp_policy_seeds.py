@@ -156,6 +156,14 @@ def aggregate(payloads: list[tuple[int, dict[str, dict[str, Any]]]], cfg: Aggreg
   }
 
 
+def _metric_cell(metric: dict[str, Any], name: str, suffix: str = "") -> str:
+  value = metric[name]
+  return (
+    f"{value['mean']:.3f} [{value['ci95_low']:.3f}, "
+    f"{value['ci95_high']:.3f}]{suffix}"
+  )
+
+
 def _markdown(result: dict[str, Any]) -> str:
   lines = [
     "# SMP policy-seed aggregate",
@@ -169,18 +177,12 @@ def _markdown(result: dict[str, Any]) -> str:
   ]
   for arm, data in result["arms"].items():
     metric = data["metrics"]
-
-    def cell(name: str, suffix: str = "") -> str:
-      value = metric[name]
-      return (
-        f"{value['mean']:.3f} [{value['ci95_low']:.3f}, "
-        f"{value['ci95_high']:.3f}]{suffix}"
-      )
-
     lines.append(
-      f"| {arm} | {cell('gsi')} | {cell('fixed_macro')} | "
-      f"{cell('fixed_worst')} | {cell('contact_foot_slip_p95_m_s', ' m/s')} | "
-      f"{cell('post_success_root_drift_p95_m', ' m')} |"
+      f"| {arm} | {_metric_cell(metric, 'gsi')} | "
+      f"{_metric_cell(metric, 'fixed_macro')} | "
+      f"{_metric_cell(metric, 'fixed_worst')} | "
+      f"{_metric_cell(metric, 'contact_foot_slip_p95_m_s', ' m/s')} | "
+      f"{_metric_cell(metric, 'post_success_root_drift_p95_m', ' m')} |"
     )
   lines.extend(
     (
