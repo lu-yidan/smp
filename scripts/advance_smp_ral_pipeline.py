@@ -17,6 +17,7 @@ import tyro
 
 from build_smp_causal_manifest import ManifestCfg, build_manifest
 from monitor_smp_training_health import HealthCfg, inspect
+from select_smp_stable_arm import SelectionCfg, write_selection
 
 _EVALUATION_SCHEMA_VERSION = 2
 _LOCKED_MANIFEST_HASHES = {
@@ -275,6 +276,9 @@ def advance(cfg: PipelineCfg) -> dict[str, Any]:
       next_gate = gate
 
   gpu_processes = _gpu_processes()
+  stable_selection = None
+  if completed_training and next_gate is None:
+    stable_selection = write_selection(SelectionCfg(evidence_dir=cfg.evidence_dir))
   status = "TRAINING_ACTIVE"
   action = "Continue health monitoring; do not contend with training GPUs."
   launched = None
@@ -286,7 +290,16 @@ def advance(cfg: PipelineCfg) -> dict[str, Any]:
     action = "Wait for the resumable frozen matrix and analyzer to finish."
   elif completed_training and next_gate is None:
     status = "ANALYSIS_COMPLETE"
-    action = "Use frozen analyses to select candidates for independent policy seeds."
+    if stable_selection["status"] == "PROMOTE_FOR_POLICY_SEEDS":
+      action = (
+        "Frozen cross-gate selection is complete; launch independent policy "
+        "seeds for the promoted configurations."
+      )
+    else:
+      action = (
+        "Frozen cross-gate selection found no eligible arm; do not relax "
+        "thresholds post hoc."
+      )
   elif completed_training and gpu_processes:
     status = "WAITING_FREE_GPU"
     action = "Training is complete; wait for remaining compute processes to exit."
@@ -314,6 +327,15 @@ def advance(cfg: PipelineCfg) -> dict[str, Any]:
     "pending_manifest_gates": pending_gates,
     "evaluations": evaluations,
     "active_evaluation": active or launched,
+    "stable_selection": (
+      {
+        "status": stable_selection["status"],
+        "promoted_candidates": stable_selection["promoted_candidates"],
+        "path": str((cfg.evidence_dir / "stable_selection.json").resolve()),
+      }
+      if stable_selection is not None
+      else None
+    ),
   }
 
 

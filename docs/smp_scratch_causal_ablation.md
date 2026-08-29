@@ -218,6 +218,21 @@ counts as complete only when its schema-v2 completion marker, protocol fields,
 Interrupted work therefore resumes missing cases instead of overwriting valid
 evidence or being mistaken for a finished experiment.
 
+After all four gate analyses are complete, the same controller invokes the
+checkpoint-stability selector:
+
+```bash
+uv run scripts/select_smp_stable_arm.py \
+  --evidence-dir run_control/scratch_causal_eval
+```
+
+The selector verifies the gate checkpoint name, common arm set, common policy
+seed, and SHA-256 of every source analysis. It enforces the frozen 15k/25k/final
+thresholds and late-regression rule, writes `stable_selection.json` and
+`stable_selection.md` atomically, and promotes at most two configurations for
+independent policy-seed training. Overlapping rollout intervals are explicitly
+reported as unresolved rather than converted into a winner claim.
+
 Safety is reported but is not optimized in this first causal screen. The
 winning recovery configuration must later receive a separate speed/power
 ablation before real-robot use.
