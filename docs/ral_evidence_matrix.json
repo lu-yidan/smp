@@ -223,12 +223,12 @@
       "evidence": [
         {
           "type": "url",
-          "target": "https://github.com/lu-yidan/G1_Recovery_Below_Block/tree/cadca0464597474fafc2f5d3fd7fd7e550f465ce",
+          "target": "https://github.com/lu-yidan/G1_Recovery_Below_Block/tree/34449392f6c22994dc66e70ac4f1df30d3119565",
           "description": "Versioned Chinese RA-L project record and evidence-gap table"
         },
         {
           "type": "git_commit",
-          "target": "cadca0464597474fafc2f5d3fd7fd7e550f465ce",
+          "target": "34449392f6c22994dc66e70ac4f1df30d3119565",
           "description": "Immutable project-record source revision"
         }
       ],
