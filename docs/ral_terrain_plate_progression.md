@@ -101,3 +101,26 @@ strong matched baselines, safety thresholds grounded in the G1 deployment
 configuration, and the preregistered real-robot trial matrix. Failure to pass a
 frozen gate produces `NO_PROMOTION`; it does not authorize post-hoc threshold
 relaxation.
+
+## Implemented task composition (not experimental evidence)
+
+The code registers candidate-specific task IDs
+`Smp-Getup-RAL-T-A{0..7}-G1` and `Smp-Getup-RAL-P-A{0..7}-G1`.
+They are configuration templates only: no T/P run may start until the flat
+three-policy-seed prerequisite passes and stable selection identifies the
+corresponding arm.
+
+Both templates begin from that arm's 93D one-frame flat configuration, remove
+automatic pushes, and preserve its prior, off-manifold termination choice, and
+procedural SMP floor. T composes generated terrain, frozen family/level
+sampling, stair-edge sampling, terrain-aware grounding, and terrain safety
+metrics. P composes the audited passive vertical plate, a joint reset
+distribution giving 50% unpinned balanced poses and 50% pinned prone/supine
+poses, categorical 4/8/12 kg loads, friction and planar-offset randomization,
+and physical-validity metrics.
+
+The registered tasks deliberately do not use the historical V3.6/V3.8 actor
+configurations. Structural tests in `tests/test_ral_progression_cfg.py` verify
+the observation contract, distribution parameters, event order, and reward
+bridge inheritance. A successful structural test is prerequisite engineering
+evidence, not a terrain or plate performance result.

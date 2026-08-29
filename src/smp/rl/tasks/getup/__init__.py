@@ -54,6 +54,11 @@ from smp.rl.tasks.getup.plate_terrain_v3873_scratch_stage_bridge_env_cfg import 
 from smp.rl.tasks.getup.plate_terrain_v3874_gsi_milestone_env_cfg import (
   g1_getup_plate_terrain_v3874_gsi_milestone_deploy_smp_env_cfg,
 )
+from smp.rl.tasks.getup.ral_progression_env_cfg import (
+  SCRATCH_ARM_BUILDERS,
+  g1_scratch_ral_plate_env_cfg,
+  g1_scratch_ral_terrain_env_cfg,
+)
 from smp.rl.tasks.getup.recovery_core_r1_env_cfg import (
   g1_recovery_core_r1_smp_env_cfg,
 )
@@ -215,6 +220,21 @@ register_mjlab_task(
   play_env_cfg=g1_scratch_a7_v7_mix_bridge_env_cfg(play=True),
   rl_cfg=_scratch_causal_runner("smp_scratch_a7_v7_mix_bridge_g1"),
 )
+
+for _arm in SCRATCH_ARM_BUILDERS:
+  _arm_upper = _arm.upper()
+  register_mjlab_task(
+    task_id=f"Smp-Getup-RAL-T-{_arm_upper}-G1",
+    env_cfg=g1_scratch_ral_terrain_env_cfg(_arm, play=False),
+    play_env_cfg=g1_scratch_ral_terrain_env_cfg(_arm, play=True),
+    rl_cfg=_scratch_causal_runner(f"smp_ral_t_{_arm}_g1"),
+  )
+  register_mjlab_task(
+    task_id=f"Smp-Getup-RAL-P-{_arm_upper}-G1",
+    env_cfg=g1_scratch_ral_plate_env_cfg(_arm, play=False),
+    play_env_cfg=g1_scratch_ral_plate_env_cfg(_arm, play=True),
+    rl_cfg=_scratch_causal_runner(f"smp_ral_p_{_arm}_g1"),
+  )
 
 _robust_getup_rl = unitree_g1_smp_ppo_runner_cfg()
 _robust_getup_rl.experiment_name = "smp_getup_robust_g1"
@@ -680,9 +700,7 @@ def _plate_terrain_v3871_scratch_s0_runner_cfg():
   return cfg
 
 
-_plate_terrain_v3871_scratch_s0_getup_rl = (
-  _plate_terrain_v3871_scratch_s0_runner_cfg()
-)
+_plate_terrain_v3871_scratch_s0_getup_rl = _plate_terrain_v3871_scratch_s0_runner_cfg()
 
 register_mjlab_task(
   task_id="Smp-Getup-Plate-Terrain-V3871-Scratch-S0-Fixed-Deploy-G1",
@@ -728,9 +746,7 @@ _plate_terrain_v3873_scratch_stage_bridge_getup_rl = (
 
 register_mjlab_task(
   task_id="Smp-Getup-Plate-Terrain-V3873-Scratch-Stage-Bridge-Deploy-G1",
-  env_cfg=(
-    g1_getup_plate_terrain_v3873_scratch_stage_bridge_deploy_smp_env_cfg(False)
-  ),
+  env_cfg=(g1_getup_plate_terrain_v3873_scratch_stage_bridge_deploy_smp_env_cfg(False)),
   play_env_cfg=(
     g1_getup_plate_terrain_v3873_scratch_stage_bridge_deploy_smp_env_cfg(True)
   ),

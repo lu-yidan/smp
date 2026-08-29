@@ -21,12 +21,14 @@ __all__ = [
   "lafan_milestone_reset",
   "mixed_fall_reset",
   "sample_terrain_edge_reset",
+  "sample_weighted_terrain_levels",
   "post_stand_body_wrench",
   "random_body_wrench",
   "record_failure_states",
   "reset_escape_obstacle",
   "reset_guided_escape_plate",
   "reset_guided_escape_plate_curriculum",
+  "reset_stratified_guided_escape_plate",
   "reset_recovery_stage",
   "reset_sustained_constraint",
   "reset_stand_counter",
@@ -408,6 +410,12 @@ def reset_guided_escape_plate(
     raise ValueError(f"target body {target_body_name!r} must resolve exactly once")
 
   n = env_ids.numel()
+  sampled_longitudinal_offset = torch.full(
+    (n,), longitudinal_offset, dtype=torch.float, device=env.device
+  )
+  sampled_lateral_offset = torch.full(
+    (n,), lateral_offset, dtype=torch.float, device=env.device
+  )
   if not 0.0 <= obstacle_probability <= 1.0:
     raise ValueError("obstacle_probability must be in [0, 1]")
   reset_type = getattr(env, "_robust_reset_type", None)
@@ -562,9 +570,9 @@ def reset_guided_escape_plate(
     fallback = forward_norm[:, 0] < 1e-5
     forward_xy[fallback, 0] = 1.0
     forward_xy[fallback, 1] = 0.0
-    target_pos[:, :2] += longitudinal_offset * forward_xy
+    target_pos[:, :2] += sampled_longitudinal_offset[:, None] * forward_xy
     lateral_xy = torch.stack((-forward_xy[:, 1], forward_xy[:, 0]), dim=-1)
-    target_pos[:, :2] += lateral_offset * lateral_xy
+    target_pos[:, :2] += sampled_lateral_offset[:, None] * lateral_xy
     if overlap_curriculum_steps > 0:
       progress = min(
         float(env.common_step_counter) / max(overlap_curriculum_steps, 1), 1.0
@@ -576,6 +584,7 @@ def reset_guided_escape_plate(
         longitudinal_noise = torch.empty(n, device=env.device).uniform_(
           -amplitude, amplitude
         )
+        sampled_longitudinal_offset += longitudinal_noise
         target_pos[:, :2] += longitudinal_noise[:, None] * forward_xy
       if lateral_offset_curriculum is not None:
         amplitude = lateral_offset_curriculum[0] + progress * (
@@ -584,6 +593,7 @@ def reset_guided_escape_plate(
         lateral_noise = torch.empty(n, device=env.device).uniform_(
           -amplitude, amplitude
         )
+        sampled_lateral_offset += lateral_noise
         target_pos[:, :2] += lateral_noise[:, None] * lateral_xy
   target_pos[:, :2] += torch.empty(n, 2, device=env.device).uniform_(
     -xy_offset_range, xy_offset_range
@@ -647,6 +657,19 @@ def reset_guided_escape_plate(
     env_ids=env_ids,
   )
   _ensure_escape_state(env)
+  if not hasattr(env, "_escape_plate_longitudinal_offset"):
+    env._escape_plate_longitudinal_offset = torch.zeros(  # type: ignore[attr-defined]
+      env.num_envs, device=env.device
+    )
+    env._escape_plate_lateral_offset = torch.zeros(  # type: ignore[attr-defined]
+      env.num_envs, device=env.device
+    )
+  env._escape_plate_longitudinal_offset[env_ids] = (  # type: ignore[attr-defined]
+    sampled_longitudinal_offset
+  )
+  env._escape_plate_lateral_offset[env_ids] = (  # type: ignore[attr-defined]
+    sampled_lateral_offset
+  )
   env._escape_phase[env_ids] = active.long()  # type: ignore[attr-defined]
   env._escape_target_slot[env_ids] = 0  # type: ignore[attr-defined]
   env._escape_contact_ever[env_ids] = False  # type: ignore[attr-defined]
@@ -724,6 +747,72 @@ def reset_guided_escape_plate_curriculum(
     env_ids=env_ids,
     **plate_reset_kwargs,
   )
+
+
+@requires_model_fields(
+  "body_mass",
+  "body_inertia",
+  "geom_friction",
+  recompute=RecomputeLevel.set_const,
+)
+@torch.no_grad()
+def reset_stratified_guided_escape_plate(
+  env: ManagerBasedRlEnv,
+  env_ids: torch.Tensor | None = None,
+  plate_masses: tuple[float, ...] = (4.0, 8.0, 12.0),
+  mass_weights: tuple[float, ...] = (0.25, 0.50, 0.25),
+  friction_range: tuple[float, float] = (0.4, 1.2),
+  plate_body_name: str = "escape_plate",
+  plate_geom_name: str = "escape_plate_geom",
+  **plate_reset_kwargs,
+) -> None:
+  """Apply a categorical plate load before the contact-safe plate reset.
+
+  Sampling is per world and episode. Only tangential friction is varied;
+  torsional and rolling coefficients retain the audited plate defaults.
+  """
+  if env_ids is None:
+    env_ids = torch.arange(env.num_envs, device=env.device)
+  if env_ids.numel() == 0:
+    return
+  masses = torch.tensor(plate_masses, dtype=torch.float, device=env.device)
+  weights = torch.tensor(mass_weights, dtype=torch.float, device=env.device)
+  if masses.ndim != 1 or masses.numel() == 0 or torch.any(masses <= 0.0):
+    raise ValueError("plate_masses must be a non-empty positive sequence")
+  if weights.shape != masses.shape or torch.any(weights < 0.0):
+    raise ValueError("mass_weights must match plate_masses and be non-negative")
+  if not torch.isclose(weights.sum(), weights.new_tensor(1.0)):
+    raise ValueError("mass_weights must sum to one")
+  if not 0.0 < friction_range[0] <= friction_range[1]:
+    raise ValueError("friction_range must satisfy 0 < low <= high")
+
+  obstacle = env.scene["escape_obstacle"]
+  local_body_ids, _ = obstacle.find_bodies([plate_body_name], preserve_order=True)
+  local_geom_ids, _ = obstacle.find_geoms([plate_geom_name], preserve_order=True)
+  if len(local_body_ids) != 1 or len(local_geom_ids) != 1:
+    raise ValueError("stratified plate body and geom must each resolve exactly once")
+  local_body = torch.tensor(local_body_ids, dtype=torch.long, device=env.device)
+  local_geom = torch.tensor(local_geom_ids, dtype=torch.long, device=env.device)
+  body_id = obstacle.indexing.body_ids[local_body][0].long()
+  geom_id = obstacle.indexing.geom_ids[local_geom][0].long()
+
+  sampled_mass = masses[torch.multinomial(weights, env_ids.numel(), replacement=True)]
+  default_mass = env.sim.get_default_field("body_mass")[body_id]
+  default_inertia = env.sim.get_default_field("body_inertia")[body_id]
+  scale = sampled_mass / torch.clamp(default_mass, min=1e-6)
+  env.sim.model.body_mass[env_ids, body_id] = sampled_mass
+  env.sim.model.body_inertia[env_ids, body_id] = default_inertia * scale[:, None]
+
+  sampled_friction = torch.empty(env_ids.numel(), device=env.device).uniform_(
+    *friction_range
+  )
+  env.sim.model.geom_friction[env_ids, geom_id, 0] = sampled_friction
+  if not hasattr(env, "_escape_plate_friction"):
+    env._escape_plate_friction = torch.zeros(  # type: ignore[attr-defined]
+      env.num_envs, device=env.device
+    )
+  env._escape_plate_friction[env_ids] = sampled_friction  # type: ignore[attr-defined]
+  reset_guided_escape_plate(env, env_ids=env_ids, **plate_reset_kwargs)
 
 
 @torch.no_grad()
@@ -1269,6 +1358,51 @@ def mixed_fall_reset(
   # an artificial GSI-to-procedural discontinuity in the SMP score.
   _prime_smp_history_from_current_state(env, fall_ids)
   reset_types[fall_ids] = modes + 1
+
+
+@torch.no_grad()
+def sample_weighted_terrain_levels(
+  env: ManagerBasedRlEnv,
+  env_ids: torch.Tensor | None = None,
+  level_weights: tuple[float, ...] = (0.55, 0.30, 0.15, 0.0),
+  flat_level: int = 0,
+  flat_name: str = "flat",
+) -> None:
+  """Move worlds to frozen terrain-level strata before robot reset.
+
+  Terrain family allocation remains the generator's proportional, fixed
+  column assignment. Non-flat levels are sampled from preregistered weights on
+  every episode; flat replay remains level zero. The resulting labels are
+  simulator-only and never enter actor observations.
+  """
+  if env_ids is None:
+    env_ids = torch.arange(env.num_envs, device=env.device)
+  if env_ids.numel() == 0:
+    return
+  terrain = env.scene["terrain"]
+  origins = terrain.terrain_origins
+  generator = terrain.cfg.terrain_generator
+  if origins is None or generator is None:
+    raise RuntimeError("weighted terrain levels require generated terrain")
+  weights = torch.tensor(level_weights, dtype=torch.float, device=env.device)
+  if weights.shape != (origins.shape[0],) or torch.any(weights < 0.0):
+    raise ValueError("level_weights must match terrain rows and be non-negative")
+  if not torch.isclose(weights.sum(), weights.new_tensor(1.0)):
+    raise ValueError("level_weights must sum to one")
+  if not 0 <= flat_level < origins.shape[0]:
+    raise ValueError("flat_level must index a generated terrain row")
+
+  sampled = torch.multinomial(weights, env_ids.numel(), replacement=True)
+  names = list(generator.sub_terrains)
+  if flat_name in names:
+    flat_col = names.index(flat_name)
+    sampled = torch.where(
+      terrain.terrain_types[env_ids] == flat_col,
+      torch.full_like(sampled, flat_level),
+      sampled,
+    )
+  terrain.terrain_levels[env_ids] = sampled
+  terrain.env_origins[env_ids] = origins[sampled, terrain.terrain_types[env_ids]]
 
 
 EDGE_RESET_COHORTS = ("center", "near_edge", "straddle", "lower_tread")

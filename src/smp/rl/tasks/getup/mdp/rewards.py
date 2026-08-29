@@ -40,6 +40,7 @@ __all__ = [
   "escape_geometry_clearance_score",
   "escape_geometry_progress",
   "escape_gated_task_smp_product",
+  "escape_gated_procedural_bridge_task_smp_product",
   "escape_gated_recovery_initiation_progress",
   "escape_object_displacement_metric",
   "escape_obstacle_episode_metric",
@@ -59,6 +60,9 @@ __all__ = [
   "escape_peak_penetration_metric",
   "escape_planar_clearance_metric",
   "escape_plate_mass_metric",
+  "escape_plate_friction_metric",
+  "escape_plate_lateral_offset_metric",
+  "escape_plate_longitudinal_offset_metric",
   "joint_acc_rms_metric",
   "low_base_angular_velocity",
   "low_joint_velocity",
@@ -120,8 +124,7 @@ def procedural_bridge_task_smp_product(
   """
   if not 0.0 <= procedural_smp_floor <= 1.0:
     raise ValueError(
-      "procedural_smp_floor must be in [0, 1], "
-      f"got {procedural_smp_floor}"
+      f"procedural_smp_floor must be in [0, 1], got {procedural_smp_floor}"
     )
   product = _task_smp_product(
     env,
@@ -162,6 +165,36 @@ def escape_gated_task_smp_product(
     fixed_timesteps=fixed_timesteps,
     ws=ws,
     smp_floor=smp_floor,
+  )
+  phase = getattr(env, "_escape_phase", None)
+  if phase is None:
+    return product
+  constrained = (phase == 1) | (phase == 2)
+  scale = torch.where(
+    constrained,
+    torch.full_like(product, constrained_scale),
+    torch.ones_like(product),
+  )
+  gated = product * scale
+  env._smp_product_score = gated  # type: ignore[attr-defined]
+  return gated
+
+
+def escape_gated_procedural_bridge_task_smp_product(
+  env: ManagerBasedRlEnv,
+  task_terms: tuple,
+  fixed_timesteps: tuple[int, ...] = (8, 15, 22),
+  ws: float = 6.0,
+  procedural_smp_floor: float = 0.0,
+  constrained_scale: float = 0.05,
+) -> torch.Tensor:
+  """Compose the selected procedural bridge with the physical escape gate."""
+  product = procedural_bridge_task_smp_product(
+    env,
+    task_terms=task_terms,
+    fixed_timesteps=fixed_timesteps,
+    ws=ws,
+    procedural_smp_floor=procedural_smp_floor,
   )
   phase = getattr(env, "_escape_phase", None)
   if phase is None:
@@ -458,6 +491,7 @@ def upward_velocity(
   target_velocity: float = 0.25,
   head_height_threshold: float = 0.6,
   scale: float = 100.0,
+  relative_to_env_origin: bool = False,
 ) -> torch.Tensor:
   """Reward upward HEAD velocity below ``head_height_threshold`` (else ``1``):
   ``exp(-scale·max(target_velocity − head_vz, 0)²)``.  Uses the head site's world
@@ -466,6 +500,8 @@ def upward_velocity(
   robot = env.scene["robot"]
   head_idx = robot.find_sites(["head"], preserve_order=True)[0][0]
   head_z = robot.data.site_pos_w[:, head_idx, 2]
+  if relative_to_env_origin:
+    head_z = head_z - _terrain_height_reference(env)
   head_vz = robot.data.site_lin_vel_w[:, head_idx, 2]
   shortfall = torch.clamp(head_vz - target_velocity, max=0.0)
   shaped = torch.exp(-scale * shortfall * shortfall)
@@ -1149,6 +1185,32 @@ def escape_plate_mass_metric(env: ManagerBasedRlEnv) -> torch.Tensor:
   local = torch.tensor(local_ids, dtype=torch.long, device=env.device)
   body_id = obstacle.indexing.body_ids[local][0].long()
   return env.sim.model.body_mass[:, body_id]
+
+
+def escape_plate_friction_metric(env: ManagerBasedRlEnv) -> torch.Tensor:
+  """Sampled tangential friction of the guided plate."""
+  value = getattr(env, "_escape_plate_friction", None)
+  if value is None:
+    return torch.zeros(env.num_envs, device=env.device)
+  return value
+
+
+def escape_plate_longitudinal_offset_metric(
+  env: ManagerBasedRlEnv,
+) -> torch.Tensor:
+  """Signed body-aligned longitudinal plate offset at reset."""
+  value = getattr(env, "_escape_plate_longitudinal_offset", None)
+  if value is None:
+    return torch.zeros(env.num_envs, device=env.device)
+  return value
+
+
+def escape_plate_lateral_offset_metric(env: ManagerBasedRlEnv) -> torch.Tensor:
+  """Signed body-aligned lateral plate offset at reset."""
+  value = getattr(env, "_escape_plate_lateral_offset", None)
+  if value is None:
+    return torch.zeros(env.num_envs, device=env.device)
+  return value
 
 
 def escape_obstacle_episode_metric(env: ManagerBasedRlEnv) -> torch.Tensor:
