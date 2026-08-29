@@ -275,6 +275,41 @@ Safety is reported but is not optimized in this first causal screen. The
 winning recovery configuration must later receive a separate speed/power
 ablation before real-robot use.
 
+## Audited A6 continuation after a numerical failure
+
+On 2026-08-30, `a6_f2s2_mix_bridge` stopped after learning iteration 25530
+because the environment returned a NaN in the 93-dimensional actor observation.
+The immediately preceding log also contained contact-match overflow warnings
+and a sharp value-loss increase. The original log is retained at
+`run_control/scratch_causal_30k_seed20260830/incidents/gpu6_nan_25530/original.log`;
+the other seven arms were not stopped or modified.
+
+The already-written `model_25000.pt` was audited before continuation. It records
+iteration 25000, its actor and critic tensors are finite, and its SHA-256 is
+`2e2aa6c96acc4676ce6c2515dda6af1d5c2a4277e8197ca57531a4532ff3f63a`.
+Only the failed A6 job was continued, with the same task, 93-dimensional actor,
+policy/environment seed 42, 4096 environments, model, optimizer, and
+normalizers. The continuation is a distinct W&B run, `a6n25530`, and writes only
+the final checkpoint so it cannot shadow the frozen 25k artifact. Its runtime
+provenance record is version-locked at SHA-256
+`35f88b665ee514a714cc676f33b8886f03f8b70d00b105021994402f03094213`.
+
+This is not an uninterrupted replicate: the environment random stream was
+reinitialized and the RSL-RL resume boundary repeats one update index. The
+continuation is therefore admissible only for this single-seed resource screen.
+It cannot provide policy-level uncertainty or final paper evidence. Any arm
+selected by the frozen matrix, including A6, must still pass three independent
+from-scratch policy seeds. A second NaN or fatal error in the A6 continuation is
+a terminal training alert and must not trigger another automatic restart.
+
+The 25k eight-arm manifest was generated from the pre-failure A6 checkpoint,
+independently rehashed, and version-locked at
+`1709b96d2a71f0821315cc98a43412a7f71af4181d367110233b59410ea93029`.
+The final manifest additionally requires every checkpoint to load with embedded
+iteration 29999 and finite actor/critic tensors. No frozen evaluation may start
+until the final manifest is complete and its SHA is committed to the versioned
+lock table.
+
 ## Follow-up
 
 After selecting one or two arms:
