@@ -21,7 +21,7 @@ from select_smp_stable_arm import SelectionCfg, write_selection
 
 _EVALUATION_SCHEMA_VERSION = 2
 _LOCKED_MANIFEST_HASHES = {
-  8000: "ebcb8cf4ba27e8b9ad1f32743d37fb068972c8c52390a574c95fd8df3ab47a83",
+  8000: "64506f71e85b69b58bb5579621b10a8aa6969a172428c2d213115fb54a08c333",
 }
 
 
