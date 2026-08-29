@@ -151,6 +151,19 @@ observed as pelvic sliding, repeated struggling, wide final stance, small
 steps, and backward falls. These measures are used for Pareto ranking; they do
 not silently change the task reward in the causal screen.
 
+Each heartbeat first creates an atomic execution-health snapshot:
+
+```bash
+uv run scripts/monitor_smp_training_health.py \
+  --control-dir run_control/scratch_causal_30k_seed20260830 \
+  --output run_control/automation_state/training_health_latest.json
+```
+
+It alerts on missing or stale logs, fatal exceptions, non-finite parsed
+metrics, and throughput below half of the eight-job median. The JSON explicitly
+states that reward, SMP score, and termination counts are diagnostics only and
+cannot rank policies without the frozen evaluator.
+
 Safety is reported but is not optimized in this first causal screen. The
 winning recovery configuration must later receive a separate speed/power
 ablation before real-robot use.
