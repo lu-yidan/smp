@@ -164,6 +164,17 @@ queue priority; native baselines are launched only after the specialist jobs
 and their GPU processes have exited. FIRM-R and tracking remain adapter-blocked
 and are never silently substituted by these three native tasks.
 
+When all nine native jobs finish, `build_smp_native_baseline_manifests.py`
+verifies the full method-by-policy-seed factorial, saved random-init flag,
+agent/environment seeds, 4,096 environments, 24-step rollout, 30k budget,
+1,000-step checkpoint interval, exact 93D one-frame actor terms, and the saved
+matched-bank path/SHA. It emits 12 immutable manifests for the four gates and
+three policy seeds. These checkpoint manifests deliberately remain
+`CHECKPOINTS_READY_EVALUATION_BANK_BLOCKED`: the five-pose comparison cannot run
+until a separate SHA-locked held-out reset bank, disjoint from the training
+bank, is generated and bound. Training checkpoints or their manifests are not
+performance evidence.
+
 ## Frozen flat evaluation
 
 Use `evaluate_smp_baseline.py` schema 2 for every compatible policy:
