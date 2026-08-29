@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 import subprocess
 from dataclasses import dataclass
 from datetime import datetime, timezone
@@ -77,7 +78,8 @@ class ManifestCfg:
   checkpoint_step: int
   output: Path
   logs_root: Path = Path("logs/rsl_rl")
-  policy_seed: int = 20260830
+  policy_seed: int = 42
+  environment_seed: int = 42
   project: str = "tabletennis/smp"
 
 
@@ -112,14 +114,22 @@ def _discover_run(logs_root: Path, arm: dict[str, str]) -> Path:
     key=lambda path: path.stat().st_mtime,
   )
   if not candidates:
-    raise FileNotFoundError(
-      f"no run ending in {arm['run_suffix']!r} under {task_dir}"
-    )
+    raise FileNotFoundError(f"no run ending in {arm['run_suffix']!r} under {task_dir}")
   return candidates[-1]
 
 
+def _recorded_seed(run_dir: Path, config_name: str) -> int:
+  path = run_dir / "params" / config_name
+  if not path.is_file():
+    raise FileNotFoundError(f"missing seed provenance: {path}")
+  match = re.search(r"^seed:\s*(-?\d+)\s*$", path.read_text(), flags=re.MULTILINE)
+  if match is None:
+    raise ValueError(f"top-level seed missing from {path}")
+  return int(match.group(1))
+
+
 def build_manifest(cfg: ManifestCfg) -> dict[str, Any]:
-  discovered: list[tuple[dict[str, str], Path, Path]] = []
+  discovered: list[tuple[dict[str, str], Path, Path, int, int]] = []
   missing: list[str] = []
   for arm in _ARMS:
     try:
@@ -131,7 +141,22 @@ def build_manifest(cfg: ManifestCfg) -> dict[str, Any]:
     if not checkpoint.is_file():
       missing.append(f"{arm['name']}: {checkpoint}")
       continue
-    discovered.append((arm, run_dir.resolve(), checkpoint.resolve()))
+    try:
+      policy_seed = _recorded_seed(run_dir, "agent.yaml")
+      environment_seed = _recorded_seed(run_dir, "env.yaml")
+    except (FileNotFoundError, ValueError) as error:
+      missing.append(f"{arm['name']}: {error}")
+      continue
+    if policy_seed != cfg.policy_seed or environment_seed != cfg.environment_seed:
+      missing.append(
+        f"{arm['name']}: recorded policy/environment seeds "
+        f"{policy_seed}/{environment_seed}, expected "
+        f"{cfg.policy_seed}/{cfg.environment_seed}"
+      )
+      continue
+    discovered.append(
+      (arm, run_dir.resolve(), checkpoint.resolve(), policy_seed, environment_seed)
+    )
 
   if missing:
     details = "\n".join(f"- {item}" for item in missing)
@@ -140,19 +165,22 @@ def build_manifest(cfg: ManifestCfg) -> dict[str, Any]:
     )
 
   runs = []
-  for arm, run_dir, checkpoint in discovered:
+  for arm, run_dir, checkpoint, policy_seed, environment_seed in discovered:
     runs.append(
       {
         "name": arm["name"],
         "task": arm["task"],
         "checkpoint": str(checkpoint),
         "checkpoint_sha256": _sha256(checkpoint),
-        "policy_seed": cfg.policy_seed,
+        "policy_seed": policy_seed,
+        "environment_seed": environment_seed,
+        "seed_provenance": {
+          "agent_config": str(run_dir / "params" / "agent.yaml"),
+          "environment_config": str(run_dir / "params" / "env.yaml"),
+        },
         "run_dir": str(run_dir),
         "wandb_run_id": arm["wandb_run_id"],
-        "wandb_url": (
-          f"https://wandb.ai/{cfg.project}/runs/{arm['wandb_run_id']}"
-        ),
+        "wandb_url": (f"https://wandb.ai/{cfg.project}/runs/{arm['wandb_run_id']}"),
       }
     )
 
@@ -162,6 +190,12 @@ def build_manifest(cfg: ManifestCfg) -> dict[str, Any]:
     "code_commit": _git_commit(),
     "checkpoint_step": cfg.checkpoint_step,
     "policy_seed": cfg.policy_seed,
+    "environment_seed": cfg.environment_seed,
+    "historical_run_name_seed_label": 20260830,
+    "seed_label_warning": (
+      "The historical run suffix says seed20260830, but the saved agent and "
+      "environment configs prove that both effective seeds were 42."
+    ),
     "evaluation_protocol": {
       "reset_modes": [
         "native_gsi",

@@ -19,7 +19,7 @@ motion prior, reset coverage, off-manifold termination, or reward sparsity.
 - original task-SMP reward and automatic velocity pushes unless an arm
   explicitly changes the procedural cohort;
 - original 5 s episode and success termination;
-- 4096 environments, seed 20260830, 30,000 updates;
+- 4096 environments, effective policy and environment seed 42, 30,000 updates;
 - checkpoint every 1,000 updates;
 - contact capacity raised uniformly to 64 for safe lying-pose simulation.
 
@@ -40,6 +40,13 @@ Every policy in this experiment is trained from scratch.
 | 7 | A7 V7 bridge | LAFAN V7 | 80/20 | GSI only | 10% floor on procedural only |
 
 Formal runs started from commit `28addcd`:
+
+The historical run-name suffix `seed20260830` is only a label. Inspection of
+every saved `params/agent.yaml` and `params/env.yaml`, together with the live
+training logs, proves that both effective seeds are 42. Frozen manifests read
+and validate these saved parameters instead of trusting a run name. The screen
+therefore remains one valid common-seed comparison, but `20260830` must not be
+reported as its policy seed.
 
 | GPU | W&B run | Run ID |
 | ---: | --- | --- |

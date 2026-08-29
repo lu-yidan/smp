@@ -50,7 +50,8 @@ class PipelineCfg:
     "right_side",
   )
   eval_seed: int = 20260829
-  policy_seed: int = 20260830
+  policy_seed: int = 42
+  environment_seed: int = 42
   num_envs: int = 512
   steps: int = 500
   launch_when_ready: bool = False
@@ -101,16 +102,28 @@ def _write_manifest(path: Path, payload: dict[str, Any]) -> None:
   _atomic_json(path, payload)
 
 
-def _validate_manifest(path: Path, gate: int) -> str:
+def _validate_manifest(
+  path: Path, gate: int, policy_seed: int, environment_seed: int
+) -> str:
   payload = json.loads(path.read_text())
   runs = payload.get("runs", [])
   if payload.get("checkpoint_step") != gate or len(runs) != 8:
     raise ValueError(f"invalid frozen manifest: {path}")
+  if (
+    payload.get("policy_seed") != policy_seed
+    or payload.get("environment_seed") != environment_seed
+  ):
+    raise ValueError(f"manifest has incorrect effective seeds: {path}")
   names = {run.get("name") for run in runs}
   checkpoints = {run.get("checkpoint") for run in runs}
   if len(names) != 8 or len(checkpoints) != 8:
     raise ValueError(f"manifest does not contain eight unique arms: {path}")
   for run in runs:
+    if (
+      run.get("policy_seed") != policy_seed
+      or run.get("environment_seed") != environment_seed
+    ):
+      raise ValueError(f"run has incorrect effective seeds: {run.get('name')}")
     checkpoint = Path(run["checkpoint"])
     if not checkpoint.is_file():
       raise FileNotFoundError(checkpoint)
@@ -138,6 +151,7 @@ def _ensure_manifests(cfg: PipelineCfg) -> tuple[list[dict[str, Any]], list[int]
             checkpoint_step=gate,
             output=path,
             policy_seed=cfg.policy_seed,
+            environment_seed=cfg.environment_seed,
           )
         )
       except FileNotFoundError:
@@ -148,7 +162,7 @@ def _ensure_manifests(cfg: PipelineCfg) -> tuple[list[dict[str, Any]], list[int]
       {
         "gate": gate,
         "path": str(path.resolve()),
-        "sha256": _validate_manifest(path, gate),
+        "sha256": _validate_manifest(path, gate, cfg.policy_seed, cfg.environment_seed),
       }
     )
   return manifests, pending
