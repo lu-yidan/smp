@@ -58,7 +58,12 @@ def _wilson_interval(successes: int, total: int) -> tuple[float, float]:
     * math.sqrt(rate * (1.0 - rate) / total + z**2 / (4.0 * total**2))
     / denominator
   )
-  return (max(0.0, center - radius), min(1.0, center + radius))
+  # Preserve the observed rate exactly at the boundaries despite floating-point
+  # roundoff (for example, the upper bound for 10/10 can be 0.9999999999999999).
+  return (
+    min(rate, max(0.0, center - radius)),
+    max(rate, min(1.0, center + radius)),
+  )
 
 
 def main(cfg: EvalCfg) -> None:
