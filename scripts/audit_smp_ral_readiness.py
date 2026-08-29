@@ -77,15 +77,33 @@ def audit(ledger: dict[str, Any], ledger_path: Path) -> dict[str, Any]:
       raise ValueError(f"{criterion_id} has invalid status: {status}")
     evidence_results = []
     for evidence in criterion.get("evidence", []):
+      required = evidence.get("required", True)
+      if not isinstance(required, bool):
+        raise ValueError(f"{criterion_id} evidence required flag must be a boolean")
       valid, detail = _evidence_valid(evidence, repo_root)
-      evidence_results.append({"valid": valid, "detail": detail, "evidence": evidence})
-    evidence_valid = bool(evidence_results) and all(
-      result["valid"] for result in evidence_results
+      evidence_results.append(
+        {
+          "required": required,
+          "valid": valid,
+          "detail": detail,
+          "evidence": evidence,
+        }
+      )
+    required_evidence = [result for result in evidence_results if result["required"]]
+    evidence_valid = bool(required_evidence) and all(
+      result["valid"] for result in required_evidence
     )
     result_evidence_valid = any(
-      result["valid"] and result["evidence"].get("type") in {"result", "runtime"}
-      for result in evidence_results
+      result["required"]
+      and result["valid"]
+      and result["evidence"].get("type") in {"result", "runtime"}
+      for result in required_evidence
     )
+    optional_evidence_warnings = [
+      result["detail"]
+      for result in evidence_results
+      if not result["required"] and not result["valid"]
+    ]
     proven = status == "met" and evidence_valid and result_evidence_valid
     audited.append(
       {
@@ -96,6 +114,7 @@ def audit(ledger: dict[str, Any], ledger_path: Path) -> dict[str, Any]:
         "declared_status": status,
         "evidence_valid": evidence_valid,
         "result_evidence_valid": result_evidence_valid,
+        "optional_evidence_warnings": optional_evidence_warnings,
         "proven": proven,
         "missing": criterion.get("missing", ""),
         "evidence": evidence_results,
@@ -116,9 +135,10 @@ def audit(ledger: dict[str, Any], ledger_path: Path) -> dict[str, Any]:
     "criteria": audited,
     "completion_rule": (
       "RAL_READY requires every required criterion to be declared met, all "
-      "referenced evidence to exist, and at least one non-empty result/runtime "
-      "artifact per criterion. In-progress, implementation-only, or historical "
-      "proxy evidence does not pass."
+      "required referenced evidence to exist, and at least one non-empty "
+      "required result/runtime artifact per criterion. Optional historical "
+      "references may be unavailable without blocking readiness. In-progress, "
+      "implementation-only, or historical proxy evidence does not pass."
     ),
   }
 

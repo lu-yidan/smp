@@ -163,7 +163,8 @@
         {
           "type": "file",
           "target": "../RoboMimic_Deploy/logs/20260828_180517_freekick.bin",
-          "description": "Qualitative deployment log; not a frozen quantitative result"
+          "description": "Qualitative deployment log; not a frozen quantitative result",
+          "required": false
         },
         {
           "type": "file",
@@ -211,9 +212,14 @@
       "status": "in_progress",
       "evidence": [
         {
-          "type": "file",
-          "target": "/home/d080/workspace/G1_Recovery_Below_Block/project_record_zh.tex",
-          "description": "Chinese RA-L project record and evidence-gap table"
+          "type": "url",
+          "target": "https://github.com/lu-yidan/G1_Recovery_Below_Block/tree/806e5674ad7a10e3b51d89bb5464f9c336413f09",
+          "description": "Versioned Chinese RA-L project record and evidence-gap table"
+        },
+        {
+          "type": "git_commit",
+          "target": "806e5674ad7a10e3b51d89bb5464f9c336413f09",
+          "description": "Immutable project-record source revision"
         }
       ],
       "missing": "Convert verified evidence into the final RA-L manuscript, figures, video, limitations, and reproducibility package."

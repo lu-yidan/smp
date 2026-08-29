@@ -118,6 +118,71 @@ class ReadinessEvidenceTest(unittest.TestCase):
       )
       self.assertFalse(invalid_report["criteria"][0]["evidence_valid"])
 
+  def test_missing_optional_reference_does_not_block_required_result(self) -> None:
+    with tempfile.TemporaryDirectory() as temporary:
+      root = Path(temporary)
+      ledger_path = root / "docs/ledger.json"
+      result = root / "results/frozen.json"
+      ledger_path.parent.mkdir()
+      result.parent.mkdir()
+      result.write_text(json.dumps({"status": "complete"}))
+      report = audit(
+        _ledger(
+          [
+            {
+              "type": "result",
+              "target": "results/frozen.json",
+              "description": "required frozen result",
+            },
+            {
+              "type": "file",
+              "target": "historical/unavailable.bin",
+              "description": "optional qualitative reference",
+              "required": False,
+            },
+          ]
+        ),
+        ledger_path,
+      )
+      criterion = report["criteria"][0]
+      self.assertTrue(criterion["evidence_valid"])
+      self.assertTrue(criterion["result_evidence_valid"])
+      self.assertTrue(criterion["proven"])
+      self.assertEqual(len(criterion["optional_evidence_warnings"]), 1)
+
+  def test_optional_result_cannot_prove_a_criterion(self) -> None:
+    with tempfile.TemporaryDirectory() as temporary:
+      root = Path(temporary)
+      ledger_path = root / "docs/ledger.json"
+      implementation = root / "docs/protocol.md"
+      optional_result = root / "results/old.json"
+      ledger_path.parent.mkdir()
+      implementation.write_text("protocol\n")
+      optional_result.parent.mkdir()
+      optional_result.write_text(json.dumps({"status": "complete"}))
+      report = audit(
+        _ledger(
+          [
+            {
+              "type": "file",
+              "target": "docs/protocol.md",
+              "description": "required protocol",
+            },
+            {
+              "type": "result",
+              "target": "results/old.json",
+              "description": "optional historical result",
+              "required": False,
+            },
+          ]
+        ),
+        ledger_path,
+      )
+      criterion = report["criteria"][0]
+      self.assertTrue(criterion["evidence_valid"])
+      self.assertFalse(criterion["result_evidence_valid"])
+      self.assertFalse(criterion["proven"])
+
 
 if __name__ == "__main__":
   unittest.main()
