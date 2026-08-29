@@ -89,6 +89,24 @@ Rapid screen gates:
 - worst fixed pose >= 20%;
 - finite actions and no late numerical collapse.
 
+Final flat-policy promotion is deliberately stricter than an early screen.
+An arm is eligible only if it passes the rapid thresholds at 15k, 25k, and
+29999, and its final checkpoint has native-GSI success >= 95%, fixed-pose
+macro success >= 80%, worst fixed-pose success >= 60%, and finite safety
+metrics. Neither fixed-pose macro nor worst-pose success may fall by more than
+10 percentage points from 25k to 29999. If no arm qualifies, the frozen
+decision is `NO_PROMOTION`; thresholds are not relaxed after inspecting the
+matrix.
+
+At most two eligible arms advance to independent policy-seed replication.
+Selection is lexicographic: highest lower Wilson bound for worst-pose success,
+then highest lower Wilson bound for fixed-pose macro success, then fewer
+secondary falls, lower post-success root drift, lower contact-conditioned foot
+slip, lower peak power, and lower peak joint speed. Differences inside
+overlapping rollout intervals are reported as unresolved rather than used to
+claim a winner. This single-seed choice is only a resource-allocation rule;
+the three-seed aggregate remains the inferential unit for the paper.
+
 The frozen matrix is resumable and writes one atomic JSON file per arm, reset
 mode, and evaluation seed. A manifest contains the policy-training seed
 separately from the rollout evaluation seed, for example:
