@@ -122,6 +122,11 @@
           "type": "file",
           "target": "scripts/evaluate_smp_baseline.py",
           "description": "Versioned power, speed, slip, drift, secondary-fall, stance, and action-smoothness metrics"
+        },
+        {
+          "type": "file",
+          "target": "docs/ral_hardware_recovery_protocol.md",
+          "description": "Preregistered hardware safety metrics, stopping rules, and reporting protocol"
         }
       ],
       "missing": "Define hardware-safe thresholds and report distributions for all promoted policies."
@@ -137,6 +142,16 @@
           "type": "file",
           "target": "../RoboMimic_Deploy/logs/20260828_180517_freekick.bin",
           "description": "Qualitative deployment log; not a frozen quantitative result"
+        },
+        {
+          "type": "file",
+          "target": "docs/ral_hardware_recovery_protocol.md",
+          "description": "Frozen 80-trial real-G1 recovery protocol"
+        },
+        {
+          "type": "file",
+          "target": "docs/ral_hardware_trial_template.csv",
+          "description": "Per-trial provenance, outcome, safety, and failure-taxonomy schema"
         }
       ],
       "missing": "Run a preregistered multi-trial protocol with success, recovery time, safety peaks, and failure taxonomy."
