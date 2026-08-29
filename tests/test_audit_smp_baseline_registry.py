@@ -42,6 +42,10 @@ class BaselineRegistryTest(unittest.TestCase):
     held_out["held_out_evaluation_banks"]["num_states_per_mode"] = 256
     with self.assertRaisesRegex(ValueError, "held-out bank size"):
       audit(held_out, self.registry_path)
+    paired = copy.deepcopy(self.registry)
+    paired["paired_analysis"]["noninferiority_margin"] = 0.10
+    with self.assertRaisesRegex(ValueError, "paired noninferiority margin"):
+      audit(paired, self.registry_path)
     objective = copy.deepcopy(self.registry)
     objective["methods"][0]["uses_motion_prior_objective"] = True
     with self.assertRaisesRegex(ValueError, "objective contract"):

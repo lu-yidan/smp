@@ -154,6 +154,75 @@ class NativeBaselinePipelineTest(unittest.TestCase):
       self.assertEqual(state["native_baselines"], native)
       advance_native.assert_called_once()
 
+  def test_complete_native_matrices_emit_paired_effect_evidence(self) -> None:
+    with tempfile.TemporaryDirectory() as temporary:
+      root = Path(temporary)
+      cfg = _cfg(root)
+      held_out = {"status": "READY", "plan_id": "held-out"}
+      launch = {
+        "status": "LAUNCHED",
+        "max_updates": 30000,
+        "workers": [],
+        "jobs": [{"log": str(root / f"job{i}.log")} for i in range(9)],
+      }
+      checkpoint_index = {"status": "CHECKPOINTS_READY_EVALUATION_BANK_BLOCKED"}
+      rows = []
+      for gate in (8000, 15000, 25000, 29999):
+        for seed in (20260901, 20260902, 20260903):
+          rows.append(
+            {
+              "checkpoint_step": gate,
+              "policy_seed": seed,
+              "path": str(root / f"formal_{gate}_{seed}.json"),
+            }
+          )
+      formal_index = {
+        "status": "READY",
+        "policy_seeds": [20260901, 20260902, 20260903],
+        "manifests": rows,
+      }
+
+      def aggregate(cfg_arg):
+        cfg_arg.output_json.parent.mkdir(parents=True, exist_ok=True)
+        cfg_arg.output_json.write_text("{}")
+        return {"status": "MINIMUM_POLICY_SEEDS_MET"}
+
+      def paired(cfg_arg):
+        cfg_arg.output_json.parent.mkdir(parents=True, exist_ok=True)
+        cfg_arg.output_json.write_text("{}")
+        return {
+          "status": "PROPOSED_PAIRED_ADVANTAGE_SUPPORTED",
+          "support_rule_checks": {"primary": True},
+        }
+
+      with (
+        mock.patch.object(pipeline, "_active_eval_bank", return_value=None),
+        mock.patch.object(
+          pipeline, "_validate_eval_bank_artifacts", return_value=held_out
+        ),
+        mock.patch.object(pipeline, "launch_baselines", return_value=launch),
+        mock.patch.object(pipeline, "_job_log_completed", return_value=True),
+        mock.patch.object(
+          pipeline,
+          "write_native_baseline_manifests",
+          return_value=checkpoint_index,
+        ),
+        mock.patch.object(pipeline, "write_bindings", return_value=formal_index),
+        mock.patch.object(pipeline, "_active_native_evaluation", return_value=None),
+        mock.patch.object(pipeline, "_analysis_complete", return_value=True),
+        mock.patch.object(pipeline, "write_aggregate", side_effect=aggregate),
+        mock.patch.object(pipeline, "write_native_effect_analysis", side_effect=paired),
+      ):
+        state = pipeline._advance_native_baselines(
+          cfg, [], root / "flat_promotion.json"
+        )
+      self.assertEqual(state["status"], "NATIVE_BASELINE_EVIDENCE_COMPLETE")
+      self.assertEqual(
+        state["paired_effects"]["status"],
+        "PROPOSED_PAIRED_ADVANTAGE_SUPPORTED",
+      )
+      self.assertEqual(len(state["aggregates"]), 4)
+
 
 if __name__ == "__main__":
   unittest.main()

@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "target": "IEEE Robotics and Automation Letters",
-  "updated_at": "2026-08-29",
+  "updated_at": "2026-08-30",
   "policy_scope": "93D single-frame deployable actor without true base linear velocity",
   "criteria": [
     {
@@ -144,6 +144,11 @@
           "type": "file",
           "target": "scripts/generate_smp_matched_reset_bank.py",
           "description": "Promotion-bound generator for identical physical states and SMP histories"
+        },
+        {
+          "type": "file",
+          "target": "scripts/analyze_smp_native_baseline_effects.py",
+          "description": "Preregistered policy-seed paired effects and checkpoint-stability analysis"
         }
       ],
       "missing": "Freeze matched comparisons to original SMP, FIRM-style tracking/diffusion, and key ablations under the same observation and evaluation protocol."

@@ -22,6 +22,12 @@ from aggregate_smp_specialist_seeds import (
 from aggregate_smp_specialist_seeds import (
   write_aggregate as write_specialist_aggregate,
 )
+from analyze_smp_native_baseline_effects import (
+  NativeEffectCfg,
+)
+from analyze_smp_native_baseline_effects import (
+  write_analysis as write_native_effect_analysis,
+)
 from audit_smp_baseline_registry import audit as audit_baseline_registry
 from bind_smp_native_eval_banks import EvalBindingCfg, write_bindings
 from build_smp_causal_manifest import ManifestCfg, build_manifest
@@ -149,6 +155,9 @@ class PipelineCfg:
     "run_control/ral_baselines/formal_manifests"
   )
   baseline_evidence_dir: Path = Path("run_control/ral_baselines/native_eval")
+  baseline_effect_output: Path = Path(
+    "run_control/ral_baselines/native_eval/paired_effects.json"
+  )
   specialist_eval_seed: int = 20260910
   specialist_eval_num_envs: int = 256
   specialist_eval_steps: int = 750
@@ -1386,11 +1395,36 @@ def _advance_native_baselines(
       "active_evaluation": None,
       "aggregates": None,
     }
+  try:
+    paired_effects = write_native_effect_analysis(
+      NativeEffectCfg(
+        evidence_dir=cfg.baseline_evidence_dir,
+        registry=cfg.baseline_registry_template,
+        output_json=cfg.baseline_effect_output,
+      )
+    )
+  except (FileNotFoundError, ValueError, json.JSONDecodeError) as error:
+    return {
+      "status": "NATIVE_PAIRED_EFFECT_ALERT",
+      "action": f"Native paired-effect analysis failed closed: {error}",
+      "held_out_bank": held_out,
+      "launch": launch,
+      "manifest_index": checkpoint_index,
+      "formal_index": formal_index,
+      "evaluations": evaluations,
+      "active_evaluation": None,
+      "aggregates": aggregates,
+      "paired_effects": None,
+    }
+  supported = paired_effects["status"] == "PROPOSED_PAIRED_ADVANTAGE_SUPPORTED"
   return {
     "status": "NATIVE_BASELINE_EVIDENCE_COMPLETE",
     "action": (
-      "Native Task-only, Original SMP, and Proposed SMP have complete frozen "
-      "three-seed evidence; audit paired effects and adapter baselines next."
+      "Native paired evidence supports the preregistered Proposed SMP advantage; "
+      "external adapter baselines remain required."
+      if supported
+      else "Native paired evidence is complete without the preregistered advantage; "
+      "report the null result and do not tune thresholds post hoc."
     ),
     "held_out_bank": held_out,
     "launch": launch,
@@ -1399,6 +1433,12 @@ def _advance_native_baselines(
     "evaluations": evaluations,
     "active_evaluation": None,
     "aggregates": aggregates,
+    "paired_effects": {
+      "status": paired_effects["status"],
+      "path": str(cfg.baseline_effect_output.resolve()),
+      "sha256": _sha256(cfg.baseline_effect_output),
+      "support_rule_checks": paired_effects["support_rule_checks"],
+    },
   }
 
 

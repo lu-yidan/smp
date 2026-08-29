@@ -205,6 +205,17 @@ unit. A dead generator, worker, evaluator, partial artifact, or changed hash is
 an alert state; the controller never silently restarts it. T/P retains queue
 priority, and adapter baselines remain separately blocked.
 
+After all 12 native matrices are complete, the preregistered paired analysis
+uses the same policy seed as the pairing unit. It reports per-pose, macro,
+worst-pose, and safety deltas for Proposed-minus-Original,
+Proposed-minus-Task-only, and Original-minus-Task-only at every gate. The
+primary support rule is frozen in the registry: final Proposed-minus-Original
+worst-pose bootstrap lower bound above zero, macro non-inferiority within five
+percentage points, Task-only worst-pose non-inferiority within five points, and
+all Proposed seeds passing the 15k/25k/final stability contract. A complete
+null comparison is retained and reported; it does not trigger threshold changes
+or selective reruns.
+
 ## Frozen flat evaluation
 
 Use `evaluate_smp_baseline.py` schema 2 for every compatible policy:

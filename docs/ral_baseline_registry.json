@@ -64,6 +64,24 @@
     "modes": ["native_gsi", "prone", "supine", "left_side", "right_side"],
     "success_definition": "stable_standing_hold_25_steps"
   },
+  "paired_analysis": {
+    "sampling_unit": "independently_trained_policy_seed",
+    "bootstrap_replicates": 20000,
+    "bootstrap_seed": 20260829,
+    "stable_gates": [15000, 25000, 29999],
+    "final_gate": 29999,
+    "late_regression_reference_gate": 25000,
+    "max_late_regression": 0.10,
+    "success_thresholds": {
+      "native_gsi": 0.95,
+      "fixed_macro": 0.80,
+      "fixed_worst": 0.60,
+      "finite_action_rate": 1.0
+    },
+    "noninferiority_margin": 0.05,
+    "primary_contrast": "proposed_smp_recovery_minus_original_product_smp",
+    "support_rule": "primary_fixed_worst_ci_low_gt_0_and_primary_macro_ci_low_ge_minus_margin_and_task_only_worst_ci_low_ge_minus_margin_and_proposed_stable"
+  },
   "methods": [
     {
       "id": "task_only_ppo",

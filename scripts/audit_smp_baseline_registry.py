@@ -182,6 +182,47 @@ def audit(registry: dict[str, Any], registry_path: Path) -> dict[str, Any]:
     evaluation.get("success_definition") == "stable_standing_hold_25_steps",
     "success definition drifted",
   )
+  paired = registry.get("paired_analysis", {})
+  _require(
+    paired.get("sampling_unit") == "independently_trained_policy_seed",
+    "paired sampling unit drifted",
+  )
+  _require(paired.get("bootstrap_replicates") == 20000, "paired bootstrap drifted")
+  _require(paired.get("bootstrap_seed") == 20260829, "paired seed drifted")
+  _require(
+    paired.get("stable_gates") == [15000, 25000, 29999],
+    "paired stable gates drifted",
+  )
+  _require(paired.get("final_gate") == 29999, "paired final gate drifted")
+  _require(
+    paired.get("late_regression_reference_gate") == 25000,
+    "paired regression reference drifted",
+  )
+  _require(paired.get("max_late_regression") == 0.10, "paired regression drifted")
+  _require(
+    paired.get("success_thresholds")
+    == {
+      "native_gsi": 0.95,
+      "fixed_macro": 0.80,
+      "fixed_worst": 0.60,
+      "finite_action_rate": 1.0,
+    },
+    "paired success thresholds drifted",
+  )
+  _require(
+    paired.get("noninferiority_margin") == 0.05,
+    "paired noninferiority margin drifted",
+  )
+  _require(
+    paired.get("primary_contrast")
+    == "proposed_smp_recovery_minus_original_product_smp",
+    "paired primary contrast drifted",
+  )
+  _require(
+    paired.get("support_rule")
+    == "primary_fixed_worst_ci_low_gt_0_and_primary_macro_ci_low_ge_minus_margin_and_task_only_worst_ci_low_ge_minus_margin_and_proposed_stable",
+    "paired support rule drifted",
+  )
 
   repo_root = _repo_root(registry_path)
   bank_ready = _validate_reset_bank(registry.get("shared_reset_bank", {}), repo_root)
