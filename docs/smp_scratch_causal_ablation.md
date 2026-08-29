@@ -39,6 +39,19 @@ Every policy in this experiment is trained from scratch.
 | 6 | A6 F2S2 bridge | F2S2 | 80/20 | GSI only | 10% floor on procedural only |
 | 7 | A7 V7 bridge | LAFAN V7 | 80/20 | GSI only | 10% floor on procedural only |
 
+Formal runs started from commit `28addcd`:
+
+| GPU | W&B run | Run ID |
+| ---: | --- | --- |
+| 0 | [A0 F2S2 GSI](https://wandb.ai/tabletennis/smp/runs/zqrc8jmf) | `zqrc8jmf` |
+| 1 | [A1 V7 GSI](https://wandb.ai/tabletennis/smp/runs/5xcp7tru) | `5xcp7tru` |
+| 2 | [A2 F2S2 strict](https://wandb.ai/tabletennis/smp/runs/qpo8vd2a) | `qpo8vd2a` |
+| 3 | [A3 V7 strict](https://wandb.ai/tabletennis/smp/runs/a6az0q91) | `a6az0q91` |
+| 4 | [A4 F2S2 reset-aware](https://wandb.ai/tabletennis/smp/runs/6ok4oe7g) | `6ok4oe7g` |
+| 5 | [A5 V7 reset-aware](https://wandb.ai/tabletennis/smp/runs/adg5qrxg) | `adg5qrxg` |
+| 6 | [A6 F2S2 bridge](https://wandb.ai/tabletennis/smp/runs/hk30sstb) | `hk30sstb` |
+| 7 | [A7 V7 bridge](https://wandb.ai/tabletennis/smp/runs/32nhutcb) | `32nhutcb` |
+
 The procedural 20% is split uniformly across prone, supine, left-side, and
 right-side resets. GSI samples always retain the original exact task-times-SMP
 reward. The bridge arms use
