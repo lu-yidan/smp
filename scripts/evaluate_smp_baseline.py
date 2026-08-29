@@ -287,7 +287,7 @@ def main(cfg: EvalCfg) -> None:
     "seed": cfg.seed,
     "num_envs": cfg.num_envs,
     "steps": cfg.steps,
-    "physics_dt_s": float(env_cfg.sim.dt),
+    "physics_dt_s": float(raw_env.physics_dt),
     "control_dt_s": float(raw_env.step_dt),
     "actor_observation_dim": int(obs["actor"].shape[-1]),
     "critic_observation_dim": int(obs["critic"].shape[-1]),
