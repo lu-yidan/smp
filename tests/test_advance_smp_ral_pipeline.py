@@ -157,23 +157,33 @@ class PipelineStateTest(unittest.TestCase):
       control_dir=self.cfg.control_dir,
       evidence_dir=self.cfg.evidence_dir,
       state=self.cfg.state,
-      gates=(8000, 15000, 25000),
+      gates=(8000, 15000, 29999),
       launch_when_ready=True,
     )
     self.manifests.append(
       {
-        "gate": 25000,
-        "path": str(self.cfg.evidence_dir / "manifests/gate_25000.json"),
-        "sha256": "hash-25000",
+        "gate": 29999,
+        "path": str(self.cfg.evidence_dir / "manifests/gate_29999.json"),
+        "sha256": "hash-29999",
       }
     )
     state, launcher = self._advance(completed=True, gpu_processes=[])
     self.assertEqual(state["status"], "MANIFEST_LOCK_REQUIRED")
-    self.assertEqual(state["unlocked_manifest_gates"], [25000])
+    self.assertEqual(state["unlocked_manifest_gates"], [29999])
     launcher.assert_not_called()
 
 
 class CompletionValidationTest(unittest.TestCase):
+  def test_expected_causal_manifest_hashes_are_versioned(self) -> None:
+    self.assertEqual(
+      pipeline._LOCKED_MANIFEST_HASHES,
+      {
+        8000: "64506f71e85b69b58bb5579621b10a8aa6969a172428c2d213115fb54a08c333",
+        15000: "2e99d3af1bc6a3f9d5c01bf17f15d3588b73b673853af78a6dd711820382f7d9",
+        25000: "1709b96d2a71f0821315cc98a43412a7f71af4181d367110233b59410ea93029",
+      },
+    )
+
   def test_rejects_modified_locked_15k_manifest(self) -> None:
     with tempfile.TemporaryDirectory() as temporary:
       root = Path(temporary)
