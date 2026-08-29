@@ -7,6 +7,7 @@ import json
 import re
 import subprocess
 import sys
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -25,6 +26,7 @@ class MatrixCfg:
   num_envs: int = 512
   steps: int = 500
   device: str = "cuda:0"
+  devices: tuple[str, ...] = ()
   include_per_env: bool = True
   overwrite: bool = False
   dry_run: bool = False
@@ -64,6 +66,34 @@ def _valid_result(path: Path, expected: dict[str, Any]) -> bool:
   return all(result.get(key) == value for key, value in expected.items())
 
 
+def _atomic_write(path: Path, content: str) -> None:
+  temporary = path.with_suffix(path.suffix + ".tmp")
+  temporary.write_text(content)
+  temporary.replace(path)
+
+
+def _assign_commands(
+  commands: list[list[str]], devices: tuple[str, ...]
+) -> list[tuple[str, list[list[str]]]]:
+  if not devices:
+    raise ValueError("at least one evaluation device is required")
+  if len(set(devices)) != len(devices):
+    raise ValueError(f"evaluation devices must be unique, got {devices}")
+  buckets: list[list[list[str]]] = [[] for _ in devices]
+  for index, command in enumerate(commands):
+    device_index = index % len(devices)
+    buckets[device_index].append(command + ["--device", devices[device_index]])
+  return [
+    (device, bucket) for device, bucket in zip(devices, buckets) if bucket
+  ]
+
+
+def _run_bucket(device: str, commands: list[list[str]]) -> None:
+  for command in commands:
+    print(f"[RUN {device}] " + " ".join(command), flush=True)
+    subprocess.run(command, check=True)
+
+
 def _write_summary(
   output_dir: Path,
   metadata: dict[str, Any],
@@ -101,14 +131,17 @@ def _write_summary(
     )
 
   payload = {"metadata": metadata, "evaluations": rows, "summary": summary_rows}
-  (output_dir / "summary.json").write_text(
-    json.dumps(payload, indent=2, sort_keys=True) + "\n"
+  _atomic_write(
+    output_dir / "summary.json",
+    json.dumps(payload, indent=2, sort_keys=True) + "\n",
   )
   fields = list(summary_rows[0]) if summary_rows else ["arm", "checkpoint"]
-  with (output_dir / "summary.csv").open("w", newline="") as stream:
+  csv_temporary = output_dir / "summary.csv.tmp"
+  with csv_temporary.open("w", newline="") as stream:
     writer = csv.DictWriter(stream, fieldnames=fields)
     writer.writeheader()
     writer.writerows(summary_rows)
+  csv_temporary.replace(output_dir / "summary.csv")
 
 
 def main(cfg: MatrixCfg) -> None:
@@ -116,6 +149,7 @@ def main(cfg: MatrixCfg) -> None:
   cfg.output_dir.mkdir(parents=True, exist_ok=True)
   evaluator = Path(__file__).with_name("evaluate_smp_baseline.py")
   result_paths: list[Path] = []
+  commands: list[list[str]] = []
 
   for run in runs:
     checkpoint = Path(run["checkpoint"]).resolve()
@@ -160,8 +194,6 @@ def main(cfg: MatrixCfg) -> None:
           str(cfg.steps),
           "--seed",
           str(eval_seed),
-          "--device",
-          cfg.device,
           "--output",
           str(output),
         ]
@@ -169,12 +201,24 @@ def main(cfg: MatrixCfg) -> None:
           command.extend(("--policy-seed", str(policy_seed)))
         if cfg.include_per_env:
           command.append("--include-per-env")
-        print("[RUN] " + " ".join(command))
-        if not cfg.dry_run:
-          subprocess.run(command, check=True)
+        commands.append(command)
 
+  devices = cfg.devices or (cfg.device,)
+  assignments = _assign_commands(commands, devices) if commands else []
   if cfg.dry_run:
+    for device, bucket in assignments:
+      for command in bucket:
+        print(f"[DRY RUN {device}] " + " ".join(command))
     return
+
+  if assignments:
+    with ThreadPoolExecutor(max_workers=len(assignments)) as executor:
+      futures = [
+        executor.submit(_run_bucket, device, bucket)
+        for device, bucket in assignments
+      ]
+      for future in futures:
+        future.result()
 
   rows: list[dict[str, Any]] = []
   for output in result_paths:
@@ -190,9 +234,11 @@ def main(cfg: MatrixCfg) -> None:
     "eval_seeds": list(cfg.eval_seeds),
     "num_envs": cfg.num_envs,
     "steps": cfg.steps,
+    "devices": list(devices),
   }
-  (cfg.output_dir / "_COMPLETE.json").write_text(
-    json.dumps(complete, indent=2, sort_keys=True) + "\n"
+  _atomic_write(
+    cfg.output_dir / "_COMPLETE.json",
+    json.dumps(complete, indent=2, sort_keys=True) + "\n",
   )
 
 

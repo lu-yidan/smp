@@ -118,7 +118,7 @@ uv run scripts/build_smp_causal_manifest.py \
 uv run scripts/run_smp_frozen_eval_matrix.py \
   --manifest run_control/scratch_causal_8k_manifest.json \
   --output-dir run_control/scratch_causal_eval/8k \
-  --device cuda:0
+  --devices cuda:0 cuda:1 cuda:2 cuda:3 cuda:4 cuda:5 cuda:6 cuda:7
 
 uv run scripts/analyze_smp_frozen_matrix.py \
   --summary run_control/scratch_causal_eval/8k/summary.json
@@ -142,6 +142,12 @@ paired contrasts for prior, procedural resets, reset-aware termination, and
 the reward bridge with conservative rollout intervals. A screen pass never
 authorizes a RAL claim or terrain/plate promotion before checkpoint stability
 and three independently trained policy seeds are available.
+
+When several devices are supplied, each GPU receives one sequential queue and
+the queues run concurrently. No GPU receives two simultaneous evaluator
+processes. Existing valid case files are removed from the queue before device
+assignment, so an interrupted matrix resumes only missing work. Summary and
+completion files are written atomically after every device queue succeeds.
 
 The base evaluator also records contact-conditioned foot slip, root planar
 excursion, post-success root drift, secondary falls, foot separation at first
