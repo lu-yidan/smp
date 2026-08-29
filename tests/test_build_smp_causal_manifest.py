@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import sys
 import tempfile
 import unittest
@@ -76,6 +77,20 @@ class SeedProvenanceTest(unittest.TestCase):
       (resumed / "params" / "agent.yaml").write_text("seed: 42\n")
       (resumed / "params" / "env.yaml").write_text("seed: 42\n")
       (resumed / "model_29999.pt").write_bytes(b"resumed-final")
+      source = root / "task" / "run_suffix" / "model_8000.pt"
+      (resumed / "resume_provenance.json").write_text(
+        json.dumps(
+          {
+            "status": "AUDITED_CONTINUATION",
+            "arm": "arm",
+            "policy_seed": 42,
+            "environment_seed": 42,
+            "continuation_wandb_run_id": "resume-run",
+            "source_checkpoint": str(source),
+            "source_checkpoint_sha256": manifest._sha256(source),
+          }
+        )
+      )
       arm = {
         "name": "arm",
         "task": "Task",
@@ -96,6 +111,22 @@ class SeedProvenanceTest(unittest.TestCase):
       self.assertEqual(Path(payload["runs"][0]["run_dir"]).name, "run_suffix")
       self.assertEqual(
         Path(payload["runs"][0]["checkpoint"]).read_bytes(), b"checkpoint"
+      )
+      resumed_cfg = manifest.ManifestCfg(
+        checkpoint_step=29999,
+        output=root / "final_manifest.json",
+        logs_root=root,
+      )
+      with (
+        mock.patch.object(manifest, "_ARMS", (arm,)),
+        mock.patch.object(manifest, "_git_commit", return_value="commit"),
+      ):
+        resumed_payload = manifest.build_manifest(resumed_cfg)
+      resumed_row = resumed_payload["runs"][0]
+      self.assertEqual(resumed_row["wandb_run_id"], "resume-run")
+      self.assertEqual(
+        resumed_row["continuation_provenance"]["record"]["status"],
+        "AUDITED_CONTINUATION",
       )
 
 

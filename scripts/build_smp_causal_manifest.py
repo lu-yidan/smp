@@ -136,8 +136,50 @@ def _recorded_seed(run_dir: Path, config_name: str) -> int:
   return int(match.group(1))
 
 
+def _continuation_provenance(
+  run_dir: Path,
+  arm: dict[str, str],
+  policy_seed: int,
+  environment_seed: int,
+) -> tuple[Path, dict[str, Any]] | None:
+  path = run_dir / "resume_provenance.json"
+  if not path.is_file():
+    return None
+  payload = json.loads(path.read_text())
+  expected = {
+    "status": "AUDITED_CONTINUATION",
+    "arm": arm["name"],
+    "policy_seed": policy_seed,
+    "environment_seed": environment_seed,
+  }
+  for key, value in expected.items():
+    if payload.get(key) != value:
+      raise ValueError(
+        f"continuation provenance {path} has {key}={payload.get(key)!r}, "
+        f"expected {value!r}"
+      )
+  run_id = payload.get("continuation_wandb_run_id")
+  if not isinstance(run_id, str) or not run_id:
+    raise ValueError(f"continuation provenance lacks W&B run id: {path}")
+  source = Path(payload.get("source_checkpoint", ""))
+  if not source.is_file():
+    raise FileNotFoundError(f"continuation source checkpoint missing: {source}")
+  if _sha256(source) != payload.get("source_checkpoint_sha256"):
+    raise ValueError(f"continuation source checkpoint hash mismatch: {source}")
+  return path.resolve(), payload
+
+
 def build_manifest(cfg: ManifestCfg) -> dict[str, Any]:
-  discovered: list[tuple[dict[str, str], Path, Path, int, int]] = []
+  discovered: list[
+    tuple[
+      dict[str, str],
+      Path,
+      Path,
+      int,
+      int,
+      tuple[Path, dict[str, Any]] | None,
+    ]
+  ] = []
   missing: list[str] = []
   for arm in _ARMS:
     try:
@@ -159,8 +201,22 @@ def build_manifest(cfg: ManifestCfg) -> dict[str, Any]:
         f"{cfg.policy_seed}/{cfg.environment_seed}"
       )
       continue
+    try:
+      continuation = _continuation_provenance(
+        run_dir, arm, policy_seed, environment_seed
+      )
+    except (FileNotFoundError, ValueError) as error:
+      missing.append(f"{arm['name']}: {error}")
+      continue
     discovered.append(
-      (arm, run_dir.resolve(), checkpoint.resolve(), policy_seed, environment_seed)
+      (
+        arm,
+        run_dir.resolve(),
+        checkpoint.resolve(),
+        policy_seed,
+        environment_seed,
+        continuation,
+      )
     )
 
   if missing:
@@ -170,24 +226,42 @@ def build_manifest(cfg: ManifestCfg) -> dict[str, Any]:
     )
 
   runs = []
-  for arm, run_dir, checkpoint, policy_seed, environment_seed in discovered:
-    runs.append(
-      {
-        "name": arm["name"],
-        "task": arm["task"],
-        "checkpoint": str(checkpoint),
-        "checkpoint_sha256": _sha256(checkpoint),
-        "policy_seed": policy_seed,
-        "environment_seed": environment_seed,
-        "seed_provenance": {
-          "agent_config": str(run_dir / "params" / "agent.yaml"),
-          "environment_config": str(run_dir / "params" / "env.yaml"),
-        },
-        "run_dir": str(run_dir),
-        "wandb_run_id": arm["wandb_run_id"],
-        "wandb_url": (f"https://wandb.ai/{cfg.project}/runs/{arm['wandb_run_id']}"),
-      }
+  for (
+    arm,
+    run_dir,
+    checkpoint,
+    policy_seed,
+    environment_seed,
+    continuation,
+  ) in discovered:
+    wandb_run_id = (
+      continuation[1]["continuation_wandb_run_id"]
+      if continuation is not None
+      else arm["wandb_run_id"]
     )
+    row = {
+      "name": arm["name"],
+      "task": arm["task"],
+      "checkpoint": str(checkpoint),
+      "checkpoint_sha256": _sha256(checkpoint),
+      "policy_seed": policy_seed,
+      "environment_seed": environment_seed,
+      "seed_provenance": {
+        "agent_config": str(run_dir / "params" / "agent.yaml"),
+        "environment_config": str(run_dir / "params" / "env.yaml"),
+      },
+      "run_dir": str(run_dir),
+      "wandb_run_id": wandb_run_id,
+      "wandb_url": f"https://wandb.ai/{cfg.project}/runs/{wandb_run_id}",
+    }
+    if continuation is not None:
+      provenance_path, provenance = continuation
+      row["continuation_provenance"] = {
+        "path": str(provenance_path),
+        "sha256": _sha256(provenance_path),
+        "record": provenance,
+      }
+    runs.append(row)
 
   return {
     "experiment": f"scratch-causal-{cfg.checkpoint_step}",
