@@ -25,6 +25,7 @@ _RESET_WEIGHTS = {
   "left_side": (0.0, 0.0, 1.0, 0.0),
   "right_side": (0.0, 0.0, 0.0, 1.0),
 }
+_EVALUATION_SCHEMA_VERSION = 2
 
 
 @dataclass(frozen=True)
@@ -276,6 +277,7 @@ def main(cfg: EvalCfg) -> None:
   successful_secondary_fall = secondary_fall & strict_success
   successful_foot_separation = foot_separation_at_success[strict_success]
   result = {
+    "evaluation_schema_version": _EVALUATION_SCHEMA_VERSION,
     "checkpoint": cfg.checkpoint.name,
     "checkpoint_path": str(cfg.checkpoint.resolve()),
     "task": cfg.task,
@@ -285,6 +287,17 @@ def main(cfg: EvalCfg) -> None:
     "seed": cfg.seed,
     "num_envs": cfg.num_envs,
     "steps": cfg.steps,
+    "physics_dt_s": float(env_cfg.sim.dt),
+    "control_dt_s": float(raw_env.step_dt),
+    "actor_observation_dim": int(obs["actor"].shape[-1]),
+    "critic_observation_dim": int(obs["critic"].shape[-1]),
+    "strict_success_definition": {
+      "head_height_min_m": 1.10,
+      "upright_min": 0.85,
+      "root_linear_speed_max_m_s": 0.50,
+      "root_angular_speed_max_rad_s": 1.0,
+      "hold_steps": 25,
+    },
     "strict_successes": strict_successes,
     "strict_success_rate": float(strict_success.float().mean()),
     "strict_success_rate_ci95_low": strict_ci[0],

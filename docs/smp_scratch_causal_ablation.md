@@ -148,6 +148,11 @@ the queues run concurrently. No GPU receives two simultaneous evaluator
 processes. Existing valid case files are removed from the queue before device
 assignment, so an interrupted matrix resumes only missing work. Summary and
 completion files are written atomically after every device queue succeeds.
+Every case includes evaluation schema version 2, physics/control periods,
+actor and critic dimensions, and the complete strict-success definition. The
+resume check requires the current schema version, so a result produced before
+new metrics or protocol metadata were added is rerun instead of silently mixed
+with current evidence.
 
 The base evaluator also records contact-conditioned foot slip, root planar
 excursion, post-success root drift, secondary falls, foot separation at first

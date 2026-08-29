@@ -11,6 +11,7 @@ from typing import Any
 import tyro
 
 _FIXED_MODES = ("prone", "supine", "left_side", "right_side")
+_EVALUATION_SCHEMA_VERSION = 2
 _CONTRASTS = (
   ("prior_gsi", "a1_v7_gsi", "a0_f2s2_gsi"),
   ("prior_mix_strict", "a3_v7_mix_strict", "a2_f2s2_mix_strict"),
@@ -167,6 +168,12 @@ def analyze(payload: dict[str, Any], cfg: AnalysisCfg) -> dict[str, Any]:
   evaluations = payload.get("evaluations")
   if not isinstance(evaluations, list) or not evaluations:
     raise ValueError("summary does not contain evaluation rows")
+  schema_versions = {row.get("evaluation_schema_version") for row in evaluations}
+  if schema_versions != {_EVALUATION_SCHEMA_VERSION}:
+    raise ValueError(
+      "frozen matrix has incompatible evaluation schema versions: "
+      f"{sorted(str(value) for value in schema_versions)}"
+    )
   checkpoints = {row["checkpoint"] for row in evaluations}
   if len(checkpoints) != 1:
     raise ValueError(f"expected one frozen checkpoint, got: {sorted(checkpoints)}")

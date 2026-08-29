@@ -15,6 +15,7 @@ from typing import Any
 import tyro
 
 _DEFAULT_MODES = ("native_gsi", "prone", "supine", "left_side", "right_side")
+_EVALUATION_SCHEMA_VERSION = 2
 
 
 @dataclass(frozen=True)
@@ -168,6 +169,7 @@ def main(cfg: MatrixCfg) -> None:
         ) + ".json"
         output = cfg.output_dir / filename
         expected = {
+          "evaluation_schema_version": _EVALUATION_SCHEMA_VERSION,
           "checkpoint_path": str(checkpoint),
           "task": run["task"],
           "reset_mode": mode,
@@ -230,6 +232,7 @@ def main(cfg: MatrixCfg) -> None:
     rows.append(result)
   _write_summary(cfg.output_dir, metadata, rows)
   complete = {
+    "evaluation_schema_version": _EVALUATION_SCHEMA_VERSION,
     "manifest": str(cfg.manifest.resolve()),
     "result_count": len(rows),
     "modes": list(cfg.modes),

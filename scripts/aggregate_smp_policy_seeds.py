@@ -11,6 +11,7 @@ from typing import Any
 import tyro
 
 _FIXED_MODES = ("prone", "supine", "left_side", "right_side")
+_EVALUATION_SCHEMA_VERSION = 2
 _SAFETY_METRICS = (
   "max_joint_speed_p95_rad_s",
   "max_power_mean_w",
@@ -66,6 +67,9 @@ def _load_policy_summary(path: Path) -> tuple[int, dict[str, dict[str, Any]]]:
   evaluations = payload.get("evaluations")
   if not isinstance(evaluations, list) or not evaluations:
     raise ValueError(f"{path} has no evaluation rows")
+  schema_versions = {row.get("evaluation_schema_version") for row in evaluations}
+  if schema_versions != {_EVALUATION_SCHEMA_VERSION}:
+    raise ValueError(f"{path} has incompatible evaluation schemas: {schema_versions}")
   policy_seeds = {row.get("policy_seed") for row in evaluations}
   if None in policy_seeds or len(policy_seeds) != 1:
     raise ValueError(f"{path} must contain exactly one non-null policy seed")
