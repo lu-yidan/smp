@@ -84,7 +84,9 @@ def _assign_commands(
     device_index = index % len(devices)
     buckets[device_index].append(command + ["--device", devices[device_index]])
   return [
-    (device, bucket) for device, bucket in zip(devices, buckets) if bucket
+    (device, bucket)
+    for device, bucket in zip(devices, buckets, strict=True)
+    if bucket
   ]
 
 
