@@ -1,0 +1,76 @@
+{
+  "schema_version": 1,
+  "status": "PROMOTE_FOR_POLICY_SEEDS",
+  "study_role": "PREREGISTERED_LATE_EMERGENCE_FOLLOWUP",
+  "does_not_modify_original_no_promotion_decision": true,
+  "original_decision": {
+    "status": "NO_PROMOTION",
+    "path": "/mnt/workspace/user/luyidan/smp-v38-unified/run_control/scratch_causal_eval/stable_selection.json",
+    "sha256": "f6e379888a791fb761f1023a72852978c6def45dd064eb74c13bcacab230bc69"
+  },
+  "rationale": "The frozen single-seed screen found no arm that passed 15k, 25k, and final. A1 and A6 independently crossed the fixed breadth thresholds at both 25k and final, so new policy seeds test whether this late phase transition replicates. This follow-up cannot retroactively promote the original screen.",
+  "policy_seed": 42,
+  "promoted_candidates": [
+    "a1_v7_gsi",
+    "a6_f2s2_mix_bridge"
+  ],
+  "candidate_hypotheses": {
+    "a1_v7_gsi": "Late broad recovery from the V7 prior replicates, but high slip and joint speed may make it Pareto-inferior.",
+    "a6_f2s2_mix_bridge": "Late broad recovery from the F2S2 reward bridge replicates from scratch without the screen continuation, but high power, joint speed, and root drift may make it Pareto-inferior."
+  },
+  "training_protocol": {
+    "initialization": "random_actor_critic_from_scratch",
+    "policy_seeds": [20260901, 20260902, 20260903],
+    "environment_seed_equals_policy_seed": true,
+    "num_envs": 4096,
+    "rollout_steps_per_update": 24,
+    "max_iterations": 30000,
+    "save_interval": 1000,
+    "actor_observation_dim": 93,
+    "actor_history_steps": 1,
+    "forbidden_actor_inputs": [
+      "base_linear_velocity",
+      "terrain_label",
+      "plate_label",
+      "reset_family",
+      "contact_label",
+      "future_reference"
+    ]
+  },
+  "evaluation_protocol": {
+    "diagnostic_checkpoints": [8000, 15000, 25000],
+    "confirmatory_checkpoint": 29999,
+    "evaluation_seed": 20260829,
+    "num_envs": 512,
+    "steps": 500,
+    "schema_version": 2,
+    "reset_modes": ["native_gsi", "prone", "supine", "left_side", "right_side"],
+    "sampling_unit": "independently_trained_policy_seed",
+    "minimum_policy_seed_count": 3
+  },
+  "frozen_decision_rule": {
+    "success_gates": "Use docs/ral_terrain_plate_protocol.json candidate_flat_gates without modification.",
+    "all_three_seeds_required": true,
+    "ranking": "Among eligible candidates, use the existing frozen worst-pose CI, macro CI, secondary-fall, root-drift, foot-slip, power, qvel, and arm-name ordering.",
+    "safety_boundary": "Success does not establish hardware safety. Report every safety metric and retain a complete null or unsafe result without retuning."
+  },
+  "sources": [
+    {
+      "path": "/mnt/workspace/user/luyidan/smp-v38-unified/run_control/scratch_causal_eval/stable_selection.json",
+      "sha256": "f6e379888a791fb761f1023a72852978c6def45dd064eb74c13bcacab230bc69"
+    },
+    {
+      "path": "/mnt/workspace/user/luyidan/smp-v38-unified/run_control/scratch_causal_eval/gate_25000/analysis.json",
+      "sha256": "a6b038be9757a8a46b6325ebfece051fff72fbee2452a4f8d92daeea0b19d6c2"
+    },
+    {
+      "path": "/mnt/workspace/user/luyidan/smp-v38-unified/run_control/scratch_causal_eval/gate_29999/analysis.json",
+      "sha256": "c55b9ae6d17766dae8501e7476459dcc6ea25e375cce9686d7b772c2f467b5d2"
+    },
+    {
+      "path": "/mnt/workspace/user/luyidan/smp-v38-unified/run_control/scratch_causal_eval/manifests/gate_29999.json",
+      "sha256": "154d59b92489c73398918dd08a06b5057d4338be7bf5dd208b397db218a5a404"
+    }
+  ],
+  "claim_boundary": "This is a new held-out policy-seed follow-up motivated by the original NO_PROMOTION result. It is not evidence that the original stability screen passed and is not a terrain, plate, hardware, or RA-L result."
+}
