@@ -185,9 +185,41 @@ class FlatMethodAdvanceTest(unittest.TestCase):
       ):
         rows = advance._training_health(cfg, launch, datetime.now(timezone.utc))
       self.assertEqual(rows[0]["latest_iteration"], 123)
+      self.assertEqual(rows[0]["latest_checkpoint_iteration"], 29999)
+      self.assertEqual(rows[0]["progress_iteration_lower_bound"], 29999)
       self.assertEqual(rows[0]["latest_throughput_steps_s"], 45678)
       self.assertEqual(rows[0]["wandb_run_id"], "abc123")
       self.assertTrue(rows[0]["final_checkpoint_present"])
+
+  def test_training_health_reports_checkpoint_progress_when_log_lags(self) -> None:
+    with tempfile.TemporaryDirectory() as temporary:
+      root = Path(temporary)
+      cfg = self._cfg(root)
+      log = root / "job.log"
+      log.write_text("Learning iteration 2453/30000\n")
+      run = root / "run"
+      run.mkdir()
+      (run / "model_2000.pt").write_bytes(b"older")
+      (run / "model_3000.pt").write_bytes(b"newer")
+      launch = {
+        "jobs": [
+          {
+            "arm": "a6_replication_control",
+            "policy_seed": 20261001,
+            "gpu": 0,
+            "pid": 100,
+            "log": str(log),
+            "run_name": "test",
+          }
+        ]
+      }
+      with mock.patch.object(advance, "_pid_alive", return_value=True), mock.patch.object(
+        advance, "_discover_run", return_value=run
+      ):
+        rows = advance._training_health(cfg, launch, datetime.now(timezone.utc))
+      self.assertEqual(rows[0]["latest_iteration"], 2453)
+      self.assertEqual(rows[0]["latest_checkpoint_iteration"], 3000)
+      self.assertEqual(rows[0]["progress_iteration_lower_bound"], 3000)
 
   def test_matrix_launch_records_one_immutable_attempt(self) -> None:
     with tempfile.TemporaryDirectory() as temporary:

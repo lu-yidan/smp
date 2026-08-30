@@ -46,6 +46,7 @@ _THROUGHPUT_PATTERN = re.compile(
   re.IGNORECASE,
 )
 _WANDB_PATTERN = re.compile(r"wandb\.ai/[^\s]+/runs/([A-Za-z0-9]+)")
+_CHECKPOINT_PATTERN = re.compile(r"model_(\d+)\.pt")
 _GIB = 1024**3
 
 
@@ -141,6 +142,17 @@ def _tail(path: Path, maximum_bytes: int = 8 * 1024 * 1024) -> str:
     return stream.read().decode(errors="replace")
 
 
+def _latest_checkpoint_iteration(run_dir: Path | None) -> int | None:
+  if run_dir is None:
+    return None
+  iterations = []
+  for checkpoint in run_dir.glob("model_*.pt"):
+    match = _CHECKPOINT_PATTERN.fullmatch(checkpoint.name)
+    if match and checkpoint.is_file():
+      iterations.append(int(match.group(1)))
+  return max(iterations) if iterations else None
+
+
 def _training_health(
   cfg: FlatMethodAdvanceCfg, launch: dict[str, Any], now: datetime
 ) -> list[dict[str, Any]]:
@@ -170,6 +182,15 @@ def _training_health(
       final_checkpoint = run_dir / "model_29999.pt"
     except (FileNotFoundError, ValueError):
       pass
+    latest_log_iteration = (
+      max(map(int, iteration_matches)) if iteration_matches else None
+    )
+    latest_checkpoint_iteration = _latest_checkpoint_iteration(run_dir)
+    progress_candidates = [
+      value
+      for value in (latest_log_iteration, latest_checkpoint_iteration)
+      if value is not None
+    ]
     rows.append(
       {
         "arm": job["arm"],
@@ -181,7 +202,11 @@ def _training_health(
         "log_exists": log.is_file(),
         "log_mtime_utc": mtime.isoformat() if mtime else None,
         "log_age_minutes": age_minutes,
-        "latest_iteration": max(map(int, iteration_matches)) if iteration_matches else None,
+        "latest_iteration": latest_log_iteration,
+        "latest_checkpoint_iteration": latest_checkpoint_iteration,
+        "progress_iteration_lower_bound": (
+          max(progress_candidates) if progress_candidates else None
+        ),
         "latest_throughput_steps_s": (
           int(throughput_matches[-1].replace(",", "")) if throughput_matches else None
         ),
