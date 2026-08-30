@@ -271,7 +271,7 @@ def _verify_saved_config(run_dir: Path, job: dict[str, Any]) -> None:
   if "procedural_smp_floor: 0.1" not in reward:
     raise ValueError(f"saved reward bridge drifted: {run_dir}")
   termination = _named_block(text, "terminations", "smp_too_low")
-  if "terminate_low_smp_for_gsi_resets" not in termination:
+  if "smp_too_low_gsi_only" not in termination:
     raise ValueError(f"saved reset-aware termination drifted: {run_dir}")
 
 

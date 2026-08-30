@@ -51,7 +51,7 @@ class FlatMethodManifestTest(unittest.TestCase):
         "rewards:\n  task_smp_product:\n    func: test\n    params:\n"
         "      procedural_smp_floor: 0.1\n"
         "terminations:\n  smp_too_low:\n"
-        "    func: terminate_low_smp_for_gsi_resets\n"
+        "    func: smp_too_low_gsi_only\n"
         f"seed: {seed}\n"
       )
       for gate in builder._GATES:
