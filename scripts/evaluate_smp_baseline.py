@@ -33,6 +33,21 @@ _SPECIALIST_PROFILES = ("flat", "terrain", "plate")
 _TERRAIN_TYPES = ("flat", "slope", "stairs", "rough")
 _STAIR_EDGE_COHORTS = ("center", "near_edge", "straddle", "lower_tread")
 
+_FAILURE_REASON_NAMES = (
+  "success",
+  "nonfinite_action",
+  "invalid_dynamics",
+  "terrain_patch_exit",
+  "invalid_escape_setup",
+  "invalid_escape_contact",
+  "plate_not_escaped",
+  "never_reached_head_height",
+  "never_upright_while_high",
+  "never_low_linear_speed_while_upright",
+  "never_low_angular_speed_while_pose_stable",
+  "strict_candidate_hold_too_short",
+)
+
 
 @dataclass(frozen=True)
 class EvalCfg:
@@ -108,6 +123,66 @@ def _sha256(path: Path) -> str:
 def _is_cuda_device(device: str | torch.device) -> bool:
   """Handle mjlab versions that expose the environment device as a string."""
   return torch.device(device).type == "cuda"
+
+
+def _record_first_step(
+  first_step: torch.Tensor,
+  condition: torch.Tensor,
+  step: int,
+) -> None:
+  """Record a one-based first-hit step without changing an earlier hit."""
+  first_step[(first_step < 0) & condition] = step + 1
+
+
+def _classify_strict_failure_reasons(
+  *,
+  strict_success: torch.Tensor,
+  finite_action: torch.Tensor,
+  invalid_dynamics: torch.Tensor,
+  terrain_exit: torch.Tensor,
+  invalid_escape_setup: torch.Tensor,
+  invalid_escape_contact: torch.Tensor,
+  plate_present: torch.Tensor,
+  escape_reached: torch.Tensor,
+  head_reached: torch.Tensor,
+  upright_reached: torch.Tensor,
+  linear_speed_reached: torch.Tensor,
+  angular_speed_reached: torch.Tensor,
+) -> tuple[torch.Tensor, dict[str, int]]:
+  """Apply the frozen, mutually-exclusive post-rollout failure state machine."""
+  tensors = (
+    strict_success,
+    finite_action,
+    invalid_dynamics,
+    terrain_exit,
+    invalid_escape_setup,
+    invalid_escape_contact,
+    plate_present,
+    escape_reached,
+    head_reached,
+    upright_reached,
+    linear_speed_reached,
+    angular_speed_reached,
+  )
+  if any(tensor.shape != strict_success.shape for tensor in tensors):
+    raise ValueError("failure-reason tensors must have identical shapes")
+  reason = torch.full_like(strict_success, 11, dtype=torch.long)
+  reason[~angular_speed_reached] = 10
+  reason[~linear_speed_reached] = 9
+  reason[~upright_reached] = 8
+  reason[~head_reached] = 7
+  reason[plate_present & (~escape_reached)] = 6
+  reason[invalid_escape_contact] = 5
+  reason[invalid_escape_setup] = 4
+  reason[terrain_exit] = 3
+  reason[invalid_dynamics] = 2
+  reason[~finite_action] = 1
+  reason[strict_success] = 0
+  counts = {
+    name: int((reason == code).sum())
+    for code, name in enumerate(_FAILURE_REASON_NAMES)
+  }
+  return reason, counts
 
 
 def _configure_matched_eval_bank(env_cfg, cfg: EvalCfg) -> dict | None:
@@ -419,7 +494,13 @@ def main(cfg: EvalCfg) -> None:
     (raw_env.num_envs,), -1, dtype=torch.long, device=raw_env.device
   )
   baseline_first = torch.full_like(strict_first, -1)
+  head_height_first = torch.full_like(strict_first, -1)
+  upright_while_high_first = torch.full_like(strict_first, -1)
+  low_linear_speed_first = torch.full_like(strict_first, -1)
+  low_angular_speed_first = torch.full_like(strict_first, -1)
+  strict_candidate_first = torch.full_like(strict_first, -1)
   strict_hold = torch.zeros_like(strict_first)
+  max_strict_hold = torch.zeros_like(strict_first)
   baseline_hold = torch.zeros_like(strict_first)
   max_joint_speed = torch.zeros(raw_env.num_envs, device=raw_env.device)
   max_root_linear_speed = torch.zeros_like(max_joint_speed)
@@ -455,6 +536,8 @@ def main(cfg: EvalCfg) -> None:
   if cfg.evaluation_profile == "terrain":
     initial_head_z -= raw_env.scene.env_origins[:, 2]
   initial_upright = torch.clamp(-robot.data.projected_gravity_b[:, 2], 0.0, 1.0).clone()
+  max_head_z = initial_head_z.clone()
+  max_upright = initial_upright.clone()
 
   for step in range(cfg.steps):
     with torch.inference_mode():
@@ -502,17 +585,23 @@ def main(cfg: EvalCfg) -> None:
       if hand_found is None:
         raise RuntimeError("formal plate evaluation requires hand contact labels")
       hand_support |= hand_found.reshape(raw_env.num_envs, -1).any(dim=-1)
-    strict_standing = (
-      (head_z >= 1.10)
-      & (upright >= 0.85)
-      & (linear_speed < 0.50)
-      & (angular_speed < 1.0)
-      & escape_complete
-    )
+    max_head_z = torch.maximum(max_head_z, head_z)
+    max_upright = torch.maximum(max_upright, upright)
+    head_height_gate = head_z >= 1.10
+    upright_gate = head_height_gate & (upright >= 0.85)
+    linear_speed_gate = upright_gate & (linear_speed < 0.50)
+    angular_speed_gate = linear_speed_gate & (angular_speed < 1.0)
+    strict_standing = angular_speed_gate & escape_complete
+    _record_first_step(head_height_first, head_height_gate, step)
+    _record_first_step(upright_while_high_first, upright_gate, step)
+    _record_first_step(low_linear_speed_first, linear_speed_gate, step)
+    _record_first_step(low_angular_speed_first, angular_speed_gate, step)
+    _record_first_step(strict_candidate_first, strict_standing, step)
     baseline_standing = (head_z >= 1.20) & (linear_speed < 0.50)
     strict_hold = torch.where(
       strict_standing, strict_hold + 1, torch.zeros_like(strict_hold)
     )
+    max_strict_hold = torch.maximum(max_strict_hold, strict_hold)
     baseline_hold = torch.where(
       baseline_standing, baseline_hold + 1, torch.zeros_like(baseline_hold)
     )
@@ -579,6 +668,20 @@ def main(cfg: EvalCfg) -> None:
     valid_episode &= (~invalid_escape_setup) & (~invalid_escape_contact)
   strict_success = (strict_first >= 0) & valid_episode
   baseline_success = (baseline_first >= 0) & valid_episode
+  failure_reason_code, failure_reason_counts = _classify_strict_failure_reasons(
+    strict_success=strict_success,
+    finite_action=finite,
+    invalid_dynamics=invalid_dynamics,
+    terrain_exit=terrain_exit,
+    invalid_escape_setup=invalid_escape_setup,
+    invalid_escape_contact=invalid_escape_contact,
+    plate_present=plate_present,
+    escape_reached=(~plate_present) | (escape_first >= 0),
+    head_reached=head_height_first >= 0,
+    upright_reached=upright_while_high_first >= 0,
+    linear_speed_reached=low_linear_speed_first >= 0,
+    angular_speed_reached=low_angular_speed_first >= 0,
+  )
   recovery_steps = strict_first[strict_success].float()
   strict_successes = int(strict_success.sum())
   baseline_successes = int(baseline_success.sum())
@@ -683,6 +786,23 @@ def main(cfg: EvalCfg) -> None:
       "requires_plate_escape": cfg.evaluation_profile == "plate"
       and cfg.plate_mode == "pinned",
       "requires_valid_dynamics_and_setup": True,
+    },
+    "strict_failure_diagnosis": {
+      "schema_version": 1,
+      "does_not_change_strict_success": True,
+      "reason_codebook": {
+        str(code): name for code, name in enumerate(_FAILURE_REASON_NAMES)
+      },
+      "reason_counts": failure_reason_counts,
+      "gate_order": [
+        "head_height_min_m",
+        "upright_min_while_high",
+        "root_linear_speed_max_while_pose_valid",
+        "root_angular_speed_max_while_pose_valid",
+        "plate_escape_if_required",
+        "consecutive_hold_steps",
+      ],
+      "sampling_unit": "environment_rollout",
     },
     "strict_successes": strict_successes,
     "strict_success_rate": float(strict_success.float().mean()),
@@ -802,6 +922,15 @@ def main(cfg: EvalCfg) -> None:
       "plate_longitudinal_offset_m": plate_longitudinal_offset.cpu().tolist(),
       "plate_lateral_offset_m": plate_lateral_offset.cpu().tolist(),
       "strict_first_step": strict_first.cpu().tolist(),
+      "strict_failure_reason_code": failure_reason_code.cpu().tolist(),
+      "head_height_gate_first_step": head_height_first.cpu().tolist(),
+      "upright_while_high_gate_first_step": upright_while_high_first.cpu().tolist(),
+      "low_linear_speed_gate_first_step": low_linear_speed_first.cpu().tolist(),
+      "low_angular_speed_gate_first_step": low_angular_speed_first.cpu().tolist(),
+      "strict_candidate_first_step": strict_candidate_first.cpu().tolist(),
+      "strict_candidate_max_hold_steps": max_strict_hold.cpu().tolist(),
+      "max_head_z_m": max_head_z.cpu().tolist(),
+      "max_upright": max_upright.cpu().tolist(),
       "baseline_first_step": baseline_first.cpu().tolist(),
       "finite_action": finite.cpu().tolist(),
       "initial_head_z_m": initial_head_z.cpu().tolist(),
