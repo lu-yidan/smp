@@ -95,15 +95,31 @@ def _recorded_actor_terms(env_path: Path) -> tuple[str, ...]:
 
 
 def _named_block(text: str, section: str, name: str) -> str:
-  match = re.search(
-    rf"^{re.escape(section)}:\n(?:.*\n)*?^  {re.escape(name)}:\n"
-    r"(?P<body>.*?)(?=^  [A-Za-z0-9_]+:|\Z)",
-    text,
-    flags=re.MULTILINE | re.DOTALL,
-  )
-  if match is None:
+  lines = text.splitlines()
+  section_line = f"{section}:"
+  target_line = f"  {name}:"
+  in_section = False
+  start: int | None = None
+  for index, line in enumerate(lines):
+    if line == section_line:
+      in_section = True
+      continue
+    if in_section and line and not line.startswith(" "):
+      break
+    if in_section and line == target_line:
+      start = index + 1
+      break
+  if start is None:
     raise ValueError(f"saved config lacks {section}.{name}")
-  return match.group("body")
+  end = len(lines)
+  for index in range(start, len(lines)):
+    line = lines[index]
+    if (line and not line.startswith(" ")) or re.fullmatch(
+      r"  [A-Za-z0-9_]+:\s*", line
+    ):
+      end = index
+      break
+  return "\n".join(lines[start:end])
 
 
 def _discover_run(logs_root: Path, experiment: str, run_name: str) -> Path:

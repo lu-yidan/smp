@@ -180,6 +180,21 @@ class FlatMethodManifestTest(unittest.TestCase):
       with self.assertRaisesRegex(ValueError, "checkpoint integrity failed"):
         builder.build(cfg)
 
+  def test_named_block_scans_large_yaml_linearly(self) -> None:
+    filler = "\n".join(
+      f"  filler_{index}:\n    value: {index}" for index in range(2000)
+    )
+    text = (
+      f"events:\n{filler}\n"
+      "  mixed_fall_reset:\n    params:\n"
+      "      procedural_probability: 0.5\n"
+      "  next_event:\n    value: true\n"
+      "rewards:\n  task_smp_product:\n    value: true\n"
+    )
+    block = builder._named_block(text, "events", "mixed_fall_reset")
+    self.assertIn("procedural_probability: 0.5", block)
+    self.assertNotIn("next_event", block)
+
   def test_index_detects_tampering_and_partial_artifacts(self) -> None:
     with tempfile.TemporaryDirectory() as temporary:
       root = Path(temporary)
