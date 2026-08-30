@@ -5,6 +5,7 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import re
 import shutil
 import subprocess
 from dataclasses import dataclass
@@ -14,7 +15,7 @@ from typing import Any
 
 import tyro
 
-_PROTOCOL_SHA256 = "610a48471888199709b71f3ecaf42a813df497d3f55dc00dcfe2dde06738c496"
+_PROTOCOL_SHA256 = "6ca241aa3bfb303084de8eac4f1cd6e02a4728ef5969a632dc7ba2b54750e0e0"
 _MINIMUM_COMMIT = "a881567"
 _ARM_ORDER = ("a6_replication_control", "a8_balanced_bridge")
 _POLICY_SEEDS = (20261001, 20261002, 20261003)
@@ -94,7 +95,7 @@ def _validate_protocol(path: Path, repo_root: Path) -> tuple[dict[str, Any], str
   if protocol_sha != _PROTOCOL_SHA256:
     raise ValueError("flat method study protocol SHA-256 mismatch")
   protocol = _load_json(path)
-  if protocol.get("status") != "PREREGISTERED_READY_FOR_IMPLEMENTATION_AUDIT":
+  if protocol.get("status") != "PREREGISTERED_READY_FOR_TRAINING":
     raise ValueError("flat method study protocol is not launch-eligible")
   training = protocol.get("training_protocol", {})
   evaluation = protocol.get("evaluation_protocol", {})
@@ -163,6 +164,101 @@ def _validate_protocol(path: Path, repo_root: Path) -> tuple[dict[str, Any], str
     if not source_path.is_file() or _sha256(source_path) != source.get("sha256"):
       raise ValueError(f"preregistration source changed: {source_path}")
   return protocol, protocol_sha
+
+
+def _validate_smoke(protocol: dict[str, Any], repo_root: Path) -> dict[str, Any]:
+  audit = protocol.get("implementation_audit", {})
+  if (
+    audit.get("status") != "PASSED_REAL_MUJOCO_SMOKE"
+    or audit.get("code_commit") != "e9f8f051e472bb911c9aeaec252edd2a140bd96d"
+    or audit.get("task") != "Smp-Getup-Scratch-A8-F2S2-Balanced-Bridge-G1"
+    or audit.get("evidence_role") != "NON_PERFORMANCE_IMPLEMENTATION_EVIDENCE"
+  ):
+    raise RuntimeError("FLAT_METHOD_SMOKE_ALERT: implementation audit drifted")
+  runtime = audit.get("runtime_files", {})
+  required = ("log", "checkpoint", "agent_config", "environment_config", "git_provenance")
+  resolved: dict[str, Path] = {}
+  for name in required:
+    row = runtime.get(name, {})
+    path = repo_root / row.get("path", "")
+    if not path.is_file() or _sha256(path) != row.get("sha256"):
+      raise RuntimeError(f"FLAT_METHOD_SMOKE_ALERT: {name} is missing or drifted")
+    resolved[name] = path
+
+  log_text = resolved["log"].read_text(errors="replace")
+  error_pattern = re.compile(
+    r"traceback|cuda out of memory|outofmemoryerror|"
+    r"(?:^|[^a-z0-9_])(?:nan|inf)(?:[^a-z0-9_]|$)|fatal|segmentation fault",
+    re.IGNORECASE | re.MULTILINE,
+  )
+  required_log_fragments = (
+    "Learning iteration 0/1",
+    "Total steps: 384",
+    "Linear(in_features=93, out_features=512",
+    "Linear(in_features=960, out_features=512",
+  )
+  if error_pattern.search(log_text) or any(
+    fragment not in log_text for fragment in required_log_fragments
+  ):
+    raise RuntimeError("FLAT_METHOD_SMOKE_ALERT: MuJoCo smoke log is invalid")
+
+  agent_text = resolved["agent_config"].read_text()
+  env_text = resolved["environment_config"].read_text()
+  for pattern in (
+    r"^seed: 20261000$",
+    r"^num_steps_per_env: 24$",
+    r"^max_iterations: 1$",
+    r"^save_interval: 1$",
+  ):
+    if re.search(pattern, agent_text, re.MULTILINE) is None:
+      raise RuntimeError("FLAT_METHOD_SMOKE_ALERT: agent config contract drifted")
+  for pattern in (
+    r"^  num_envs: 16$",
+    r"^      procedural_probability: 0\.5$",
+    r"^seed: 20261000$",
+  ):
+    if re.search(pattern, env_text, re.MULTILINE) is None:
+      raise RuntimeError("FLAT_METHOD_SMOKE_ALERT: environment config contract drifted")
+
+  import torch
+
+  try:
+    checkpoint = torch.load(
+      resolved["checkpoint"], map_location="cpu", weights_only=False
+    )
+  except Exception as error:
+    raise RuntimeError(
+      "FLAT_METHOD_SMOKE_ALERT: checkpoint is not loadable"
+    ) from error
+  actor = checkpoint.get("actor_state_dict", {})
+  critic = checkpoint.get("critic_state_dict", {})
+
+  def collect_tensors(value: Any) -> list[Any]:
+    if torch.is_tensor(value):
+      return [value]
+    if isinstance(value, dict):
+      return [tensor for item in value.values() for tensor in collect_tensors(item)]
+    if isinstance(value, (list, tuple)):
+      return [tensor for item in value for tensor in collect_tensors(item)]
+    return []
+
+  tensors = collect_tensors(checkpoint)
+  verified = audit.get("verified", {})
+  if (
+    checkpoint.get("iter") != 0
+    or tuple(actor.get("mlp.0.weight", torch.empty(0)).shape) != (512, 93)
+    or tuple(critic.get("mlp.0.weight", torch.empty(0)).shape) != (512, 960)
+    or len(tensors) != verified.get("checkpoint_tensor_count")
+    or sum(tensor.numel() for tensor in tensors)
+    != verified.get("checkpoint_tensor_elements")
+    or not all(bool(torch.isfinite(tensor).all()) for tensor in tensors)
+  ):
+    raise RuntimeError("FLAT_METHOD_SMOKE_ALERT: checkpoint integrity failed")
+  return {
+    "status": audit["status"],
+    "code_commit": audit["code_commit"],
+    "runtime_sha256": {name: runtime[name]["sha256"] for name in required},
+  }
 
 
 def build_plan(cfg: FlatMethodStudyCfg) -> dict[str, Any]:
@@ -283,6 +379,9 @@ def launch_study(cfg: FlatMethodStudyCfg) -> dict[str, Any]:
     )
 
   repo_root = Path(__file__).resolve().parents[1]
+  protocol = _load_json(Path(planned["protocol"]))
+  planned["implementation_smoke"] = _validate_smoke(protocol, repo_root)
+
   if _git(repo_root, "status", "--porcelain", "--untracked-files=no"):
     raise RuntimeError("refusing launch from a tracked-dirty worktree")
   gpu_processes = _gpu_processes()

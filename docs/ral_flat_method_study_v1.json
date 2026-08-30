@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "status": "PREREGISTERED_READY_FOR_IMPLEMENTATION_AUDIT",
+  "status": "PREREGISTERED_READY_FOR_TRAINING",
   "study_id": "smp-flat-procedural-coverage-v1",
   "study_role": "FRESH_SEED_SINGLE_FACTOR_METHOD_IMPROVEMENT",
   "created_at_utc": "2026-08-30T15:40:00+00:00",
@@ -164,6 +164,61 @@
     "filesystem_free_gib_min": 100,
     "inode_free_fraction_min": 0.10,
     "existing_partial_plan_or_job_forbids_relaunch": true
+  },
+  "implementation_audit": {
+    "status": "PASSED_REAL_MUJOCO_SMOKE",
+    "completed_at_utc": "2026-08-30T15:53:34+00:00",
+    "code_commit": "e9f8f051e472bb911c9aeaec252edd2a140bd96d",
+    "task": "Smp-Getup-Scratch-A8-F2S2-Balanced-Bridge-G1",
+    "evidence_role": "NON_PERFORMANCE_IMPLEMENTATION_EVIDENCE",
+    "smoke_contract": {
+      "device": 0,
+      "num_envs": 16,
+      "policy_seed": 20261000,
+      "environment_seed": 20261000,
+      "rollout_steps_per_update": 24,
+      "max_iterations": 1,
+      "save_interval": 1,
+      "expected_checkpoint_iteration": 0,
+      "expected_transitions": 384,
+      "actor_observation_dim": 93,
+      "critic_observation_dim": 960,
+      "procedural_probability": 0.50
+    },
+    "runtime_files": {
+      "log": {
+        "path": "run_control/flat_method_study_v1_smoke/smoke.log",
+        "sha256": "6a610bb90432f8ae2384cad8a02c128ca37c673e5010b3313edc317216588bf9"
+      },
+      "checkpoint": {
+        "path": "run_control/flat_method_study_v1_smoke/training_logs/smp_scratch_a8_f2s2_balanced_bridge_g1/2026-08-30_23-53-06_flat_method_a8_smoke_e9f8f05/model_0.pt",
+        "sha256": "891b14380b6d1fe7b8b2482800f1776bf5d894ad9ac84bc0e404ccb9554b5106"
+      },
+      "agent_config": {
+        "path": "run_control/flat_method_study_v1_smoke/training_logs/smp_scratch_a8_f2s2_balanced_bridge_g1/2026-08-30_23-53-06_flat_method_a8_smoke_e9f8f05/params/agent.yaml",
+        "sha256": "d00de5a2602ac86c9e5f22fcc865e3c73cbddafe04a2bb3e0e7ca69b518ba475"
+      },
+      "environment_config": {
+        "path": "run_control/flat_method_study_v1_smoke/training_logs/smp_scratch_a8_f2s2_balanced_bridge_g1/2026-08-30_23-53-06_flat_method_a8_smoke_e9f8f05/params/env.yaml",
+        "sha256": "4a34e39782bd083aea35efd1e10826bc16100480b9335a78ff8227160d7cf1ba"
+      },
+      "git_provenance": {
+        "path": "run_control/flat_method_study_v1_smoke/training_logs/smp_scratch_a8_f2s2_balanced_bridge_g1/2026-08-30_23-53-06_flat_method_a8_smoke_e9f8f05/git/smp-v38-unified.diff",
+        "sha256": "56d2e2bb3b956395c83247c88c3c83b5e7eef9853048399e869fb0a101fcd4b3"
+      }
+    },
+    "verified": {
+      "real_mujoco": true,
+      "gpu_returned_idle": true,
+      "log_has_no_fatal_oom_nan_inf": true,
+      "checkpoint_loadable": true,
+      "checkpoint_tensor_count": 73,
+      "checkpoint_tensor_elements": 2620640,
+      "all_checkpoint_tensors_finite": true,
+      "actor_observation_dim": 93,
+      "critic_observation_dim": 960,
+      "procedural_probability": 0.50
+    }
   },
   "one_shot_policy": {
     "no_hyperparameter_tuning_after_launch": true,

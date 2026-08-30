@@ -6,7 +6,9 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
+import torch
 from mjlab.tasks.registry import load_env_cfg
 
 import smp.rl.tasks  # noqa: F401
@@ -23,7 +25,7 @@ import launch_smp_flat_method_study as launcher
 
 _REPO = Path(__file__).parents[1]
 _PROTOCOL = _REPO / "docs/ral_flat_method_study_v1.json"
-_PROTOCOL_SHA256 = "610a48471888199709b71f3ecaf42a813df497d3f55dc00dcfe2dde06738c496"
+_PROTOCOL_SHA256 = "6ca241aa3bfb303084de8eac4f1cd6e02a4728ef5969a632dc7ba2b54750e0e0"
 
 
 def _sha256(path: Path) -> str:
@@ -82,7 +84,8 @@ class FlatMethodStudyTest(unittest.TestCase):
   def test_preregistration_is_hash_locked_and_matches_code(self) -> None:
     self.assertEqual(_sha256(_PROTOCOL), _PROTOCOL_SHA256)
     protocol = json.loads(_PROTOCOL.read_text())
-    self.assertEqual(protocol["status"], "PREREGISTERED_READY_FOR_IMPLEMENTATION_AUDIT")
+    self.assertEqual(protocol["status"], "PREREGISTERED_READY_FOR_TRAINING")
+    self.assertEqual(protocol["implementation_audit"]["status"], "PASSED_REAL_MUJOCO_SMOKE")
     self.assertEqual(protocol["training_protocol"]["policy_seeds"], [20261001, 20261002, 20261003])
     self.assertEqual(protocol["training_protocol"]["devices"], [0, 1, 2, 3, 4, 5])
     self.assertEqual(protocol["training_protocol"]["reserved_idle_devices"], [6, 7])
@@ -106,7 +109,7 @@ class FlatMethodStudyTest(unittest.TestCase):
       second = launcher.build_plan(cfg)
     self.assertEqual(first["plan_id"], second["plan_id"])
     self.assertEqual(
-      first["protocol_status"], "PREREGISTERED_READY_FOR_IMPLEMENTATION_AUDIT"
+      first["protocol_status"], "PREREGISTERED_READY_FOR_TRAINING"
     )
     self.assertEqual(first["protocol_sha256"], _PROTOCOL_SHA256)
     self.assertEqual(first["policy_seeds"], [20261001, 20261002, 20261003])
@@ -126,16 +129,78 @@ class FlatMethodStudyTest(unittest.TestCase):
     self.assertTrue(all(not job["promotion_eligible"] for job in first["jobs"][:3]))
     self.assertTrue(all(job["promotion_eligible"] for job in first["jobs"][3:]))
 
-  def test_launch_is_forbidden_before_protocol_audit_is_promoted(self) -> None:
+  def test_launch_is_forbidden_when_runtime_smoke_validation_fails(self) -> None:
     with tempfile.TemporaryDirectory() as temporary:
       cfg = launcher.FlatMethodStudyCfg(
         protocol=_PROTOCOL,
         control_dir=Path(temporary) / "training",
         launch=True,
       )
-      with self.assertRaisesRegex(RuntimeError, "awaiting implementation audit"):
-        launcher.launch_study(cfg)
+      with mock.patch.object(
+        launcher,
+        "_validate_smoke",
+        side_effect=RuntimeError("FLAT_METHOD_SMOKE_ALERT: drifted"),
+      ):
+        with self.assertRaisesRegex(RuntimeError, "FLAT_METHOD_SMOKE_ALERT"):
+          launcher.launch_study(cfg)
       self.assertFalse(cfg.control_dir.exists())
+
+  def test_smoke_validator_rejects_missing_runtime_artifacts(self) -> None:
+    protocol = json.loads(_PROTOCOL.read_text())
+    with tempfile.TemporaryDirectory() as temporary:
+      with self.assertRaisesRegex(RuntimeError, "missing or drifted"):
+        launcher._validate_smoke(protocol, Path(temporary))
+
+  def test_smoke_validator_accepts_complete_recursive_checkpoint(self) -> None:
+    protocol = json.loads(_PROTOCOL.read_text())
+    with tempfile.TemporaryDirectory() as temporary:
+      root = Path(temporary)
+      files = {
+        "log": root / "smoke.log",
+        "checkpoint": root / "model_0.pt",
+        "agent_config": root / "agent.yaml",
+        "environment_config": root / "env.yaml",
+        "git_provenance": root / "git.diff",
+      }
+      files["log"].write_text(
+        "Learning iteration 0/1\n"
+        "Total steps: 384\n"
+        "Linear(in_features=93, out_features=512\n"
+        "Linear(in_features=960, out_features=512\n"
+      )
+      files["agent_config"].write_text(
+        "seed: 20261000\n"
+        "num_steps_per_env: 24\n"
+        "max_iterations: 1\n"
+        "save_interval: 1\n"
+      )
+      files["environment_config"].write_text(
+        "scene:\n"
+        "  num_envs: 16\n"
+        "events:\n"
+        "  mixed_fall_reset:\n"
+        "    params:\n"
+        "      procedural_probability: 0.5\n"
+        "seed: 20261000\n"
+      )
+      files["git_provenance"].write_text("e9f8f051\n")
+      checkpoint = {
+        "iter": 0,
+        "actor_state_dict": {"mlp.0.weight": torch.zeros(512, 93)},
+        "critic_state_dict": {"mlp.0.weight": torch.zeros(512, 960)},
+        "optimizer_state_dict": {"state": {0: {"exp_avg": torch.zeros(7)}}},
+      }
+      torch.save(checkpoint, files["checkpoint"])
+      for name, path in files.items():
+        protocol["implementation_audit"]["runtime_files"][name] = {
+          "path": path.name,
+          "sha256": _sha256(path),
+        }
+      verified = protocol["implementation_audit"]["verified"]
+      verified["checkpoint_tensor_count"] = 3
+      verified["checkpoint_tensor_elements"] = 539143
+      result = launcher._validate_smoke(protocol, root)
+      self.assertEqual(result["status"], "PASSED_REAL_MUJOCO_SMOKE")
 
   def test_protocol_drift_fails_closed_before_plan_creation(self) -> None:
     with tempfile.TemporaryDirectory() as temporary:
