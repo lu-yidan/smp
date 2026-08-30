@@ -3,6 +3,18 @@
   "target": "IEEE Robotics and Automation Letters",
   "updated_at": "2026-08-30",
   "policy_scope": "93D single-frame deployable actor without true base linear velocity",
+  "completed_null_results": [
+    {
+      "id": "late_emergence_followup_20260830",
+      "status": "COMPLETE_NO_PROMOTION",
+      "record": "docs/ral_late_emergence_followup_results.json",
+      "runtime_aggregate_sha256": "5414871cf6bea01d080bbbfa3511f24f74bce04404c403991b35b19ef97ada82",
+      "runtime_promotion_sha256": "469e5df8dc2694a70fb18241a29cf2e262208c26532d53fb14caaf6b937eaea8",
+      "interpretation": "Three independent from-scratch policy seeds were completed for each of A1 and A6, and all 30 frozen schema-2 cells passed integrity audit. Neither arm passed the preregistered flat gates, so the original NO_PROMOTION remains unchanged and T/P, matched baselines, hardware, and RA-L conclusions remain blocked.",
+      "performance_evidence_scope": "Frozen flat late-emergence follow-up only",
+      "does_not_set_any_required_criterion_to_met": true
+    }
+  ],
   "criteria": [
     {
       "id": "C01",
@@ -17,7 +29,7 @@
           "description": "Eight-arm causal screen protocol and W&B run mapping"
         }
       ],
-      "missing": "Complete frozen 8k/15k/25k/final matrices and select a checkpoint-stable arm."
+      "missing": "The four frozen matrices are complete, but the stable screen and the preregistered three-seed late-emergence follow-up both ended NO_PROMOTION; no checkpoint-stable arm exists to satisfy this criterion."
     },
     {
       "id": "C02",
@@ -26,7 +38,7 @@
       "required": true,
       "status": "not_started",
       "evidence": [],
-      "missing": "Train and freeze at least three independent policy seeds for the selected configuration."
+      "missing": "Three independent seeds were frozen for each late-emergence candidate, but both candidates failed the preregistered gates; replication of a selected eligible configuration remains unavailable."
     },
     {
       "id": "C03",
@@ -46,7 +58,7 @@
           "description": "Macro and worst-pose frozen analysis"
         }
       ],
-      "missing": "Populate bootstrap intervals from three independently trained policies."
+      "missing": "Policy-seed bootstrap is populated for the complete null late-emergence follow-up, but no promoted policy exists for downstream T/P, baseline, unified, or hardware uncertainty reporting."
     },
     {
       "id": "C04",

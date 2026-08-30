@@ -1,0 +1,130 @@
+{
+  "schema_version": 1,
+  "status": "COMPLETE_NO_PROMOTION",
+  "study_role": "PREREGISTERED_LATE_EMERGENCE_FOLLOWUP_RESULT",
+  "completed_at_utc": "2026-08-30T11:55:55.182745+00:00",
+  "code_commit": "7f096e6f27b89c036ccedb41b8a00dc6032f49f9",
+  "preregistration": "docs/ral_late_emergence_followup.json",
+  "lineage": {
+    "original_stable_selection_status": "NO_PROMOTION",
+    "original_stable_selection_sha256": "f6e379888a791fb761f1023a72852978c6def45dd064eb74c13bcacab230bc69",
+    "selection_sha256": "5611e47ef63d0f6ef5b4aea53704979b58d5abd043b3a0453f0edde546e48f27",
+    "launch_plan_id": "4b36a59e8d1716bbde7173c6a31b94626703eb0cb7d85b449c07e7183946fd05",
+    "launch_manifest_sha256": "6494fc7f9119eac347061c71d1195fa674f3672cd1b4d7f872b3f71e3fa25dd1",
+    "confirmation_manifest_index_sha256": "fa63b44c8b2f26c3ce0019eb7b33dd2c017090a4ca221812706a52f09ca8fb3f",
+    "policy_seed_aggregate_sha256": "5414871cf6bea01d080bbbfa3511f24f74bce04404c403991b35b19ef97ada82",
+    "flat_promotion_sha256": "469e5df8dc2694a70fb18241a29cf2e262208c26532d53fb14caaf6b937eaea8",
+    "promotion_id": "cbe7e8ed982aa95868351bb7dff042a7efef7bb73646c7045b28677cb74131d9"
+  },
+  "protocol_audit": {
+    "policy_seeds": [20260901, 20260902, 20260903],
+    "agent_seed_equals_environment_seed": true,
+    "arms": ["a1_v7_gsi", "a6_f2s2_mix_bridge"],
+    "random_actor_critic_from_scratch": true,
+    "actor_observation_dim": 93,
+    "actor_history_steps": 1,
+    "num_envs_training": 4096,
+    "rollout_steps_per_update": 24,
+    "training_iterations": 30000,
+    "confirmatory_checkpoint": 29999,
+    "evaluation_seed": 20260829,
+    "evaluation_num_envs": 512,
+    "evaluation_steps": 500,
+    "evaluation_schema_version": 2,
+    "reset_modes": ["native_gsi", "prone", "supine", "left_side", "right_side"],
+    "expected_cells": 30,
+    "valid_complete_cells": 30,
+    "per_environment_rows_per_cell": 512,
+    "sampling_unit": "independently_trained_policy_seed",
+    "bootstrap_resamples": 20000,
+    "bootstrap_seed": 20260829,
+    "all_six_final_checkpoints_complete": true,
+    "nan_inf_oom_or_fatal": false
+  },
+  "arms": {
+    "a1_v7_gsi": {
+      "status": "NO_PROMOTION",
+      "gsi": {
+        "mean": 0.1953125,
+        "policy_seed_values": [0.255859375, 0.0, 0.330078125]
+      },
+      "fixed_macro": {
+        "mean": 0.0,
+        "policy_seed_values": [0.0, 0.0, 0.0]
+      },
+      "fixed_worst": {
+        "mean": 0.0,
+        "policy_seed_values": [0.0, 0.0, 0.0]
+      },
+      "contact_foot_slip_p95_m_s": 0.376841406027476,
+      "post_success_root_drift_p95_m_by_seed": [1.021362543106079, null, 0.8309937715530396],
+      "secondary_fall_rate_after_success_by_seed": [0.0, null, 0.0],
+      "foot_separation_at_success_p95_m_by_seed": [0.40506047010421753, null, 0.3856651484966278],
+      "action_delta_rms_p95": 0.7087882955869039,
+      "action_second_difference_rms_p95": 1.0708412329355876,
+      "max_power_mean_w": 2024.9601236979167,
+      "max_joint_speed_p95_rad_s": 51.9992790222168,
+      "success_conditional_missing_value_note": "The runtime aggregate encodes undefined success-conditional metrics as -1.0 when a policy seed has no successful episode. This record converts those sentinels to null and does not average them as physical values.",
+      "frozen_gate_failures": [
+        "gsi.mean=0.1953 < 0.9500",
+        "fixed_macro.mean=0.0000 < 0.8000",
+        "fixed_macro.min_seed=0.0000 < 0.7000",
+        "fixed_worst.mean=0.0000 < 0.6000",
+        "fixed_worst.min_seed=0.0000 < 0.4500"
+      ]
+    },
+    "a6_f2s2_mix_bridge": {
+      "status": "NO_PROMOTION",
+      "gsi": {
+        "mean": 0.814453125,
+        "policy_seed_values": [0.8046875, 0.935546875, 0.703125]
+      },
+      "fixed_macro": {
+        "mean": 0.3333333333333333,
+        "policy_seed_values": [0.25, 0.75, 0.0]
+      },
+      "fixed_worst": {
+        "mean": 0.0,
+        "policy_seed_values": [0.0, 0.0, 0.0]
+      },
+      "contact_foot_slip_p95_m_s": 0.6062094370524088,
+      "post_success_root_drift_p95_m": 0.9521677096684774,
+      "secondary_fall_rate_after_success": 0.0,
+      "foot_separation_at_success_p95_m": 0.3528089125951131,
+      "action_delta_rms_p95": 0.9409437775611877,
+      "action_second_difference_rms_p95": 1.493202010790507,
+      "max_power_mean_w": 5206.786946614583,
+      "max_joint_speed_p95_rad_s": 93.11642710367839,
+      "frozen_gate_failures": [
+        "gsi.mean=0.8145 < 0.9500",
+        "fixed_macro.mean=0.3333 < 0.8000",
+        "fixed_macro.min_seed=0.0000 < 0.7000",
+        "fixed_worst.mean=0.0000 < 0.6000",
+        "fixed_worst.min_seed=0.0000 < 0.4500"
+      ]
+    }
+  },
+  "same_seed_descriptive_difference_a6_minus_a1": {
+    "gsi": 0.619140625,
+    "fixed_macro": 0.3333333333333333,
+    "fixed_worst": 0.0,
+    "contact_foot_slip_p95_m_s": 0.2293680310249328,
+    "action_delta_rms_p95": 0.2321554819742838,
+    "action_second_difference_rms_p95": 0.4223607778549194,
+    "max_power_mean_w": 3181.8268229166665,
+    "max_joint_speed_p95_rad_s": 41.11714808146159,
+    "interpretation": "These are same-seed descriptive differences between two multi-factor candidates, not an identified single-factor causal contrast. A1 success-conditional missingness also prevents an all-seed paired drift, secondary-fall, or foot-separation effect."
+  },
+  "decision": {
+    "status": "NO_PROMOTION",
+    "selected_arm": null,
+    "matched_flat_checkpoints": {},
+    "original_no_promotion_preserved": true,
+    "tp_specialists_authorized": false,
+    "matched_reset_bank_authorized": false,
+    "native_baselines_authorized": false,
+    "firm_matched_evaluation_authorized": false,
+    "unified_policy_authorized": false
+  },
+  "claim_boundary": "This is complete frozen flat follow-up performance evidence and a retained null result. It does not retroactively pass the original 15k stability gate, and it is not terrain, plate, unified, matched-baseline, hardware, or RA-L evidence. No required RA-L criterion is changed to met by this record."
+}
