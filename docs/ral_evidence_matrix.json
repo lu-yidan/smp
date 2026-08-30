@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "target": "IEEE Robotics and Automation Letters",
-  "updated_at": "2026-08-30",
+  "updated_at": "2026-08-31",
   "policy_scope": "93D single-frame deployable actor without true base linear velocity",
   "completed_null_results": [
     {
@@ -12,6 +12,21 @@
       "runtime_promotion_sha256": "469e5df8dc2694a70fb18241a29cf2e262208c26532d53fb14caaf6b937eaea8",
       "interpretation": "Three independent from-scratch policy seeds were completed for each of A1 and A6, and all 30 frozen schema-2 cells passed integrity audit. Neither arm passed the preregistered flat gates, so the original NO_PROMOTION remains unchanged and T/P, matched baselines, hardware, and RA-L conclusions remain blocked.",
       "performance_evidence_scope": "Frozen flat late-emergence follow-up only",
+      "does_not_set_any_required_criterion_to_met": true
+    }
+  ],
+  "active_preregistered_studies": [
+    {
+      "id": "flat_method_single_factor_20260831",
+      "status": "TRAINING_ACTIVE_NOT_PERFORMANCE_EVIDENCE",
+      "protocol": "docs/ral_flat_method_study_v1.json",
+      "protocol_sha256": "6ca241aa3bfb303084de8eac4f1cd6e02a4728ef5969a632dc7ba2b54750e0e0",
+      "launch_plan_id": "3e8a7aee720f4ac408b3d91eb912b9ace14c20dfd0ca4e82c8d8d2c9185ceb28",
+      "runtime_state": "run_control/automation_state/flat_method_study_latest.json",
+      "automation_commit": "792d99106f75779dff9593f1906d5c9452c176ed",
+      "design": "A6 20% procedural-reset replication control versus A8 50% balanced bridge, paired across fresh policy seeds 20261001--20261003 with all other frozen factors unchanged",
+      "planned_performance_evidence": "Twelve five-pose schema-2 matrices spanning 8k/15k/25k/final, 120 raw cells, policy-seed aggregation, and paired A8-minus-A6 effects",
+      "promotion_boundary": "Only A8 can advance, and only after every frozen absolute, late-regression, safety-integrity, and paired-causal gate passes",
       "does_not_set_any_required_criterion_to_met": true
     }
   ],
@@ -27,18 +42,34 @@
           "type": "file",
           "target": "docs/smp_scratch_causal_ablation.md",
           "description": "Eight-arm causal screen protocol and W&B run mapping"
+        },
+        {
+          "type": "file",
+          "target": "docs/ral_flat_method_study_v1.json",
+          "description": "Preregistered fresh-seed single-factor A6/A8 improvement study; protocol only, not performance evidence"
+        },
+        {
+          "type": "file",
+          "target": "scripts/advance_smp_flat_method_study.py",
+          "description": "Fail-closed training, manifest, frozen-evaluation, and analysis state machine"
         }
       ],
-      "missing": "The four frozen matrices are complete, but the stable screen and the preregistered three-seed late-emergence follow-up both ended NO_PROMOTION; no checkpoint-stable arm exists to satisfy this criterion."
+      "missing": "The stable screen and late-emergence follow-up both ended NO_PROMOTION. The fresh-seed A6/A8 single-factor study is training, but no complete frozen result or checkpoint-stable eligible arm yet exists."
     },
     {
       "id": "C02",
       "name": "Independent policy-seed replication",
       "priority": 0,
       "required": true,
-      "status": "not_started",
-      "evidence": [],
-      "missing": "Three independent seeds were frozen for each late-emergence candidate, but both candidates failed the preregistered gates; replication of a selected eligible configuration remains unavailable."
+      "status": "in_progress",
+      "evidence": [
+        {
+          "type": "file",
+          "target": "docs/ral_flat_method_study_v1.json",
+          "description": "Frozen three-seed A6/A8 design and policy-seed sampling-unit contract"
+        }
+      ],
+      "missing": "The new three-seed A6/A8 jobs are active; all 12 frozen matrices and an eligible three-seed promotion decision remain unavailable."
     },
     {
       "id": "C03",
@@ -56,9 +87,14 @@
           "type": "file",
           "target": "scripts/analyze_smp_frozen_matrix.py",
           "description": "Macro and worst-pose frozen analysis"
+        },
+        {
+          "type": "file",
+          "target": "scripts/analyze_smp_flat_method_study.py",
+          "description": "Immutable 120-cell audit, policy-seed uncertainty, safety Pareto, and paired A8-minus-A6 analysis"
         }
       ],
-      "missing": "Policy-seed bootstrap is populated for the complete null late-emergence follow-up, but no promoted policy exists for downstream T/P, baseline, unified, or hardware uncertainty reporting."
+      "missing": "The analysis path is versioned, but the fresh-seed matrices do not yet exist and no promoted policy exists for downstream T/P, baseline, unified, or hardware uncertainty reporting."
     },
     {
       "id": "C04",
@@ -71,9 +107,14 @@
           "type": "file",
           "target": "docs/smp_scratch_causal_ablation.md",
           "description": "Paired two-prior, four-training-condition experiment"
+        },
+        {
+          "type": "file",
+          "target": "docs/ral_flat_method_study_v1.json",
+          "description": "Fresh-seed single-factor procedural-reset coverage contrast with A6 as non-promotable control"
         }
       ],
-      "missing": "Complete frozen matrices and repeat decisive contrasts across policy seeds."
+      "missing": "Complete all frozen A6/A8 matrices and retain the preregistered paired contrast, including a complete null result if superiority is unsupported."
     },
     {
       "id": "C05",
@@ -275,13 +316,13 @@
       "evidence": [
         {
           "type": "url",
-          "target": "https://github.com/lu-yidan/G1_Recovery_Below_Block/tree/60d9d58fe6c1f3d363fdb18670b7b364bb1c0704",
-          "description": "Versioned Chinese RA-L project record and evidence-gap table"
+          "target": "https://github.com/lu-yidan/G1_Recovery_Below_Block/tree/4fca16e24738fb8fec23fba6f2a6a21d53ebbbcb",
+          "description": "Versioned seven-page Chinese RA-L project record including the fresh-seed method study and evidence-gap table"
         },
         {
           "type": "git_commit",
-          "target": "60d9d58fe6c1f3d363fdb18670b7b364bb1c0704",
-          "description": "Immutable project-record source revision"
+          "target": "4fca16e24738fb8fec23fba6f2a6a21d53ebbbcb",
+          "description": "Immutable project-record source and compiled-PDF revision"
         }
       ],
       "missing": "Convert verified evidence into the final RA-L manuscript, figures, video, limitations, and reproducibility package."
