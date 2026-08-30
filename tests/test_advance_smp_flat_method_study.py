@@ -163,7 +163,7 @@ class FlatMethodAdvanceTest(unittest.TestCase):
       log.write_text(
         "wandb.ai/tabletennis/smp/runs/abc123\n"
         "Learning iteration 123/30000\n"
-        "Computation: 45,678 steps/s\n"
+        "Steps per second: 45,678\n"
       )
       run = root / "run"
       run.mkdir()

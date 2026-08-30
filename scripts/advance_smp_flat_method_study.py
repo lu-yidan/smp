@@ -41,7 +41,10 @@ _ERROR_PATTERN = re.compile(
   re.IGNORECASE | re.MULTILINE,
 )
 _ITERATION_PATTERN = re.compile(r"Learning iteration\s+(\d+)\s*/\s*30000")
-_THROUGHPUT_PATTERN = re.compile(r"([0-9][0-9,]*)\s+steps/s")
+_THROUGHPUT_PATTERN = re.compile(
+  r"Steps per second:\s*([0-9][0-9,]*)|([0-9][0-9,]*)\s+steps/s",
+  re.IGNORECASE,
+)
 _WANDB_PATTERN = re.compile(r"wandb\.ai/[^\s]+/runs/([A-Za-z0-9]+)")
 _GIB = 1024**3
 
@@ -148,7 +151,10 @@ def _training_health(
     log = Path(job["log"])
     text = _tail(log)
     iteration_matches = _ITERATION_PATTERN.findall(text)
-    throughput_matches = _THROUGHPUT_PATTERN.findall(text)
+    throughput_matches = [
+      first or second
+      for first, second in _THROUGHPUT_PATTERN.findall(text)
+    ]
     wandb_matches = _WANDB_PATTERN.findall(text)
     mtime = datetime.fromtimestamp(log.stat().st_mtime, timezone.utc) if log.is_file() else None
     age_minutes = (now - mtime).total_seconds() / 60.0 if mtime else None
