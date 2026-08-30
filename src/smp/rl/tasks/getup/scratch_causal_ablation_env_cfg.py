@@ -156,6 +156,17 @@ def g1_scratch_a7_v7_mix_bridge_env_cfg(play: bool = False):
   )
 
 
+def g1_scratch_a8_f2s2_balanced_bridge_env_cfg(play: bool = False):
+  """One-shot method arm: increase only procedural reset exposure to 50%."""
+  return _scratch_causal_cfg(
+    play=play,
+    prior_path=F2S2_PRIOR_PATH,
+    procedural_probability=0.50,
+    reset_aware_termination=True,
+    procedural_smp_floor=0.10,
+  )
+
+
 __all__ = [
   "g1_scratch_a0_f2s2_gsi_env_cfg",
   "g1_scratch_a1_v7_gsi_env_cfg",
@@ -165,4 +176,5 @@ __all__ = [
   "g1_scratch_a5_v7_mix_reset_aware_env_cfg",
   "g1_scratch_a6_f2s2_mix_bridge_env_cfg",
   "g1_scratch_a7_v7_mix_bridge_env_cfg",
+  "g1_scratch_a8_f2s2_balanced_bridge_env_cfg",
 ]

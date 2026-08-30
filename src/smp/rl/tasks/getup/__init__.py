@@ -83,6 +83,7 @@ from smp.rl.tasks.getup.scratch_causal_ablation_env_cfg import (
   g1_scratch_a5_v7_mix_reset_aware_env_cfg,
   g1_scratch_a6_f2s2_mix_bridge_env_cfg,
   g1_scratch_a7_v7_mix_bridge_env_cfg,
+  g1_scratch_a8_f2s2_balanced_bridge_env_cfg,
 )
 from smp.rl.tasks.getup.smooth_env_cfg import g1_getup_robust_smooth_smp_env_cfg
 from smp.rl.tasks.getup.smp_observation_factorial_env_cfg import (
@@ -224,6 +225,13 @@ register_mjlab_task(
   env_cfg=g1_scratch_a7_v7_mix_bridge_env_cfg(play=False),
   play_env_cfg=g1_scratch_a7_v7_mix_bridge_env_cfg(play=True),
   rl_cfg=_scratch_causal_runner("smp_scratch_a7_v7_mix_bridge_g1"),
+)
+
+register_mjlab_task(
+  task_id="Smp-Getup-Scratch-A8-F2S2-Balanced-Bridge-G1",
+  env_cfg=g1_scratch_a8_f2s2_balanced_bridge_env_cfg(play=False),
+  play_env_cfg=g1_scratch_a8_f2s2_balanced_bridge_env_cfg(play=True),
+  rl_cfg=_scratch_causal_runner("smp_scratch_a8_f2s2_balanced_bridge_g1"),
 )
 
 for _arm in SCRATCH_ARM_BUILDERS:

@@ -26,6 +26,7 @@ from smp.rl.tasks.getup.scratch_causal_ablation_env_cfg import (
   g1_scratch_a5_v7_mix_reset_aware_env_cfg,
   g1_scratch_a6_f2s2_mix_bridge_env_cfg,
   g1_scratch_a7_v7_mix_bridge_env_cfg,
+  g1_scratch_a8_f2s2_balanced_bridge_env_cfg,
 )
 from smp.rl.tasks.getup.terrain_v35_env_cfg import (
   SLOPE_DEGREES,
@@ -46,6 +47,7 @@ SCRATCH_ARM_BUILDERS: dict[str, ScratchBuilder] = {
   "a5": g1_scratch_a5_v7_mix_reset_aware_env_cfg,
   "a6": g1_scratch_a6_f2s2_mix_bridge_env_cfg,
   "a7": g1_scratch_a7_v7_mix_bridge_env_cfg,
+  "a8": g1_scratch_a8_f2s2_balanced_bridge_env_cfg,
 }
 
 ACTOR_TERMS = (
