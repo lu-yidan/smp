@@ -1,0 +1,308 @@
+{
+  "schema_version": 1,
+  "status": "PREREGISTERED_READY_FOR_TRAINING",
+  "study_id": "smp-flat-objective-alignment-v1",
+  "study_role": "FRESH_SEED_SINGLE_TREATMENT_OBJECTIVE_ALIGNMENT",
+  "created_at_utc": "2026-08-31T06:55:00+00:00",
+  "question": "Does aligning the flat training objective and terminal event with the frozen strict stable-stand evaluation criterion improve reproducible all-pose recovery when the F2S2 prior, reset distribution, observations, PPO budget, and seeds are held fixed?",
+  "claim_boundary": "This study distinguishes the success-aligned training objective from the retained A6 objective under the same F2S2 prior and reset distribution. A positive result supports objective alignment as the causal factor in this contrast; it does not prove the prior is optimal. A null result means objective alignment alone is insufficient and does not authorize post-hoc reward tuning, reset changes, T/P work, or a claim that the prior is defective.",
+  "retained_results": {
+    "original_causal_screen": {
+      "status": "NO_PROMOTION",
+      "must_remain_unchanged": true
+    },
+    "late_emergence_followup": {
+      "status": "NO_PROMOTION",
+      "must_remain_unchanged": true,
+      "promotion_sha256": "469e5df8dc2694a70fb18241a29cf2e262208c26532d53fb14caaf6b937eaea8",
+      "aggregate_sha256": "5414871cf6bea01d080bbbfa3511f24f74bce04404c403991b35b19ef97ada82",
+      "failure_diagnosis_sha256": "68aca5f28866447945f462a843c2e4300ce3ea71c22d3de3fae4cad685702e1e",
+      "automatic_action": "STOP_NO_SAFE_AUTOMATIC_RETRAINING"
+    },
+    "procedural_coverage_study": {
+      "status": "FLAT_METHOD_COMPLETE_NO_PROMOTION",
+      "must_remain_unchanged": true,
+      "protocol_sha256": "6ca241aa3bfb303084de8eac4f1cd6e02a4728ef5969a632dc7ba2b54750e0e0",
+      "analysis_sha256": "b0bf3d198bd4224e26d71db7a4adde144e1dfe1a8f33ec327acf3c1e577db47e",
+      "observed_candidate_final_gsi_mean": 0.445,
+      "observed_candidate_final_fixed_pose_success": 0.0,
+      "observed_paired_gsi_effect_pp": -38.3,
+      "observed_paired_gsi_ci95_pp": [-51.8, -29.9]
+    }
+  },
+  "primary_contrast": {
+    "control": "a6_replication_control",
+    "proposed": "a9_objective_aligned",
+    "treatment": "success_aligned_training_objective",
+    "treatment_components": [
+      "decomposed_recovery_progress_height_upright_stationarity_and_stable_stand_reward",
+      "smp_gradient_floor_0.35",
+      "head_vertical_overspeed_penalty",
+      "action_rate_penalty",
+      "strict_evaluation_aligned_stood_up_terminal"
+    ],
+    "held_fixed": [
+      "F2S2_prior_checkpoint",
+      "20_percent_procedural_reset_probability",
+      "equal_prone_supine_left_right_pose_weights",
+      "GSI_only_low_SMP_termination",
+      "93D_single_frame_actor_observation",
+      "960D_privileged_critic_observation",
+      "PPO_hyperparameters_and_budget",
+      "paired_policy_and_environment_seeds"
+    ],
+    "control_is_not_eligible_for_promotion": true,
+    "control_role": "same-seed contemporaneous causal control only"
+  },
+  "arms": {
+    "a6_replication_control": {
+      "task": "Smp-Getup-Scratch-A6-F2S2-Mix-Bridge-G1",
+      "prior": "F2S2",
+      "procedural_probability": 0.2,
+      "procedural_pose_weights": [1.0, 1.0, 1.0, 1.0],
+      "gsi_only_low_smp_termination": true,
+      "actor_observation_dim": 93,
+      "actor_history_steps": 1,
+      "promotion_eligible": false,
+      "objective": {
+        "task": "0.7*upward_velocity_plus_0.3*head_height",
+        "task_times_smp": true,
+        "procedural_smp_floor": 0.1,
+        "stood_up": {
+          "head_height": 1.2,
+          "max_linear_speed": 0.5,
+          "hold_steps": 25,
+          "min_upright": null,
+          "max_angular_speed": null
+        }
+      }
+    },
+    "a9_objective_aligned": {
+      "task": "Smp-Getup-Scratch-A9-F2S2-Objective-Aligned-G1",
+      "prior": "F2S2",
+      "procedural_probability": 0.2,
+      "procedural_pose_weights": [1.0, 1.0, 1.0, 1.0],
+      "gsi_only_low_smp_termination": true,
+      "actor_observation_dim": 93,
+      "actor_history_steps": 1,
+      "promotion_eligible": true,
+      "objective": {
+        "task_components": {
+          "recovery_initiation_progress": 0.25,
+          "track_head_height": 0.2,
+          "upright_posture": 0.2,
+          "feet_stationary_when_upright": 0.1,
+          "base_stationary_when_upright": 0.1,
+          "strict_stable_stand": 0.15
+        },
+        "task_times_smp": true,
+        "smp_floor": 0.35,
+        "separate_penalties": {
+          "head_vertical_overspeed": {
+            "weight": -0.5,
+            "speed_limit": 0.25
+          },
+          "action_rate_l2": {
+            "weight": -0.001
+          }
+        },
+        "stood_up": {
+          "head_height": 1.1,
+          "max_linear_speed": 0.5,
+          "hold_steps": 25,
+          "min_upright": 0.85,
+          "max_angular_speed": 1.0
+        }
+      }
+    }
+  },
+  "training_protocol": {
+    "initialization": "random_actor_critic_and_normalizers_from_scratch",
+    "policy_seeds": [20261101, 20261102, 20261103],
+    "environment_seed_equals_policy_seed": true,
+    "num_envs": 4096,
+    "rollout_steps_per_update": 24,
+    "max_iterations": 30000,
+    "save_interval": 1000,
+    "learning_rate": 0.001,
+    "actor_observation_dim": 93,
+    "actor_history_steps": 1,
+    "critic_observation_dim": 960,
+    "devices": [0, 1, 2, 3, 4, 5],
+    "reserved_idle_devices": [6, 7],
+    "monitor_only_metrics": [
+      "missing_or_stale_log",
+      "iteration",
+      "latest_checkpoint_iteration",
+      "throughput",
+      "wandb_run_id",
+      "nan_inf",
+      "oom",
+      "fatal",
+      "checkpoint_presence"
+    ],
+    "forbidden_training_selection_signals": [
+      "reward_ranking",
+      "smp_score_ranking",
+      "termination_count_ranking",
+      "early_policy_selection"
+    ],
+    "forbidden_actor_inputs": [
+      "base_linear_velocity",
+      "terrain_label",
+      "plate_label",
+      "reset_family",
+      "contact_label",
+      "future_reference"
+    ]
+  },
+  "evaluation_protocol": {
+    "diagnostic_checkpoints": [8000],
+    "stability_checkpoints": [15000, 25000, 29999],
+    "confirmatory_checkpoint": 29999,
+    "evaluation_seed": 20261110,
+    "num_envs": 512,
+    "steps": 500,
+    "evaluation_schema_version": 2,
+    "failure_diagnosis_schema_version": 1,
+    "reset_modes": ["native_gsi", "prone", "supine", "left_side", "right_side"],
+    "include_per_environment": true,
+    "sampling_unit": "independently_trained_policy_seed",
+    "minimum_policy_seed_count": 3,
+    "evaluation_order": "gate_then_policy_seed_then_arm_then_pose",
+    "no_partial_arm_comparison": true
+  },
+  "failure_reason_codebook": {
+    "0": "success",
+    "1": "nonfinite_action",
+    "2": "invalid_dynamics",
+    "3": "terrain_patch_exit",
+    "4": "invalid_escape_setup",
+    "5": "invalid_escape_contact",
+    "6": "plate_not_escaped",
+    "7": "never_reached_head_height",
+    "8": "never_upright_while_high",
+    "9": "never_low_linear_speed_while_upright",
+    "10": "never_low_angular_speed_while_pose_stable",
+    "11": "strict_candidate_hold_too_short"
+  },
+  "frozen_absolute_promotion_rule": {
+    "only_arm": "a9_objective_aligned",
+    "all_three_seeds_required": true,
+    "required_stability_gates": [15000, 25000, 29999],
+    "gsi_mean_min": 0.95,
+    "fixed_macro_mean_min": 0.8,
+    "fixed_macro_min_seed": 0.7,
+    "fixed_worst_mean_min": 0.6,
+    "fixed_worst_min_seed": 0.45,
+    "max_25k_to_final_regression": 0.1,
+    "finite_action_rate_required": 1.0,
+    "invalid_dynamics_rate_required": 0.0,
+    "threshold_source": "docs/ral_terrain_plate_protocol.json candidate_flat_gates",
+    "thresholds_must_not_change_after_launch": true
+  },
+  "paired_causal_analysis": {
+    "pairing_key": "policy_seed",
+    "bootstrap_replicates": 20000,
+    "bootstrap_seed": 20261110,
+    "primary_effect": "a9_minus_a6_final_fixed_worst",
+    "support_requires_primary_ci95_low_gt": 0.0,
+    "fixed_macro_noninferiority_margin": 0.05,
+    "gsi_noninferiority_margin": 0.05,
+    "report_safety_pareto": [
+      "contact_foot_slip_p95_m_s",
+      "post_success_root_drift_p95_m",
+      "secondary_fall_rate_after_success",
+      "foot_separation_at_success_p95_m",
+      "action_delta_rms_p95",
+      "action_second_difference_rms_p95",
+      "max_power_mean_w",
+      "max_joint_speed_p95_rad_s"
+    ],
+    "complete_no_advantage_result_must_be_retained": true
+  },
+  "telemetry_integrity": {
+    "reason_counts_must_equal_num_envs": true,
+    "success_reason_count_must_equal_strict_successes": true,
+    "all_gate_arrays_must_equal_num_envs": true,
+    "telemetry_does_not_change_strict_success": true,
+    "missing_or_drifted_telemetry_status": "FAILURE_TELEMETRY_ALERT"
+  },
+  "launch_guards": {
+    "tracked_worktree_must_be_clean": true,
+    "protocol_sha_must_be_version_locked": true,
+    "task_launcher_and_monitor_tests_must_pass": true,
+    "real_mujoco_task_smoke_must_pass": true,
+    "gpu_compute_process_count_must_be_zero": true,
+    "filesystem_free_gib_min": 100,
+    "inode_free_fraction_min": 0.1,
+    "existing_partial_plan_or_job_forbids_relaunch": true
+  },
+  "implementation_audit": {
+    "status": "PASSED_REAL_MUJOCO_SMOKE",
+    "completed_at_utc": "2026-08-31T06:45:00+00:00",
+    "code_commit": "94fb0f415bd2ead78c21a79ec1b436b1323a2b19",
+    "task": "Smp-Getup-Scratch-A9-F2S2-Objective-Aligned-G1",
+    "evidence_role": "NON_PERFORMANCE_IMPLEMENTATION_EVIDENCE",
+    "smoke_contract": {
+      "device": 0,
+      "num_envs": 16,
+      "policy_seed": 20261100,
+      "environment_seed": 20261100,
+      "rollout_steps_per_update": 24,
+      "max_iterations": 1,
+      "save_interval": 1,
+      "expected_checkpoint_iteration": 0,
+      "expected_transitions": 384,
+      "actor_observation_dim": 93,
+      "critic_observation_dim": 960,
+      "procedural_probability": 0.2,
+      "smp_floor": 0.35
+    },
+    "runtime_files": {
+      "log": {
+        "path": "run_control/flat_objective_alignment_v1_smoke/smoke.log",
+        "sha256": "8eea8f9dd6d0ec4940e30150e893c44e669591e96bb798d8526d80446bfd7acf"
+      },
+      "checkpoint": {
+        "path": "run_control/flat_objective_alignment_v1_smoke/training_logs/smp_scratch_a9_f2s2_objective_aligned_g1/2026-08-31_14-44-29_flat_objective_v1_a9_smoke_94fb0f4/model_0.pt",
+        "sha256": "642245ef40a46df7cdfb55b76a488f40fb8b8f102fa62c297faee9cfc9a19c2e"
+      },
+      "agent_config": {
+        "path": "run_control/flat_objective_alignment_v1_smoke/training_logs/smp_scratch_a9_f2s2_objective_aligned_g1/2026-08-31_14-44-29_flat_objective_v1_a9_smoke_94fb0f4/params/agent.yaml",
+        "sha256": "5727cd1454e2bd9d4ca90cd5304ec4ab8fa7423e847fef0f1d654b1dc325773e"
+      },
+      "environment_config": {
+        "path": "run_control/flat_objective_alignment_v1_smoke/training_logs/smp_scratch_a9_f2s2_objective_aligned_g1/2026-08-31_14-44-29_flat_objective_v1_a9_smoke_94fb0f4/params/env.yaml",
+        "sha256": "2bd648a8707133ad3ac271be6cb376e1df8838ff8dbae4ad08c8b2a1f8d992a5"
+      },
+      "git_provenance": {
+        "path": "run_control/flat_objective_alignment_v1_smoke/training_logs/smp_scratch_a9_f2s2_objective_aligned_g1/2026-08-31_14-44-29_flat_objective_v1_a9_smoke_94fb0f4/git/smp-v38-unified.diff",
+        "sha256": "94363297c6730783efa5966bb1b2549a2e1a46353ef10739bbcf5b6356903463"
+      }
+    },
+    "verified": {
+      "real_mujoco": true,
+      "gpu_returned_idle": true,
+      "log_has_no_fatal_oom_nan_inf": true,
+      "checkpoint_loadable": true,
+      "checkpoint_tensor_count": 73,
+      "checkpoint_tensor_elements": 2620640,
+      "all_checkpoint_tensors_finite": true,
+      "actor_observation_dim": 93,
+      "critic_observation_dim": 960,
+      "procedural_probability": 0.2,
+      "smp_floor": 0.35,
+      "strict_stood_up_matches_evaluation": true
+    }
+  },
+  "one_shot_policy": {
+    "no_hyperparameter_tuning_after_launch": true,
+    "no_selective_seed_pose_or_gate_rerun": true,
+    "dead_job_without_complete_final_checkpoint_status": "FLAT_OBJECTIVE_TRAINING_ALERT",
+    "complete_null_or_unsafe_result_status": "FLAT_OBJECTIVE_COMPLETE_NO_PROMOTION",
+    "positive_result_status": "PROMOTE_TP_SPECIALISTS",
+    "reset_curriculum_is_a_separate_future_stage": true,
+    "a_new_followup_requires_a_separate_preregistration_and_fresh_seeds": true
+  }
+}
