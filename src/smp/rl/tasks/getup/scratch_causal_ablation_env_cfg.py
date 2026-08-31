@@ -4,7 +4,9 @@ from __future__ import annotations
 
 from mjlab.managers.event_manager import EventTermCfg
 from mjlab.managers.metrics_manager import MetricsTermCfg
+from mjlab.managers.reward_manager import RewardTermCfg
 
+from smp.rl.rewards import task_smp_product
 from smp.rl.tasks.getup import mdp
 from smp.rl.tasks.getup.smp_observation_factorial_env_cfg import (
   g1_getup_obs_f1_nolinvel_smp_env_cfg,
@@ -167,6 +169,86 @@ def g1_scratch_a8_f2s2_balanced_bridge_env_cfg(play: bool = False):
   )
 
 
+def g1_scratch_a9_f2s2_objective_aligned_env_cfg(play: bool = False):
+  """Align flat recovery training with the frozen strict success contract.
+
+  This arm deliberately keeps A6's F2S2 prior, reset mixture, observations,
+  disturbances, and PPO setup.  Only the recovery objective changes: the task
+  score covers initiation, elevation, uprightness, quiet stance, and the exact
+  frozen stable-stand state, while a non-zero SMP floor prevents off-prior
+  procedural poses from losing the task gradient.
+  """
+  cfg = _scratch_causal_cfg(
+    play=play,
+    prior_path=F2S2_PRIOR_PATH,
+    procedural_probability=0.20,
+    reset_aware_termination=True,
+    procedural_smp_floor=0.0,
+  )
+  cfg.rewards["task_smp_product"].func = task_smp_product
+  cfg.rewards["task_smp_product"].params = {
+    "task_terms": (
+      (mdp.recovery_initiation_progress, 0.25, {}),
+      (mdp.track_head_height, 0.20, {"target_height": 1.10, "scale": 2.0}),
+      (mdp.upright_posture, 0.20, {"power": 2.0}),
+      (mdp.feet_stationary_when_upright, 0.10, {"scale": 20.0}),
+      (mdp.base_stationary_when_upright, 0.10, {"scale": 8.0}),
+      (
+        mdp.stable_stand_metric,
+        0.15,
+        {
+          "head_height": 1.10,
+          "min_upright": 0.85,
+          "max_linear_speed": 0.50,
+          "max_angular_speed": 1.00,
+        },
+      ),
+    ),
+    "smp_floor": 0.35,
+  }
+  cfg.rewards.update(
+    {
+      "head_vertical_overspeed": RewardTermCfg(
+        func=mdp.head_vertical_overspeed_l2,
+        weight=-0.50,
+        params={"speed_limit": 0.25},
+      ),
+      "action_rate_l2": RewardTermCfg(
+        func=mdp.action_rate_l2,
+        weight=-0.001,
+      ),
+    }
+  )
+  cfg.terminations["stood_up"].params.update(
+    {
+      "head_height": 1.10,
+      "max_speed": 0.50,
+      "hold_steps": 25,
+      "min_upright": 0.85,
+      "max_angular_speed": 1.00,
+    }
+  )
+  cfg.metrics.update(
+    {
+      "strict_stable_stand": MetricsTermCfg(
+        func=mdp.stable_stand_metric,
+        params={
+          "head_height": 1.10,
+          "min_upright": 0.85,
+          "max_linear_speed": 0.50,
+          "max_angular_speed": 1.00,
+        },
+      ),
+      "head_vertical_overspeed": MetricsTermCfg(
+        func=mdp.head_vertical_overspeed_l2,
+        params={"speed_limit": 0.25},
+      ),
+      "action_rate_rms": MetricsTermCfg(func=mdp.action_rate_rms_metric),
+    }
+  )
+  return cfg
+
+
 __all__ = [
   "g1_scratch_a0_f2s2_gsi_env_cfg",
   "g1_scratch_a1_v7_gsi_env_cfg",
@@ -177,4 +259,5 @@ __all__ = [
   "g1_scratch_a6_f2s2_mix_bridge_env_cfg",
   "g1_scratch_a7_v7_mix_bridge_env_cfg",
   "g1_scratch_a8_f2s2_balanced_bridge_env_cfg",
+  "g1_scratch_a9_f2s2_objective_aligned_env_cfg",
 ]
