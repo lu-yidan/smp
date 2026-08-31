@@ -84,9 +84,9 @@ class FlatMethodAnalysisTest(unittest.TestCase):
             else:
               successes = 492 if mode == "native_gsi" else 256
             failure_codes = [0] * successes + [7] * (analysis._NUM_ENVS - successes)
-            reason_counts = {code: 0 for code in analysis._FAILURE_CODEBOOK}
-            reason_counts["0"] = successes
-            reason_counts["7"] = analysis._NUM_ENVS - successes
+            reason_counts = {name: 0 for name in analysis._FAILURE_REASON_NAMES}
+            reason_counts["success"] = successes
+            reason_counts["never_reached_head_height"] = analysis._NUM_ENVS - successes
             per_env = {
               name: (failure_codes if name == "strict_failure_reason_code" else [True] * analysis._NUM_ENVS if name == "finite_action" else [False] * analysis._NUM_ENVS if name == "invalid_dynamics" else [-1] * analysis._NUM_ENVS)
               for name in analysis._PER_ENV_GATE_ARRAYS
@@ -203,7 +203,7 @@ class FlatMethodAnalysisTest(unittest.TestCase):
       cfg = self._fixture(root)
       raw = next(cfg.evaluation_root.glob("**/a8_balanced_bridge__*.json"))
       payload = json.loads(raw.read_text())
-      payload["strict_failure_diagnosis"]["reason_counts"]["7"] -= 1
+      payload["strict_failure_diagnosis"]["reason_counts"]["never_reached_head_height"] -= 1
       raw.write_text(json.dumps(payload))
       with self.assertRaisesRegex(ValueError, "do not sum"):
         analysis.analyze(cfg)

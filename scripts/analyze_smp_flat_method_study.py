@@ -45,6 +45,7 @@ _FAILURE_CODEBOOK = {
   "10": "never_low_angular_speed_while_pose_stable",
   "11": "strict_candidate_hold_too_short",
 }
+_FAILURE_REASON_NAMES = tuple(_FAILURE_CODEBOOK.values())
 _PER_ENV_GATE_ARRAYS = (
   "strict_first_step",
   "strict_failure_reason_code",
@@ -219,12 +220,12 @@ def _validate_result(
   if diagnosis.get("reason_codebook") != _FAILURE_CODEBOOK:
     raise ValueError(f"{path} failure reason codebook drifted")
   counts = diagnosis.get("reason_counts")
-  if not isinstance(counts, dict) or set(counts) != set(_FAILURE_CODEBOOK):
+  if not isinstance(counts, dict) or set(counts) != set(_FAILURE_REASON_NAMES):
     raise ValueError(f"{path} failure reason counts are incomplete")
   if sum(int(value) for value in counts.values()) != _NUM_ENVS:
     raise ValueError(f"{path} failure reason counts do not sum to {_NUM_ENVS}")
   strict_successes = int(result.get("strict_successes", -1))
-  if int(counts["0"]) != strict_successes:
+  if int(counts["success"]) != strict_successes:
     raise ValueError(f"{path} success reason count differs from strict successes")
   per_env = result.get("per_env")
   if not isinstance(per_env, dict):
@@ -235,9 +236,14 @@ def _validate_result(
   for name in _PER_ENV_GATE_ARRAYS:
     if name not in per_env:
       raise ValueError(f"{path} lacks per_env.{name}")
-  observed_counts = Counter(str(int(code)) for code in per_env["strict_failure_reason_code"])
-  if {code: observed_counts.get(code, 0) for code in _FAILURE_CODEBOOK} != {
-    code: int(counts[code]) for code in _FAILURE_CODEBOOK
+  try:
+    observed_counts = Counter(
+      _FAILURE_CODEBOOK[str(int(code))] for code in per_env["strict_failure_reason_code"]
+    )
+  except (KeyError, TypeError, ValueError) as exc:
+    raise ValueError(f"{path} contains an unknown per-environment failure code") from exc
+  if {name: observed_counts.get(name, 0) for name in _FAILURE_REASON_NAMES} != {
+    name: int(counts[name]) for name in _FAILURE_REASON_NAMES
   }:
     raise ValueError(f"{path} per-environment failure codes disagree with counts")
   if sum(bool(value) for value in per_env["finite_action"]) != _NUM_ENVS:
@@ -265,8 +271,8 @@ def _arm_metrics(rows: dict[str, dict[str, Any]]) -> dict[str, Any]:
   modes = {mode: int(rows[mode]["strict_successes"]) / _NUM_ENVS for mode in _MODES}
   fixed = [modes[mode] for mode in _FIXED_MODES]
   failure_counts = {
-    code: sum(int(rows[mode]["strict_failure_diagnosis"]["reason_counts"][code]) for mode in _MODES)
-    for code in _FAILURE_CODEBOOK
+    name: sum(int(rows[mode]["strict_failure_diagnosis"]["reason_counts"][name]) for mode in _MODES)
+    for name in _FAILURE_REASON_NAMES
   }
   return {
     "modes": modes,
