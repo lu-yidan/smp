@@ -14,6 +14,22 @@ from smp.rl.tasks.getup.scratch_causal_ablation_env_cfg import (
 from smp.rl.warm_start_runner import SmpCurriculumWarmStartRunner
 
 sys.path.insert(0, str(Path(__file__).parents[1] / "scripts"))
+from advance_smp_grounded_safety_eval import (  # noqa: E402
+  _EVAL_SEED as A11_EVAL_SEED,
+)
+from advance_smp_grounded_safety_eval import (
+  _GATES as A11_EVAL_GATES,
+)
+from advance_smp_grounded_safety_eval import (
+  _NUM_ENVS as A11_EVAL_NUM_ENVS,
+)
+from advance_smp_grounded_safety_eval import (
+  _REFERENCE_ANALYSIS_SHA256,
+  _REFERENCE_GATE,
+)
+from advance_smp_grounded_safety_eval import (
+  _STEPS as A11_EVAL_STEPS,
+)
 from launch_smp_grounded_safety_finetune import (  # noqa: E402
   _PROTOCOL_SHA256,
   _validate_protocol,
@@ -91,6 +107,17 @@ class SafetyFinetuneTest(unittest.TestCase):
     self.assertTrue(protocol["claim_boundary"]["not_ral_evidence"])
     self.assertTrue(
       protocol["claim_boundary"]["not_authorized_for_real_robot_deployment"]
+    )
+
+  def test_a11_evaluation_is_matched_to_the_frozen_a10_reference(self) -> None:
+    self.assertEqual(A11_EVAL_GATES, (0, 500, 1000, 2000, 2999))
+    self.assertEqual(A11_EVAL_SEED, 20261210)
+    self.assertEqual(A11_EVAL_NUM_ENVS, 512)
+    self.assertEqual(A11_EVAL_STEPS, 500)
+    self.assertEqual(_REFERENCE_GATE, 1000)
+    self.assertEqual(
+      _REFERENCE_ANALYSIS_SHA256,
+      "6651cc0cd98e5718e72314d43c33dcc084276d008792a8d218bb998c7350db6f",
     )
 
 
