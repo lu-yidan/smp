@@ -20,6 +20,7 @@ from smp.rl.tasks.getup.scratch_causal_ablation_env_cfg import (
 
 sys.path.insert(0, str(Path(__file__).parents[1] / "scripts"))
 import evaluate_smp_baseline as evaluator  # noqa: E402
+import play as play_wrapper  # noqa: E402
 from launch_smp_reset_only_warmstart import (  # noqa: E402
   _PROTOCOL_SHA256,
   _sha256,
@@ -76,6 +77,12 @@ class ResetOnlyWarmStartTest(unittest.TestCase):
     self.assertEqual(runner.__name__, "SmpCurriculumWarmStartRunner")
     self.assertIs(
       evaluator._load_inference_runner_cls(
+        "Smp-Getup-Scratch-A10-F2S2-Physical-Reset-G1"
+      ),
+      MjlabOnPolicyRunner,
+    )
+    self.assertIs(
+      play_wrapper._load_inference_runner_cls(
         "Smp-Getup-Scratch-A10-F2S2-Physical-Reset-G1"
       ),
       MjlabOnPolicyRunner,

@@ -160,6 +160,19 @@ def _chosen_task(argv: list[str]) -> str | None:
   return argv[1]
 
 
+def _load_inference_runner_cls(task_name: str):
+  """Use a plain runner when a task custom runner is training-only."""
+  from mjlab.rl import MjlabOnPolicyRunner
+  from mjlab.tasks.registry import load_runner_cls
+
+  from smp.rl.warm_start_runner import SmpCurriculumWarmStartRunner
+
+  runner_cls = load_runner_cls(task_name) or MjlabOnPolicyRunner
+  if issubclass(runner_cls, SmpCurriculumWarmStartRunner):
+    return MjlabOnPolicyRunner
+  return runner_cls
+
+
 def main() -> None:
   auto_disturbances = _consume_auto_disturbances_arg(sys.argv)
   escape_obstacle = _consume_escape_obstacle_arg(sys.argv)
@@ -198,10 +211,15 @@ def main() -> None:
     os.environ[_TERRAIN_EDGE_COHORT_ENV] = terrain_edge_cohort
 
   # Task configs are constructed during this import, after the flag is known.
-  from mjlab.scripts.play import main as mjlab_play_main
+  import mjlab.scripts.play as mjlab_play
   from mjlab.tasks.registry import load_env_cfg
 
   import smp.rl.tasks  # noqa: F401
+
+  # mjlab generic player requests an actor-only load. Curriculum warm-start
+  # runners intentionally reject that training-inappropriate load contract, so
+  # use the ordinary runner for inference without changing task registration.
+  mjlab_play.load_runner_cls = _load_inference_runner_cls
 
   task_name = _chosen_task(sys.argv)
   if escape_obstacle and task_name is not None:
@@ -231,7 +249,7 @@ def main() -> None:
   print(f"[INFO] Terrain during play: {terrain_state}, level: {level_state}")
   print(f"[INFO] Terrain reset pose during play: {terrain_pose_state}")
   print(f"[INFO] Terrain edge cohort during play: {edge_state}")
-  mjlab_play_main()
+  mjlab_play.main()
 
 
 if __name__ == "__main__":
