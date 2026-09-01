@@ -341,12 +341,22 @@
         {
           "type": "url",
           "target": "https://github.com/lu-yidan/G1_Recovery_Below_Block/tree/4fca16e24738fb8fec23fba6f2a6a21d53ebbbcb",
-          "description": "Versioned seven-page Chinese RA-L project record including the fresh-seed method study and evidence-gap table"
+          "description": "Historical seven-page Chinese RA-L project record including the preregistered fresh-seed method study"
         },
         {
           "type": "git_commit",
           "target": "4fca16e24738fb8fec23fba6f2a6a21d53ebbbcb",
-          "description": "Immutable project-record source and compiled-PDF revision"
+          "description": "Permanently retained pre-result project-record source and compiled-PDF revision"
+        },
+        {
+          "type": "url",
+          "target": "https://github.com/lu-yidan/G1_Recovery_Below_Block/tree/6d35e32caa2fdb8f94e74290f15f4e58f8d56f7f",
+          "description": "Current seven-page Chinese RA-L project record with A6/A8 null result and A10 reset-only safety boundary"
+        },
+        {
+          "type": "git_commit",
+          "target": "6d35e32caa2fdb8f94e74290f15f4e58f8d56f7f",
+          "description": "Current immutable project-record source and visually verified seven-page PDF revision"
         }
       ],
       "missing": "Convert verified evidence into the final RA-L manuscript, figures, video, limitations, and reproducibility package."
