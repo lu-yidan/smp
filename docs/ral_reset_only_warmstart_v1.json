@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "status": "AWAITING_IMPLEMENTATION_AUDIT",
+  "status": "PREREGISTERED_READY_FOR_CANARY",
   "study_id": "smp-reset-only-warmstart-canary-v1",
   "study_role": "ENGINEERING_CANARY_NOT_PROMOTION_OR_PERFORMANCE_EVIDENCE",
   "question": "Can physically validated, grounded reset sampling preserve A6 flat recovery while reducing unsafe reset transients when reward, termination, observations, dynamics, and policy initialization are held fixed?",
@@ -134,7 +134,56 @@
     "flat_objective_alignment": "FLAT_OBJECTIVE_COMPLETE_NO_PROMOTION"
   },
   "implementation_audit": {
-    "status": "PENDING_REAL_MUJOCO_SMOKE",
-    "evidence_role": "NON_PERFORMANCE_IMPLEMENTATION_EVIDENCE"
+    "status": "PASSED_REAL_MUJOCO_SMOKE",
+    "completed_at_utc": "2026-09-01T04:48:00+00:00",
+    "code_commit": "8037fb259f23bec3f5224499a2a12b89c4f65138",
+    "task": "Smp-Getup-Scratch-A10-F2S2-Physical-Reset-G1",
+    "wandb_run_id": "khed7k5d",
+    "evidence_role": "NON_PERFORMANCE_IMPLEMENTATION_EVIDENCE",
+    "smoke_contract": {
+      "device": 0,
+      "num_envs": 16,
+      "policy_seed": 20261200,
+      "environment_seed": 20261200,
+      "rollout_steps_per_update": 24,
+      "max_iterations": 1,
+      "save_interval": 1,
+      "expected_checkpoint_iteration": 0,
+      "expected_transitions": 384,
+      "actor_observation_dim": 93,
+      "critic_observation_dim": 960
+    },
+    "runtime_files": {
+      "log": {
+        "path": "run_control/reset_only_warmstart_v1/smoke_8037fb2/train.log",
+        "sha256": "766f0d53b13f17ae5572c0c05b64b4e2a1e319420fa94323742c8b0bbab33840"
+      },
+      "checkpoint": {
+        "path": "logs/rsl_rl/smp_scratch_a10_f2s2_physical_reset_g1/2026-09-01_12-47-01_reset_only_smoke_8037fb2_seed20261200/model_0.pt",
+        "sha256": "65050c40e19d9c03383436502d676fc956a1c4ea84fc397141f467df57aefd2a"
+      },
+      "agent_config": {
+        "path": "logs/rsl_rl/smp_scratch_a10_f2s2_physical_reset_g1/2026-09-01_12-47-01_reset_only_smoke_8037fb2_seed20261200/params/agent.yaml",
+        "sha256": "b9aed98e323cee7bf46640eeca0a61221e795029106a87f81f920489134884b2"
+      },
+      "environment_config": {
+        "path": "logs/rsl_rl/smp_scratch_a10_f2s2_physical_reset_g1/2026-09-01_12-47-01_reset_only_smoke_8037fb2_seed20261200/params/env.yaml",
+        "sha256": "1ac44ee158f9c917b68764ca1fa11ba32555ed54af3c1b4436b61b9ec1931e10"
+      },
+      "git_provenance": {
+        "path": "logs/rsl_rl/smp_scratch_a10_f2s2_physical_reset_g1/2026-09-01_12-47-01_reset_only_smoke_8037fb2_seed20261200/git/smp-v38-unified.diff",
+        "sha256": "f9ce1f8da384757d3fafef26ab76dbf13db4222222b3d5fa365b1d147b62faff"
+      }
+    },
+    "verified": {
+      "checkpoint_iteration": 0,
+      "checkpoint_tensor_count": 73,
+      "checkpoint_tensor_elements": 2620640,
+      "all_checkpoint_tensors_finite": true,
+      "actor_first_layer_shape": [512, 93],
+      "critic_first_layer_shape": [512, 960],
+      "physical_reset_alerts": 0,
+      "fatal_oom_nan_inf_matches": 0
+    }
   }
 }

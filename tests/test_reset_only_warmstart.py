@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import sys
 import unittest
 from pathlib import Path
 
@@ -14,6 +15,13 @@ from smp.rl.tasks.getup.mdp.events import (
 from smp.rl.tasks.getup.scratch_causal_ablation_env_cfg import (
   g1_scratch_a6_f2s2_mix_bridge_env_cfg,
   g1_scratch_a10_f2s2_physical_reset_env_cfg,
+)
+
+sys.path.insert(0, str(Path(__file__).parents[1] / "scripts"))
+from launch_smp_reset_only_warmstart import (  # noqa: E402
+  _PROTOCOL_SHA256,
+  _sha256,
+  _validate_protocol,
 )
 
 
@@ -66,10 +74,11 @@ class ResetOnlyWarmStartTest(unittest.TestCase):
     self.assertEqual(runner.__name__, "SmpCurriculumWarmStartRunner")
 
   def test_protocol_is_non_evidence_and_source_hash_locked(self) -> None:
-    protocol = json.loads(
-      (Path(__file__).parents[1] / "docs/ral_reset_only_warmstart_v1.json").read_text()
-    )
-    self.assertEqual(protocol["status"], "AWAITING_IMPLEMENTATION_AUDIT")
+    path = Path(__file__).parents[1] / "docs/ral_reset_only_warmstart_v1.json"
+    protocol = json.loads(path.read_text())
+    self.assertEqual(_sha256(path), _PROTOCOL_SHA256)
+    self.assertEqual(_validate_protocol(path)[0], protocol)
+    self.assertEqual(protocol["status"], "PREREGISTERED_READY_FOR_CANARY")
     self.assertEqual(
       protocol["study_role"],
       "ENGINEERING_CANARY_NOT_PROMOTION_OR_PERFORMANCE_EVIDENCE",
