@@ -6,6 +6,7 @@ import unittest
 from pathlib import Path
 
 import torch
+from mjlab.rl import MjlabOnPolicyRunner
 from mjlab.tasks.registry import load_runner_cls
 
 from smp.rl.tasks.getup.mdp.events import (
@@ -73,6 +74,12 @@ class ResetOnlyWarmStartTest(unittest.TestCase):
     runner = load_runner_cls("Smp-Getup-Scratch-A10-F2S2-Physical-Reset-G1")
     self.assertIsNotNone(runner)
     self.assertEqual(runner.__name__, "SmpCurriculumWarmStartRunner")
+    self.assertIs(
+      evaluator._load_inference_runner_cls(
+        "Smp-Getup-Scratch-A10-F2S2-Physical-Reset-G1"
+      ),
+      MjlabOnPolicyRunner,
+    )
 
   def test_physical_eval_freezes_grounded_pose_without_legacy_reset(self) -> None:
     env_cfg = g1_scratch_a10_f2s2_physical_reset_env_cfg(play=False)

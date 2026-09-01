@@ -20,6 +20,7 @@ from mjlab.utils.torch import configure_torch_backends
 
 import smp.rl.tasks  # noqa: F401
 from smp.firm.deployable_policy import FirmDeployablePolicy
+from smp.rl.warm_start_runner import SmpCurriculumWarmStartRunner
 from smp.rl.tasks.getup import mdp
 
 _RESET_WEIGHTS = {
@@ -372,6 +373,14 @@ def _configure_physical_reset_validation(env_cfg, cfg: EvalCfg) -> None:
   )
 
 
+def _load_inference_runner_cls(task: str):
+  """Use the base runner when a registered subclass changes training-only load."""
+  runner_cls = load_runner_cls(task) or MjlabOnPolicyRunner
+  if issubclass(runner_cls, SmpCurriculumWarmStartRunner):
+    return MjlabOnPolicyRunner
+  return runner_cls
+
+
 def main(cfg: EvalCfg) -> None:
   _validate_policy_configuration(cfg)
   valid_modes = ("native_gsi", *_RESET_WEIGHTS)
@@ -446,7 +455,7 @@ def main(cfg: EvalCfg) -> None:
   env = RslRlVecEnvWrapper(raw_env, clip_actions=agent_cfg.clip_actions)
   firm_policy: FirmDeployablePolicy | None = None
   if cfg.policy_kind == "rsl_rl":
-    runner_cls = load_runner_cls(cfg.task) or MjlabOnPolicyRunner
+    runner_cls = _load_inference_runner_cls(cfg.task)
     runner = runner_cls(env, asdict(agent_cfg), device=cfg.device)
     runner.load(
       str(cfg.checkpoint),
