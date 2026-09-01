@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "target": "IEEE Robotics and Automation Letters",
-  "updated_at": "2026-08-31",
+  "updated_at": "2026-09-01",
   "policy_scope": "93D single-frame deployable actor without true base linear velocity",
   "completed_null_results": [
     {
@@ -13,20 +13,34 @@
       "interpretation": "Three independent from-scratch policy seeds were completed for each of A1 and A6, and all 30 frozen schema-2 cells passed integrity audit. Neither arm passed the preregistered flat gates, so the original NO_PROMOTION remains unchanged and T/P, matched baselines, hardware, and RA-L conclusions remain blocked.",
       "performance_evidence_scope": "Frozen flat late-emergence follow-up only",
       "does_not_set_any_required_criterion_to_met": true
-    }
-  ],
-  "active_preregistered_studies": [
+    },
     {
       "id": "flat_method_single_factor_20260831",
-      "status": "TRAINING_ACTIVE_NOT_PERFORMANCE_EVIDENCE",
+      "status": "FLAT_METHOD_COMPLETE_NO_PROMOTION",
       "protocol": "docs/ral_flat_method_study_v1.json",
       "protocol_sha256": "6ca241aa3bfb303084de8eac4f1cd6e02a4728ef5969a632dc7ba2b54750e0e0",
       "launch_plan_id": "3e8a7aee720f4ac408b3d91eb912b9ace14c20dfd0ca4e82c8d8d2c9185ceb28",
-      "runtime_state": "run_control/automation_state/flat_method_study_latest.json",
-      "automation_commit": "792d99106f75779dff9593f1906d5c9452c176ed",
-      "design": "A6 20% procedural-reset replication control versus A8 50% balanced bridge, paired across fresh policy seeds 20261001--20261003 with all other frozen factors unchanged",
-      "planned_performance_evidence": "Twelve five-pose schema-2 matrices spanning 8k/15k/25k/final, 120 raw cells, policy-seed aggregation, and paired A8-minus-A6 effects",
-      "promotion_boundary": "Only A8 can advance, and only after every frozen absolute, late-regression, safety-integrity, and paired-causal gate passes",
+      "runtime_analysis": "run_control/flat_method_study_v1_eval/flat_method_analysis.json",
+      "runtime_analysis_sha256": "b0bf3d198bd4224e26d71db7a4adde144e1dfe1a8f33ec327acf3c1e577db47e",
+      "interpretation": "All 120 frozen schema-2 cells for paired A6/A8 policy seeds completed, but A8 did not satisfy the preregistered absolute, stability, safety, and paired-causal promotion contract. The immutable outcome is NO_PROMOTION.",
+      "performance_evidence_scope": "Fresh-seed flat A6/A8 single-factor study only",
+      "does_not_set_any_required_criterion_to_met": true
+    }
+  ],
+  "active_preregistered_studies": [],
+  "completed_engineering_canaries": [
+    {
+      "id": "reset_only_warmstart_canary_20260901",
+      "status": "RESET_ONLY_CANARY_COMPLETE_ENGINEERING_ONLY",
+      "protocol": "docs/ral_reset_only_warmstart_v1.json",
+      "protocol_sha256": "7416457635c9fbb9c30880b07aebfc865f2a0d19e2e0581737069ffec2e84dbf",
+      "training_plan_id": "ec0d18c3f23390d2b4ab0814671064fa9e8c950cfa07c9f461ea53fce531794e",
+      "runtime_analysis": "run_control/reset_only_warmstart_v1/eval/analysis.json",
+      "runtime_analysis_sha256": "6651cc0cd98e5718e72314d43c33dcc084276d008792a8d218bb998c7350db6f",
+      "design": "One A6 seed-20261102 gate-15k source was warm-started with only the physically validated reset curriculum changed, then audited at 0/1k/3k/final on five grounded reset modes.",
+      "result": "Gate 1k reached 100 percent strict success in all five modes, but joint-speed, mechanical-power, and root-motion tails remain unsuitable for hardware deployment; later gates did not improve success and worsened important safety tails.",
+      "automatic_action": "STOP_AND_REVIEW_BEFORE_ANY_NEW_PREREGISTERED_STUDY",
+      "promotion": null,
       "does_not_set_any_required_criterion_to_met": true
     }
   ],
@@ -46,7 +60,7 @@
         {
           "type": "file",
           "target": "docs/ral_flat_method_study_v1.json",
-          "description": "Preregistered fresh-seed single-factor A6/A8 improvement study; protocol only, not performance evidence"
+          "description": "Completed fresh-seed single-factor A6/A8 study; immutable result is NO_PROMOTION"
         },
         {
           "type": "file",
@@ -54,7 +68,7 @@
           "description": "Fail-closed training, manifest, frozen-evaluation, and analysis state machine"
         }
       ],
-      "missing": "The stable screen and late-emergence follow-up both ended NO_PROMOTION. The fresh-seed A6/A8 single-factor study is training, but no complete frozen result or checkpoint-stable eligible arm yet exists."
+      "missing": "The stable screen, late-emergence follow-up, and fresh-seed A6/A8 single-factor study all ended NO_PROMOTION. The one-lineage reset-only canary improved grounded-pose coverage but cannot establish a reproducible deployable baseline."
     },
     {
       "id": "C02",
@@ -69,7 +83,7 @@
           "description": "Frozen three-seed A6/A8 design and policy-seed sampling-unit contract"
         }
       ],
-      "missing": "The new three-seed A6/A8 jobs are active; all 12 frozen matrices and an eligible three-seed promotion decision remain unavailable."
+      "missing": "The three-seed A6/A8 study is complete but did not promote. The reset-only canary has only one warm-start lineage, so an eligible independent-seed staged policy remains unavailable."
     },
     {
       "id": "C03",
@@ -94,7 +108,7 @@
           "description": "Immutable 120-cell audit, policy-seed uncertainty, safety Pareto, and paired A8-minus-A6 analysis"
         }
       ],
-      "missing": "The analysis path is versioned, but the fresh-seed matrices do not yet exist and no promoted policy exists for downstream T/P, baseline, unified, or hardware uncertainty reporting."
+      "missing": "The 120 fresh-seed cells and one-lineage reset-only canary are audited, but no promoted policy exists for downstream T/P, baseline, unified, hardware, or policy-level uncertainty reporting."
     },
     {
       "id": "C04",
@@ -112,9 +126,14 @@
           "type": "file",
           "target": "docs/ral_flat_method_study_v1.json",
           "description": "Fresh-seed single-factor procedural-reset coverage contrast with A6 as non-promotable control"
+        },
+        {
+          "type": "file",
+          "target": "docs/ral_reset_only_warmstart_v1.json",
+          "description": "Completed one-lineage reset-only warm-start engineering canary; not promotion evidence"
         }
       ],
-      "missing": "Complete all frozen A6/A8 matrices and retain the preregistered paired contrast, including a complete null result if superiority is unsupported."
+      "missing": "Reset coverage is isolated by the complete A6/A8 null result and A10 engineering canary, but reward and termination stages still require separately preregistered fresh-seed causal contrasts."
     },
     {
       "id": "C05",
@@ -230,6 +249,11 @@
         },
         {
           "type": "file",
+          "target": "scripts/advance_smp_reset_only_canary.py",
+          "description": "Fail-closed A10 evaluation proving high recovery coverage but retaining unsafe speed, power, and motion tails as engineering diagnostics"
+        },
+        {
+          "type": "file",
           "target": "docs/ral_hardware_recovery_protocol.md",
           "description": "Preregistered hardware safety metrics, stopping rules, and reporting protocol"
         },
@@ -244,7 +268,7 @@
           "description": "Raw schema-2 log recomputation and fail-visible per-joint safety-limit analysis"
         }
       ],
-      "missing": "Populate and freeze sourced hardware-safe thresholds before trials, then report distributions for all promoted policies."
+      "missing": "The A10 canary remains explicitly non-deployable because joint-speed, power, and root-motion tails are high. Preregister and validate a safety-polish stage, then populate sourced hardware limits before any real-G1 policy activation."
     },
     {
       "id": "C10",
