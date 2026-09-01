@@ -1,0 +1,140 @@
+{
+  "schema_version": 1,
+  "status": "AWAITING_IMPLEMENTATION_AUDIT",
+  "study_id": "smp-reset-only-warmstart-canary-v1",
+  "study_role": "ENGINEERING_CANARY_NOT_PROMOTION_OR_PERFORMANCE_EVIDENCE",
+  "question": "Can physically validated, grounded reset sampling preserve A6 flat recovery while reducing unsafe reset transients when reward, termination, observations, dynamics, and policy initialization are held fixed?",
+  "claim_boundary": "This is a one-source warm-start engineering canary. It cannot promote T/P/U, cannot overwrite retained NO_PROMOTION results, and cannot support a paper claim. A positive canary only authorizes a separately preregistered three-fresh-seed from-scratch study.",
+  "source_policy": {
+    "task": "Smp-Getup-Scratch-A6-F2S2-Mix-Bridge-G1",
+    "policy_seed": 20261102,
+    "environment_seed": 20261102,
+    "wandb_run_path": "tabletennis/smp/zfx8g8d0",
+    "checkpoint_name": "model_15000.pt",
+    "checkpoint_path": "logs/rsl_rl/smp_scratch_a6_f2s2_mix_bridge_g1/2026-08-31_15-02-38_flat_objective_v1_a6_replication_control_30k_seed20261102/model_15000.pt",
+    "checkpoint_sha256": "533fdb6c2072fc9f3436c3e33593c36b29a9c33df7a38667c593845922f016fc",
+    "selection_reason": "Frozen five-pose evaluation was 100 percent at 15k and remained successful at 25k/final, while the 15k checkpoint had lower observed joint-speed, power, and action-change tails than its later gates.",
+    "selection_is_engineering_only": true
+  },
+  "treatment": {
+    "only_changed_component": "reset_sampling_and_physical_validation",
+    "task": "Smp-Getup-Scratch-A10-F2S2-Physical-Reset-G1",
+    "held_fixed_from_a6": [
+      "F2S2_prior_checkpoint",
+      "93D_single_frame_actor_observation",
+      "960D_privileged_critic_observation",
+      "A6_task_times_SMP_reward",
+      "A6_procedural_SMP_floor_0.10",
+      "A6_GSI_only_low_SMP_termination",
+      "A6_stood_up_termination",
+      "actuation",
+      "domain_randomization",
+      "disturbances"
+    ],
+    "physical_gsi_precheck": {
+      "finite_window": true,
+      "root_height_m": [0.18, 1.25],
+      "max_joint_speed_rad_s": 12.0,
+      "max_root_linear_speed_m_s": 2.0,
+      "max_root_angular_speed_rad_s": 4.0,
+      "max_attempts": 4
+    },
+    "physical_postcheck": {
+      "max_penetration_m": 0.012,
+      "max_support_gap_m": 0.025,
+      "quaternion_norm_tolerance": 0.001,
+      "rejected_gsi_action": "replace_with_grounded_procedural_pose",
+      "invalid_procedural_replacement_action": "PHYSICAL_RESET_ALERT_FAIL_CLOSED"
+    },
+    "procedural_pose_distribution": {
+      "poses": ["prone", "supine", "left_side", "right_side"],
+      "weights": [1.0, 1.0, 1.0, 1.0],
+      "root_linear_velocity": 0.0,
+      "root_angular_velocity": 0.0,
+      "ground_clearance_m": 0.006,
+      "history": "exact static 10x59 history rebuilt from the grounded simulator state"
+    }
+  },
+  "curriculum": [
+    {
+      "name": "R1_grounded_four_pose",
+      "updates": [0, 999],
+      "environment_steps": [0, 23999],
+      "procedural_probability": 1.0
+    },
+    {
+      "name": "R2_balanced_validated_gsi",
+      "updates": [1000, 2999],
+      "environment_steps": [24000, 71999],
+      "procedural_probability": 0.5
+    },
+    {
+      "name": "R3_target_mixture",
+      "updates": [3000, 4999],
+      "environment_steps": [72000, 119999],
+      "procedural_probability": 0.2
+    }
+  ],
+  "training_protocol": {
+    "policy_seed": 20261201,
+    "environment_seed": 20261201,
+    "source_policy_seed": 20261102,
+    "warm_start": "actor_critic_and_normalizers_only",
+    "reset_optimizer_iteration_and_environment_steps": true,
+    "num_envs": 4096,
+    "rollout_steps_per_update": 24,
+    "max_iterations": 5000,
+    "save_interval": 500,
+    "learning_rate": 0.0001,
+    "device": 0,
+    "reserved_idle_devices": [1, 2, 3, 4, 5, 6, 7]
+  },
+  "canary_evaluation": {
+    "checkpoints": [0, 1000, 3000, 4999],
+    "evaluation_seed": 20261210,
+    "num_envs": 512,
+    "steps": 500,
+    "schema_version": 2,
+    "failure_diagnosis_schema_version": 1,
+    "reset_modes": ["native_gsi", "prone", "supine", "left_side", "right_side"],
+    "required_reports": [
+      "macro_and_worst_success",
+      "foot_slip",
+      "root_drift",
+      "secondary_fall",
+      "foot_separation",
+      "action_first_and_second_difference",
+      "power_and_joint_speed_pareto",
+      "physical_gsi_rejection_rate",
+      "procedural_reset_rate"
+    ]
+  },
+  "stop_rules": {
+    "fatal_oom_nan_inf": "RESET_ONLY_TRAINING_ALERT",
+    "dead_worker_without_complete_model_4999": "RESET_ONLY_TRAINING_ALERT_NO_AUTOMATIC_RESTART",
+    "log_stale_minutes": 45,
+    "physical_reset_alert": "STOP_NO_AUTOMATIC_RESTART",
+    "unsafe_or_negative_complete_result": "RETAIN_AND_STOP_NO_RETUNING",
+    "reward_or_termination_change": "PROTOCOL_DRIFT_ALERT"
+  },
+  "launch_guards": {
+    "tracked_worktree_clean": true,
+    "source_checkpoint_hash_verified": true,
+    "real_mujoco_16_env_smoke_required": true,
+    "gpu_compute_process_count_zero": true,
+    "filesystem_free_gib_min": 100,
+    "inode_free_fraction_min": 0.1,
+    "immutable_plan_required": true,
+    "partial_artifact_forbids_relaunch": true
+  },
+  "retained_results": {
+    "original_causal_screen": "NO_PROMOTION",
+    "late_emergence_followup": "NO_PROMOTION",
+    "flat_method_study": "FLAT_METHOD_COMPLETE_NO_PROMOTION",
+    "flat_objective_alignment": "FLAT_OBJECTIVE_COMPLETE_NO_PROMOTION"
+  },
+  "implementation_audit": {
+    "status": "PENDING_REAL_MUJOCO_SMOKE",
+    "evidence_role": "NON_PERFORMANCE_IMPLEMENTATION_EVIDENCE"
+  }
+}

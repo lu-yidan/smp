@@ -13,9 +13,7 @@ from smp.rl.tasks.getup.smp_observation_factorial_env_cfg import (
 )
 
 F2S2_PRIOR_PATH = "datasets/pretrain_ckpt/pretrained_getup_f2s2.pt"
-V7_ROUTE_PRIOR_PATH = (
-  "datasets/pretrain_ckpt/pretrained_getup_lafan_route_v7.pt"
-)
+V7_ROUTE_PRIOR_PATH = "datasets/pretrain_ckpt/pretrained_getup_lafan_route_v7.pt"
 
 
 def _scratch_causal_cfg(
@@ -51,9 +49,7 @@ def _scratch_causal_cfg(
     cfg.terminations["smp_too_low"].func = mdp.smp_too_low_gsi_only
 
   if procedural_smp_floor > 0.0:
-    cfg.rewards["task_smp_product"].func = (
-      mdp.procedural_bridge_task_smp_product
-    )
+    cfg.rewards["task_smp_product"].func = mdp.procedural_bridge_task_smp_product
     cfg.rewards["task_smp_product"].params["procedural_smp_floor"] = (
       procedural_smp_floor
     )
@@ -249,6 +245,47 @@ def g1_scratch_a9_f2s2_objective_aligned_env_cfg(play: bool = False):
   return cfg
 
 
+def g1_scratch_a10_f2s2_physical_reset_env_cfg(play: bool = False):
+  """Keep A6 fixed and change only reset sampling/physical validation."""
+  cfg = g1_scratch_a6_f2s2_mix_bridge_env_cfg(play=play)
+  cfg.events.pop("mixed_fall_reset", None)
+  cfg.events["gsi_reset"].func = mdp.physically_validated_gsi_reset
+  cfg.events["gsi_reset"].params = {
+    "max_attempts": 4,
+    "max_joint_speed": 12.0,
+    "max_root_linear_speed": 2.0,
+    "max_root_angular_speed": 4.0,
+    "max_penetration": 0.012,
+    "max_support_gap": 0.025,
+  }
+  reordered_events = {}
+  for name, term in cfg.events.items():
+    reordered_events[name] = term
+    if name == "gsi_reset":
+      reordered_events["curriculum_validated_fall_reset"] = EventTermCfg(
+        func=mdp.curriculum_validated_fall_reset,
+        mode="reset",
+        params={
+          "all_procedural_until_step": 24_000,
+          "balanced_until_step": 72_000,
+          "balanced_probability": 0.50,
+          "target_probability": 0.20,
+          "max_penetration": 0.012,
+          "max_support_gap": 0.025,
+        },
+      )
+  cfg.events = reordered_events
+  cfg.metrics.update(
+    {
+      "physical_gsi_rejection": MetricsTermCfg(func=mdp.physical_gsi_rejection_metric),
+      "physical_procedural_reset": MetricsTermCfg(
+        func=mdp.physical_procedural_reset_metric
+      ),
+    }
+  )
+  return cfg
+
+
 __all__ = [
   "g1_scratch_a0_f2s2_gsi_env_cfg",
   "g1_scratch_a1_v7_gsi_env_cfg",
@@ -260,4 +297,5 @@ __all__ = [
   "g1_scratch_a7_v7_mix_bridge_env_cfg",
   "g1_scratch_a8_f2s2_balanced_bridge_env_cfg",
   "g1_scratch_a9_f2s2_objective_aligned_env_cfg",
+  "g1_scratch_a10_f2s2_physical_reset_env_cfg",
 ]

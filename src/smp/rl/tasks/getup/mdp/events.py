@@ -15,6 +15,7 @@ from mjlab.managers.event_manager import RecomputeLevel, requires_model_fields
 from mjlab.utils.lab_api.math import quat_from_euler_xyz, quat_mul, yaw_quat
 
 from smp.rl.events import prime_sim_and_buffer
+from smp.sampling.feature_to_state import slice_features
 
 __all__ = [
   "apply_sustained_constraint",
@@ -24,6 +25,10 @@ __all__ = [
   "init_matched_reset_bank",
   "matched_reset_bank_reset",
   "mixed_fall_reset",
+  "physically_validated_gsi_reset",
+  "curriculum_validated_fall_reset",
+  "physical_gsi_rejection_metric",
+  "physical_procedural_reset_metric",
   "sample_terrain_edge_reset",
   "sample_weighted_terrain_levels",
   "post_stand_body_wrench",
@@ -1516,6 +1521,248 @@ def mixed_fall_reset(
   # an artificial GSI-to-procedural discontinuity in the SMP score.
   _prime_smp_history_from_current_state(env, fall_ids)
   reset_types[fall_ids] = modes + 1
+
+
+def _physical_reset_procedural_probability(
+  common_step_counter: int,
+  *,
+  all_procedural_until_step: int = 24_000,
+  balanced_until_step: int = 72_000,
+  balanced_probability: float = 0.50,
+  target_probability: float = 0.20,
+) -> float:
+  """Return the preregistered reset-only warm-start curriculum probability."""
+  if all_procedural_until_step < 0 or balanced_until_step < all_procedural_until_step:
+    raise ValueError("physical reset curriculum boundaries are invalid")
+  if not 0.0 <= balanced_probability <= 1.0 or not 0.0 <= target_probability <= 1.0:
+    raise ValueError("physical reset probabilities must lie in [0, 1]")
+  if common_step_counter < all_procedural_until_step:
+    return 1.0
+  if common_step_counter < balanced_until_step:
+    return balanced_probability
+  return target_probability
+
+
+def _physical_gsi_window_precheck(
+  window: torch.Tensor,
+  *,
+  control_dt: float,
+  min_root_height: float = 0.18,
+  max_root_height: float = 1.25,
+  max_joint_speed: float = 12.0,
+  max_root_linear_speed: float = 2.0,
+  max_root_angular_speed: float = 4.0,
+) -> torch.Tensor:
+  """Reject unsafe denoiser samples before any state is written to MuJoCo."""
+  if window.ndim != 3 or window.shape[1] < 2 or window.shape[2] != 59:
+    raise ValueError("physical GSI precheck requires [N, W>=2, 59] windows")
+  if control_dt <= 0.0:
+    raise ValueError("control_dt must be positive")
+  parts = slice_features(window)
+  root_pos = parts["root_pos"][:, -1]
+  joint_pos = parts["joint_pos"]
+  joint_speed = (joint_pos[:, -1] - joint_pos[:, -2]).abs() / control_dt
+  root_linear_speed = torch.linalg.vector_norm(parts["root_lin_vel"][:, -1], dim=-1)
+  root_angular_speed = torch.linalg.vector_norm(parts["root_ang_vel"][:, -1], dim=-1)
+  finite = torch.isfinite(window).all(dim=(1, 2))
+  return (
+    finite
+    & (root_pos[:, 2] >= min_root_height)
+    & (root_pos[:, 2] <= max_root_height)
+    & (joint_speed.amax(dim=-1) <= max_joint_speed)
+    & (root_linear_speed <= max_root_linear_speed)
+    & (root_angular_speed <= max_root_angular_speed)
+  )
+
+
+def _physical_reset_postcheck(
+  env: ManagerBasedRlEnv,
+  env_ids: torch.Tensor,
+  *,
+  max_penetration: float = 0.012,
+  max_support_gap: float = 0.025,
+  max_joint_speed: float = 12.0,
+  max_root_linear_speed: float = 2.0,
+  max_root_angular_speed: float = 4.0,
+  collision_geom_pattern: str = r".*_collision$",
+) -> torch.Tensor:
+  """Validate finite, supported, low-energy reset states after ``forward``."""
+  if env_ids.numel() == 0:
+    return torch.zeros(0, dtype=torch.bool, device=env.device)
+  robot = env.scene["robot"]
+  origins = env.scene.env_origins[env_ids]
+  _, _, aabb_center, aabb_half, _ = _collision_vertical_geometry(
+    env, env_ids, collision_geom_pattern
+  )
+  lowest = (aabb_center[..., 2] - aabb_half[..., 2]).amin(dim=-1) - origins[:, 2]
+  root_state = torch.cat(
+    (
+      robot.data.root_link_pose_w[env_ids],
+      robot.data.root_link_lin_vel_w[env_ids],
+      robot.data.root_link_ang_vel_w[env_ids],
+    ),
+    dim=-1,
+  )
+  joint_pos = robot.data.joint_pos[env_ids]
+  joint_vel = robot.data.joint_vel[env_ids]
+  finite = (
+    torch.isfinite(root_state).all(dim=-1)
+    & torch.isfinite(joint_pos).all(dim=-1)
+    & torch.isfinite(joint_vel).all(dim=-1)
+  )
+  quat_norm = torch.linalg.vector_norm(root_state[:, 3:7], dim=-1)
+  return (
+    finite
+    & (torch.abs(quat_norm - 1.0) <= 1.0e-3)
+    & (lowest >= -max_penetration)
+    & (lowest <= max_support_gap)
+    & (joint_vel.abs().amax(dim=-1) <= max_joint_speed)
+    & (torch.linalg.vector_norm(root_state[:, 7:10], dim=-1) <= max_root_linear_speed)
+    & (torch.linalg.vector_norm(root_state[:, 10:13], dim=-1) <= max_root_angular_speed)
+  )
+
+
+@torch.no_grad()
+def physically_validated_gsi_reset(
+  env: ManagerBasedRlEnv,
+  env_ids: torch.Tensor | None = None,
+  max_attempts: int = 4,
+  max_joint_speed: float = 12.0,
+  max_root_linear_speed: float = 2.0,
+  max_root_angular_speed: float = 4.0,
+  max_penetration: float = 0.012,
+  max_support_gap: float = 0.025,
+) -> None:
+  """Sample GSI without ever exposing a rejected state to the policy.
+
+  Window-space checks run before MuJoCo writes.  Supported/contact checks run
+  after ``forward``.  Environments that exhaust the attempt budget are marked
+  for the following procedural fallback event instead of retaining bad GSI.
+  """
+  if env_ids is None:
+    env_ids = torch.arange(env.num_envs, device=env.device)
+  if max_attempts <= 0:
+    raise ValueError("max_attempts must be positive")
+  if not hasattr(env, "_physical_gsi_valid"):
+    env._physical_gsi_valid = torch.zeros(  # type: ignore[attr-defined]
+      env.num_envs, dtype=torch.bool, device=env.device
+    )
+    env._physical_gsi_attempts = torch.zeros(  # type: ignore[attr-defined]
+      env.num_envs, dtype=torch.long, device=env.device
+    )
+  env._physical_gsi_valid[env_ids] = False  # type: ignore[attr-defined]
+  env._physical_gsi_attempts[env_ids] = 0  # type: ignore[attr-defined]
+  remaining = env_ids
+  pool: torch.Tensor = env._smp_gsi_pool  # type: ignore[attr-defined]
+  control_dt = float(env.cfg.sim.mujoco.timestep) * float(env.cfg.decimation)
+  for attempt in range(1, max_attempts + 1):
+    if remaining.numel() == 0:
+      break
+    indexes = torch.randint(0, pool.shape[0], (remaining.numel(),), device=env.device)
+    windows = pool[indexes]
+    precheck = _physical_gsi_window_precheck(
+      windows,
+      control_dt=control_dt,
+      max_joint_speed=max_joint_speed,
+      max_root_linear_speed=max_root_linear_speed,
+      max_root_angular_speed=max_root_angular_speed,
+    )
+    candidate_ids = remaining[precheck]
+    if candidate_ids.numel() > 0:
+      prime_sim_and_buffer(env, candidate_ids, windows[precheck])
+      env.sim.forward()
+      accepted = _physical_reset_postcheck(
+        env,
+        candidate_ids,
+        max_penetration=max_penetration,
+        max_support_gap=max_support_gap,
+        max_joint_speed=max_joint_speed,
+        max_root_linear_speed=max_root_linear_speed,
+        max_root_angular_speed=max_root_angular_speed,
+      )
+      env._physical_gsi_valid[candidate_ids[accepted]] = True  # type: ignore[attr-defined]
+    env._physical_gsi_attempts[remaining] = attempt  # type: ignore[attr-defined]
+    remaining = env_ids[~env._physical_gsi_valid[env_ids]]  # type: ignore[attr-defined]
+
+
+@torch.no_grad()
+def curriculum_validated_fall_reset(
+  env: ManagerBasedRlEnv,
+  env_ids: torch.Tensor | None = None,
+  all_procedural_until_step: int = 24_000,
+  balanced_until_step: int = 72_000,
+  balanced_probability: float = 0.50,
+  target_probability: float = 0.20,
+  max_penetration: float = 0.012,
+  max_support_gap: float = 0.025,
+) -> None:
+  """Replace rejected/scheduled GSI with grounded four-pose resets, fail closed."""
+  if env_ids is None:
+    env_ids = torch.arange(env.num_envs, device=env.device)
+  valid = getattr(env, "_physical_gsi_valid", None)
+  if valid is None:
+    raise RuntimeError("physical GSI validation must run before reset curriculum")
+  probability = _physical_reset_procedural_probability(
+    int(env.common_step_counter),
+    all_procedural_until_step=all_procedural_until_step,
+    balanced_until_step=balanced_until_step,
+    balanced_probability=balanced_probability,
+    target_probability=target_probability,
+  )
+  scheduled = torch.rand(env_ids.numel(), device=env.device) < probability
+  replace = scheduled | ~valid[env_ids]
+  replacement_ids = env_ids[replace]
+  if replacement_ids.numel() > 0:
+    mixed_fall_reset(
+      env,
+      replacement_ids,
+      procedural_probability=1.0,
+      mode_weights=(1.0, 1.0, 1.0, 1.0),
+      root_height_range=(0.48, 0.62),
+      joint_noise=0.12,
+      orientation_noise=0.0,
+      root_xy_range=0.1,
+      root_linear_velocity=0.0,
+      root_angular_velocity=0.0,
+    )
+    ground_procedural_fall_on_terrain(
+      env,
+      replacement_ids,
+      ground_clearance=0.006,
+    )
+    env.sim.forward()
+    replacement_valid = _physical_reset_postcheck(
+      env,
+      replacement_ids,
+      max_penetration=max_penetration,
+      max_support_gap=max_support_gap,
+    )
+    if not bool(replacement_valid.all()):
+      failed = replacement_ids[~replacement_valid].detach().cpu().tolist()
+      raise RuntimeError(f"PHYSICAL_RESET_ALERT: invalid procedural fall ids={failed}")
+  if not hasattr(env, "_physical_reset_used_procedural"):
+    env._physical_reset_used_procedural = torch.zeros(  # type: ignore[attr-defined]
+      env.num_envs, dtype=torch.bool, device=env.device
+    )
+    env._physical_reset_rejected_gsi = torch.zeros(  # type: ignore[attr-defined]
+      env.num_envs, dtype=torch.bool, device=env.device
+    )
+  env._physical_reset_used_procedural[env_ids] = replace  # type: ignore[attr-defined]
+  env._physical_reset_rejected_gsi[env_ids] = ~valid[env_ids]  # type: ignore[attr-defined]
+
+
+def physical_gsi_rejection_metric(env: ManagerBasedRlEnv) -> torch.Tensor:
+  rejected = getattr(env, "_physical_reset_rejected_gsi", None)
+  if rejected is None:
+    return torch.zeros(env.num_envs, device=env.device)
+  return rejected.float()
+
+
+def physical_procedural_reset_metric(env: ManagerBasedRlEnv) -> torch.Tensor:
+  procedural = getattr(env, "_physical_reset_used_procedural", None)
+  if procedural is None:
+    return torch.zeros(env.num_envs, device=env.device)
+  return procedural.float()
 
 
 @torch.no_grad()
