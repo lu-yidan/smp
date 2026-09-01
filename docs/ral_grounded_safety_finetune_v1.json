@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "study_id": "smp-grounded-safety-finetune-v1",
-  "status": "PREREGISTERED_AWAITING_REAL_MUJOCO_SMOKE",
+  "status": "PREREGISTERED_READY_FOR_TRAINING",
   "study_role": "ENGINEERING_SAFETY_FINETUNE_NOT_PROMOTION_OR_RAL_EVIDENCE",
   "question": "Can a low-rate safety-only fine-tune reduce burst effort and quiet-stance shuffling while preserving A10 gate-1000 grounded recovery?",
   "source_policy": {
@@ -106,9 +106,36 @@
     "negative_or_unsafe_result_action": "STOP_AND_REVIEW_NO_RETUNING"
   },
   "implementation_audit": {
-    "status": "PENDING_REAL_MUJOCO_SMOKE",
-    "code_commit": null,
-    "runtime_files": {}
+    "status": "PASSED_REAL_MUJOCO_WARM_START_SMOKE",
+    "code_commit": "09025a6626d261f278fbf7bc22baee8fa1483715",
+    "task": "Smp-Getup-Scratch-A11-F2S2-Grounded-Safety-G1",
+    "source_checkpoint_sha256": "74582383da1189529ab233f409cc0bb65062a3caaaa5cb6cd28fe07b27cae51b",
+    "num_envs": 16,
+    "rollout_steps": 24,
+    "iterations": 1,
+    "seed": 20261300,
+    "wandb_mode": "offline",
+    "verified": {
+      "learning_iteration_started_at": 0,
+      "environment_steps_started_at": 0,
+      "optimizer_restored": false,
+      "actor_input_dim": 93,
+      "critic_input_dim": 960,
+      "checkpoint_embedded_iteration": 0,
+      "checkpoint_tensor_count": 73,
+      "checkpoint_tensor_elements": 2620640,
+      "all_checkpoint_tensors_finite": true,
+      "physical_reset_event_active": true,
+      "procedural_probability": 1.0,
+      "all_eight_reward_terms_active": true
+    },
+    "runtime_files": {
+      "log": {"path": "run_control/grounded_safety_finetune_v1/smoke_09025a6/train.log", "sha256": "a639d3f4cd0c4ae4db8b1a5b9079ea167a9eac8ee8ed9118b1ff942d7b53ac74"},
+      "checkpoint": {"path": "logs/rsl_rl/smp_scratch_a11_f2s2_grounded_safety_g1/2026-09-01_17-21-38_a11_grounded_safety_smoke_09025a6/model_0.pt", "sha256": "7e05a07694744853d35ee9e950af7e6a273eb14fc4c3e990544a62ad7fc7722c"},
+      "agent_config": {"path": "logs/rsl_rl/smp_scratch_a11_f2s2_grounded_safety_g1/2026-09-01_17-21-38_a11_grounded_safety_smoke_09025a6/params/agent.yaml", "sha256": "e495f2037b73e47fed0b4fd5492719bfe0a580295421860e49fae23f67d41452"},
+      "environment_config": {"path": "logs/rsl_rl/smp_scratch_a11_f2s2_grounded_safety_g1/2026-09-01_17-21-38_a11_grounded_safety_smoke_09025a6/params/env.yaml", "sha256": "df6bc9b37715b42dfa6a0b103fdf54d8ad42fa2f63de78c3dc7cafe79dd747a4"},
+      "git_diff": {"path": "logs/rsl_rl/smp_scratch_a11_f2s2_grounded_safety_g1/2026-09-01_17-21-38_a11_grounded_safety_smoke_09025a6/git/smp-v38-unified.diff", "sha256": "de9e2791a5b3dfcd6e7d406c58d3f174b6857f11c08f00e47fb41f27c38028c8"}
+    }
   },
   "claim_boundary": {
     "training_smoke_protocol_manifest_and_checkpoints_are_not_performance_evidence": true,
