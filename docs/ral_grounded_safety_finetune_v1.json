@@ -1,0 +1,119 @@
+{
+  "schema_version": 1,
+  "study_id": "smp-grounded-safety-finetune-v1",
+  "status": "PREREGISTERED_AWAITING_REAL_MUJOCO_SMOKE",
+  "study_role": "ENGINEERING_SAFETY_FINETUNE_NOT_PROMOTION_OR_RAL_EVIDENCE",
+  "question": "Can a low-rate safety-only fine-tune reduce burst effort and quiet-stance shuffling while preserving A10 gate-1000 grounded recovery?",
+  "source_policy": {
+    "task": "Smp-Getup-Scratch-A10-F2S2-Physical-Reset-G1",
+    "policy_seed": 20261201,
+    "checkpoint_name": "model_1000.pt",
+    "checkpoint_path": "logs/rsl_rl/smp_scratch_a10_f2s2_physical_reset_g1/2026-09-01_12-58-54_reset_only_v1_a10_5k_seed20261201/model_1000.pt",
+    "checkpoint_sha256": "74582383da1189529ab233f409cc0bb65062a3caaaa5cb6cd28fe07b27cae51b",
+    "embedded_iteration": 1000,
+    "actor_input_dim": 93,
+    "critic_input_dim": 960,
+    "all_actor_critic_tensors_finite": true
+  },
+  "treatment": {
+    "task": "Smp-Getup-Scratch-A11-F2S2-Grounded-Safety-G1",
+    "unchanged": [
+      "93D one-frame deployable actor observation",
+      "960D ten-frame privileged critic observation",
+      "A6 F2S2 SMP-product primary objective",
+      "A10 physical GSI validation and grounded fallback",
+      "A10 terminations",
+      "actor critic and normalizer warm start"
+    ],
+    "reset_distribution": {
+      "procedural_probability": 1.0,
+      "mode_weights_prone_supine_left_right": [1.0, 1.0, 1.0, 1.0],
+      "grounded_by_collision_geometry": true,
+      "max_penetration_m": 0.012,
+      "max_support_gap_m": 0.025,
+      "policy_never_observes_rejected_gsi": true
+    },
+    "added_reward_terms": {
+      "joint_speed_excess": {
+        "weight": -0.0002,
+        "speed_limit_rad_s": 10.0,
+        "scope": "all recovery stages"
+      },
+      "joint_power_excess": {
+        "weight": -5e-07,
+        "power_limit_w_per_joint": 250.0,
+        "scope": "all recovery stages"
+      },
+      "action_rate_l2": {
+        "weight": -0.0005,
+        "scope": "all recovery stages"
+      },
+      "quiet_action_acc_l2": {
+        "weight": -0.0003,
+        "scope": "height-and-upright gated"
+      },
+      "head_vertical_overspeed": {
+        "weight": -0.1,
+        "speed_limit_m_s": 0.25,
+        "scope": "all recovery stages"
+      },
+      "quiet_foot_speed_l2": {
+        "weight": -0.05,
+        "scope": "height-and-upright gated anti-shuffling term"
+      },
+      "quiet_base_angular_speed_l2": {
+        "weight": -0.01,
+        "scope": "height-and-upright gated"
+      }
+    }
+  },
+  "training_protocol": {
+    "policy_seed": 20261301,
+    "environment_seed": 20261301,
+    "warm_start": "actor_critic_and_normalizers_only",
+    "reset_optimizer_iteration_and_environment_steps": true,
+    "num_envs": 4096,
+    "rollout_steps_per_update": 24,
+    "max_iterations": 3000,
+    "save_interval": 500,
+    "evaluation_gates": [0, 500, 1000, 2000, 2999],
+    "learning_rate": 1e-05,
+    "device": 0,
+    "reserved_idle_devices": [1, 2, 3, 4, 5, 6, 7],
+    "fatal_patterns": [
+      "NaN",
+      "Inf",
+      "CUDA out of memory",
+      "OutOfMemoryError",
+      "Traceback",
+      "PHYSICAL_RESET_ALERT"
+    ],
+    "no_automatic_restart": true
+  },
+  "review_contract": {
+    "required_eval_modes": ["native_gsi", "prone", "supine", "left_side", "right_side"],
+    "compare_against": "A10 gate 1000 on the same frozen evaluation protocol",
+    "must_report": [
+      "strict recovery macro and worst pose",
+      "foot-slip P95",
+      "root-drift P95",
+      "secondary-fall rate",
+      "foot-separation P95",
+      "action first and second differences",
+      "joint power and qvel Pareto"
+    ],
+    "automatic_promotion": false,
+    "negative_or_unsafe_result_action": "STOP_AND_REVIEW_NO_RETUNING"
+  },
+  "implementation_audit": {
+    "status": "PENDING_REAL_MUJOCO_SMOKE",
+    "code_commit": null,
+    "runtime_files": {}
+  },
+  "claim_boundary": {
+    "training_smoke_protocol_manifest_and_checkpoints_are_not_performance_evidence": true,
+    "single_seed_finetune_is_not_independent_policy_seed_confirmation": true,
+    "not_authorized_for_real_robot_deployment": true,
+    "not_ral_evidence": true
+  }
+}

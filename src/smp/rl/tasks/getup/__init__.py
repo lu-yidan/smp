@@ -86,6 +86,7 @@ from smp.rl.tasks.getup.scratch_causal_ablation_env_cfg import (
   g1_scratch_a8_f2s2_balanced_bridge_env_cfg,
   g1_scratch_a9_f2s2_objective_aligned_env_cfg,
   g1_scratch_a10_f2s2_physical_reset_env_cfg,
+  g1_scratch_a11_f2s2_grounded_safety_env_cfg,
 )
 from smp.rl.tasks.getup.smooth_env_cfg import g1_getup_robust_smooth_smp_env_cfg
 from smp.rl.tasks.getup.smp_observation_factorial_env_cfg import (
@@ -248,6 +249,14 @@ register_mjlab_task(
   env_cfg=g1_scratch_a10_f2s2_physical_reset_env_cfg(play=False),
   play_env_cfg=g1_scratch_a10_f2s2_physical_reset_env_cfg(play=True),
   rl_cfg=_scratch_causal_runner("smp_scratch_a10_f2s2_physical_reset_g1"),
+  runner_cls=SmpCurriculumWarmStartRunner,
+)
+
+register_mjlab_task(
+  task_id="Smp-Getup-Scratch-A11-F2S2-Grounded-Safety-G1",
+  env_cfg=g1_scratch_a11_f2s2_grounded_safety_env_cfg(play=False),
+  play_env_cfg=g1_scratch_a11_f2s2_grounded_safety_env_cfg(play=True),
+  rl_cfg=_scratch_causal_runner("smp_scratch_a11_f2s2_grounded_safety_g1"),
   runner_cls=SmpCurriculumWarmStartRunner,
 )
 

@@ -286,6 +286,72 @@ def g1_scratch_a10_f2s2_physical_reset_env_cfg(play: bool = False):
   return cfg
 
 
+def g1_scratch_a11_f2s2_grounded_safety_env_cfg(play: bool = False):
+  """Fine-tune A10 with grounded resets and conservative safety shaping."""
+  cfg = g1_scratch_a10_f2s2_physical_reset_env_cfg(play=play)
+
+  # Freeze the canary to the exact reset distribution that produced A10 gate
+  # 1000: balanced prone/supine/left/right procedural poses, all grounded by
+  # collision geometry. GSI validation still runs fail-closed, but every
+  # candidate is replaced before the actor sees the first observation.
+  reset = cfg.events["curriculum_validated_fall_reset"]
+  reset.params.update(
+    {
+      "all_procedural_until_step": 2**63 - 1,
+      "balanced_until_step": 2**63 - 1,
+      "balanced_probability": 1.0,
+      "target_probability": 1.0,
+      "mode_weights": (1.0, 1.0, 1.0, 1.0),
+    }
+  )
+
+  # Recovery remains governed by the unchanged A6 SMP-product objective. The
+  # global penalties are deliberately soft and thresholded. The stronger
+  # foot/action/torso penalties are height/upright gated so they target small
+  # standing steps and chatter without suppressing the roll and push-off.
+  cfg.rewards.update(
+    {
+      "joint_speed_excess": RewardTermCfg(
+        func=mdp.joint_speed_excess_l2,
+        weight=-2.0e-4,
+        params={"speed_limit": 10.0},
+      ),
+      "joint_power_excess": RewardTermCfg(
+        func=mdp.joint_power_excess_l2,
+        weight=-5.0e-7,
+        params={"power_limit": 250.0},
+      ),
+      "action_rate_l2": RewardTermCfg(func=mdp.action_rate_l2, weight=-5.0e-4),
+      "quiet_action_acc_l2": RewardTermCfg(
+        func=mdp.quiet_action_acc_l2, weight=-3.0e-4
+      ),
+      "head_vertical_overspeed": RewardTermCfg(
+        func=mdp.head_vertical_overspeed_l2,
+        weight=-0.10,
+        params={"speed_limit": 0.25},
+      ),
+      "quiet_foot_speed_l2": RewardTermCfg(func=mdp.quiet_foot_speed_l2, weight=-0.05),
+      "quiet_base_angular_speed_l2": RewardTermCfg(
+        func=mdp.quiet_base_angular_speed_l2, weight=-0.01
+      ),
+    }
+  )
+  cfg.metrics.update(
+    {
+      "joint_speed_excess": MetricsTermCfg(
+        func=mdp.joint_speed_excess_l2, params={"speed_limit": 10.0}
+      ),
+      "joint_power_excess": MetricsTermCfg(
+        func=mdp.joint_power_excess_l2, params={"power_limit": 250.0}
+      ),
+      "quiet_foot_speed": MetricsTermCfg(func=mdp.quiet_foot_speed_l2),
+      "quiet_action_acc": MetricsTermCfg(func=mdp.quiet_action_acc_l2),
+      "quiet_base_angular_speed": MetricsTermCfg(func=mdp.quiet_base_angular_speed_l2),
+    }
+  )
+  return cfg
+
+
 __all__ = [
   "g1_scratch_a0_f2s2_gsi_env_cfg",
   "g1_scratch_a1_v7_gsi_env_cfg",
@@ -298,4 +364,5 @@ __all__ = [
   "g1_scratch_a8_f2s2_balanced_bridge_env_cfg",
   "g1_scratch_a9_f2s2_objective_aligned_env_cfg",
   "g1_scratch_a10_f2s2_physical_reset_env_cfg",
+  "g1_scratch_a11_f2s2_grounded_safety_env_cfg",
 ]

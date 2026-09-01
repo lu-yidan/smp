@@ -15,6 +15,11 @@ __all__ = [
   "active_wrench_metric",
   "action_rate_rms_metric",
   "base_stationary_when_upright",
+  "joint_power_excess_l2",
+  "joint_speed_excess_l2",
+  "quiet_action_acc_l2",
+  "quiet_base_angular_speed_l2",
+  "quiet_foot_speed_l2",
   "cached_product_score",
   "cached_raw_smp_score",
   "failure_buffer_fill_metric",
@@ -789,6 +794,54 @@ def base_stationary_when_upright(
     torch.square(env.scene["robot"].data.root_link_lin_vel_w[:, :2]), dim=-1
   )
   return gate * torch.exp(-scale * vel_xy_sq)
+
+
+def joint_speed_excess_l2(
+  env: ManagerBasedRlEnv, speed_limit: float = 10.0
+) -> torch.Tensor:
+  """Softly penalize only joint speeds above a recovery-compatible limit."""
+  speed = torch.abs(env.scene["robot"].data.joint_vel)
+  return torch.sum(torch.square(torch.clamp(speed - speed_limit, min=0.0)), dim=-1)
+
+
+def joint_power_excess_l2(
+  env: ManagerBasedRlEnv, power_limit: float = 250.0
+) -> torch.Tensor:
+  """Softly penalize per-joint mechanical power bursts above ``power_limit``."""
+  robot = env.scene["robot"]
+  power = torch.abs(robot.data.actuator_force * robot.data.joint_vel)
+  return torch.mean(torch.square(torch.clamp(power - power_limit, min=0.0)), dim=-1)
+
+
+def quiet_foot_speed_l2(
+  env: ManagerBasedRlEnv,
+  site_names: tuple[str, str] = ("left_foot", "right_foot"),
+) -> torch.Tensor:
+  """Penalize standing foot shuffling without constraining low-pose recovery."""
+  gate = quiet_stance_gate(env)
+  robot = env.scene["robot"]
+  site_ids = robot.find_sites(list(site_names), preserve_order=True)[0]
+  foot_vel_xy = robot.data.site_lin_vel_w[:, site_ids, :2]
+  speed_sq = torch.mean(torch.sum(torch.square(foot_vel_xy), dim=-1), dim=-1)
+  return gate * speed_sq
+
+
+def quiet_action_acc_l2(env: ManagerBasedRlEnv) -> torch.Tensor:
+  """Penalize second-order action chatter only after reaching quiet stance."""
+  gate = quiet_stance_gate(env)
+  acceleration = (
+    env.action_manager.action
+    - 2.0 * env.action_manager.prev_action
+    + env.action_manager.prev_prev_action
+  )
+  return gate * torch.sum(torch.square(acceleration), dim=-1)
+
+
+def quiet_base_angular_speed_l2(env: ManagerBasedRlEnv) -> torch.Tensor:
+  """Penalize residual torso rotation only while tall and upright."""
+  gate = quiet_stance_gate(env)
+  angular_velocity = env.scene["robot"].data.root_link_ang_vel_w
+  return gate * torch.sum(torch.square(angular_velocity), dim=-1)
 
 
 def terrain_planar_displacement_l2(
