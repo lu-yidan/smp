@@ -92,6 +92,13 @@ class ResetOnlyWarmStartTest(unittest.TestCase):
       "reset_sampling_and_physical_validation",
     )
     self.assertEqual(protocol["training_protocol"]["max_iterations"], 5000)
+    self.assertEqual(
+      protocol["warm_start_path_audit"]["status"],
+      "PASSED_REAL_MUJOCO_WARM_START_SMOKE",
+    )
+    self.assertFalse(
+      protocol["warm_start_path_audit"]["verified"]["optimizer_restored"]
+    )
 
 
 if __name__ == "__main__":

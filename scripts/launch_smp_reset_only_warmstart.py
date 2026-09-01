@@ -16,7 +16,7 @@ from typing import Any
 import torch
 import tyro
 
-_PROTOCOL_SHA256 = "1f4ea14e07dd095b6ca294ad2ae4e06c50e867bbbc52d8e22303ca12aa9939b8"
+_PROTOCOL_SHA256 = "7416457635c9fbb9c30880b07aebfc865f2a0d19e2e0581737069ffec2e84dbf"
 _MINIMUM_COMMIT = "8037fb2"
 _TASK = "Smp-Getup-Scratch-A10-F2S2-Physical-Reset-G1"
 _EXPECTED_RUNNER = "SmpCurriculumWarmStartRunner"
@@ -217,6 +217,72 @@ def _validate_smoke(protocol: dict[str, Any], repo_root: Path) -> dict[str, Any]
   }
 
 
+def _validate_warm_start_smoke(
+  protocol: dict[str, Any], repo_root: Path
+) -> dict[str, Any]:
+  audit = protocol.get("warm_start_path_audit", {})
+  if (
+    audit.get("status") != "PASSED_REAL_MUJOCO_WARM_START_SMOKE"
+    or audit.get("code_commit") != "23215977a104c9a8b78188753ed22b9c34ad6ce5"
+    or audit.get("runner") != _EXPECTED_RUNNER
+    or audit.get("source_checkpoint_sha256")
+    != protocol["source_policy"]["checkpoint_sha256"]
+    or audit.get("evidence_role") != "NON_PERFORMANCE_IMPLEMENTATION_EVIDENCE"
+  ):
+    raise RuntimeError("RESET_ONLY_WARM_START_SMOKE_ALERT: audit drifted")
+  runtime = audit.get("runtime_files", {})
+  required = (
+    "log",
+    "checkpoint",
+    "agent_config",
+    "environment_config",
+    "git_provenance",
+  )
+  resolved: dict[str, Path] = {}
+  for name in required:
+    row = runtime.get(name, {})
+    path = repo_root / row.get("path", "")
+    if not path.is_file() or _sha256(path) != row.get("sha256"):
+      raise RuntimeError(
+        f"RESET_ONLY_WARM_START_SMOKE_ALERT: {name} missing or drifted"
+      )
+    resolved[name] = path
+  log_text = resolved["log"].read_text(errors="replace")
+  required_log = (
+    "Loading model checkpoint from:",
+    "reset_only_source_a6_seed20261102_gate15000/model_15000.pt",
+    "Learning iteration 0/1",
+    "Total steps: 384",
+  )
+  if any(fragment not in log_text for fragment in required_log):
+    raise RuntimeError("RESET_ONLY_WARM_START_SMOKE_ALERT: load path/clock drifted")
+  agent_text = resolved["agent_config"].read_text(errors="replace")
+  for pattern in (
+    r"^seed: 20261200$",
+    r"^max_iterations: 1$",
+    r"^save_interval: 1$",
+    r"^resume: true$",
+    r"^load_run: \^reset_only_source_a6_seed20261102_gate15000\$$",
+    r"^load_checkpoint: \^model_15000\.pt\$$",
+    r"^  learning_rate: 0\.0001$",
+  ):
+    if re.search(pattern, agent_text, re.MULTILINE) is None:
+      raise RuntimeError("RESET_ONLY_WARM_START_SMOKE_ALERT: agent config drifted")
+  verified = audit.get("verified", {})
+  if (
+    verified.get("learning_iteration_started_at") != 0
+    or verified.get("environment_steps_started_at") != 0
+    or verified.get("optimizer_restored") is not False
+    or verified.get("all_checkpoint_tensors_finite") is not True
+  ):
+    raise RuntimeError("RESET_ONLY_WARM_START_SMOKE_ALERT: runner audit drifted")
+  return {
+    "status": audit["status"],
+    "code_commit": audit["code_commit"],
+    "runtime_sha256": {name: runtime[name]["sha256"] for name in required},
+  }
+
+
 def build_plan(cfg: ResetOnlyWarmStartCfg) -> dict[str, Any]:
   repo_root = Path(__file__).resolve().parents[1]
   protocol_path = (
@@ -354,6 +420,7 @@ def launch_canary(cfg: ResetOnlyWarmStartCfg) -> dict[str, Any]:
     )
   protocol = _load_json(Path(planned["protocol"]))
   planned["implementation_smoke"] = _validate_smoke(protocol, repo_root)
+  planned["warm_start_smoke"] = _validate_warm_start_smoke(protocol, repo_root)
   planned["resource_preflight"] = _disk_preflight(repo_root)
   source = Path(planned["source_checkpoint"])
   link = Path(planned["source_link"])

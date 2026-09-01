@@ -185,5 +185,51 @@
       "physical_reset_alerts": 0,
       "fatal_oom_nan_inf_matches": 0
     }
+  },
+  "warm_start_path_audit": {
+    "status": "PASSED_REAL_MUJOCO_WARM_START_SMOKE",
+    "completed_at_utc": "2026-09-01T04:55:00+00:00",
+    "code_commit": "23215977a104c9a8b78188753ed22b9c34ad6ce5",
+    "wandb_run_id": "4vl54dh9",
+    "source_checkpoint_sha256": "533fdb6c2072fc9f3436c3e33593c36b29a9c33df7a38667c593845922f016fc",
+    "runner": "SmpCurriculumWarmStartRunner",
+    "verified": {
+      "loaded_actor_critic_and_normalizers": true,
+      "learning_iteration_started_at": 0,
+      "environment_steps_started_at": 0,
+      "optimizer_restored": false,
+      "configured_learning_rate": 0.0001,
+      "checkpoint_iteration": 0,
+      "checkpoint_tensor_count": 73,
+      "checkpoint_tensor_elements": 2620640,
+      "all_checkpoint_tensors_finite": true,
+      "actor_first_layer_shape": [512, 93],
+      "critic_first_layer_shape": [512, 960],
+      "physical_reset_alerts": 0,
+      "fatal_oom_nan_inf_matches": 0
+    },
+    "runtime_files": {
+      "log": {
+        "path": "run_control/reset_only_warmstart_v1/warmstart_smoke_2321597/train.log",
+        "sha256": "6067408a5d02bee2c865bded5ceaee701b0d15a96064094852fc03711467ded5"
+      },
+      "checkpoint": {
+        "path": "logs/rsl_rl/smp_scratch_a10_f2s2_physical_reset_g1/2026-09-01_12-53-55_reset_only_warmstart_smoke_2321597_seed20261200/model_0.pt",
+        "sha256": "8735d7694c87b66de2bc85e51c962cf958a912665f4e6a43fd04bc99347096d3"
+      },
+      "agent_config": {
+        "path": "logs/rsl_rl/smp_scratch_a10_f2s2_physical_reset_g1/2026-09-01_12-53-55_reset_only_warmstart_smoke_2321597_seed20261200/params/agent.yaml",
+        "sha256": "bfc9c6353f047b5199fa374a39a2ae7a2f103f31c32e436b300d6206c1aaf845"
+      },
+      "environment_config": {
+        "path": "logs/rsl_rl/smp_scratch_a10_f2s2_physical_reset_g1/2026-09-01_12-53-55_reset_only_warmstart_smoke_2321597_seed20261200/params/env.yaml",
+        "sha256": "1ac44ee158f9c917b68764ca1fa11ba32555ed54af3c1b4436b61b9ec1931e10"
+      },
+      "git_provenance": {
+        "path": "logs/rsl_rl/smp_scratch_a10_f2s2_physical_reset_g1/2026-09-01_12-53-55_reset_only_warmstart_smoke_2321597_seed20261200/git/smp-v38-unified.diff",
+        "sha256": "fdfb5020bdc55d59002be8b3a8a377ded7c4b728b49172c2602e3911cacacc31"
+      }
+    },
+    "evidence_role": "NON_PERFORMANCE_IMPLEMENTATION_EVIDENCE"
   }
 }
