@@ -248,6 +248,7 @@ register_mjlab_task(
   env_cfg=g1_scratch_a10_f2s2_physical_reset_env_cfg(play=False),
   play_env_cfg=g1_scratch_a10_f2s2_physical_reset_env_cfg(play=True),
   rl_cfg=_scratch_causal_runner("smp_scratch_a10_f2s2_physical_reset_g1"),
+  runner_cls=SmpCurriculumWarmStartRunner,
 )
 
 for _arm in SCRATCH_ARM_BUILDERS:

@@ -5,6 +5,7 @@ import unittest
 from pathlib import Path
 
 import torch
+from mjlab.tasks.registry import load_runner_cls
 
 from smp.rl.tasks.getup.mdp.events import (
   _physical_gsi_window_precheck,
@@ -58,6 +59,11 @@ class ResetOnlyWarmStartTest(unittest.TestCase):
     self.assertEqual(
       a10.events["gsi_reset"].func.__name__, "physically_validated_gsi_reset"
     )
+
+  def test_a10_uses_fresh_optimizer_warm_start_runner(self) -> None:
+    runner = load_runner_cls("Smp-Getup-Scratch-A10-F2S2-Physical-Reset-G1")
+    self.assertIsNotNone(runner)
+    self.assertEqual(runner.__name__, "SmpCurriculumWarmStartRunner")
 
   def test_protocol_is_non_evidence_and_source_hash_locked(self) -> None:
     protocol = json.loads(
