@@ -1,0 +1,164 @@
+{
+  "claim_boundary": {
+    "not_authorized_for_unprotected_real_robot_deployment": true,
+    "not_ral_evidence": true,
+    "single_seed_warm_start_is_not_independent_reproducibility": true,
+    "training_smoke_protocol_and_manifest_are_not_performance_evidence": true
+  },
+  "evaluation_protocol": {
+    "automatic_promotion": false,
+    "compare_against": "A11 gate 1000 under the same five-pose evaluator",
+    "eval_seed": 20261410,
+    "modes": [
+      "native_gsi",
+      "prone",
+      "supine",
+      "left_side",
+      "right_side"
+    ],
+    "num_envs_per_mode": 512,
+    "per_env_json_required": true,
+    "reason_count_and_per_env_array_audit_required": true,
+    "schema_version": 2,
+    "steps": 500,
+    "strict_failure_diagnosis_schema": 1
+  },
+  "hypothesis": "A11 prone hesitation is primarily limited by static grounded prone reset exposure; changing only reset pose weights should improve prone initiation without degrading the other four frozen poses or A11 safety metrics.",
+  "implementation_audit": {
+    "code_commit": "57b2831f42fcad4187cc460c865ddcc1f75d3b12",
+    "iterations": 1,
+    "num_envs": 16,
+    "rollout_steps": 24,
+    "runtime_files": {
+      "agent_config": {
+        "path": "logs/rsl_rl/smp_scratch_a12_f2s2_prone_coverage_g1/2026-09-01_21-17-43_a12_prone_coverage_smoke_57b2831/params/agent.yaml",
+        "sha256": "e2696e69f0dd704ef30312136e6d86becd8f5a045a81cb4ae89346c501d0dc84"
+      },
+      "checkpoint": {
+        "path": "logs/rsl_rl/smp_scratch_a12_f2s2_prone_coverage_g1/2026-09-01_21-17-43_a12_prone_coverage_smoke_57b2831/model_0.pt",
+        "sha256": "d7d70475ee478cd4963efef54858fc21254a99acbc76939fcb578d605901c5f2"
+      },
+      "environment_config": {
+        "path": "logs/rsl_rl/smp_scratch_a12_f2s2_prone_coverage_g1/2026-09-01_21-17-43_a12_prone_coverage_smoke_57b2831/params/env.yaml",
+        "sha256": "e6bbc443fef0a4a886a27862fc7f909c1d928e7b564c6798430433873efe59fa"
+      },
+      "git_diff": {
+        "path": "logs/rsl_rl/smp_scratch_a12_f2s2_prone_coverage_g1/2026-09-01_21-17-43_a12_prone_coverage_smoke_57b2831/git/smp-v38-unified.diff",
+        "sha256": "31141d028451ae449eea4ef65a97ed001008b3300f5a36ce166adaf6497398ff"
+      },
+      "log": {
+        "path": "run_control/prone_coverage_finetune_v1/smoke_57b2831/train.log",
+        "sha256": "5d0783f12cdd39830660e640668e51409cd8a78b6210fd3bb906bd85ec6c81b7"
+      }
+    },
+    "seed": 20261400,
+    "source_checkpoint_sha256": "5fecaee243ac8fea0798a4adf9de4b4801414203ce66a33a72b59876f3314bfb",
+    "status": "PASSED_REAL_MUJOCO_WARM_START_SMOKE",
+    "verified": {
+      "actor_input_dim": 93,
+      "all_checkpoint_tensors_finite": true,
+      "checkpoint_embedded_iteration": 0,
+      "checkpoint_tensor_count": 73,
+      "checkpoint_tensor_elements": 2620640,
+      "critic_input_dim": 960,
+      "environment_steps_started_at": 0,
+      "mode_weights": [
+        3.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "optimizer_restored": false
+    }
+  },
+  "schema_version": 1,
+  "source_policy": {
+    "actor_input_dim": 93,
+    "checkpoint_name": "model_1000.pt",
+    "checkpoint_path": "logs/rsl_rl/smp_scratch_a11_f2s2_grounded_safety_g1/2026-09-01_17-29-46_a11_grounded_safety_3k_seed20261301/model_1000.pt",
+    "checkpoint_sha256": "5fecaee243ac8fea0798a4adf9de4b4801414203ce66a33a72b59876f3314bfb",
+    "critic_input_dim": 960,
+    "embedded_iteration": 1000,
+    "policy_seed": 20261301,
+    "task": "Smp-Getup-Scratch-A11-F2S2-Grounded-Safety-G1",
+    "wandb_run": "tabletennis/smp/slbh9cnq"
+  },
+  "status": "PREREGISTERED_READY_FOR_TRAINING",
+  "stopping_rules": {
+    "dead_worker_without_model_4999": "PRONE_COVERAGE_TRAINING_ALERT_NO_RESTART",
+    "fatal_oom_nan_inf": "PRONE_COVERAGE_TRAINING_ALERT",
+    "log_stale_minutes": 45,
+    "negative_or_unsafe_result": "STOP_AND_REVIEW_NO_SELECTIVE_RETRY"
+  },
+  "study_id": "smp-prone-coverage-finetune-v1",
+  "study_role": "ENGINEERING_PRONE_COVERAGE_FINETUNE_NOT_PROMOTION_OR_RAL_EVIDENCE",
+  "training_protocol": {
+    "device": 0,
+    "environment_seed": 20261401,
+    "evaluation_gates": [
+      0,
+      500,
+      1000,
+      2000,
+      3500,
+      4999
+    ],
+    "learning_rate": 1e-05,
+    "max_iterations": 5000,
+    "no_automatic_restart": true,
+    "num_envs": 4096,
+    "policy_seed": 20261401,
+    "reserved_idle_devices": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ],
+    "reset_optimizer_iteration_and_environment_steps": true,
+    "rollout_steps_per_update": 24,
+    "save_interval": 500,
+    "warm_start": "actor_critic_and_normalizers_only"
+  },
+  "treatment": {
+    "reset_distribution": {
+      "grounded_by_collision_geometry": true,
+      "mode_order": [
+        "prone",
+        "supine",
+        "left_side",
+        "right_side"
+      ],
+      "mode_weights": [
+        3.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "normalized_probabilities": [
+        0.5,
+        0.16666666666666666,
+        0.16666666666666666,
+        0.16666666666666666
+      ],
+      "physical_postcheck_required": true,
+      "procedural_probability": 1.0,
+      "root_angular_velocity": 0.0,
+      "root_linear_velocity": 0.0
+    },
+    "single_changed_factor": "grounded_procedural_reset_pose_weights",
+    "task": "Smp-Getup-Scratch-A12-F2S2-Prone-Coverage-G1",
+    "unchanged_from_a11": [
+      "actor_observation",
+      "critic_observation",
+      "reward_terms_and_weights",
+      "termination_terms",
+      "ppo_hyperparameters",
+      "disturbances",
+      "domain_randomization",
+      "physical_reset_validation"
+    ]
+  }
+}
