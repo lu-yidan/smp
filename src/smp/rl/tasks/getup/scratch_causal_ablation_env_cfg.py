@@ -352,6 +352,19 @@ def g1_scratch_a11_f2s2_grounded_safety_env_cfg(play: bool = False):
   return cfg
 
 
+def g1_scratch_a12_f2s2_prone_coverage_env_cfg(play: bool = False):
+  """Continue A11 while changing only the grounded reset pose mixture.
+
+  The actor, critic, rewards, terminations, disturbances, and physical reset
+  validation remain identical to A11. Prone receives half of the procedural
+  resets; supine and both side poses retain one sixth each to limit forgetting.
+  """
+  cfg = g1_scratch_a11_f2s2_grounded_safety_env_cfg(play=play)
+  reset = cfg.events["curriculum_validated_fall_reset"]
+  reset.params["mode_weights"] = (3.0, 1.0, 1.0, 1.0)
+  return cfg
+
+
 __all__ = [
   "g1_scratch_a0_f2s2_gsi_env_cfg",
   "g1_scratch_a1_v7_gsi_env_cfg",
@@ -365,4 +378,5 @@ __all__ = [
   "g1_scratch_a9_f2s2_objective_aligned_env_cfg",
   "g1_scratch_a10_f2s2_physical_reset_env_cfg",
   "g1_scratch_a11_f2s2_grounded_safety_env_cfg",
+  "g1_scratch_a12_f2s2_prone_coverage_env_cfg",
 ]
