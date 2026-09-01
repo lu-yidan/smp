@@ -1,4 +1,4 @@
-"""Read-only, fail-closed health monitor for flat objective-alignment training."""
+"""Fail-closed automation for the preregistered flat objective-alignment study."""
 
 from __future__ import annotations
 
@@ -6,7 +6,9 @@ import hashlib
 import json
 import os
 import re
+import shutil
 import subprocess
+import sys
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
@@ -14,26 +16,29 @@ from typing import Any
 
 import tyro
 
-from launch_smp_flat_objective_alignment import (
-  _ARM_ORDER,
-  _DEVICES,
-  _POLICY_SEEDS,
+from analyze_smp_flat_objective_alignment import (
+  _GATES,
+  _PLAN_ID,
   _PROTOCOL_SHA256,
-  _RESERVED_DEVICES,
-  _atomic_json,
-  _git,
-  _load_json,
+  _SEEDS,
+  FlatObjectiveAnalysisCfg,
+  _audit_matrix,
+  _validate_index,
   _validate_protocol,
+  write_analysis,
+)
+from build_smp_flat_objective_alignment_manifests import (
+  _ARMS,
+  FlatObjectiveManifestCfg,
+  _discover_run,
+  _validate_launch as _validate_manifest_launch,
+  write_manifests,
 )
 
-_EXPERIMENTS = {
-  "a6_replication_control": "smp_scratch_a6_f2s2_mix_bridge_g1",
-  "a9_objective_aligned": "smp_scratch_a9_f2s2_objective_aligned_g1",
-}
-_GATES = (8000, 15000, 25000, 29999)
+_MINIMUM_COMMIT = "8855446"
 _ERROR_PATTERN = re.compile(
-  r"traceback|cuda out of memory|outofmemoryerror|fatal|segmentation fault|"
-  r"(?:^|[^a-z0-9_])(?:nan|inf)(?:[^a-z0-9_]|$)",
+  r"traceback|cuda out of memory|outofmemoryerror|"
+  r"(?:^|[^a-z0-9_])(?:nan|inf)(?:[^a-z0-9_]|$)|fatal|segmentation fault",
   re.IGNORECASE | re.MULTILINE,
 )
 _ITERATION_PATTERN = re.compile(r"Learning iteration\s+(\d+)\s*/\s*30000")
@@ -43,70 +48,41 @@ _THROUGHPUT_PATTERN = re.compile(
 )
 _WANDB_PATTERN = re.compile(r"wandb\.ai/[^\s]+/runs/([A-Za-z0-9]+)")
 _CHECKPOINT_PATTERN = re.compile(r"model_(\d+)\.pt")
+_GIB = 1024**3
 
 
 @dataclass(frozen=True)
 class FlatObjectiveAdvanceCfg:
   protocol: Path = Path("docs/ral_flat_objective_alignment_v1.json")
   training_control_dir: Path = Path("run_control/flat_objective_alignment_v1_training")
+  manifest_dir: Path = Path("run_control/flat_objective_alignment_v1_eval/manifests")
+  evaluation_root: Path = Path("run_control/flat_objective_alignment_v1_eval/formal")
+  analysis_json: Path = Path(
+    "run_control/flat_objective_alignment_v1_eval/flat_objective_analysis.json"
+  )
+  analysis_markdown: Path = Path(
+    "run_control/flat_objective_alignment_v1_eval/flat_objective_analysis.md"
+  )
   state: Path = Path("run_control/automation_state/flat_objective_alignment_latest.json")
   logs_root: Path = Path("logs/rsl_rl")
+  devices: tuple[str, ...] = tuple(f"cuda:{index}" for index in range(8))
+  launch_evaluations_when_ready: bool = False
   stale_log_minutes: float = 45.0
 
 
-def _pid_alive(pid: int) -> bool:
-  try:
-    os.kill(pid, 0)
-  except ProcessLookupError:
-    return False
-  except PermissionError:
-    return True
-  return True
-
-
-def _tail(path: Path, maximum_bytes: int = 8 * 1024 * 1024) -> str:
-  if not path.is_file():
-    return ""
-  with path.open("rb") as stream:
-    stream.seek(0, os.SEEK_END)
-    size = stream.tell()
-    stream.seek(max(0, size - maximum_bytes))
-    return stream.read().decode(errors="replace")
-
-
-def _discover_run(logs_root: Path, arm: str, run_name: str) -> Path | None:
-  experiment = logs_root / _EXPERIMENTS[arm]
-  if not experiment.is_dir():
-    return None
-  matches = sorted(
-    (path for path in experiment.iterdir() if path.is_dir() and path.name.endswith(run_name)),
-    key=lambda path: path.stat().st_mtime,
-  )
-  if len(matches) > 1:
-    raise ValueError(f"multiple run directories match immutable run name {run_name}")
-  return matches[0] if matches else None
-
-
-def _latest_checkpoint_iteration(run_dir: Path | None) -> int | None:
-  if run_dir is None:
-    return None
-  values = []
-  for path in run_dir.glob("model_*.pt"):
-    match = _CHECKPOINT_PATTERN.fullmatch(path.name)
-    if match and path.is_file():
-      values.append(int(match.group(1)))
-  return max(values) if values else None
-
-
-def _validate_launch(launch: dict[str, Any]) -> None:
+def _validate_launch(value: dict[str, Any] | FlatObjectiveManifestCfg) -> Any:
+  """Validate either the historical in-memory plan or the manifest config."""
+  if isinstance(value, FlatObjectiveManifestCfg):
+    return _validate_manifest_launch(value)
+  launch = value
   if (
     launch.get("schema_version") != 1
     or launch.get("status") != "LAUNCHED"
     or launch.get("study_id") != "smp-flat-objective-alignment-v1"
     or launch.get("protocol_sha256") != _PROTOCOL_SHA256
-    or launch.get("policy_seeds") != list(_POLICY_SEEDS)
-    or launch.get("devices") != list(_DEVICES)
-    or launch.get("reserved_idle_devices") != list(_RESERVED_DEVICES)
+    or launch.get("policy_seeds") != list(_SEEDS)
+    or launch.get("devices") != list(range(6))
+    or launch.get("reserved_idle_devices") != [6, 7]
     or launch.get("random_actor_critic_and_normalizers") is not True
     or launch.get("actor_observation_dim") != 93
     or launch.get("actor_history_steps") != 1
@@ -118,10 +94,8 @@ def _validate_launch(launch: dict[str, Any]) -> None:
     raise ValueError("immutable launch job count drifted")
   expected = [
     (arm, seed, gpu)
-    for gpu, (arm, seed) in zip(
-      _DEVICES,
-      ((arm, seed) for arm in _ARM_ORDER for seed in _POLICY_SEEDS),
-      strict=True,
+    for gpu, (arm, seed) in enumerate(
+      (arm, seed) for arm in _ARMS for seed in _SEEDS
     )
   ]
   for job, (arm, seed, gpu) in zip(jobs, expected, strict=True):
@@ -140,7 +114,7 @@ def _validate_launch(launch: dict[str, Any]) -> None:
   material = {
     "protocol_sha256": launch["protocol_sha256"],
     "code_commit": launch["code_commit"],
-    "jobs": [{key: value for key, value in job.items() if key != "pid"} for job in jobs],
+    "jobs": [{key: item for key, item in job.items() if key != "pid"} for job in jobs],
     "reserved_idle_devices": launch["reserved_idle_devices"],
   }
   expected_plan = hashlib.sha256(json.dumps(material, sort_keys=True).encode()).hexdigest()
@@ -148,83 +122,277 @@ def _validate_launch(launch: dict[str, Any]) -> None:
     raise ValueError("immutable launch plan hash drifted")
 
 
-def _health(cfg: FlatObjectiveAdvanceCfg, launch: dict[str, Any], now: datetime) -> list[dict[str, Any]]:
+def _load(path: Path) -> dict[str, Any]:
+  if not path.is_file():
+    raise FileNotFoundError(path)
+  payload = json.loads(path.read_text())
+  if not isinstance(payload, dict):
+    raise ValueError(f"expected JSON object: {path}")
+  return payload
+
+
+def _atomic_json(path: Path, payload: dict[str, Any]) -> None:
+  path.parent.mkdir(parents=True, exist_ok=True)
+  temporary = path.with_suffix(path.suffix + ".tmp")
+  temporary.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n")
+  temporary.replace(path)
+
+
+def _pid_alive(pid: int) -> bool:
+  try:
+    os.kill(pid, 0)
+  except ProcessLookupError:
+    return False
+  except PermissionError:
+    return True
+  return True
+
+
+def _gpu_processes() -> list[str]:
+  result = subprocess.run(
+    (
+      "nvidia-smi",
+      "--query-compute-apps=pid,gpu_uuid,process_name",
+      "--format=csv,noheader",
+    ),
+    check=True,
+    capture_output=True,
+    text=True,
+  )
+  return [line.strip() for line in result.stdout.splitlines() if line.strip()]
+
+
+def _git(repo_root: Path, *args: str) -> str:
+  return subprocess.run(
+    ("git", *args),
+    cwd=repo_root,
+    check=True,
+    capture_output=True,
+    text=True,
+  ).stdout.strip()
+
+
+def _disk_preflight(path: Path) -> dict[str, float]:
+  usage = shutil.disk_usage(path)
+  stats = os.statvfs(path)
+  inode_free_fraction = stats.f_favail / stats.f_files if stats.f_files else 0.0
+  free_gib = usage.free / _GIB
+  if free_gib < 100.0 or inode_free_fraction < 0.10:
+    raise RuntimeError(
+      f"DISK_SPACE_ALERT: free_gib={free_gib:.1f}, "
+      f"inode_free_fraction={inode_free_fraction:.3f}"
+    )
+  return {"free_gib": free_gib, "inode_free_fraction": inode_free_fraction}
+
+
+def _tail(path: Path, maximum_bytes: int = 8 * 1024 * 1024) -> str:
+  if not path.is_file():
+    return ""
+  with path.open("rb") as stream:
+    stream.seek(0, os.SEEK_END)
+    size = stream.tell()
+    stream.seek(max(0, size - maximum_bytes))
+    return stream.read().decode(errors="replace")
+
+
+def _latest_checkpoint_iteration(run_dir: Path | None) -> int | None:
+  if run_dir is None:
+    return None
+  iterations = []
+  for checkpoint in run_dir.glob("model_*.pt"):
+    match = _CHECKPOINT_PATTERN.fullmatch(checkpoint.name)
+    if match and checkpoint.is_file():
+      iterations.append(int(match.group(1)))
+  return max(iterations) if iterations else None
+
+
+def _training_health(
+  cfg: FlatObjectiveAdvanceCfg, launch: dict[str, Any], now: datetime
+) -> list[dict[str, Any]]:
   rows = []
   for job in launch["jobs"]:
+    pid = int(job["pid"])
+    alive = _pid_alive(pid)
     log = Path(job["log"])
     text = _tail(log)
-    iterations = _ITERATION_PATTERN.findall(text)
-    throughputs = [first or second for first, second in _THROUGHPUT_PATTERN.findall(text)]
-    wandb = _WANDB_PATTERN.findall(text)
+    iteration_matches = _ITERATION_PATTERN.findall(text)
+    throughput_matches = [
+      first or second
+      for first, second in _THROUGHPUT_PATTERN.findall(text)
+    ]
+    wandb_matches = _WANDB_PATTERN.findall(text)
     mtime = datetime.fromtimestamp(log.stat().st_mtime, timezone.utc) if log.is_file() else None
-    age = (now - mtime).total_seconds() / 60.0 if mtime else None
-    run_dir = _discover_run(cfg.logs_root, str(job["arm"]), str(job["run_name"]))
-    latest_log = max(map(int, iterations)) if iterations else None
-    latest_checkpoint = _latest_checkpoint_iteration(run_dir)
-    progress = [value for value in (latest_log, latest_checkpoint) if value is not None]
-    rows.append({
-      "arm": job["arm"],
-      "policy_seed": int(job["policy_seed"]),
-      "gpu": int(job["gpu"]),
-      "pid": int(job["pid"]),
-      "process_alive": _pid_alive(int(job["pid"])),
-      "log": str(log.resolve()),
-      "log_exists": log.is_file(),
-      "log_mtime_utc": mtime.isoformat() if mtime else None,
-      "log_age_minutes": age,
-      "latest_iteration": latest_log,
-      "latest_checkpoint_iteration": latest_checkpoint,
-      "progress_iteration_lower_bound": max(progress) if progress else None,
-      "latest_throughput_steps_s": int(throughputs[-1].replace(",", "")) if throughputs else None,
-      "wandb_run_id": wandb[-1] if wandb else None,
-      "error_match": (match.group(0) if (match := _ERROR_PATTERN.search(text)) else None),
-      "run_dir": str(run_dir.resolve()) if run_dir else None,
-      "final_checkpoint_present": bool(run_dir and (run_dir / "model_29999.pt").is_file()),
-      "gate_checkpoints_present": {
-        str(gate): bool(run_dir and (run_dir / f"model_{gate}.pt").is_file())
-        for gate in _GATES
-      },
-    })
+    age_minutes = (now - mtime).total_seconds() / 60.0 if mtime else None
+    error = _ERROR_PATTERN.search(text)
+    run_dir = None
+    final_checkpoint = None
+    try:
+      run_dir = _discover_run(
+        cfg.logs_root,
+        _ARMS[str(job["arm"])]["experiment"],
+        str(job["run_name"]),
+      )
+      final_checkpoint = run_dir / "model_29999.pt"
+    except (FileNotFoundError, ValueError):
+      pass
+    latest_log_iteration = (
+      max(map(int, iteration_matches)) if iteration_matches else None
+    )
+    latest_checkpoint_iteration = _latest_checkpoint_iteration(run_dir)
+    progress_candidates = [
+      value
+      for value in (latest_log_iteration, latest_checkpoint_iteration)
+      if value is not None
+    ]
+    rows.append(
+      {
+        "arm": job["arm"],
+        "policy_seed": int(job["policy_seed"]),
+        "gpu": int(job["gpu"]),
+        "pid": pid,
+        "process_alive": alive,
+        "log": str(log.resolve()),
+        "log_exists": log.is_file(),
+        "log_mtime_utc": mtime.isoformat() if mtime else None,
+        "log_age_minutes": age_minutes,
+        "latest_iteration": latest_log_iteration,
+        "latest_checkpoint_iteration": latest_checkpoint_iteration,
+        "progress_iteration_lower_bound": (
+          max(progress_candidates) if progress_candidates else None
+        ),
+        "latest_throughput_steps_s": (
+          int(throughput_matches[-1].replace(",", "")) if throughput_matches else None
+        ),
+        "wandb_run_id": wandb_matches[-1] if wandb_matches else None,
+        "error_match": error.group(0) if error else None,
+        "run_dir": str(run_dir) if run_dir else None,
+        "final_checkpoint": str(final_checkpoint) if final_checkpoint else None,
+        "final_checkpoint_present": bool(final_checkpoint and final_checkpoint.is_file()),
+        "gate_checkpoints_present": {
+          str(gate): bool(run_dir and (run_dir / f"model_{gate}.pt").is_file())
+          for gate in _GATES
+        },
+      }
+    )
   return rows
+
+
+def _analysis_cfg(cfg: FlatObjectiveAdvanceCfg) -> FlatObjectiveAnalysisCfg:
+  return FlatObjectiveAnalysisCfg(
+    manifest_index=cfg.manifest_dir / "index.json",
+    evaluation_root=cfg.evaluation_root,
+    protocol=cfg.protocol,
+    output_json=cfg.analysis_json,
+    output_markdown=cfg.analysis_markdown,
+  )
+
+
+def _launch_matrix(
+  cfg: FlatObjectiveAdvanceCfg,
+  manifest: Path,
+  seed: int,
+  gate: int,
+  output_dir: Path,
+  preflight: dict[str, float],
+) -> dict[str, Any]:
+  runner = Path(__file__).with_name("run_smp_frozen_eval_matrix.py").resolve()
+  output_dir.mkdir(parents=True)
+  command = [
+    sys.executable,
+    str(runner),
+    "--manifest",
+    str(manifest.resolve()),
+    "--output-dir",
+    str(output_dir.resolve()),
+    "--devices",
+    *cfg.devices,
+    "--modes",
+    "native_gsi",
+    "prone",
+    "supine",
+    "left_side",
+    "right_side",
+    "--eval-seeds",
+    "20261110",
+    "--num-envs",
+    "512",
+    "--steps",
+    "500",
+    "--include-per-env",
+  ]
+  log = output_dir / "evaluation.log"
+  with log.open("a") as stream:
+    process = subprocess.Popen(
+      command,
+      stdout=stream,
+      stderr=subprocess.STDOUT,
+      start_new_session=True,
+    )
+  marker = {
+    "schema_version": 1,
+    "status": "ACTIVE",
+    "plan_id": _PLAN_ID,
+    "protocol_sha256": _PROTOCOL_SHA256,
+    "policy_seed": seed,
+    "checkpoint_step": gate,
+    "manifest": str(manifest.resolve()),
+    "output_dir": str(output_dir.resolve()),
+    "log": str(log.resolve()),
+    "command": command,
+    "devices": list(cfg.devices),
+    "pid": process.pid,
+    "attempt": 1,
+    "resource_preflight": preflight,
+    "started_at_utc": datetime.now(timezone.utc).isoformat(),
+  }
+  _atomic_json(cfg.evaluation_root / "active_evaluation.json", marker)
+  return marker
+
+
+def _base_state(repo_root: Path, now: datetime) -> dict[str, Any]:
+  return {
+    "schema_version": 1,
+    "observed_at_utc": now.isoformat(),
+    "code_commit": _git(repo_root, "rev-parse", "HEAD"),
+    "study_id": "smp-flat-objective-alignment-v1",
+    "plan_id": _PLAN_ID,
+    "protocol_sha256": _PROTOCOL_SHA256,
+  }
 
 
 def advance(cfg: FlatObjectiveAdvanceCfg) -> dict[str, Any]:
   repo_root = Path(__file__).resolve().parents[1]
   now = datetime.now(timezone.utc)
-  state: dict[str, Any] = {
-    "schema_version": 1,
-    "observed_at_utc": now.isoformat(),
-    "code_commit": _git(repo_root, "rev-parse", "HEAD"),
-    "study_id": "smp-flat-objective-alignment-v1",
-    "protocol_sha256": _PROTOCOL_SHA256,
-  }
-  protocol_path = cfg.protocol if cfg.protocol.is_absolute() else repo_root / cfg.protocol
-  _validate_protocol(protocol_path, repo_root)
+  state = _base_state(repo_root, now)
+  _git(repo_root, "merge-base", "--is-ancestor", _MINIMUM_COMMIT, "HEAD")
+  _validate_protocol(cfg.protocol)
   launch_path = cfg.training_control_dir / "launch_manifest.json"
   if not launch_path.is_file():
     return {**state, "status": "WAITING_FOR_FROZEN_TRAINING_LAUNCH"}
-  launch = _load_json(launch_path)
-  _validate_launch(launch)
-  try:
-    _git(repo_root, "merge-base", "--is-ancestor", str(launch["code_commit"]), "HEAD")
-  except subprocess.CalledProcessError as error:
-    raise ValueError("current code no longer descends from frozen launch commit") from error
-  rows = _health(cfg, launch, now)
-  state["plan_id"] = launch["plan_id"]
-  state["training"] = {
-    "job_count": len(rows),
-    "alive_count": sum(row["process_alive"] for row in rows),
-    "final_checkpoint_count": sum(row["final_checkpoint_present"] for row in rows),
-    "jobs": rows,
-  }
-  errors = [row for row in rows if row["error_match"]]
-  dead_incomplete = [row for row in rows if not row["process_alive"] and not row["final_checkpoint_present"]]
-  stale = [
-    row for row in rows
-    if row["process_alive"] and (
-      not row["log_exists"] or row["log_age_minutes"] is None
-      or row["log_age_minutes"] > cfg.stale_log_minutes
+  launch, _ = _validate_launch(
+    FlatObjectiveManifestCfg(
+      launch_manifest=launch_path,
+      output_dir=cfg.manifest_dir,
+      protocol=cfg.protocol,
+      logs_root=cfg.logs_root,
     )
+  )
+  health = _training_health(cfg, launch, now)
+  state["training"] = {
+    "job_count": len(health),
+    "alive_count": sum(row["process_alive"] for row in health),
+    "final_checkpoint_count": sum(row["final_checkpoint_present"] for row in health),
+    "jobs": health,
+  }
+  errors = [row for row in health if row["error_match"]]
+  dead_incomplete = [
+    row for row in health if not row["process_alive"] and not row["final_checkpoint_present"]
+  ]
+  stale = [
+    row for row in health
+    if row["process_alive"]
+    and (not row["log_exists"] or row["log_age_minutes"] is None
+         or row["log_age_minutes"] > cfg.stale_log_minutes)
   ]
   if errors or dead_incomplete or stale:
     return {
@@ -237,32 +405,141 @@ def advance(cfg: FlatObjectiveAdvanceCfg) -> dict[str, Any]:
         "automatic_restart_forbidden": True,
       },
     }
-  if not all(row["final_checkpoint_present"] for row in rows):
+  if not all(row["final_checkpoint_present"] for row in health):
     return {**state, "status": "FLAT_OBJECTIVE_TRAINING_ACTIVE"}
-  if any(row["process_alive"] for row in rows):
+  if any(row["process_alive"] for row in health):
     return {**state, "status": "FLAT_OBJECTIVE_TRAINING_FINALIZING"}
+
+  gpu_processes = _gpu_processes()
+  state["gpu_compute_processes"] = gpu_processes
+  if gpu_processes:
+    return {**state, "status": "FLAT_OBJECTIVE_WAITING_GPU_IDLE"}
+  manifest_cfg = FlatObjectiveManifestCfg(
+    launch_manifest=launch_path,
+    output_dir=cfg.manifest_dir,
+    protocol=cfg.protocol,
+    logs_root=cfg.logs_root,
+  )
+  try:
+    index = write_manifests(manifest_cfg)
+  except Exception as error:
+    return {
+      **state,
+      "status": "FLAT_OBJECTIVE_MANIFEST_ALERT",
+      "error": f"{type(error).__name__}: {error}",
+    }
+  state["manifests"] = {
+    "status": index["status"],
+    "index": str((cfg.manifest_dir / "index.json").resolve()),
+    "index_id": index["index_id"],
+    "manifest_count": len(index["manifests"]),
+    "checkpoint_entry_count": index["checkpoint_entry_count"],
+  }
+  _, manifest_rows = _validate_index(cfg.manifest_dir / "index.json")
+  analysis_cfg = _analysis_cfg(cfg)
+  marker_path = cfg.evaluation_root / "active_evaluation.json"
+  if marker_path.is_file():
+    marker = _load(marker_path)
+    if (
+      marker.get("plan_id") != _PLAN_ID
+      or marker.get("protocol_sha256") != _PROTOCOL_SHA256
+      or marker.get("attempt") != 1
+    ):
+      return {**state, "status": "FLAT_OBJECTIVE_EVAL_ALERT", "error": "active marker drifted"}
+    if _pid_alive(int(marker["pid"])):
+      return {**state, "status": "FLAT_OBJECTIVE_EVALUATION_ACTIVE", "active_evaluation": marker}
+    key = (int(marker["policy_seed"]), int(marker["checkpoint_step"]))
+    try:
+      _audit_matrix(analysis_cfg, manifest_rows[key], key[0], key[1])
+    except Exception as error:
+      return {
+        **state,
+        "status": "FLAT_OBJECTIVE_EVAL_ALERT",
+        "error": f"dead evaluator left incomplete or invalid evidence: {type(error).__name__}: {error}",
+        "active_evaluation": marker,
+        "automatic_restart_forbidden": True,
+      }
+    marker_path.unlink()
+
+  completed = []
+  for gate in _GATES:
+    for seed in _SEEDS:
+      matrix_dir = cfg.evaluation_root / f"gate_{gate}" / f"seed_{seed}"
+      if (matrix_dir / "_COMPLETE.json").is_file():
+        try:
+          _audit_matrix(analysis_cfg, manifest_rows[(seed, gate)], seed, gate)
+        except Exception as error:
+          return {
+            **state,
+            "status": "FLAT_OBJECTIVE_EVAL_ALERT",
+            "error": f"invalid completed matrix: {type(error).__name__}: {error}",
+          }
+        completed.append({"checkpoint_step": gate, "policy_seed": seed})
+        continue
+      if matrix_dir.exists() and any(matrix_dir.iterdir()):
+        return {
+          **state,
+          "status": "FLAT_OBJECTIVE_EVAL_ALERT",
+          "error": f"partial matrix exists without an active evaluator: {matrix_dir}",
+          "automatic_restart_forbidden": True,
+        }
+      state["evaluation"] = {
+        "completed_matrix_count": len(completed),
+        "required_matrix_count": 12,
+        "next_checkpoint_step": gate,
+        "next_policy_seed": seed,
+      }
+      if not cfg.launch_evaluations_when_ready:
+        return {**state, "status": "FLAT_OBJECTIVE_READY_FOR_FROZEN_EVALUATION"}
+      if _git(repo_root, "status", "--porcelain", "--untracked-files=no"):
+        return {**state, "status": "CODE_SYNC_ALERT", "error": "tracked worktree is dirty"}
+      gpu_processes = _gpu_processes()
+      if gpu_processes:
+        return {**state, "status": "FLAT_OBJECTIVE_WAITING_GPU_IDLE", "gpu_compute_processes": gpu_processes}
+      try:
+        preflight = _disk_preflight(cfg.evaluation_root.parent)
+      except RuntimeError as error:
+        return {**state, "status": "DISK_SPACE_ALERT", "error": str(error)}
+      marker = _launch_matrix(
+        cfg,
+        Path(manifest_rows[(seed, gate)]["path"]),
+        seed,
+        gate,
+        matrix_dir,
+        preflight,
+      )
+      return {**state, "status": "FLAT_OBJECTIVE_EVALUATION_LAUNCHED", "active_evaluation": marker}
+
+  try:
+    result = write_analysis(analysis_cfg)
+  except Exception as error:
+    return {
+      **state,
+      "status": "FLAT_OBJECTIVE_ANALYSIS_ALERT",
+      "error": f"{type(error).__name__}: {error}",
+    }
   return {
     **state,
-    "status": "FLAT_OBJECTIVE_CHECKPOINTS_READY_FOR_MANIFESTS",
-    "next_action": "Build and hash-lock 12 immutable A6/A9 manifests before frozen evaluation.",
+    "status": result["status"],
+    "evaluation": {"completed_matrix_count": 12, "required_matrix_count": 12},
+    "analysis": str(cfg.analysis_json.resolve()),
+    "promotion": result["promotion"],
   }
 
 
 def main(cfg: FlatObjectiveAdvanceCfg) -> None:
   try:
-    state = advance(cfg)
+    result = advance(cfg)
   except Exception as error:
-    state = {
-      "schema_version": 1,
-      "observed_at_utc": datetime.now(timezone.utc).isoformat(),
-      "study_id": "smp-flat-objective-alignment-v1",
-      "protocol_sha256": _PROTOCOL_SHA256,
-      "status": "FLAT_OBJECTIVE_MONITOR_ALERT",
+    repo_root = Path(__file__).resolve().parents[1]
+    now = datetime.now(timezone.utc)
+    result = {
+      **_base_state(repo_root, now),
+      "status": "FLAT_OBJECTIVE_AUTOMATION_ALERT",
       "error": f"{type(error).__name__}: {error}",
-      "automatic_restart_forbidden": True,
     }
-  _atomic_json(cfg.state, state)
-  print(json.dumps(state, indent=2, sort_keys=True))
+  _atomic_json(cfg.state, result)
+  print(json.dumps(result, indent=2, sort_keys=True))
 
 
 if __name__ == "__main__":
