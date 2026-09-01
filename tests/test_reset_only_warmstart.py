@@ -18,6 +18,7 @@ from smp.rl.tasks.getup.scratch_causal_ablation_env_cfg import (
 )
 
 sys.path.insert(0, str(Path(__file__).parents[1] / "scripts"))
+import evaluate_smp_baseline as evaluator  # noqa: E402
 from launch_smp_reset_only_warmstart import (  # noqa: E402
   _PROTOCOL_SHA256,
   _sha256,
@@ -72,6 +73,37 @@ class ResetOnlyWarmStartTest(unittest.TestCase):
     runner = load_runner_cls("Smp-Getup-Scratch-A10-F2S2-Physical-Reset-G1")
     self.assertIsNotNone(runner)
     self.assertEqual(runner.__name__, "SmpCurriculumWarmStartRunner")
+
+  def test_physical_eval_freezes_grounded_pose_without_legacy_reset(self) -> None:
+    env_cfg = g1_scratch_a10_f2s2_physical_reset_env_cfg(play=False)
+    cfg = evaluator.EvalCfg(
+      checkpoint=Path("model.pt"),
+      reset_mode="prone",
+      physical_reset_validation=True,
+    )
+    evaluator._configure_physical_reset_validation(env_cfg, cfg)
+    reset = env_cfg.events["curriculum_validated_fall_reset"]
+    self.assertEqual(reset.params["mode_weights"], (1.0, 0.0, 0.0, 0.0))
+    self.assertEqual(reset.params["target_probability"], 1.0)
+    self.assertNotIn("forced_fall_reset", env_cfg.events)
+    self.assertNotIn("push_robot", env_cfg.events)
+
+  def test_physical_eval_native_mode_uses_only_valid_gsi_or_grounded_fallback(
+    self,
+  ) -> None:
+    env_cfg = g1_scratch_a10_f2s2_physical_reset_env_cfg(play=False)
+    cfg = evaluator.EvalCfg(
+      checkpoint=Path("model.pt"),
+      reset_mode="native_gsi",
+      native_pushes=False,
+      physical_reset_validation=True,
+    )
+    evaluator._configure_physical_reset_validation(env_cfg, cfg)
+    reset = env_cfg.events["curriculum_validated_fall_reset"]
+    self.assertEqual(reset.params["target_probability"], 0.0)
+    self.assertEqual(reset.params["balanced_probability"], 0.0)
+    self.assertNotIn("forced_fall_reset", env_cfg.events)
+    self.assertNotIn("push_robot", env_cfg.events)
 
   def test_protocol_is_non_evidence_and_source_hash_locked(self) -> None:
     path = Path(__file__).parents[1] / "docs/ral_reset_only_warmstart_v1.json"

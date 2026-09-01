@@ -1693,6 +1693,7 @@ def curriculum_validated_fall_reset(
   balanced_until_step: int = 72_000,
   balanced_probability: float = 0.50,
   target_probability: float = 0.20,
+  mode_weights: tuple[float, float, float, float] = (1.0, 1.0, 1.0, 1.0),
   max_penetration: float = 0.012,
   max_support_gap: float = 0.025,
 ) -> None:
@@ -1717,7 +1718,7 @@ def curriculum_validated_fall_reset(
       env,
       replacement_ids,
       procedural_probability=1.0,
-      mode_weights=(1.0, 1.0, 1.0, 1.0),
+      mode_weights=mode_weights,
       root_height_range=(0.48, 0.62),
       joint_noise=0.12,
       orientation_noise=0.0,

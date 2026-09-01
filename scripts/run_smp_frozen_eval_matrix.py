@@ -216,6 +216,8 @@ def main(cfg: MatrixCfg) -> None:
           "policy_seed": policy_seed,
           "matched_eval_manifest_sha256": metadata.get("matched_eval_manifest_sha256"),
         }
+        if run.get("physical_reset_validation", False):
+          expected["physical_reset_validation"] = True
         policy_kind = run.get("policy_kind", "rsl_rl")
         if policy_kind == "firm_r":
           expected.update(
@@ -264,6 +266,8 @@ def main(cfg: MatrixCfg) -> None:
           )
         if cfg.include_per_env:
           command.append("--include-per-env")
+        if run.get("physical_reset_validation", False):
+          command.append("--physical-reset-validation")
         if metadata.get("matched_eval_manifest") is not None:
           command.extend(
             (

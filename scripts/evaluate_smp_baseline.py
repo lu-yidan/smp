@@ -74,6 +74,7 @@ class EvalCfg:
   plate_mass_kg: float = 0.0
   matched_eval_manifest: Path | None = None
   matched_eval_manifest_sha256: str = ""
+  physical_reset_validation: bool = False
 
 
 def _validate_policy_configuration(cfg: EvalCfg) -> None:
@@ -339,6 +340,38 @@ def _configure_specialist_stratum(env_cfg, cfg: EvalCfg) -> None:
     reset_plate.params["mass_weights"] = (1.0,)
 
 
+def _configure_physical_reset_validation(env_cfg, cfg: EvalCfg) -> None:
+  """Freeze A10 evaluation to accepted GSI or one grounded procedural pose."""
+  reset = env_cfg.events.get("curriculum_validated_fall_reset")
+  if reset is None:
+    raise RuntimeError(
+      "physical-reset evaluation requires curriculum_validated_fall_reset"
+    )
+  if cfg.reset_mode == "native_gsi":
+    reset.params.update(
+      {
+        "all_procedural_until_step": 0,
+        "balanced_until_step": 0,
+        "balanced_probability": 0.0,
+        "target_probability": 0.0,
+        "mode_weights": (1.0, 1.0, 1.0, 1.0),
+      }
+    )
+    if not cfg.native_pushes:
+      env_cfg.events.pop("push_robot", None)
+    return
+  env_cfg.events.pop("push_robot", None)
+  reset.params.update(
+    {
+      "all_procedural_until_step": 2**63 - 1,
+      "balanced_until_step": 2**63 - 1,
+      "balanced_probability": 1.0,
+      "target_probability": 1.0,
+      "mode_weights": _RESET_WEIGHTS[cfg.reset_mode],
+    }
+  )
+
+
 def main(cfg: EvalCfg) -> None:
   _validate_policy_configuration(cfg)
   valid_modes = ("native_gsi", *_RESET_WEIGHTS)
@@ -370,6 +403,8 @@ def main(cfg: EvalCfg) -> None:
       env_cfg.events.pop("push_robot", None)
   elif cfg.evaluation_profile != "flat":
     pass
+  elif cfg.physical_reset_validation:
+    _configure_physical_reset_validation(env_cfg, cfg)
   elif cfg.reset_mode == "native_gsi":
     if not cfg.native_pushes:
       env_cfg.events.pop("push_robot", None)
@@ -434,6 +469,16 @@ def main(cfg: EvalCfg) -> None:
   rollout_rng_seed = cfg.seed + 1000003
   torch.manual_seed(rollout_rng_seed)
   obs = env.get_observations()
+  physical_gsi_rejected = getattr(
+    raw_env,
+    "_physical_reset_rejected_gsi",
+    torch.zeros(raw_env.num_envs, dtype=torch.bool, device=raw_env.device),
+  ).clone()
+  physical_procedural_reset = getattr(
+    raw_env,
+    "_physical_reset_used_procedural",
+    torch.zeros(raw_env.num_envs, dtype=torch.bool, device=raw_env.device),
+  ).clone()
 
   terrain_type_ids = torch.full(
     (raw_env.num_envs,), -1, dtype=torch.long, device=raw_env.device
@@ -770,6 +815,11 @@ def main(cfg: EvalCfg) -> None:
     "matched_eval_exact_training_overlap_count": (
       matched_eval["exact_training_overlap_count"] if matched_eval else None
     ),
+    "physical_reset_validation": cfg.physical_reset_validation,
+    "physical_gsi_rejection_rate": float(physical_gsi_rejected.float().mean()),
+    "physical_procedural_reset_rate": float(
+      physical_procedural_reset.float().mean()
+    ),
     "num_envs": cfg.num_envs,
     "steps": cfg.steps,
     "physics_dt_s": float(raw_env.physics_dt),
@@ -916,6 +966,8 @@ def main(cfg: EvalCfg) -> None:
       )
       .cpu()
       .tolist(),
+      "physical_gsi_rejected": physical_gsi_rejected.cpu().tolist(),
+      "physical_procedural_reset": physical_procedural_reset.cpu().tolist(),
       "plate_present": plate_present.cpu().tolist(),
       "plate_mass_kg": plate_mass.cpu().tolist(),
       "plate_friction": plate_friction.cpu().tolist(),
