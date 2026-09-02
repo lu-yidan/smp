@@ -15,7 +15,7 @@ from typing import Any
 import torch
 import tyro
 
-_PROTOCOL_SHA256 = "c10e2a2267421b731236b16d413c75bb3e1bff5065e87178ccbca5a5701964ff"
+_PROTOCOL_SHA256 = "d584340770777df238eaa59cf3e649469b9c8afff97cae9a039c41ee75f38bf3"
 _MINIMUM_COMMIT = "f249b3e"
 _TASK = "Smp-Getup-Scratch-A13-F2S2-Continuous-Reset-G1"
 _EXPECTED_RUNNER = "SmpCurriculumWarmStartRunner"
@@ -26,7 +26,9 @@ _GIB = 1024**3
 @dataclass(frozen=True)
 class ContinuousResetFinetuneCfg:
   protocol: Path = Path("docs/ral_continuous_reset_finetune_v1.json")
-  control_dir: Path = Path("run_control/continuous_reset_finetune_v1/training")
+  control_dir: Path = Path(
+    "run_control/continuous_reset_finetune_v1/training_offline_retry_after_auth"
+  )
   launch: bool = False
 
 
@@ -174,6 +176,7 @@ def _validate_protocol(path: Path) -> tuple[dict[str, Any], str]:
     "save_interval": 500,
     "evaluation_gates": [0, 500, 1000, 2000, 3500, 4999],
     "learning_rate": 1e-05,
+    "wandb_mode": "offline",
     "device": 0,
     "reserved_idle_devices": [1, 2, 3, 4, 5, 6, 7],
     "no_automatic_restart": True,
@@ -252,7 +255,7 @@ def build_plan(cfg: ContinuousResetFinetuneCfg) -> dict[str, Any]:
   source_name = "a13_source_a12_seed20261401_gate3500"
   experiment_root = repo_root / "logs/rsl_rl/smp_scratch_a13_f2s2_continuous_reset_g1"
   source_link = experiment_root / source_name / source["checkpoint_name"]
-  run_name = "a13_continuous_reset_5k_seed20261501"
+  run_name = "a13_continuous_reset_5k_seed20261501_offline_retry_after_auth"
   command = [
     str(repo_root / ".venv/bin/python"),
     "scripts/train.py",
@@ -286,6 +289,7 @@ def build_plan(cfg: ContinuousResetFinetuneCfg) -> dict[str, Any]:
     "policy_seed": training["policy_seed"],
     "environment_seed": training["environment_seed"],
     "command": command,
+    "wandb_mode": training["wandb_mode"],
   }
   plan_id = hashlib.sha256(json.dumps(material, sort_keys=True).encode()).hexdigest()
   control_dir = (
@@ -314,6 +318,7 @@ def build_plan(cfg: ContinuousResetFinetuneCfg) -> dict[str, Any]:
     "save_interval": training["save_interval"],
     "evaluation_gates": training["evaluation_gates"],
     "learning_rate": training["learning_rate"],
+    "wandb_mode": training["wandb_mode"],
     "gpu": training["device"],
     "reserved_idle_devices": training["reserved_idle_devices"],
     "run_name": run_name,
@@ -370,6 +375,7 @@ def launch_finetune(cfg: ContinuousResetFinetuneCfg) -> dict[str, Any]:
   _atomic_json(state_path, planned)
   environment = os.environ.copy()
   environment["CUDA_VISIBLE_DEVICES"] = str(planned["gpu"])
+  environment["WANDB_MODE"] = str(planned["wandb_mode"])
   with Path(planned["log"]).open("a") as stream:
     process = subprocess.Popen(
       planned["command"],

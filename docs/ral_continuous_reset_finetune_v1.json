@@ -59,6 +59,7 @@
     "save_interval": 500,
     "evaluation_gates": [0, 500, 1000, 2000, 3500, 4999],
     "learning_rate": 1e-05,
+    "wandb_mode": "offline",
     "device": 0,
     "reserved_idle_devices": [1, 2, 3, 4, 5, 6, 7],
     "no_automatic_restart": true
@@ -125,6 +126,27 @@
         "sha256": "1dcf8aa4aeb6e667704f428323638585d7de77cf195c2d65806560023f20dc4c"
       }
     }
+  },
+  "launch_incident_resolution": {
+    "status": "RESOLVED_BY_PREREGISTERED_OFFLINE_RETRY",
+    "failed_plan_id": "1225b8dfa9d8af6313cb4dbdc821c6ad900bd75269252d675edcfda233bc5a00",
+    "failed_worker_pid": 18928,
+    "failure_stage": "wandb_logger_initialization_before_learning_iteration_0",
+    "checkpoint_count": 0,
+    "gpu_processes_after_exit": 0,
+    "root_cause": "clone_instance_has_no_wandb_api_key",
+    "preserved_artifacts": {
+      "launch_manifest": {
+        "path": "run_control/continuous_reset_finetune_v1/incidents/online_auth_preupdate_20260902/launch_manifest.json",
+        "sha256": "7f2b6605f097e4493eb4520d339ac015a3b27195d2f9ba8b46ebdd2880742633"
+      },
+      "log": {
+        "path": "run_control/continuous_reset_finetune_v1/incidents/online_auth_preupdate_20260902/train.log",
+        "sha256": "44347fe966892a3772ba496517d5dbe4486ee211435d240e5113b1474f3b5bd5"
+      }
+    },
+    "authorized_retry": "one fresh process in a new immutable control directory with WANDB_MODE=offline",
+    "unchanged_training_seed_and_method": true
   },
   "review_contract": {
     "must_report": [

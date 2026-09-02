@@ -23,6 +23,15 @@ class ContinuousResetProtocolTest(unittest.TestCase):
     self.assertEqual(reset["joint_noise_weights"], [0.70, 0.20, 0.10])
     self.assertEqual(protocol["training_protocol"]["max_iterations"], 5000)
     self.assertEqual(protocol["training_protocol"]["policy_seed"], 20261501)
+    self.assertEqual(protocol["training_protocol"]["wandb_mode"], "offline")
+    incident = protocol["launch_incident_resolution"]
+    self.assertEqual(incident["status"], "RESOLVED_BY_PREREGISTERED_OFFLINE_RETRY")
+    self.assertEqual(incident["checkpoint_count"], 0)
+    self.assertEqual(incident["gpu_processes_after_exit"], 0)
+    self.assertEqual(
+      incident["preserved_artifacts"]["launch_manifest"]["sha256"],
+      "7f2b6605f097e4493eb4520d339ac015a3b27195d2f9ba8b46ebdd2880742633",
+    )
     self.assertTrue(protocol["claim_boundary"]["not_ral_evidence"])
 
 
