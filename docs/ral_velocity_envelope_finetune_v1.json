@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "study_id": "smp-velocity-envelope-finetune-v1",
-  "status": "IMPLEMENTATION_SMOKE_PENDING",
+  "status": "PREREGISTERED_READY_FOR_TRAINING",
   "study_role": "ENGINEERING_SIM_TO_REAL_VELOCITY_TAIL_FINETUNE_NOT_PROMOTION_OR_RAL_EVIDENCE",
   "question": "Can a deployment-identical joint-target velocity envelope suppress A13's rare crouch-to-stand speed bursts without destroying grounded five-pose recovery?",
   "source_policy": {
@@ -90,15 +90,48 @@
     "must_report_limiter_engagement_by_recovery_phase": true
   },
   "implementation_audit": {
-    "status": "PENDING_REAL_MUJOCO_WARM_START_SMOKE",
-    "code_commit": null,
+    "status": "PASSED_REAL_MUJOCO_WARM_START_SMOKE",
+    "code_commit": "25c90be72eb36f6e04f68ede9e4a87c054e1407f",
     "source_checkpoint_sha256": "c4d05589645aa6b993e220c0cf3a9533fa83d50f5b9ed6764bb724b643cf1f94",
     "num_envs": 16,
     "rollout_steps": 24,
     "iterations": 1,
     "seed": 20261600,
-    "verified": {},
-    "runtime_files": {}
+    "verified": {
+      "actor_input_dim": 93,
+      "critic_input_dim": 960,
+      "checkpoint_embedded_iteration": 0,
+      "checkpoint_tensor_count": 73,
+      "checkpoint_tensor_elements": 2620640,
+      "all_checkpoint_tensors_finite": true,
+      "environment_step_s": 0.02,
+      "max_target_velocity_rad_s": 4.0,
+      "max_target_acceleration_rad_s2": 30.0,
+      "target_envelope_metrics_active": true,
+      "a13_reset_events_unchanged": true
+    },
+    "runtime_files": {
+      "log": {
+        "path": "run_control/velocity_envelope_finetune_v1/smoke_25c90be/train.log",
+        "sha256": "41ff5287b9fe3f6c7e3f37e672b4aa8cdd4e1df005d099de77e25094edc6e302"
+      },
+      "checkpoint": {
+        "path": "logs/rsl_rl/smp_scratch_a14_f2s2_velocity_envelope_g1/2026-09-02_17-36-07_a14_velocity_envelope_smoke_25c90be/model_0.pt",
+        "sha256": "25833fee868e806c3c5a81e7ac886aa377282ff7be992f2ac8766c482fb62e95"
+      },
+      "agent_config": {
+        "path": "logs/rsl_rl/smp_scratch_a14_f2s2_velocity_envelope_g1/2026-09-02_17-36-07_a14_velocity_envelope_smoke_25c90be/params/agent.yaml",
+        "sha256": "6be32c7a0cbebfefa95b9be90ac3364f739006bf4fec6769dd6b6c46fece5d6a"
+      },
+      "environment_config": {
+        "path": "logs/rsl_rl/smp_scratch_a14_f2s2_velocity_envelope_g1/2026-09-02_17-36-07_a14_velocity_envelope_smoke_25c90be/params/env.yaml",
+        "sha256": "12af11ffe901e05c2089922c4a7f6ce6965699fb757844e4896708e7b49c60b4"
+      },
+      "git_diff": {
+        "path": "logs/rsl_rl/smp_scratch_a14_f2s2_velocity_envelope_g1/2026-09-02_17-36-07_a14_velocity_envelope_smoke_25c90be/git/smp-v38-unified.diff",
+        "sha256": "d0c7510e0fceab1d6e8b7796055bc86f22b75ea5539d8bcc3b492d4b9f7adc26"
+      }
+    }
   },
   "review_contract": {
     "automatic_promotion": false,
