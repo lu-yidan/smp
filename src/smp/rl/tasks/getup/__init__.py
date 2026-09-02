@@ -19,11 +19,11 @@ from smp.rl.tasks.getup.escape_v32_env_cfg import (
 from smp.rl.tasks.getup.escape_v33_env_cfg import (
   g1_getup_escape_plate_v33_smp_env_cfg,
 )
-from smp.rl.tasks.getup.escape_v34_env_cfg import (
-  g1_getup_escape_plate_v34_smp_env_cfg,
-)
 from smp.rl.tasks.getup.escape_v34_93d_env_cfg import (
   g1_getup_escape_plate_v34_93d_smp_env_cfg,
+)
+from smp.rl.tasks.getup.escape_v34_env_cfg import (
+  g1_getup_escape_plate_v34_smp_env_cfg,
 )
 from smp.rl.tasks.getup.getup_env_cfg import g1_getup_smp_env_cfg
 from smp.rl.tasks.getup.plate_terrain_v38_env_cfg import (

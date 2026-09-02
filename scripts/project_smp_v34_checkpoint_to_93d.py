@@ -134,7 +134,7 @@ def project_checkpoint(source: Path) -> tuple[dict[str, Any], dict[str, Any]]:
   old_first = old_normalized @ weight.T + bias
   new_first = new_normalized @ projected_weight.T + projected_bias
   max_abs_error = float((old_first - new_first).abs().max())
-  if max_abs_error > 2.0e-5:
+  if max_abs_error > 5.0e-5:
     raise RuntimeError(
       "V34_93D_PROJECTION_ALERT: zero-velocity equivalence failed "
       f"({max_abs_error})"

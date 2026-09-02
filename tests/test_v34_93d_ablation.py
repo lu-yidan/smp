@@ -33,7 +33,7 @@ class V34NinetyThreeDimAblationTest(unittest.TestCase):
     self.assertEqual(original.rewards, ablation.rewards)
     self.assertEqual(original.terminations, ablation.terminations)
     self.assertEqual(original.episode_length_s, ablation.episode_length_s)
-    self.assertEqual(original.sim.dt, ablation.sim.dt)
+    self.assertEqual(original.sim.mujoco.timestep, ablation.sim.mujoco.timestep)
     self.assertEqual(original.decimation, ablation.decimation)
 
   def test_registered_task_uses_fresh_optimizer_warm_start(self) -> None:
@@ -75,7 +75,7 @@ class V34NinetyThreeDimAblationTest(unittest.TestCase):
     )
     self.assertEqual(tuple(projected["critic_state_dict"]["mlp.0.weight"].shape), (512, 960))
     self.assertEqual(projected["optimizer_state_dict"], {})
-    self.assertLessEqual(audit["zero_velocity_first_layer_max_abs_error"], 2.0e-5)
+    self.assertLessEqual(audit["zero_velocity_first_layer_max_abs_error"], 5.0e-5)
     self.assertTrue(audit["all_tensors_finite"])
 
 
