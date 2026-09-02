@@ -16,10 +16,15 @@ __all__ = [
   "action_rate_rms_metric",
   "base_stationary_when_upright",
   "joint_power_excess_l2",
+  "joint_speed_tail_barrier",
   "joint_speed_excess_l2",
   "quiet_action_acc_l2",
   "quiet_base_angular_speed_l2",
   "quiet_foot_speed_l2",
+  "target_acceleration_max_metric",
+  "target_limited_fraction_metric",
+  "target_velocity_max_metric",
+  "target_velocity_soft_barrier",
   "cached_product_score",
   "cached_raw_smp_score",
   "failure_buffer_fill_metric",
@@ -811,6 +816,64 @@ def joint_power_excess_l2(
   robot = env.scene["robot"]
   power = torch.abs(robot.data.actuator_force * robot.data.joint_vel)
   return torch.mean(torch.square(torch.clamp(power - power_limit, min=0.0)), dim=-1)
+
+
+def joint_speed_tail_barrier(
+  env: ManagerBasedRlEnv,
+  soft_limit: float = 8.0,
+  reference_limit: float = 20.0,
+) -> torch.Tensor:
+  """Fourth-power tail cost for rare joint-speed bursts.
+
+  ``reference_limit`` is an engineering normalization point, not a claim about
+  a certified hardware limit.  Unlike a mean-over-joints cost, the sum keeps a
+  single dangerous joint visible to PPO.
+  """
+  if reference_limit <= soft_limit:
+    raise ValueError("reference_limit must be greater than soft_limit")
+  speed = torch.abs(env.scene["robot"].data.joint_vel)
+  normalized = torch.clamp(
+    (speed - soft_limit) / (reference_limit - soft_limit), min=0.0
+  )
+  return torch.sum(torch.pow(normalized, 4), dim=-1)
+
+
+def _rate_limited_action(env: ManagerBasedRlEnv, action_name: str = "joint_pos"):
+  term = env.action_manager.get_term(action_name)
+  required = ("target_velocity", "target_acceleration", "limited_fraction")
+  if any(not hasattr(term, field) for field in required):
+    raise RuntimeError(f"action term {action_name!r} has no target envelope")
+  return term
+
+
+def target_velocity_soft_barrier(
+  env: ManagerBasedRlEnv,
+  action_name: str = "joint_pos",
+  soft_limit: float = 3.5,
+) -> torch.Tensor:
+  """Penalize sustained use of the edge of the hard target-speed envelope."""
+  speed = torch.abs(_rate_limited_action(env, action_name).target_velocity)
+  return torch.sum(torch.square(torch.clamp(speed - soft_limit, min=0.0)), dim=-1)
+
+
+def target_velocity_max_metric(
+  env: ManagerBasedRlEnv, action_name: str = "joint_pos"
+) -> torch.Tensor:
+  return torch.abs(_rate_limited_action(env, action_name).target_velocity).amax(dim=-1)
+
+
+def target_acceleration_max_metric(
+  env: ManagerBasedRlEnv, action_name: str = "joint_pos"
+) -> torch.Tensor:
+  return torch.abs(_rate_limited_action(env, action_name).target_acceleration).amax(
+    dim=-1
+  )
+
+
+def target_limited_fraction_metric(
+  env: ManagerBasedRlEnv, action_name: str = "joint_pos"
+) -> torch.Tensor:
+  return _rate_limited_action(env, action_name).limited_fraction
 
 
 def quiet_foot_speed_l2(

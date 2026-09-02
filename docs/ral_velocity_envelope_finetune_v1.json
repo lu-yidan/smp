@@ -1,0 +1,141 @@
+{
+  "schema_version": 1,
+  "study_id": "smp-velocity-envelope-finetune-v1",
+  "status": "IMPLEMENTATION_SMOKE_PENDING",
+  "study_role": "ENGINEERING_SIM_TO_REAL_VELOCITY_TAIL_FINETUNE_NOT_PROMOTION_OR_RAL_EVIDENCE",
+  "question": "Can a deployment-identical joint-target velocity envelope suppress A13's rare crouch-to-stand speed bursts without destroying grounded five-pose recovery?",
+  "source_policy": {
+    "task": "Smp-Getup-Scratch-A13-F2S2-Continuous-Reset-G1",
+    "policy_seed": 20261501,
+    "checkpoint_name": "model_4999.pt",
+    "checkpoint_path": "logs/rsl_rl/smp_scratch_a13_f2s2_continuous_reset_g1/2026-09-02_11-36-18_a13_continuous_reset_5k_seed20261501_offline_retry_after_auth/model_4999.pt",
+    "checkpoint_sha256": "c4d05589645aa6b993e220c0cf3a9533fa83d50f5b9ed6764bb724b643cf1f94",
+    "embedded_iteration": 4999,
+    "actor_input_dim": 93,
+    "critic_input_dim": 960,
+    "all_actor_critic_tensors_finite": true
+  },
+  "treatment": {
+    "task": "Smp-Getup-Scratch-A14-F2S2-Velocity-Envelope-G1",
+    "primary_changed_factor": "deployable_joint_position_target_velocity_envelope",
+    "unchanged_from_a13": [
+      "93D one-frame deployable actor observation and ordering",
+      "960D ten-frame privileged critic observation",
+      "grounded continuous reset distribution and physical postchecks",
+      "F2S2 SMP prior and recovery objective",
+      "disturbance process",
+      "termination terms",
+      "5 ms physics timestep and decimation 4 (50 Hz policy rate)",
+      "PPO hyperparameters except frozen fine-tune horizon and learning rate"
+    ],
+    "action_envelope": {
+      "application_rate_hz": 50,
+      "initial_target_at_reset": "measured_joint_position_plus_encoder_bias",
+      "max_joint_position_target_velocity_rad_s": 4.0,
+      "max_joint_position_target_acceleration_rad_s2": 30.0,
+      "applied_before_pd_actuation": true,
+      "uses_only_deployment_available_state": true,
+      "same_transform_required_in_deployment": true
+    },
+    "additive_rewards": {
+      "joint_speed_tail_barrier": {
+        "weight": -0.1,
+        "soft_limit_rad_s": 8.0,
+        "engineering_reference_rad_s": 20.0,
+        "power": 4,
+        "aggregation": "sum_over_joints"
+      },
+      "target_velocity_soft_barrier": {
+        "weight": -0.02,
+        "soft_limit_rad_s": 3.5,
+        "power": 2,
+        "aggregation": "sum_over_joints"
+      }
+    },
+    "explicit_non_changes": {
+      "no_actual_joint_velocity_clamp": true,
+      "no_unverified_hardware_torque_or_velocity_limit_claim": true,
+      "no_new_privileged_actor_input": true,
+      "no_physics_timestep_change": true,
+      "no_reset_or_smp_reward_change": true
+    }
+  },
+  "training_protocol": {
+    "policy_seed": 20261601,
+    "environment_seed": 20261601,
+    "warm_start": "actor_critic_and_normalizers_only",
+    "reset_optimizer_iteration_and_environment_steps": true,
+    "num_envs": 4096,
+    "rollout_steps_per_update": 24,
+    "max_iterations": 8000,
+    "save_interval": 500,
+    "evaluation_gates": [0, 500, 1000, 2000, 3500, 5000, 7999],
+    "learning_rate": 0.00001,
+    "wandb_mode": "offline",
+    "device": 0,
+    "reserved_idle_devices": [1, 2, 3, 4, 5, 6, 7],
+    "no_automatic_restart": true
+  },
+  "evaluation_protocol": {
+    "eval_seed": 20261610,
+    "schema_version": 2,
+    "num_envs_per_mode": 512,
+    "steps": 500,
+    "modes": ["native_gsi", "prone", "supine", "left_side", "right_side"],
+    "matched_a13_source_evaluation_required": true,
+    "per_env_json_required": true,
+    "strict_success_definition_unchanged": true,
+    "settled_stand_hold_steps": 150,
+    "must_report_per_joint_velocity_tails": true,
+    "must_report_limiter_engagement_by_recovery_phase": true
+  },
+  "implementation_audit": {
+    "status": "PENDING_REAL_MUJOCO_WARM_START_SMOKE",
+    "code_commit": null,
+    "source_checkpoint_sha256": "c4d05589645aa6b993e220c0cf3a9533fa83d50f5b9ed6764bb724b643cf1f94",
+    "num_envs": 16,
+    "rollout_steps": 24,
+    "iterations": 1,
+    "seed": 20261600,
+    "verified": {},
+    "runtime_files": {}
+  },
+  "review_contract": {
+    "automatic_promotion": false,
+    "compare_every_gate_to_a13_source": true,
+    "must_report": [
+      "strict and settled recovery macro and worst pose",
+      "recovery and first-settled-stand time",
+      "actual per-joint velocity median p95 p99 and max",
+      "target velocity and target acceleration p95 p99 and max",
+      "limiter engagement fraction by low pose crouch transition and settled stand",
+      "peak torque and mechanical power",
+      "action first and second differences",
+      "contact foot slip post-success shuffling and secondary-fall rate",
+      "root excursion and post-success drift",
+      "all frozen failure-reason counts"
+    ],
+    "selection_order": [
+      "all five poses remain finite and physically valid",
+      "strict recovery is not catastrophically degraded",
+      "settled recovery improves or remains within the frozen tolerance",
+      "crouch-transition velocity tail and limiter engagement decrease",
+      "torque power slip shuffling and action-second-difference Pareto"
+    ],
+    "negative_or_unsafe_result_action": "STOP_AND_REVIEW_NO_RETUNING"
+  },
+  "stopping_rules": {
+    "dead_worker_without_model_7999": "VELOCITY_ENVELOPE_TRAINING_ALERT_NO_RESTART",
+    "fatal_oom_nan_inf": "VELOCITY_ENVELOPE_TRAINING_ALERT",
+    "physical_reset_alert": "VELOCITY_ENVELOPE_TRAINING_ALERT",
+    "target_envelope_runtime_violation": "VELOCITY_ENVELOPE_TRAINING_ALERT",
+    "log_stale_minutes": 45
+  },
+  "claim_boundary": {
+    "single_seed_warm_start_is_not_independent_reproducibility": true,
+    "engineering_target_limits_are_not_certified_hardware_limits": true,
+    "training_smoke_protocol_manifest_and_checkpoints_are_not_performance_evidence": true,
+    "not_authorized_for_unprotected_real_robot_deployment": true,
+    "not_ral_evidence": true
+  }
+}

@@ -6,6 +6,7 @@ from mjlab.managers.event_manager import EventTermCfg
 from mjlab.managers.metrics_manager import MetricsTermCfg
 from mjlab.managers.reward_manager import RewardTermCfg
 
+from smp.rl.actions import RateLimitedJointPositionActionCfg
 from smp.rl.rewards import task_smp_product
 from smp.rl.tasks.getup import mdp
 from smp.rl.tasks.getup.smp_observation_factorial_env_cfg import (
@@ -396,6 +397,55 @@ def g1_scratch_a13_f2s2_continuous_reset_env_cfg(play: bool = False):
   return cfg
 
 
+def g1_scratch_a14_f2s2_velocity_envelope_env_cfg(play: bool = False):
+  """Fine-tune A13 with a deployable joint-target velocity envelope.
+
+  Reset coverage, SMP/task objective, observations, disturbances, simulation
+  timestep, and terminations remain unchanged.  The action target is rate and
+  acceleration limited at the 50 Hz policy boundary, while additive tail costs
+  make rare high-speed states visible instead of averaging them away.
+  """
+  cfg = g1_scratch_a13_f2s2_continuous_reset_env_cfg(play=play)
+  cfg.actions["joint_pos"] = RateLimitedJointPositionActionCfg(
+    entity_name="robot",
+    actuator_names=(".*",),
+    scale=cfg.actions["joint_pos"].scale,
+    use_default_offset=True,
+    max_target_velocity=4.0,
+    max_target_acceleration=30.0,
+  )
+  cfg.rewards.update(
+    {
+      "joint_speed_tail_barrier": RewardTermCfg(
+        func=mdp.joint_speed_tail_barrier,
+        weight=-0.10,
+        params={"soft_limit": 8.0, "reference_limit": 20.0},
+      ),
+      "target_velocity_soft_barrier": RewardTermCfg(
+        func=mdp.target_velocity_soft_barrier,
+        weight=-0.02,
+        params={"soft_limit": 3.5},
+      ),
+    }
+  )
+  cfg.metrics.update(
+    {
+      "joint_speed_tail_barrier": MetricsTermCfg(
+        func=mdp.joint_speed_tail_barrier,
+        params={"soft_limit": 8.0, "reference_limit": 20.0},
+      ),
+      "target_velocity_max": MetricsTermCfg(func=mdp.target_velocity_max_metric),
+      "target_acceleration_max": MetricsTermCfg(
+        func=mdp.target_acceleration_max_metric
+      ),
+      "target_limited_fraction": MetricsTermCfg(
+        func=mdp.target_limited_fraction_metric
+      ),
+    }
+  )
+  return cfg
+
+
 __all__ = [
   "g1_scratch_a0_f2s2_gsi_env_cfg",
   "g1_scratch_a1_v7_gsi_env_cfg",
@@ -411,4 +461,5 @@ __all__ = [
   "g1_scratch_a11_f2s2_grounded_safety_env_cfg",
   "g1_scratch_a12_f2s2_prone_coverage_env_cfg",
   "g1_scratch_a13_f2s2_continuous_reset_env_cfg",
+  "g1_scratch_a14_f2s2_velocity_envelope_env_cfg",
 ]
