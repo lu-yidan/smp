@@ -34,6 +34,24 @@ class ContinuousResetProtocolTest(unittest.TestCase):
     )
     self.assertTrue(protocol["claim_boundary"]["not_ral_evidence"])
 
+  def test_evaluator_exports_a13_settling_and_reset_coverage_metrics(self) -> None:
+    source = (
+      Path(__file__).parents[1] / "scripts/evaluate_smp_baseline.py"
+    ).read_text()
+    required = (
+      '"settled_stand_definition"',
+      '"settled_stand_success_rate"',
+      '"base_height_at_strict_success_median_m"',
+      '"post_success_shuffling_fraction_p95"',
+      '"post_success_contact_foot_slip_p95_m_s"',
+      '"max_torque_p95_nm"',
+      '"max_power_p95_w"',
+      '"procedural_joint_noise_level_rad"',
+      '"procedural_orientation_offset_rad"',
+    )
+    for token in required:
+      self.assertIn(token, source)
+
 
 if __name__ == "__main__":
   unittest.main()

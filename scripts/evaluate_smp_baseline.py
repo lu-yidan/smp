@@ -20,8 +20,8 @@ from mjlab.utils.torch import configure_torch_backends
 
 import smp.rl.tasks  # noqa: F401
 from smp.firm.deployable_policy import FirmDeployablePolicy
-from smp.rl.warm_start_runner import SmpCurriculumWarmStartRunner
 from smp.rl.tasks.getup import mdp
+from smp.rl.warm_start_runner import SmpCurriculumWarmStartRunner
 
 _RESET_WEIGHTS = {
   "prone": (1.0, 0.0, 0.0, 0.0),
@@ -181,8 +181,7 @@ def _classify_strict_failure_reasons(
   reason[~finite_action] = 1
   reason[strict_success] = 0
   counts = {
-    name: int((reason == code).sum())
-    for code, name in enumerate(_FAILURE_REASON_NAMES)
+    name: int((reason == code).sum()) for code, name in enumerate(_FAILURE_REASON_NAMES)
   }
   return reason, counts
 
@@ -547,6 +546,9 @@ def main(cfg: EvalCfg) -> None:
   strict_first = torch.full(
     (raw_env.num_envs,), -1, dtype=torch.long, device=raw_env.device
   )
+  settled_first = torch.full_like(strict_first, -1)
+  settled_hold = torch.zeros_like(strict_first)
+  max_settled_hold = torch.zeros_like(strict_first)
   baseline_first = torch.full_like(strict_first, -1)
   head_height_first = torch.full_like(strict_first, -1)
   upright_while_high_first = torch.full_like(strict_first, -1)
@@ -563,6 +565,9 @@ def main(cfg: EvalCfg) -> None:
   max_power = torch.zeros_like(max_joint_speed)
   foot_slip_sum = torch.zeros_like(max_joint_speed)
   foot_contact_steps = torch.zeros_like(max_joint_speed)
+  post_success_foot_slip_sum = torch.zeros_like(max_joint_speed)
+  post_success_contact_steps = torch.zeros_like(max_joint_speed)
+  post_success_shuffling_steps = torch.zeros_like(max_joint_speed)
   root_xy_start = robot.data.root_link_pos_w[:, :2].clone()
   max_root_planar_excursion = torch.zeros_like(max_joint_speed)
   root_xy_at_success = torch.zeros_like(root_xy_start)
@@ -574,6 +579,7 @@ def main(cfg: EvalCfg) -> None:
   )
   action_delta_sum = torch.zeros_like(max_joint_speed)
   action_second_difference_sum = torch.zeros_like(max_joint_speed)
+  base_height_at_strict_success = torch.full_like(max_joint_speed, torch.nan)
   previous_actions: torch.Tensor | None = None
   previous_action_delta: torch.Tensor | None = None
   finite = torch.ones(raw_env.num_envs, dtype=torch.bool, device=raw_env.device)
@@ -586,10 +592,19 @@ def main(cfg: EvalCfg) -> None:
   policy_inference_wall_s = 0.0
   policy_inference_steps = 0
 
+  initial_base_z = robot.data.root_link_pos_w[:, 2].clone()
   initial_head_z = robot.data.site_pos_w[:, head_idx, 2].clone()
   if cfg.evaluation_profile == "terrain":
+    initial_base_z -= raw_env.scene.env_origins[:, 2]
     initial_head_z -= raw_env.scene.env_origins[:, 2]
   initial_upright = torch.clamp(-robot.data.projected_gravity_b[:, 2], 0.0, 1.0).clone()
+  procedural_joint_noise_level = mdp.procedural_joint_noise_level_metric(
+    raw_env
+  ).clone()
+  procedural_orientation_offset = mdp.procedural_orientation_offset_metric(
+    raw_env
+  ).clone()
+  max_base_z = initial_base_z.clone()
   max_head_z = initial_head_z.clone()
   max_upright = initial_upright.clone()
 
@@ -617,6 +632,12 @@ def main(cfg: EvalCfg) -> None:
       previous_action_delta = action_delta.clone()
       obs, _, _, _ = env.step(actions)
 
+    base_z_world = robot.data.root_link_pos_w[:, 2]
+    base_z = (
+      base_z_world - raw_env.scene.env_origins[:, 2]
+      if cfg.evaluation_profile == "terrain"
+      else base_z_world
+    )
     head_z_world = robot.data.site_pos_w[:, head_idx, 2]
     head_z = (
       head_z_world - raw_env.scene.env_origins[:, 2]
@@ -639,6 +660,7 @@ def main(cfg: EvalCfg) -> None:
       if hand_found is None:
         raise RuntimeError("formal plate evaluation requires hand contact labels")
       hand_support |= hand_found.reshape(raw_env.num_envs, -1).any(dim=-1)
+    max_base_z = torch.maximum(max_base_z, base_z)
     max_head_z = torch.maximum(max_head_z, head_z)
     max_upright = torch.maximum(max_upright, upright)
     head_height_gate = head_z >= 1.10
@@ -656,11 +678,26 @@ def main(cfg: EvalCfg) -> None:
       strict_standing, strict_hold + 1, torch.zeros_like(strict_hold)
     )
     max_strict_hold = torch.maximum(max_strict_hold, strict_hold)
+    settled_standing = (
+      (base_z >= 0.72)
+      & (head_z >= 1.10)
+      & (upright >= 0.90)
+      & (linear_speed < 0.20)
+      & (angular_speed < 0.35)
+      & escape_complete
+    )
+    settled_hold = torch.where(
+      settled_standing, settled_hold + 1, torch.zeros_like(settled_hold)
+    )
+    max_settled_hold = torch.maximum(max_settled_hold, settled_hold)
     baseline_hold = torch.where(
       baseline_standing, baseline_hold + 1, torch.zeros_like(baseline_hold)
     )
     newly_strict = (strict_first < 0) & (strict_hold >= 25)
     strict_first[newly_strict] = step + 1
+    base_height_at_strict_success[newly_strict] = base_z[newly_strict]
+    newly_settled = (settled_first < 0) & (settled_hold >= 150)
+    settled_first[newly_settled] = step + 1
     root_xy_at_success[newly_strict] = robot.data.root_link_pos_w[newly_strict, :2]
     foot_xy = robot.data.site_pos_w[:, foot_ids, :2]
     foot_separation = torch.linalg.vector_norm(foot_xy[:, 0] - foot_xy[:, 1], dim=-1)
@@ -708,6 +745,12 @@ def main(cfg: EvalCfg) -> None:
     ).amax(dim=-1)
     foot_slip_sum += torch.where(in_contact, foot_speed_xy, 0.0)
     foot_contact_steps += in_contact.float()
+    post_success_contact = after_success & in_contact
+    post_success_foot_slip_sum += torch.where(post_success_contact, foot_speed_xy, 0.0)
+    post_success_contact_steps += post_success_contact.float()
+    post_success_shuffling_steps += (
+      post_success_contact & (foot_speed_xy > 0.08)
+    ).float()
 
     max_joint_speed = torch.maximum(
       max_joint_speed, torch.abs(robot.data.joint_vel).amax(dim=-1)
@@ -742,6 +785,14 @@ def main(cfg: EvalCfg) -> None:
   strict_ci = _wilson_interval(strict_successes, raw_env.num_envs)
   baseline_ci = _wilson_interval(baseline_successes, raw_env.num_envs)
   foot_slip = foot_slip_sum / torch.clamp(foot_contact_steps, min=1.0)
+  post_success_foot_slip = post_success_foot_slip_sum / torch.clamp(
+    post_success_contact_steps, min=1.0
+  )
+  post_success_shuffling_fraction = post_success_shuffling_steps / torch.clamp(
+    post_success_contact_steps, min=1.0
+  )
+  settled_success = (settled_first >= 0) & valid_episode
+  settled_steps = settled_first[settled_success].float()
   action_delta_rms = action_delta_sum / cfg.steps
   action_second_difference_rms = action_second_difference_sum / max(cfg.steps - 1, 1)
   successful_secondary_fall = secondary_fall & strict_success
@@ -826,9 +877,7 @@ def main(cfg: EvalCfg) -> None:
     ),
     "physical_reset_validation": cfg.physical_reset_validation,
     "physical_gsi_rejection_rate": float(physical_gsi_rejected.float().mean()),
-    "physical_procedural_reset_rate": float(
-      physical_procedural_reset.float().mean()
-    ),
+    "physical_procedural_reset_rate": float(physical_procedural_reset.float().mean()),
     "num_envs": cfg.num_envs,
     "steps": cfg.steps,
     "physics_dt_s": float(raw_env.physics_dt),
@@ -845,6 +894,17 @@ def main(cfg: EvalCfg) -> None:
       "requires_plate_escape": cfg.evaluation_profile == "plate"
       and cfg.plate_mode == "pinned",
       "requires_valid_dynamics_and_setup": True,
+    },
+    "settled_stand_definition": {
+      "additive_metric_does_not_change_strict_success": True,
+      "base_height_min_m": 0.72,
+      "base_height_relative_to_env_origin": cfg.evaluation_profile == "terrain",
+      "head_height_min_m": 1.10,
+      "upright_min": 0.90,
+      "root_linear_speed_max_m_s": 0.20,
+      "root_angular_speed_max_rad_s": 0.35,
+      "hold_steps": 150,
+      "post_success_shuffling_foot_speed_threshold_m_s": 0.08,
     },
     "strict_failure_diagnosis": {
       "schema_version": 1,
@@ -867,6 +927,16 @@ def main(cfg: EvalCfg) -> None:
     "strict_success_rate": float(strict_success.float().mean()),
     "strict_success_rate_ci95_low": strict_ci[0],
     "strict_success_rate_ci95_high": strict_ci[1],
+    "settled_stand_successes": int(settled_success.sum()),
+    "settled_stand_success_rate": float(settled_success.float().mean()),
+    "settled_stand_time_median_s": (
+      float(settled_steps.median() * raw_env.step_dt) if settled_steps.numel() else -1.0
+    ),
+    "settled_stand_time_p90_s": (
+      _quantile(settled_steps * raw_env.step_dt, 0.90)
+      if settled_steps.numel()
+      else -1.0
+    ),
     "baseline_successes": baseline_successes,
     "baseline_success_rate": float(baseline_success.float().mean()),
     "baseline_success_rate_ci95_low": baseline_ci[0],
@@ -914,16 +984,37 @@ def main(cfg: EvalCfg) -> None:
       else -1.0
     ),
     "finite_action_rate": float(finite.float().mean()),
+    "initial_base_z_mean_m": float(initial_base_z.mean()),
     "initial_head_z_mean_m": float(initial_head_z.mean()),
     "initial_upright_mean": float(initial_upright.mean()),
+    "max_base_z_mean_m": float(max_base_z.mean()),
+    "base_height_at_strict_success_median_m": (
+      float(base_height_at_strict_success[strict_success].median())
+      if strict_success.any()
+      else -1.0
+    ),
     "max_joint_speed_mean_rad_s": float(max_joint_speed.mean()),
     "max_joint_speed_p95_rad_s": _quantile(max_joint_speed, 0.95),
     "max_root_linear_speed_mean_m_s": float(max_root_linear_speed.mean()),
     "max_root_angular_speed_mean_rad_s": float(max_root_angular_speed.mean()),
     "max_torque_mean_nm": float(max_torque.mean()),
+    "max_torque_p95_nm": _quantile(max_torque, 0.95),
     "max_power_mean_w": float(max_power.mean()),
+    "max_power_p95_w": _quantile(max_power, 0.95),
     "contact_foot_slip_mean_m_s": float(foot_slip.mean()),
     "contact_foot_slip_p95_m_s": _quantile(foot_slip, 0.95),
+    "post_success_contact_foot_slip_mean_m_s": float(post_success_foot_slip.mean()),
+    "post_success_contact_foot_slip_p95_m_s": _quantile(post_success_foot_slip, 0.95),
+    "post_success_shuffling_fraction_mean": float(
+      post_success_shuffling_fraction.mean()
+    ),
+    "post_success_shuffling_fraction_p95": _quantile(
+      post_success_shuffling_fraction, 0.95
+    ),
+    "procedural_joint_noise_level_mean_rad": float(procedural_joint_noise_level.mean()),
+    "procedural_orientation_offset_p95_rad": _quantile(
+      procedural_orientation_offset, 0.95
+    ),
     "root_planar_excursion_median_m": float(max_root_planar_excursion.median()),
     "root_planar_excursion_p95_m": _quantile(max_root_planar_excursion, 0.95),
     "post_success_root_drift_median_m": (
@@ -983,6 +1074,8 @@ def main(cfg: EvalCfg) -> None:
       "plate_longitudinal_offset_m": plate_longitudinal_offset.cpu().tolist(),
       "plate_lateral_offset_m": plate_lateral_offset.cpu().tolist(),
       "strict_first_step": strict_first.cpu().tolist(),
+      "settled_stand_first_step": settled_first.cpu().tolist(),
+      "settled_stand_max_hold_steps": max_settled_hold.cpu().tolist(),
       "strict_failure_reason_code": failure_reason_code.cpu().tolist(),
       "head_height_gate_first_step": head_height_first.cpu().tolist(),
       "upright_while_high_gate_first_step": upright_while_high_first.cpu().tolist(),
@@ -994,6 +1087,8 @@ def main(cfg: EvalCfg) -> None:
       "max_upright": max_upright.cpu().tolist(),
       "baseline_first_step": baseline_first.cpu().tolist(),
       "finite_action": finite.cpu().tolist(),
+      "initial_base_z_m": initial_base_z.cpu().tolist(),
+      "max_base_z_m": max_base_z.cpu().tolist(),
       "initial_head_z_m": initial_head_z.cpu().tolist(),
       "initial_upright": initial_upright.cpu().tolist(),
       "max_joint_speed_rad_s": max_joint_speed.cpu().tolist(),
@@ -1002,6 +1097,13 @@ def main(cfg: EvalCfg) -> None:
       "max_torque_nm": max_torque.cpu().tolist(),
       "max_power_w": max_power.cpu().tolist(),
       "contact_foot_slip_m_s": foot_slip.cpu().tolist(),
+      "post_success_contact_foot_slip_m_s": post_success_foot_slip.cpu().tolist(),
+      "post_success_shuffling_fraction": post_success_shuffling_fraction.cpu().tolist(),
+      "base_height_at_strict_success_m": base_height_at_strict_success.cpu().tolist(),
+      "procedural_joint_noise_level_rad": procedural_joint_noise_level.cpu().tolist(),
+      "procedural_orientation_offset_rad": (
+        procedural_orientation_offset.cpu().tolist()
+      ),
       "root_planar_excursion_m": max_root_planar_excursion.cpu().tolist(),
       "post_success_root_drift_m": post_success_root_drift.cpu().tolist(),
       "secondary_fall_after_success": secondary_fall.cpu().tolist(),
