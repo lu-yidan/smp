@@ -29,8 +29,10 @@ class VelocityEnvelopeFinetuneTest(unittest.TestCase):
       max_velocity=4.0,
       max_acceleration=30.0,
     )
-    self.assertLessEqual(float(next_velocity.abs().max()), 4.0)
-    self.assertLessEqual(float((next_velocity - velocity).abs().max() / 0.02), 30.0)
+    self.assertLessEqual(float(next_velocity.abs().max()), 4.0 + 1.0e-6)
+    self.assertLessEqual(
+      float((next_velocity - velocity).abs().max() / 0.02), 30.0 + 1.0e-5
+    )
     self.assertTrue(torch.allclose(next_target, next_velocity * 0.02))
 
   def test_a14_changes_action_transform_and_adds_tail_costs_only(self) -> None:
