@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "study_id": "smp-continuous-reset-finetune-v1",
-  "status": "PREREGISTERED_IMPLEMENTATION_SMOKE_PENDING",
+  "status": "PREREGISTERED_READY_FOR_TRAINING",
   "study_role": "ENGINEERING_RESET_COVERAGE_FINETUNE_NOT_PROMOTION_OR_RAL_EVIDENCE",
   "question": "Does bounded continuous grounded reset coverage improve oblique and articulated fall recovery while preserving A12 gate-3500 canonical recovery and safety?",
   "source_policy": {
@@ -80,6 +80,50 @@
       "root_linear_speed_max_m_s": 0.20,
       "root_angular_speed_max_rad_s": 0.35,
       "hold_steps": 150
+    }
+  },
+  "implementation_audit": {
+    "status": "PASSED_REAL_MUJOCO_WARM_START_SMOKE",
+    "code_commit": "f249b3eba3cd3d242615e0665ea399cf1ec4d5c2",
+    "source_checkpoint_sha256": "c477624f4c79a6a628ad1fdfa53443a1edb65c47cc75be06610b16f497e37c15",
+    "num_envs": 16,
+    "rollout_steps": 24,
+    "iterations": 1,
+    "seed": 20261500,
+    "verified": {
+      "actor_input_dim": 93,
+      "critic_input_dim": 960,
+      "checkpoint_embedded_iteration": 0,
+      "checkpoint_tensor_count": 73,
+      "checkpoint_tensor_elements": 2620640,
+      "all_checkpoint_tensors_finite": true,
+      "physical_reset_event_active": true,
+      "joint_limit_postcheck_active": true,
+      "orientation_noise_rad": 0.35,
+      "joint_noise_levels_rad": [0.12, 0.20, 0.30],
+      "joint_noise_weights": [0.70, 0.20, 0.10]
+    },
+    "runtime_files": {
+      "log": {
+        "path": "run_control/continuous_reset_finetune_v1/smoke_f249b3e/train.log",
+        "sha256": "6d328bfb38a304a23f27a4db800fd2d0afab649cccf1ad3d82bf03ebaf18eb62"
+      },
+      "checkpoint": {
+        "path": "logs/rsl_rl/smp_scratch_a13_f2s2_continuous_reset_g1/2026-09-02_11-21-08_a13_continuous_reset_smoke_f249b3e/model_0.pt",
+        "sha256": "cff5189be5fdab58a4574e09150c76932b032f35e89778c83c06c89a7e5ee753"
+      },
+      "agent_config": {
+        "path": "logs/rsl_rl/smp_scratch_a13_f2s2_continuous_reset_g1/2026-09-02_11-21-08_a13_continuous_reset_smoke_f249b3e/params/agent.yaml",
+        "sha256": "7f9d392293fc1a851bd09b8cbb41fdc79ec002d580a9981390dbeaf77f6c58b9"
+      },
+      "environment_config": {
+        "path": "logs/rsl_rl/smp_scratch_a13_f2s2_continuous_reset_g1/2026-09-02_11-21-08_a13_continuous_reset_smoke_f249b3e/params/env.yaml",
+        "sha256": "41b99588c4d645a18d7c5082e7e9736880c71fb831d5778a10df36c3031503a3"
+      },
+      "git_diff": {
+        "path": "logs/rsl_rl/smp_scratch_a13_f2s2_continuous_reset_g1/2026-09-02_11-21-08_a13_continuous_reset_smoke_f249b3e/git/smp-v38-unified.diff",
+        "sha256": "1dcf8aa4aeb6e667704f428323638585d7de77cf195c2d65806560023f20dc4c"
+      }
     }
   },
   "review_contract": {
