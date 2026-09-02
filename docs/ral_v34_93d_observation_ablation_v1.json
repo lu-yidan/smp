@@ -1,0 +1,138 @@
+{
+  "schema_version": 1,
+  "study_id": "smp-v34-93d-observation-ablation-v1",
+  "status": "PREREGISTERED_READY_FOR_TRAINING",
+  "study_role": "ENGINEERING_MATCHED_V34_96D_TO_93D_OBSERVATION_ABLATION_NOT_RAL_EVIDENCE",
+  "question": "Can the natural staged plate-escape behavior of the frozen V34 policy be retained when true base linear velocity is removed from the actor?",
+  "control_policy": {
+    "task": "Smp-Getup-Escape-Plate-V34-G1",
+    "wandb_run_path": "tabletennis/smp/x3xkcqro",
+    "checkpoint_name": "model_98000.pt",
+    "checkpoint_sha256": "fa54ac58f09a1a0ed0b46f96fb920f18de20422190c9ee92207f3080a3cbe393",
+    "embedded_iteration": 98000,
+    "actor_input_dim": 96,
+    "critic_input_dim": 960
+  },
+  "treatment": {
+    "task": "Smp-Getup-Escape-Plate-V34-93D-G1",
+    "only_environment_change": "remove the first three actor entries named base_lin_vel",
+    "unchanged": [
+      "V34 procedural prone/supine reset mixture",
+      "4-12 kg plate and overlap curriculum",
+      "recovery stages and stage transitions",
+      "failure-state replay",
+      "escape phases and hand/whole-body support objectives",
+      "reward terms and weights",
+      "terminations and 20 second horizon",
+      "MuJoCo timestep 0.005 seconds and action decimation 4",
+      "960D privileged critic",
+      "PPO architecture and rollout length"
+    ],
+    "excluded": [
+      "A13 reset expansion",
+      "A14 action target limiter",
+      "new velocity, torque, or smoothness rewards",
+      "new disturbances",
+      "actor history",
+      "contact, reset-family, terrain, plate, or future-reference actor labels"
+    ]
+  },
+  "projection": {
+    "schema_version": 1,
+    "source_checkpoint_path": "run_control/v34_93d_control/source/model_98000.pt",
+    "source_checkpoint_sha256": "fa54ac58f09a1a0ed0b46f96fb920f18de20422190c9ee92207f3080a3cbe393",
+    "projected_checkpoint_path": "run_control/v34_93d_control/projected/model_98000_zero_velocity_93d.pt",
+    "projected_checkpoint_sha256": "b24d3aa9003fe2a685b8be42a5144ee95b330e43440831bdf29364ebd5953f7a",
+    "manifest_path": "run_control/v34_93d_control/projected/projection_manifest.json",
+    "manifest_sha256": "ac94496c1ce54b2cd6dfc2150bb50c09a66557913e859bcd642258cc866227bb",
+    "removed_actor_indices": [0, 1, 2],
+    "removed_actor_term": "base_lin_vel",
+    "bias_reference_raw_base_lin_vel": [0.0, 0.0, 0.0],
+    "zero_velocity_first_layer_max_abs_error": 3.337860107421875e-06,
+    "critic_unchanged": true,
+    "optimizer_discarded": true,
+    "projected_actor_input_dim": 93,
+    "critic_input_dim": 960
+  },
+  "training_protocol": {
+    "policy_seed": 20261701,
+    "environment_seed": 20261701,
+    "warm_start": "projected_actor_plus_unchanged_critic_and_normalizers",
+    "reset_optimizer_iteration_and_environment_steps": true,
+    "num_envs": 4096,
+    "rollout_steps_per_update": 24,
+    "max_iterations": 12000,
+    "save_interval": 1000,
+    "evaluation_gates": [0, 1000, 3000, 6000, 9000, 11999],
+    "learning_rate": 0.0001,
+    "wandb_mode": "offline",
+    "physical_device": 1,
+    "concurrent_gpu0_job_allowed_by_user": "A14",
+    "no_automatic_restart": true
+  },
+  "implementation_audit": {
+    "status": "PASSED_REAL_MUJOCO_PROJECTED_WARM_START_SMOKE",
+    "code_commit": "6e8447efacf3fea45e412b0d24aed1e1e04a119d",
+    "num_envs": 16,
+    "iterations": 2,
+    "policy_seed": 20261700,
+    "environment_seed": 20261700,
+    "actor_input_dim": 93,
+    "critic_input_dim": 960,
+    "checkpoint_iteration": 0,
+    "checkpoint_tensor_count": 73,
+    "checkpoint_tensor_elements": 2620640,
+    "all_checkpoint_tensors_finite": true,
+    "fresh_optimizer_first_layer_shape": [512, 93],
+    "runtime_files": {
+      "log": {
+        "path": "run_control/v34_93d_control/smoke/smoke.log",
+        "sha256": "197e1f52879e9f4cf0a46ee99e698e3a10110419d688c791ffed8a1d13d688c4"
+      },
+      "checkpoint": {
+        "path": "logs/rsl_rl/smp_getup_escape_plate_v34_93d_g1/2026-09-02_17-59-49_v34_93d_projection_smoke_seed20261700/model_0.pt",
+        "sha256": "c42883128c2a087a76fe7ab7189f47e07a9e88ffb9cad29d9c7a2bdece870769"
+      },
+      "agent_config": {
+        "path": "logs/rsl_rl/smp_getup_escape_plate_v34_93d_g1/2026-09-02_17-59-49_v34_93d_projection_smoke_seed20261700/params/agent.yaml",
+        "sha256": "114fe1085e7bb392f25b54fd96ed2c0032732390d597d6b6fea8f99a5aabbba2"
+      },
+      "environment_config": {
+        "path": "logs/rsl_rl/smp_getup_escape_plate_v34_93d_g1/2026-09-02_17-59-49_v34_93d_projection_smoke_seed20261700/params/env.yaml",
+        "sha256": "d0d1bc775259acf93817cea67f678dc232b47d6fb76df44a918988d8c422910f"
+      },
+      "git_provenance": {
+        "path": "logs/rsl_rl/smp_getup_escape_plate_v34_93d_g1/2026-09-02_17-59-49_v34_93d_projection_smoke_seed20261700/git/smp-v38-unified.diff",
+        "sha256": "42c5b37f6c1ce6f206ddf1cb1cd35642b4de478fa07ba0a3c0ac2603b9497278"
+      }
+    }
+  },
+  "evaluation_plan": {
+    "comparison": "V34 model_98000 versus every frozen V34-93D gate",
+    "matched_pose_families": ["prone", "supine"],
+    "plate_mass_kg": 8.0,
+    "primary_metrics": [
+      "escape_and_stable_stand_success",
+      "invalid_contact_rate",
+      "stable_foot_separation",
+      "time_to_escape",
+      "time_to_stable_stand"
+    ],
+    "safety_metrics": [
+      "max_joint_speed",
+      "max_joint_torque",
+      "max_joint_power",
+      "action_first_difference",
+      "action_second_difference",
+      "foot_slip",
+      "post_stand_knockdown"
+    ],
+    "selection_rule": "Do not select by training reward. Compare all frozen gates under the same evaluator and retain complete negative results."
+  },
+  "claim_boundary": [
+    "This is one projected warm-start engineering lineage, not a from-scratch or three-policy-seed result.",
+    "Projection, smoke, configs, manifests, and training curves are not performance evidence.",
+    "No checkpoint is approved for hardware until frozen simulation safety evaluation and the separate hardware safety process pass.",
+    "A positive result motivates a later fresh-seed matched study; it does not prove RAL readiness."
+  ]
+}

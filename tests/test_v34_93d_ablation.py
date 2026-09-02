@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import hashlib
+import json
 import sys
 import unittest
 from pathlib import Path
@@ -17,7 +19,12 @@ from smp.rl.tasks.getup.escape_v34_env_cfg import (
 )
 
 sys.path.insert(0, str(Path(__file__).parents[1] / "scripts"))
+import launch_smp_v34_93d_ablation as launcher
 import project_smp_v34_checkpoint_to_93d as projection
+
+_REPO = Path(__file__).parents[1]
+_PROTOCOL = _REPO / "docs/ral_v34_93d_observation_ablation_v1.json"
+_PROTOCOL_SHA256 = "11a0828e38ce83c27693b7b50a59778a5a67c690b4329bdf0fc2357a036d18ca"
 
 
 class V34NinetyThreeDimAblationTest(unittest.TestCase):
@@ -43,6 +50,26 @@ class V34NinetyThreeDimAblationTest(unittest.TestCase):
       load_runner_cls("Smp-Getup-Escape-Plate-V34-93D-G1").__name__,
       "SmpCurriculumWarmStartRunner",
     )
+
+  def test_protocol_and_plan_freeze_the_single_factor(self) -> None:
+    self.assertEqual(hashlib.sha256(_PROTOCOL.read_bytes()).hexdigest(), _PROTOCOL_SHA256)
+    protocol = json.loads(_PROTOCOL.read_text())
+    self.assertEqual(protocol["status"], "PREREGISTERED_READY_FOR_TRAINING")
+    self.assertEqual(
+      protocol["treatment"]["only_environment_change"],
+      "remove the first three actor entries named base_lin_vel",
+    )
+    self.assertIn("A14 action target limiter", protocol["treatment"]["excluded"])
+    plan = launcher.build_plan(
+      launcher.V34NinetyThreeDimAblationCfg(protocol=_PROTOCOL)
+    )
+    self.assertEqual(plan["physical_device"], 1)
+    self.assertEqual(plan["num_envs"], 4096)
+    self.assertEqual(plan["max_iterations"], 12000)
+    self.assertEqual(plan["policy_seed"], 20261701)
+    self.assertEqual(plan["policy_seed"], plan["environment_seed"])
+    self.assertEqual(plan["runner"], "SmpCurriculumWarmStartRunner")
+    self.assertIn("--agent.resume", plan["command"])
 
   def test_projection_is_zero_velocity_function_preserving(self) -> None:
     generator = torch.Generator().manual_seed(7)
