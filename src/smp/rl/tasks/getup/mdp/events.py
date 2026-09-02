@@ -29,6 +29,8 @@ __all__ = [
   "curriculum_validated_fall_reset",
   "physical_gsi_rejection_metric",
   "physical_procedural_reset_metric",
+  "procedural_joint_noise_level_metric",
+  "procedural_orientation_offset_metric",
   "sample_terrain_edge_reset",
   "sample_weighted_terrain_levels",
   "post_stand_body_wrench",
@@ -1398,6 +1400,9 @@ def mixed_fall_reset(
   procedural_probability: float = 0.5,
   root_height_range: tuple[float, float] = (0.48, 0.62),
   joint_noise: float = 0.12,
+  joint_noise_levels: tuple[float, ...] | None = None,
+  joint_noise_weights: tuple[float, ...] | None = None,
+  joint_limit_margin: float = 0.0,
   orientation_noise: float = 0.0,
   root_xy_range: float = 0.1,
   root_linear_velocity: float = 0.1,
@@ -1415,6 +1420,34 @@ def mixed_fall_reset(
     env_ids = torch.arange(env.num_envs, device=env.device)
   if env_ids.numel() == 0:
     return
+
+  if joint_noise < 0.0 or joint_limit_margin < 0.0:
+    raise ValueError("joint noise and joint limit margin must be non-negative")
+  noise_levels: torch.Tensor | None = None
+  noise_weights: torch.Tensor | None = None
+  if joint_noise_levels is not None:
+    if joint_noise_weights is None or len(joint_noise_levels) != len(
+      joint_noise_weights
+    ):
+      raise ValueError("joint noise levels and weights must have equal non-zero length")
+    noise_levels = torch.tensor(
+      joint_noise_levels, dtype=torch.float, device=env.device
+    )
+    noise_weights = torch.tensor(
+      joint_noise_weights, dtype=torch.float, device=env.device
+    )
+    if (
+      noise_levels.numel() == 0
+      or torch.any(noise_levels < 0.0)
+      or torch.any(noise_weights < 0.0)
+      or noise_weights.sum() <= 0.0
+    ):
+      raise ValueError(
+        "joint noise levels/weights must be non-negative with positive mass"
+      )
+    noise_weights /= noise_weights.sum()
+  elif joint_noise_weights is not None:
+    raise ValueError("joint noise weights require joint noise levels")
 
   if mode_weights is not None:
     weights = torch.tensor(mode_weights, dtype=torch.float, device=env.device)
@@ -1488,10 +1521,12 @@ def mixed_fall_reset(
   # (prone), while -pi/2 points it up (supine).
   pitch = torch.where(modes == 0, torch.full_like(pitch, torch.pi / 2), pitch)
   pitch = torch.where(modes == 1, torch.full_like(pitch, -torch.pi / 2), pitch)
+  orientation_offset = torch.zeros(n, 2, device=env.device)
   if orientation_noise > 0.0:
     # Noise on both axes creates continuous oblique front/back/side contacts.
-    roll += torch.empty_like(roll).uniform_(-orientation_noise, orientation_noise)
-    pitch += torch.empty_like(pitch).uniform_(-orientation_noise, orientation_noise)
+    orientation_offset.uniform_(-orientation_noise, orientation_noise)
+    roll += orientation_offset[:, 0]
+    pitch += orientation_offset[:, 1]
   yaw = torch.empty(n, device=env.device).uniform_(-torch.pi, torch.pi)
 
   default_root = robot.data.default_root_state[fall_ids].clone()
@@ -1512,10 +1547,38 @@ def mixed_fall_reset(
   )
 
   joint_pos = robot.data.default_joint_pos[fall_ids].clone()
-  joint_pos += torch.empty_like(joint_pos).uniform_(-joint_noise, joint_noise)
+  if noise_levels is None:
+    sampled_joint_noise = torch.full((n,), joint_noise, device=env.device)
+  else:
+    assert noise_weights is not None
+    sampled_joint_noise = noise_levels[
+      torch.multinomial(noise_weights, n, replacement=True)
+    ]
+  joint_pos += (
+    torch.empty_like(joint_pos).uniform_(-1.0, 1.0) * sampled_joint_noise[:, None]
+  )
+  joint_limits = getattr(robot.data, "soft_joint_pos_limits", None)
+  if joint_limits is None:
+    joint_limits = robot.data.joint_pos_limits
+  joint_limits = joint_limits[fall_ids]
+  lower = joint_limits[..., 0] + joint_limit_margin
+  upper = joint_limits[..., 1] - joint_limit_margin
+  if not bool(torch.all(lower <= upper)):
+    raise RuntimeError("PHYSICAL_RESET_ALERT: joint limit margin collapsed a limit")
+  joint_pos = torch.maximum(torch.minimum(joint_pos, upper), lower)
   joint_vel = torch.empty_like(joint_pos).uniform_(-0.1, 0.1)
   robot.write_joint_state_to_sim(joint_pos, joint_vel, env_ids=fall_ids)
   env.sim.forward()
+
+  if not hasattr(env, "_procedural_joint_noise_level"):
+    env._procedural_joint_noise_level = torch.zeros(  # type: ignore[attr-defined]
+      env.num_envs, device=env.device
+    )
+    env._procedural_orientation_offset = torch.zeros(  # type: ignore[attr-defined]
+      env.num_envs, device=env.device
+    )
+  env._procedural_joint_noise_level[fall_ids] = sampled_joint_noise  # type: ignore[attr-defined]
+  env._procedural_orientation_offset[fall_ids] = orientation_offset.abs().amax(dim=-1)  # type: ignore[attr-defined]
 
   # A repeated static window is honest history for a newly placed pose and avoids
   # an artificial GSI-to-procedural discontinuity in the SMP score.
@@ -1605,6 +1668,13 @@ def _physical_reset_postcheck(
   )
   joint_pos = robot.data.joint_pos[env_ids]
   joint_vel = robot.data.joint_vel[env_ids]
+  joint_limits = getattr(robot.data, "soft_joint_pos_limits", None)
+  if joint_limits is None:
+    joint_limits = robot.data.joint_pos_limits
+  joint_limits = joint_limits[env_ids]
+  joint_within_limits = (
+    (joint_pos >= joint_limits[..., 0]) & (joint_pos <= joint_limits[..., 1])
+  ).all(dim=-1)
   finite = (
     torch.isfinite(root_state).all(dim=-1)
     & torch.isfinite(joint_pos).all(dim=-1)
@@ -1616,6 +1686,7 @@ def _physical_reset_postcheck(
     & (torch.abs(quat_norm - 1.0) <= 1.0e-3)
     & (lowest >= -max_penetration)
     & (lowest <= max_support_gap)
+    & joint_within_limits
     & (joint_vel.abs().amax(dim=-1) <= max_joint_speed)
     & (torch.linalg.vector_norm(root_state[:, 7:10], dim=-1) <= max_root_linear_speed)
     & (torch.linalg.vector_norm(root_state[:, 10:13], dim=-1) <= max_root_angular_speed)
@@ -1694,6 +1765,11 @@ def curriculum_validated_fall_reset(
   balanced_probability: float = 0.50,
   target_probability: float = 0.20,
   mode_weights: tuple[float, float, float, float] = (1.0, 1.0, 1.0, 1.0),
+  joint_noise: float = 0.12,
+  joint_noise_levels: tuple[float, ...] | None = None,
+  joint_noise_weights: tuple[float, ...] | None = None,
+  joint_limit_margin: float = 0.0,
+  orientation_noise: float = 0.0,
   max_penetration: float = 0.012,
   max_support_gap: float = 0.025,
 ) -> None:
@@ -1720,8 +1796,11 @@ def curriculum_validated_fall_reset(
       procedural_probability=1.0,
       mode_weights=mode_weights,
       root_height_range=(0.48, 0.62),
-      joint_noise=0.12,
-      orientation_noise=0.0,
+      joint_noise=joint_noise,
+      joint_noise_levels=joint_noise_levels,
+      joint_noise_weights=joint_noise_weights,
+      joint_limit_margin=joint_limit_margin,
+      orientation_noise=orientation_noise,
       root_xy_range=0.1,
       root_linear_velocity=0.0,
       root_angular_velocity=0.0,
@@ -1764,6 +1843,20 @@ def physical_procedural_reset_metric(env: ManagerBasedRlEnv) -> torch.Tensor:
   if procedural is None:
     return torch.zeros(env.num_envs, device=env.device)
   return procedural.float()
+
+
+def procedural_joint_noise_level_metric(env: ManagerBasedRlEnv) -> torch.Tensor:
+  level = getattr(env, "_procedural_joint_noise_level", None)
+  if level is None:
+    return torch.zeros(env.num_envs, device=env.device)
+  return level
+
+
+def procedural_orientation_offset_metric(env: ManagerBasedRlEnv) -> torch.Tensor:
+  offset = getattr(env, "_procedural_orientation_offset", None)
+  if offset is None:
+    return torch.zeros(env.num_envs, device=env.device)
+  return offset
 
 
 @torch.no_grad()

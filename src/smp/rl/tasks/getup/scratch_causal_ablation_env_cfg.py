@@ -365,6 +365,37 @@ def g1_scratch_a12_f2s2_prone_coverage_env_cfg(play: bool = False):
   return cfg
 
 
+def g1_scratch_a13_f2s2_continuous_reset_env_cfg(play: bool = False):
+  """Continue A12 while changing only grounded reset pose coverage.
+
+  Most resets retain A11/A12's 0.12-rad joint perturbation. A minority sample
+  larger perturbations, and all four canonical fall families receive bounded
+  continuous roll/pitch offsets. Joint states are clipped inside soft limits
+  before the unchanged physical grounded-reset validation runs.
+  """
+  cfg = g1_scratch_a12_f2s2_prone_coverage_env_cfg(play=play)
+  reset = cfg.events["curriculum_validated_fall_reset"]
+  reset.params.update(
+    {
+      "orientation_noise": 0.35,
+      "joint_noise_levels": (0.12, 0.20, 0.30),
+      "joint_noise_weights": (0.70, 0.20, 0.10),
+      "joint_limit_margin": 0.02,
+    }
+  )
+  cfg.metrics.update(
+    {
+      "procedural_joint_noise_level": MetricsTermCfg(
+        func=mdp.procedural_joint_noise_level_metric
+      ),
+      "procedural_orientation_offset": MetricsTermCfg(
+        func=mdp.procedural_orientation_offset_metric
+      ),
+    }
+  )
+  return cfg
+
+
 __all__ = [
   "g1_scratch_a0_f2s2_gsi_env_cfg",
   "g1_scratch_a1_v7_gsi_env_cfg",
@@ -379,4 +410,5 @@ __all__ = [
   "g1_scratch_a10_f2s2_physical_reset_env_cfg",
   "g1_scratch_a11_f2s2_grounded_safety_env_cfg",
   "g1_scratch_a12_f2s2_prone_coverage_env_cfg",
+  "g1_scratch_a13_f2s2_continuous_reset_env_cfg",
 ]

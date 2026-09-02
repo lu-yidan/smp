@@ -1,0 +1,114 @@
+{
+  "schema_version": 1,
+  "study_id": "smp-continuous-reset-finetune-v1",
+  "status": "PREREGISTERED_IMPLEMENTATION_SMOKE_PENDING",
+  "study_role": "ENGINEERING_RESET_COVERAGE_FINETUNE_NOT_PROMOTION_OR_RAL_EVIDENCE",
+  "question": "Does bounded continuous grounded reset coverage improve oblique and articulated fall recovery while preserving A12 gate-3500 canonical recovery and safety?",
+  "source_policy": {
+    "task": "Smp-Getup-Scratch-A12-F2S2-Prone-Coverage-G1",
+    "policy_seed": 20261401,
+    "checkpoint_name": "model_3500.pt",
+    "checkpoint_path": "logs/rsl_rl/smp_scratch_a12_f2s2_prone_coverage_g1/2026-09-01_21-28-16_a12_prone_coverage_5k_seed20261401/model_3500.pt",
+    "checkpoint_sha256": "c477624f4c79a6a628ad1fdfa53443a1edb65c47cc75be06610b16f497e37c15",
+    "embedded_iteration": 3500,
+    "actor_input_dim": 93,
+    "critic_input_dim": 960,
+    "all_actor_critic_tensors_finite": true
+  },
+  "treatment": {
+    "task": "Smp-Getup-Scratch-A13-F2S2-Continuous-Reset-G1",
+    "single_changed_factor": "grounded_procedural_reset_pose_coverage",
+    "unchanged_from_a12": [
+      "93D one-frame deployable actor observation",
+      "960D ten-frame privileged critic observation",
+      "reward terms and weights",
+      "termination terms",
+      "PPO hyperparameters except the frozen fine-tune learning rate",
+      "disturbances",
+      "prone/supine/left/right mixture weights",
+      "root position and velocity reset distributions",
+      "physical reset postcheck"
+    ],
+    "reset_distribution": {
+      "procedural_probability": 1.0,
+      "mode_order": ["prone", "supine", "left_side", "right_side"],
+      "mode_weights": [3.0, 1.0, 1.0, 1.0],
+      "orientation_roll_pitch_noise_rad": 0.35,
+      "joint_noise_levels_rad": [0.12, 0.20, 0.30],
+      "joint_noise_weights": [0.70, 0.20, 0.10],
+      "joint_limit_margin_rad": 0.02,
+      "root_linear_velocity": 0.0,
+      "root_angular_velocity": 0.0,
+      "grounded_by_collision_geometry": true,
+      "ground_clearance_m": 0.006,
+      "max_penetration_m": 0.012,
+      "max_support_gap_m": 0.025,
+      "joint_limit_postcheck_required": true,
+      "finite_state_postcheck_required": true,
+      "policy_never_observes_rejected_state": true
+    }
+  },
+  "training_protocol": {
+    "policy_seed": 20261501,
+    "environment_seed": 20261501,
+    "warm_start": "actor_critic_and_normalizers_only",
+    "reset_optimizer_iteration_and_environment_steps": true,
+    "num_envs": 4096,
+    "rollout_steps_per_update": 24,
+    "max_iterations": 5000,
+    "save_interval": 500,
+    "evaluation_gates": [0, 500, 1000, 2000, 3500, 4999],
+    "learning_rate": 1e-05,
+    "device": 0,
+    "reserved_idle_devices": [1, 2, 3, 4, 5, 6, 7],
+    "no_automatic_restart": true
+  },
+  "evaluation_protocol": {
+    "eval_seed": 20261510,
+    "schema_version": 2,
+    "num_envs_per_mode": 512,
+    "steps": 500,
+    "modes": ["native_gsi", "prone", "supine", "left_side", "right_side"],
+    "evaluate_source_under_a13_distribution": true,
+    "per_env_json_required": true,
+    "strict_success_definition_unchanged": true,
+    "settled_stand_is_additive_not_primary": true,
+    "settled_stand": {
+      "base_height_min_m": 0.72,
+      "head_height_min_m": 1.10,
+      "upright_min": 0.90,
+      "root_linear_speed_max_m_s": 0.20,
+      "root_angular_speed_max_rad_s": 0.35,
+      "hold_steps": 150
+    }
+  },
+  "review_contract": {
+    "must_report": [
+      "strict recovery macro and worst pose",
+      "recovery time median and p90",
+      "first strict and settled stand time",
+      "failure-reason counts",
+      "action first and second differences",
+      "contact foot slip and post-success shuffling",
+      "peak joint torque, joint speed, and joint power",
+      "root excursion and post-success drift",
+      "secondary-fall rate",
+      "base height at strict success",
+      "joint-noise tier and orientation-offset coverage"
+    ],
+    "automatic_promotion": false,
+    "negative_or_unsafe_result_action": "STOP_AND_REVIEW_NO_RETUNING"
+  },
+  "stopping_rules": {
+    "dead_worker_without_model_4999": "CONTINUOUS_RESET_TRAINING_ALERT_NO_RESTART",
+    "fatal_oom_nan_inf": "CONTINUOUS_RESET_TRAINING_ALERT",
+    "physical_reset_alert": "CONTINUOUS_RESET_TRAINING_ALERT",
+    "log_stale_minutes": 45
+  },
+  "claim_boundary": {
+    "single_seed_warm_start_is_not_independent_reproducibility": true,
+    "training_smoke_protocol_manifest_and_checkpoints_are_not_performance_evidence": true,
+    "not_authorized_for_unprotected_real_robot_deployment": true,
+    "not_ral_evidence": true
+  }
+}
