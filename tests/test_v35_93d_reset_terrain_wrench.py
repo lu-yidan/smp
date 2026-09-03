@@ -30,7 +30,8 @@ class V35ResetTerrainWrenchTest(unittest.TestCase):
       self.assertEqual(tuple(cfg.observations["actor"].terms), actor_terms)
       self.assertEqual(tuple(cfg.observations["critic"].terms), critic_terms)
     self.assertNotIn("base_lin_vel", actor_terms)
-    self.assertEqual(configs[0].observations["actor"].history_length, 1)
+    # ``None`` is ObservationManager's one-frame/no-stacking representation.
+    self.assertIsNone(configs[0].observations["actor"].history_length)
 
   def test_reset_and_standing_contract_is_shared(self) -> None:
     builders = (
