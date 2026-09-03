@@ -1,0 +1,108 @@
+{
+  "schema_version": 1,
+  "study_id": "smp-v34-93d-matched-evaluation-v1",
+  "status": "PREREGISTERED_READY_FOR_EVALUATION",
+  "study_role": "ENGINEERING_MATCHED_V34_96D_VERSUS_93D_EVALUATION_NOT_RAL_EVIDENCE",
+  "training_protocol_sha256": "11a0828e38ce83c27693b7b50a59778a5a67c690b4329bdf0fc2357a036d18ca",
+  "training_plan_id": "c7c3042b0a211d0acc238939fb03600076e2fd14cbf403e075353cb5774c81cc",
+  "control": {
+    "label": "v34_96d",
+    "task": "Smp-Getup-Escape-Plate-V34-G1",
+    "checkpoint": "run_control/v34_93d_control/source/model_98000.pt",
+    "checkpoint_iteration": 98000,
+    "checkpoint_sha256": "fa54ac58f09a1a0ed0b46f96fb920f18de20422190c9ee92207f3080a3cbe393",
+    "actor_input_dim": 96,
+    "critic_input_dim": 960
+  },
+  "treatment": {
+    "label": "v34_93d",
+    "task": "Smp-Getup-Escape-Plate-V34-93D-G1",
+    "run_dir": "logs/rsl_rl/smp_getup_escape_plate_v34_93d_g1/2026-09-02_18-09-07_v34_93d_ablation_12k_seed20261701_offline",
+    "actor_input_dim": 93,
+    "critic_input_dim": 960,
+    "gates": {
+      "0": "fccdf168a43302d85ee3beb7faaac52237e35a6172241109560bb7f3049f73b8",
+      "1000": "bbb2542a9e11925883a227842664a78871724b510c4bcddf327a24e9de14c2aa",
+      "3000": "7818a5a063a09593368d816089f6fa08b75cea1326dd44b393878cf45bf5e715",
+      "6000": "471fb41444a5d8f2bce1f93b0e2d65a613e86c1d417ef4cba36ba48b9779474b",
+      "9000": "09303eb2a6dcf6183fb06b54e66fba04dce140f8b7f5ca62df6200a56885a729",
+      "11999": "814c092fe97ea48d025dabda86868e0f8e9003884f02e5ece4bbbc53e028a57f"
+    }
+  },
+  "matrix": {
+    "order": "control then treatment gates 0,1000,3000,6000,9000,11999; prone then supine within checkpoint",
+    "total_cells": 14,
+    "reset_poses": ["prone", "supine"],
+    "num_envs_per_cell": 512,
+    "steps_per_environment": 1000,
+    "rollouts_total": 7168,
+    "evaluation_seed": 20261710,
+    "physical_devices": [0, 1, 2, 3, 4, 5, 6, 7],
+    "device_assignment": "round_robin_by_cell_with_serial_queue_per_device",
+    "plate_mass_kg": 8.0,
+    "plate_length_m": 0.9,
+    "plate_width_m": 0.64,
+    "plate_thickness_m": 0.07,
+    "plate_friction": 1.2,
+    "longitudinal_offset_m": -0.1,
+    "lateral_offset_m": 0.0,
+    "longitudinal_jitter_m": 0.0,
+    "lateral_jitter_m": 0.0,
+    "xy_jitter_m": 0.005,
+    "stable_hold_steps": 25,
+    "stand_head_height_m": 1.1,
+    "stand_min_upright": 0.85,
+    "stand_max_linear_speed_m_s": 0.5,
+    "stand_max_angular_speed_rad_s": 1.0,
+    "wide_stance_threshold_m": 0.45
+  },
+  "implementation_audit": {
+    "status": "PASSED_REAL_MUJOCO_93D_EVALUATOR_SMOKE",
+    "code_commit": "bb505f5483ca824a8ea8a7d489076a8c3f8afeb4",
+    "smoke_task": "Smp-Getup-Escape-Plate-V34-93D-G1",
+    "smoke_checkpoint_gate": 0,
+    "smoke_num_envs": 16,
+    "smoke_steps": 5,
+    "smoke_seed": 20261709,
+    "actor_input_dim": 93,
+    "critic_input_dim": 960,
+    "finite_runtime": true,
+    "log_path": "run_control/v34_93d_control/evaluator_smoke/prone.log",
+    "log_sha256": "108948d99a2a9a2d988aa40471010ec3e867b86bba68b00f94aee87bf7dce076"
+  },
+  "required_outputs": {
+    "one_json_per_cell": true,
+    "one_raw_log_per_cell": true,
+    "reject_partial_matrix": true,
+    "reject_checkpoint_or_protocol_hash_drift": true,
+    "reject_dead_worker_with_incomplete_queue": true,
+    "no_automatic_restart": true
+  },
+  "primary_metrics": [
+    "escape_and_stand_rate",
+    "valid_escape_and_stand_rate",
+    "prone_escape_and_stand_rate",
+    "supine_escape_and_stand_rate",
+    "invalid_rate",
+    "setup_invalid_rate",
+    "escape_time_median_s",
+    "stable_stand_time_median_s",
+    "stable_foot_separation_median_m",
+    "wide_stance_rate_at_stable",
+    "max_joint_speed_p95_rad_s",
+    "max_torque_mean_nm",
+    "max_power_mean_w"
+  ],
+  "selection_rule": {
+    "training_reward_forbidden": true,
+    "evaluate_all_frozen_gates": true,
+    "retain_complete_negative_result": true,
+    "description": "Prefer retained prone and supine success with lower invalidity and no material worsening of stance width, joint speed, torque, or power. This single policy-seed engineering comparison cannot promote to RAL evidence."
+  },
+  "claim_boundary": [
+    "The control is a historical 96D checkpoint and the treatment is one projected 93D warm-start policy seed.",
+    "Results diagnose observation removal and fine-tuning behavior; they are not a three-seed causal estimate.",
+    "Neither training completion nor evaluation success authorizes hardware deployment.",
+    "A14 velocity-envelope behavior is not part of this matched comparison."
+  ]
+}

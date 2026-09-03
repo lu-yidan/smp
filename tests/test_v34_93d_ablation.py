@@ -22,10 +22,15 @@ sys.path.insert(0, str(Path(__file__).parents[1] / "scripts"))
 import evaluate_escape_checkpoint as escape_evaluator
 import launch_smp_v34_93d_ablation as launcher
 import project_smp_v34_checkpoint_to_93d as projection
+import run_smp_v34_93d_eval_matrix as eval_launcher
 
 _REPO = Path(__file__).parents[1]
 _PROTOCOL = _REPO / "docs/ral_v34_93d_observation_ablation_v1.json"
 _PROTOCOL_SHA256 = "11a0828e38ce83c27693b7b50a59778a5a67c690b4329bdf0fc2357a036d18ca"
+_EVAL_PROTOCOL = _REPO / "docs/ral_v34_93d_evaluation_v1.json"
+_EVAL_PROTOCOL_SHA256 = (
+  "1f212abf7e627ac031fcca6637e69b5f43c2c94e6f703bfbc8de6e676734f52e"
+)
 
 
 class V34NinetyThreeDimAblationTest(unittest.TestCase):
@@ -111,6 +116,41 @@ class V34NinetyThreeDimAblationTest(unittest.TestCase):
     self.assertEqual(projected["optimizer_state_dict"], {})
     self.assertLessEqual(audit["zero_velocity_first_layer_max_abs_error"], 5.0e-5)
     self.assertTrue(audit["all_tensors_finite"])
+
+  def test_evaluation_protocol_and_matrix_are_frozen(self) -> None:
+    self.assertEqual(
+      hashlib.sha256(_EVAL_PROTOCOL.read_bytes()).hexdigest(),
+      _EVAL_PROTOCOL_SHA256,
+    )
+    integrity = {
+      "embedded_iteration": 0,
+      "actor_input_dim": 93,
+      "critic_input_dim": 960,
+      "all_tensors_finite": True,
+    }
+    with mock.patch.object(
+      eval_launcher, "_checkpoint_integrity", return_value=integrity
+    ):
+      plan = eval_launcher.build_plan(
+        eval_launcher.V34NinetyThreeDimEvalCfg(protocol=_EVAL_PROTOCOL)
+      )
+    self.assertEqual(plan["total_cells"], 14)
+    self.assertEqual(plan["matrix"]["num_envs_per_cell"], 512)
+    self.assertEqual(plan["matrix"]["steps_per_environment"], 1000)
+    self.assertEqual(plan["matrix"]["evaluation_seed"], 20261710)
+    self.assertEqual(
+      [job["cell_id"] for job in plan["jobs"][:4]],
+      [
+        "v34_96d_gate98000_prone",
+        "v34_96d_gate98000_supine",
+        "v34_93d_gate0_prone",
+        "v34_93d_gate0_supine",
+      ],
+    )
+    self.assertEqual(
+      [job["physical_device"] for job in plan["jobs"]],
+      [0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5],
+    )
 
 
 if __name__ == "__main__":
