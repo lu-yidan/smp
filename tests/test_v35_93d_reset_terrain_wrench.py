@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 import os
+import sys
 import unittest
+from pathlib import Path
 from unittest.mock import patch
 
 from mjlab.tasks.registry import load_runner_cls
@@ -13,6 +15,12 @@ from smp.rl.tasks.getup.escape_v35_93d_reset_stability_env_cfg import (
   g1_getup_escape_plate_v35_93d_reset_stability_wrench_smp_env_cfg,
 )
 from smp.rl.warm_start_runner import SmpCurriculumWarmStartRunner
+
+sys.path.insert(0, str(Path(__file__).parents[1] / "scripts"))
+from launch_smp_v35_93d_factorial import (  # noqa: E402
+  _PROTOCOL_SHA256,
+  _validate_protocol,
+)
 
 
 class V35ResetTerrainWrenchTest(unittest.TestCase):
@@ -102,6 +110,18 @@ class V35ResetTerrainWrenchTest(unittest.TestCase):
     )
     for task in tasks:
       self.assertIs(load_runner_cls(task), SmpCurriculumWarmStartRunner)
+
+  def test_protocol_is_hash_locked_and_non_evidence(self) -> None:
+    path = (
+      Path(__file__).parents[1]
+      / "docs/ral_v34_93d_reset_stability_finetune_v1.json"
+    )
+    protocol, digest = _validate_protocol(path)
+    self.assertEqual(digest, _PROTOCOL_SHA256)
+    self.assertEqual(protocol["training_protocol"]["max_iterations"], 6000)
+    self.assertEqual(len(protocol["training_protocol"]["gpu_assignment"]), 8)
+    self.assertTrue(protocol["claim_boundary"]["not_ral_evidence"])
+    self.assertTrue(protocol["claim_boundary"]["no_hardware_authorization"])
 
 
 if __name__ == "__main__":

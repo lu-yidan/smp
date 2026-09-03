@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "study_id": "smp-v35-93d-reset-terrain-wrench-factorial-v1",
-  "status": "PREREGISTERED_IMPLEMENTATION_PENDING",
+  "status": "PREREGISTERED_READY_FOR_TRAINING",
   "study_role": "ENGINEERING_2X2_FINETUNE_NOT_PROMOTION_OR_RAL_EVIDENCE",
   "question": "After expanding grounded reset coverage and settled-standing training, what is the separate and combined effect of terrain exposure and finite post-stand physical wrenches?",
   "source_policy": {
@@ -170,7 +170,112 @@
     ]
   },
   "implementation_audit": {
-    "status": "PENDING_FOUR_REAL_MUJOCO_WARM_START_SMOKES"
+    "status": "PASSED_FOUR_REAL_MUJOCO_WARM_START_SMOKES",
+    "code_commit": "ccd22575e683f327c939ad0b3ce795c3a5b91925",
+    "source_checkpoint_sha256": "471fb41444a5d8f2bce1f93b0e2d65a613e86c1d417ef4cba36ba48b9779474b",
+    "smoke_seed": 20261800,
+    "num_envs": 16,
+    "rollout_steps": 24,
+    "iterations": 1,
+    "arms": {
+      "R": {
+        "log": {
+          "path": "run_control/v35_93d_factorial_smoke/R.log",
+          "sha256": "eab9c97ca73aebd8454285c0108fe064de94b48fce5f5c702b7daa4b24cde690"
+        },
+        "checkpoint": {
+          "path": "logs/rsl_rl/smp_getup_escape_plate_v35_93d_reset_stability_g1/2026-09-03_11-59-12_v35_factorial_smoke_R/model_0.pt",
+          "sha256": "49617308a8bf5c076ad99c651a385db14b50fba9ce40ab33537e5e6569b7d6d8"
+        },
+        "agent_config": {
+          "path": "logs/rsl_rl/smp_getup_escape_plate_v35_93d_reset_stability_g1/2026-09-03_11-59-12_v35_factorial_smoke_R/params/agent.yaml",
+          "sha256": "618964742786b12efcf78cf393a7fd777746aeade090820fc6e211d590461c37"
+        },
+        "environment_config": {
+          "path": "logs/rsl_rl/smp_getup_escape_plate_v35_93d_reset_stability_g1/2026-09-03_11-59-12_v35_factorial_smoke_R/params/env.yaml",
+          "sha256": "36839f0edc977963c9223e1cdc438d08c48d78cc795fde38e8000a63dce2cd25"
+        },
+        "git_provenance": {
+          "path": "logs/rsl_rl/smp_getup_escape_plate_v35_93d_reset_stability_g1/2026-09-03_11-59-12_v35_factorial_smoke_R/git/smp-v38-unified.diff",
+          "sha256": "79736214b2caed8348e3635a725d06a249e954488f3b907dc5f0e21ab691977f"
+        }
+      },
+      "RD": {
+        "log": {
+          "path": "run_control/v35_93d_factorial_smoke/RD.log",
+          "sha256": "cf46705609e5630fbe027c0b3fb9ce4ff819f0f18856b98dfbcc9ace69f4797a"
+        },
+        "checkpoint": {
+          "path": "logs/rsl_rl/smp_getup_escape_plate_v35_93d_reset_stability_wrench_g1/2026-09-03_11-59-12_v35_factorial_smoke_RD/model_0.pt",
+          "sha256": "5593499e416cece0a69d2ee254798416777055ec03e266f61b621f7ebe986451"
+        },
+        "agent_config": {
+          "path": "logs/rsl_rl/smp_getup_escape_plate_v35_93d_reset_stability_wrench_g1/2026-09-03_11-59-12_v35_factorial_smoke_RD/params/agent.yaml",
+          "sha256": "cb39f5be70764265bc5872ff9f727b00a28c044f526ff3de7321b6fa80c8561d"
+        },
+        "environment_config": {
+          "path": "logs/rsl_rl/smp_getup_escape_plate_v35_93d_reset_stability_wrench_g1/2026-09-03_11-59-12_v35_factorial_smoke_RD/params/env.yaml",
+          "sha256": "b2064e576a8e339fdb919504731fadd7e52e422df91de998674471806037ea34"
+        },
+        "git_provenance": {
+          "path": "logs/rsl_rl/smp_getup_escape_plate_v35_93d_reset_stability_wrench_g1/2026-09-03_11-59-12_v35_factorial_smoke_RD/git/smp-v38-unified.diff",
+          "sha256": "79736214b2caed8348e3635a725d06a249e954488f3b907dc5f0e21ab691977f"
+        }
+      },
+      "RT": {
+        "log": {
+          "path": "run_control/v35_93d_factorial_smoke/RT.log",
+          "sha256": "813d5f0886e12f1bafdb89dcfef5d48087ded30f4d20c9fc683ff967481c3405"
+        },
+        "checkpoint": {
+          "path": "logs/rsl_rl/smp_getup_escape_plate_v35_93d_reset_stability_terrain_g1/2026-09-03_11-59-12_v35_factorial_smoke_RT/model_0.pt",
+          "sha256": "57ffb7e82347b00337f871ce9aac9afb4609d9aa0a32f2d7f549279a70d5520c"
+        },
+        "agent_config": {
+          "path": "logs/rsl_rl/smp_getup_escape_plate_v35_93d_reset_stability_terrain_g1/2026-09-03_11-59-12_v35_factorial_smoke_RT/params/agent.yaml",
+          "sha256": "a47b4fc79254472025f4336fcd3338537df28638cfecc8f15c5ba7e1304f90a4"
+        },
+        "environment_config": {
+          "path": "logs/rsl_rl/smp_getup_escape_plate_v35_93d_reset_stability_terrain_g1/2026-09-03_11-59-12_v35_factorial_smoke_RT/params/env.yaml",
+          "sha256": "a977c172715035e118c528ec7733e80e0f12348f1edb50245dbdf314701ce203"
+        },
+        "git_provenance": {
+          "path": "logs/rsl_rl/smp_getup_escape_plate_v35_93d_reset_stability_terrain_g1/2026-09-03_11-59-12_v35_factorial_smoke_RT/git/smp-v38-unified.diff",
+          "sha256": "79736214b2caed8348e3635a725d06a249e954488f3b907dc5f0e21ab691977f"
+        }
+      },
+      "RTD": {
+        "log": {
+          "path": "run_control/v35_93d_factorial_smoke/RTD.log",
+          "sha256": "a2ec01f0d41ea0dc0b05c1f7982072286d5909328e7cca8223015b2ef3e72b72"
+        },
+        "checkpoint": {
+          "path": "logs/rsl_rl/smp_getup_escape_plate_v35_93d_reset_stability_terrain_wrench_g1/2026-09-03_11-59-12_v35_factorial_smoke_RTD/model_0.pt",
+          "sha256": "1e38efb70b1577974be51d5034fe31643dbc38a5798e71327c07cde265718322"
+        },
+        "agent_config": {
+          "path": "logs/rsl_rl/smp_getup_escape_plate_v35_93d_reset_stability_terrain_wrench_g1/2026-09-03_11-59-12_v35_factorial_smoke_RTD/params/agent.yaml",
+          "sha256": "33291e5109c3732d47fda071171a5284b5beea76a674436997f0b66fca0192bf"
+        },
+        "environment_config": {
+          "path": "logs/rsl_rl/smp_getup_escape_plate_v35_93d_reset_stability_terrain_wrench_g1/2026-09-03_11-59-12_v35_factorial_smoke_RTD/params/env.yaml",
+          "sha256": "5404becf0844ca88c9a2efbef8a2e79d8d6071c909b1804368e88358b961ed6c"
+        },
+        "git_provenance": {
+          "path": "logs/rsl_rl/smp_getup_escape_plate_v35_93d_reset_stability_terrain_wrench_g1/2026-09-03_11-59-12_v35_factorial_smoke_RTD/git/smp-v38-unified.diff",
+          "sha256": "79736214b2caed8348e3635a725d06a249e954488f3b907dc5f0e21ab691977f"
+        }
+      }
+    },
+    "verified": {
+      "actor_input_dim": 93,
+      "critic_input_dim": 960,
+      "embedded_iteration": 0,
+      "checkpoint_tensor_count_each": 73,
+      "checkpoint_tensor_elements_each": 2620640,
+      "all_checkpoint_tensors_finite": true,
+      "no_fatal_oom_nan_inf_or_physical_reset_alert": true
+    }
   },
   "stopping_rules": {
     "dead_worker_without_model_5999": "V35_TRAINING_ALERT_NO_RESTART",
