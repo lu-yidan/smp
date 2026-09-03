@@ -25,6 +25,12 @@ from smp.rl.tasks.getup.escape_v34_93d_env_cfg import (
 from smp.rl.tasks.getup.escape_v34_env_cfg import (
   g1_getup_escape_plate_v34_smp_env_cfg,
 )
+from smp.rl.tasks.getup.escape_v35_93d_reset_stability_env_cfg import (
+  g1_getup_escape_plate_v35_93d_reset_stability_smp_env_cfg,
+  g1_getup_escape_plate_v35_93d_reset_stability_terrain_smp_env_cfg,
+  g1_getup_escape_plate_v35_93d_reset_stability_terrain_wrench_smp_env_cfg,
+  g1_getup_escape_plate_v35_93d_reset_stability_wrench_smp_env_cfg,
+)
 from smp.rl.tasks.getup.getup_env_cfg import g1_getup_smp_env_cfg
 from smp.rl.tasks.getup.plate_terrain_v38_env_cfg import (
   g1_getup_plate_terrain_v38_deploy_smp_env_cfg,
@@ -505,6 +511,90 @@ register_mjlab_task(
   env_cfg=g1_getup_escape_plate_v34_93d_smp_env_cfg(play=False),
   play_env_cfg=g1_getup_escape_plate_v34_93d_smp_env_cfg(play=True),
   rl_cfg=_escape_plate_v34_93d_getup_rl,
+  runner_cls=SmpCurriculumWarmStartRunner,
+)
+
+_escape_plate_v35_93d_getup_rl = unitree_g1_smp_ppo_runner_cfg()
+_escape_plate_v35_93d_getup_rl.experiment_name = (
+  "smp_getup_escape_plate_v35_93d_reset_stability_g1"
+)
+_escape_plate_v35_93d_getup_rl.run_name = (
+  "smp_getup_escape_plate_v35_93d_reset_stability_g1"
+)
+_escape_plate_v35_93d_getup_rl.save_interval = 500
+
+register_mjlab_task(
+  task_id="Smp-Getup-Escape-Plate-V35-93D-Reset-Stability-G1",
+  env_cfg=g1_getup_escape_plate_v35_93d_reset_stability_smp_env_cfg(play=False),
+  play_env_cfg=g1_getup_escape_plate_v35_93d_reset_stability_smp_env_cfg(play=True),
+  rl_cfg=_escape_plate_v35_93d_getup_rl,
+  runner_cls=SmpCurriculumWarmStartRunner,
+)
+
+_escape_plate_v35_93d_wrench_rl = unitree_g1_smp_ppo_runner_cfg()
+_escape_plate_v35_93d_wrench_rl.experiment_name = (
+  "smp_getup_escape_plate_v35_93d_reset_stability_wrench_g1"
+)
+_escape_plate_v35_93d_wrench_rl.run_name = (
+  "smp_getup_escape_plate_v35_93d_reset_stability_wrench_g1"
+)
+_escape_plate_v35_93d_wrench_rl.save_interval = 500
+
+register_mjlab_task(
+  task_id="Smp-Getup-Escape-Plate-V35-93D-Reset-Stability-Wrench-G1",
+  env_cfg=g1_getup_escape_plate_v35_93d_reset_stability_wrench_smp_env_cfg(
+    play=False
+  ),
+  play_env_cfg=g1_getup_escape_plate_v35_93d_reset_stability_wrench_smp_env_cfg(
+    play=True
+  ),
+  rl_cfg=_escape_plate_v35_93d_wrench_rl,
+  runner_cls=SmpCurriculumWarmStartRunner,
+)
+
+_escape_plate_v35_93d_terrain_rl = unitree_g1_smp_ppo_runner_cfg()
+_escape_plate_v35_93d_terrain_rl.experiment_name = (
+  "smp_getup_escape_plate_v35_93d_reset_stability_terrain_g1"
+)
+_escape_plate_v35_93d_terrain_rl.run_name = (
+  "smp_getup_escape_plate_v35_93d_reset_stability_terrain_g1"
+)
+_escape_plate_v35_93d_terrain_rl.save_interval = 500
+
+register_mjlab_task(
+  task_id="Smp-Getup-Escape-Plate-V35-93D-Reset-Stability-Terrain-G1",
+  env_cfg=g1_getup_escape_plate_v35_93d_reset_stability_terrain_smp_env_cfg(
+    play=False
+  ),
+  play_env_cfg=g1_getup_escape_plate_v35_93d_reset_stability_terrain_smp_env_cfg(
+    play=True
+  ),
+  rl_cfg=_escape_plate_v35_93d_terrain_rl,
+  runner_cls=SmpCurriculumWarmStartRunner,
+)
+
+_escape_plate_v35_93d_terrain_wrench_rl = unitree_g1_smp_ppo_runner_cfg()
+_escape_plate_v35_93d_terrain_wrench_rl.experiment_name = (
+  "smp_getup_escape_plate_v35_93d_reset_stability_terrain_wrench_g1"
+)
+_escape_plate_v35_93d_terrain_wrench_rl.run_name = (
+  "smp_getup_escape_plate_v35_93d_reset_stability_terrain_wrench_g1"
+)
+_escape_plate_v35_93d_terrain_wrench_rl.save_interval = 500
+
+register_mjlab_task(
+  task_id="Smp-Getup-Escape-Plate-V35-93D-Reset-Stability-Terrain-Wrench-G1",
+  env_cfg=(
+    g1_getup_escape_plate_v35_93d_reset_stability_terrain_wrench_smp_env_cfg(
+      play=False
+    )
+  ),
+  play_env_cfg=(
+    g1_getup_escape_plate_v35_93d_reset_stability_terrain_wrench_smp_env_cfg(
+      play=True
+    )
+  ),
+  rl_cfg=_escape_plate_v35_93d_terrain_wrench_rl,
   runner_cls=SmpCurriculumWarmStartRunner,
 )
 

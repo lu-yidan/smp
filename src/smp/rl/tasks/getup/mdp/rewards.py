@@ -879,9 +879,10 @@ def target_limited_fraction_metric(
 def quiet_foot_speed_l2(
   env: ManagerBasedRlEnv,
   site_names: tuple[str, str] = ("left_foot", "right_foot"),
+  relative_to_env_origin: bool = False,
 ) -> torch.Tensor:
   """Penalize standing foot shuffling without constraining low-pose recovery."""
-  gate = quiet_stance_gate(env)
+  gate = quiet_stance_gate(env, relative_to_env_origin=relative_to_env_origin)
   robot = env.scene["robot"]
   site_ids = robot.find_sites(list(site_names), preserve_order=True)[0]
   foot_vel_xy = robot.data.site_lin_vel_w[:, site_ids, :2]
@@ -889,9 +890,11 @@ def quiet_foot_speed_l2(
   return gate * speed_sq
 
 
-def quiet_action_acc_l2(env: ManagerBasedRlEnv) -> torch.Tensor:
+def quiet_action_acc_l2(
+  env: ManagerBasedRlEnv, relative_to_env_origin: bool = False
+) -> torch.Tensor:
   """Penalize second-order action chatter only after reaching quiet stance."""
-  gate = quiet_stance_gate(env)
+  gate = quiet_stance_gate(env, relative_to_env_origin=relative_to_env_origin)
   acceleration = (
     env.action_manager.action
     - 2.0 * env.action_manager.prev_action
@@ -900,9 +903,11 @@ def quiet_action_acc_l2(env: ManagerBasedRlEnv) -> torch.Tensor:
   return gate * torch.sum(torch.square(acceleration), dim=-1)
 
 
-def quiet_base_angular_speed_l2(env: ManagerBasedRlEnv) -> torch.Tensor:
+def quiet_base_angular_speed_l2(
+  env: ManagerBasedRlEnv, relative_to_env_origin: bool = False
+) -> torch.Tensor:
   """Penalize residual torso rotation only while tall and upright."""
-  gate = quiet_stance_gate(env)
+  gate = quiet_stance_gate(env, relative_to_env_origin=relative_to_env_origin)
   angular_velocity = env.scene["robot"].data.root_link_ang_vel_w
   return gate * torch.sum(torch.square(angular_velocity), dim=-1)
 

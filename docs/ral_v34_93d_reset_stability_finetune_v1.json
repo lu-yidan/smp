@@ -1,0 +1,187 @@
+{
+  "schema_version": 1,
+  "study_id": "smp-v35-93d-reset-terrain-wrench-factorial-v1",
+  "status": "PREREGISTERED_IMPLEMENTATION_PENDING",
+  "study_role": "ENGINEERING_2X2_FINETUNE_NOT_PROMOTION_OR_RAL_EVIDENCE",
+  "question": "After expanding grounded reset coverage and settled-standing training, what is the separate and combined effect of terrain exposure and finite post-stand physical wrenches?",
+  "source_policy": {
+    "task": "Smp-Getup-Escape-Plate-V34-93D-G1",
+    "wandb_run": "tabletennis/smp/6qzo23hw",
+    "policy_seed": 20261701,
+    "checkpoint_name": "model_6000.pt",
+    "checkpoint_path": "logs/rsl_rl/smp_getup_escape_plate_v34_93d_g1/2026-09-02_18-09-07_v34_93d_ablation_12k_seed20261701_offline/model_6000.pt",
+    "checkpoint_sha256": "471fb41444a5d8f2bce1f93b0e2d65a613e86c1d417ef4cba36ba48b9779474b",
+    "embedded_iteration": 6000,
+    "actor_input_dim": 93,
+    "critic_input_dim": 960,
+    "all_actor_critic_tensors_finite": true
+  },
+  "shared_treatment": {
+    "reset": {
+      "physically_validated_gsi_probability_before_failure_replay": 0.10,
+      "grounded_procedural_probability_before_failure_replay": 0.90,
+      "procedural_mode_order": ["prone", "supine", "left_side", "right_side"],
+      "procedural_mode_weights": [4.0, 4.0, 1.0, 1.0],
+      "joint_noise_levels_rad": [0.10, 0.20, 0.30],
+      "joint_noise_weights": [0.60, 0.30, 0.10],
+      "orientation_noise_rad": 0.30,
+      "joint_limit_margin_rad": 0.02,
+      "max_penetration_m": 0.012,
+      "max_support_gap_m": 0.025,
+      "failure_state_replay_probability_after_buffer_ready": 0.20,
+      "plate_eligible_procedural_modes": ["prone", "supine"],
+      "plate_probability_when_eligible": 0.90
+    },
+    "standing": {
+      "policy_rate_hz": 50,
+      "seated_hold_steps": 10,
+      "crouched_hold_steps": 15,
+      "standing_hold_steps": 100,
+      "standing_hold_seconds": 2.0,
+      "replace_one_sided_knee_shortfall_with_two_sided_knee_band": true,
+      "one_step_stage_transition_bonus_weight": 0.75,
+      "post_clear_recovery_initiation_weight": 0.08,
+      "quiet_foot_speed_weight": -0.02,
+      "quiet_action_acceleration_weight": -0.0001,
+      "quiet_base_angular_speed_weight": -0.005
+    }
+  },
+  "factors": {
+    "terrain": {
+      "off": "flat plane",
+      "on": {
+        "families": ["flat", "slope", "stairs", "rough"],
+        "family_proportions": [0.30, 0.30, 0.25, 0.15],
+        "training_levels": [0, 1, 2],
+        "held_out_level": 3,
+        "generator_seed": 20261820,
+        "reset_grounding_uses_surface_normal": true,
+        "plate_retained_on_all_families": true,
+        "relative_support_height": true,
+        "terrain_foot_slip_weight": -0.02,
+        "terrain_planar_displacement_weight": -0.15,
+        "terrain_stance_width_weight": -0.05,
+        "patch_exit_termination": true
+      }
+    },
+    "physical_wrench": {
+      "off": false,
+      "on": {
+        "cohort_weights_clean_standard_intensive": [0.25, 0.50, 0.25],
+        "delay_steps": [20, 60],
+        "duration_steps": [10, 18],
+        "recovery_steps": 150,
+        "standard_force_n": [80.0, 170.0],
+        "intensive_force_n": [120.0, 230.0],
+        "torque_nm": [4.0, 16.0],
+        "standard_max_pushes": 1,
+        "intensive_max_pushes": 3,
+        "curriculum_steps": 300000
+      }
+    }
+  },
+  "arms": [
+    {
+      "arm": "R",
+      "task": "Smp-Getup-Escape-Plate-V35-93D-Reset-Stability-G1",
+      "terrain": false,
+      "physical_wrench": false
+    },
+    {
+      "arm": "RD",
+      "task": "Smp-Getup-Escape-Plate-V35-93D-Reset-Stability-Wrench-G1",
+      "terrain": false,
+      "physical_wrench": true
+    },
+    {
+      "arm": "RT",
+      "task": "Smp-Getup-Escape-Plate-V35-93D-Reset-Stability-Terrain-G1",
+      "terrain": true,
+      "physical_wrench": false
+    },
+    {
+      "arm": "RTD",
+      "task": "Smp-Getup-Escape-Plate-V35-93D-Reset-Stability-Terrain-Wrench-G1",
+      "terrain": true,
+      "physical_wrench": true
+    }
+  ],
+  "training_protocol": {
+    "fine_tune_seeds": [20261801, 20261802],
+    "agent_and_environment_seed_identical": true,
+    "gpu_assignment": {
+      "R/20261801": 0,
+      "R/20261802": 1,
+      "RD/20261801": 2,
+      "RD/20261802": 3,
+      "RT/20261801": 4,
+      "RT/20261802": 5,
+      "RTD/20261801": 6,
+      "RTD/20261802": 7
+    },
+    "warm_start": "same_v34_93d_actor_critic_and_normalizers_only",
+    "reset_optimizer_iteration_and_environment_steps": true,
+    "num_envs": 4096,
+    "rollout_steps_per_update": 24,
+    "max_iterations": 6000,
+    "save_interval": 500,
+    "evaluation_gates": [0, 500, 1000, 2000, 3500, 5000, 5999],
+    "learning_rate": 0.00001,
+    "wandb_mode": "online",
+    "no_automatic_restart": true
+  },
+  "shared_non_changes": {
+    "actor_observation": "93D one-frame proprioception without true base linear velocity, terrain, plate, contact, reset, or future-reference labels",
+    "critic_observation_dim": 960,
+    "physics_timestep_s": 0.005,
+    "decimation": 4,
+    "policy_period_s": 0.02,
+    "action_target_rate_envelope": false,
+    "PPO_except_finetune_horizon_and_learning_rate": "unchanged"
+  },
+  "evaluation_protocol": {
+    "eval_seed": 20261810,
+    "schema_version": 2,
+    "num_envs_per_cell": 512,
+    "steps": 1000,
+    "flat_reset_modes": ["prone", "supine", "left_side", "right_side", "crossed_leg_prone", "crossed_leg_supine", "half_crouch"],
+    "terrain_families": ["flat", "slope", "stairs", "rough"],
+    "terrain_levels": [0, 1, 2, 3],
+    "wrench_cohorts": ["clean", "standard", "intensive"],
+    "plate_and_no_plate_strata_required": true,
+    "per_env_json_required": true,
+    "strict_hold_steps": 25,
+    "settled_hold_steps": 150,
+    "must_compare_every_gate_to_v34_gate6000": true,
+    "must_report": [
+      "strict and settled success macro/worst per seed",
+      "crossed-leg and half-crouch success",
+      "terrain family and level success plus patch exit",
+      "post-wrench recovery success and latency",
+      "recovery and first-settled-stand time",
+      "secondary-fall rate",
+      "foot slip and post-success shuffling",
+      "action first and second differences",
+      "joint velocity p95/p99/max by phase",
+      "peak torque and mechanical power",
+      "root excursion and drift",
+      "reset-family counts and physical validity",
+      "matched-seed R-to-RD, R-to-RT, and R-to-RTD differences"
+    ]
+  },
+  "implementation_audit": {
+    "status": "PENDING_FOUR_REAL_MUJOCO_WARM_START_SMOKES"
+  },
+  "stopping_rules": {
+    "dead_worker_without_model_5999": "V35_TRAINING_ALERT_NO_RESTART",
+    "fatal_oom_nan_inf": "V35_TRAINING_ALERT",
+    "physical_reset_alert": "V35_TRAINING_ALERT",
+    "log_stale_minutes": 45
+  },
+  "claim_boundary": {
+    "two_finetune_seeds_are_not_independent_from_scratch_reproducibility": true,
+    "training_protocol_smoke_manifest_and_checkpoints_are_not_performance_evidence": true,
+    "no_hardware_authorization": true,
+    "not_ral_evidence": true
+  }
+}
