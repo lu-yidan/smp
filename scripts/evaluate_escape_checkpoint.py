@@ -21,6 +21,7 @@ from mjlab.utils.torch import configure_torch_backends
 
 import smp.rl.tasks  # noqa: F401  # task registration
 from smp.rl.tasks.getup import mdp
+from smp.rl.warm_start_runner import SmpCurriculumWarmStartRunner
 
 
 @dataclass(frozen=True)
@@ -52,6 +53,14 @@ class EvalCfg:
   stand_max_linear_speed_m_s: float = 0.50
   stand_max_angular_speed_rad_s: float = 1.0
   wide_stance_threshold_m: float = 0.45
+
+
+def _inference_runner_cls(task: str):
+  """Return a runner whose load contract is appropriate for actor-only eval."""
+  runner_cls = load_runner_cls(task) or MjlabOnPolicyRunner
+  if issubclass(runner_cls, SmpCurriculumWarmStartRunner):
+    return MjlabOnPolicyRunner
+  return runner_cls
 
 
 def _joint_mirror_spec(joint_names: tuple[str, ...], device: torch.device):
@@ -235,7 +244,7 @@ def main(cfg: EvalCfg) -> None:
 
   raw_env = ManagerBasedRlEnv(env_cfg, device=cfg.device)
   env = RslRlVecEnvWrapper(raw_env, clip_actions=agent_cfg.clip_actions)
-  runner_cls = load_runner_cls(cfg.task) or MjlabOnPolicyRunner
+  runner_cls = _inference_runner_cls(cfg.task)
   runner = runner_cls(env, asdict(agent_cfg), device=cfg.device)
   runner.load(
     str(cfg.checkpoint),

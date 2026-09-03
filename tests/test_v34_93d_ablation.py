@@ -19,6 +19,7 @@ from smp.rl.tasks.getup.escape_v34_env_cfg import (
 )
 
 sys.path.insert(0, str(Path(__file__).parents[1] / "scripts"))
+import evaluate_escape_checkpoint as escape_evaluator
 import launch_smp_v34_93d_ablation as launcher
 import project_smp_v34_checkpoint_to_93d as projection
 
@@ -49,6 +50,12 @@ class V34NinetyThreeDimAblationTest(unittest.TestCase):
     self.assertEqual(
       load_runner_cls("Smp-Getup-Escape-Plate-V34-93D-G1").__name__,
       "SmpCurriculumWarmStartRunner",
+    )
+    self.assertEqual(
+      escape_evaluator._inference_runner_cls(
+        "Smp-Getup-Escape-Plate-V34-93D-G1"
+      ).__name__,
+      "MjlabOnPolicyRunner",
     )
 
   def test_protocol_and_plan_freeze_the_single_factor(self) -> None:
