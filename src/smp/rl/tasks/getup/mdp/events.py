@@ -21,6 +21,10 @@ __all__ = [
   "apply_sustained_constraint",
   "failure_state_replay_reset",
   "ground_procedural_fall_on_terrain",
+  "validate_terrain_reset_contact",
+  "terrain_reset_contact_valid_metric",
+  "terrain_reset_refinement_steps_metric",
+  "terrain_reset_min_distance_metric",
   "lafan_milestone_reset",
   "init_matched_reset_bank",
   "matched_reset_bank_reset",
@@ -343,6 +347,49 @@ def _collision_vertical_geometry(
   aabb_center = pos + torch.einsum("ngij,ngj->ngi", mat, aabb[:, :, 0])
   aabb_half = torch.einsum("ngij,ngj->ngi", mat.abs(), aabb[:, :, 1])
   return pos, z_extent, aabb_center, aabb_half, geom_ids
+
+
+def _primitive_support_extent(
+  env: ManagerBasedRlEnv,
+  env_ids: torch.Tensor,
+  geom_ids: torch.Tensor,
+  directions_w: torch.Tensor,
+) -> torch.Tensor:
+  """Return exact primitive support radii along one world direction per env."""
+  mat = env.scene["robot"].data.data.geom_xmat[
+    env_ids[:, None], geom_ids[None, :]
+  ]
+  size = env.sim.model.geom_size[env_ids[:, None], geom_ids[None, :]]
+  geom_type = env.sim.model.geom_type[geom_ids]
+  local_direction = torch.einsum("ngij,ni->ngj", mat, directions_w)
+  abs_local = local_direction.abs()
+
+  # Box is the conservative fallback for unsupported primitive types.
+  extent = (abs_local * size).sum(dim=-1)
+  sphere = geom_type == int(mujoco.mjtGeom.mjGEOM_SPHERE)
+  capsule = geom_type == int(mujoco.mjtGeom.mjGEOM_CAPSULE)
+  cylinder = geom_type == int(mujoco.mjtGeom.mjGEOM_CYLINDER)
+  ellipsoid = geom_type == int(mujoco.mjtGeom.mjGEOM_ELLIPSOID)
+  extent = torch.where(sphere[None, :], size[:, :, 0], extent)
+  extent = torch.where(
+    capsule[None, :],
+    size[:, :, 0] + size[:, :, 1] * abs_local[:, :, 2],
+    extent,
+  )
+  radial = torch.sqrt(
+    local_direction[:, :, 0].square() + local_direction[:, :, 1].square()
+  )
+  extent = torch.where(
+    cylinder[None, :],
+    size[:, :, 0] * radial + size[:, :, 1] * abs_local[:, :, 2],
+    extent,
+  )
+  extent = torch.where(
+    ellipsoid[None, :],
+    torch.sqrt(((local_direction * size).square()).sum(dim=-1)),
+    extent,
+  )
+  return extent
 
 
 def _guided_plate_planar_clearance(
@@ -1654,10 +1701,10 @@ def _physical_reset_postcheck(
     return torch.zeros(0, dtype=torch.bool, device=env.device)
   robot = env.scene["robot"]
   origins = env.scene.env_origins[env_ids]
-  _, _, aabb_center, aabb_half, _ = _collision_vertical_geometry(
+  geom_pos, z_extent, _, _, _ = _collision_vertical_geometry(
     env, env_ids, collision_geom_pattern
   )
-  lowest = (aabb_center[..., 2] - aabb_half[..., 2]).amin(dim=-1) - origins[:, 2]
+  lowest = (geom_pos[..., 2] - z_extent).amin(dim=-1) - origins[:, 2]
   root_state = torch.cat(
     (
       robot.data.root_link_pose_w[env_ids],
@@ -2064,15 +2111,18 @@ def ground_procedural_fall_on_terrain(
   stair_border_width: float = 1.90,
   stair_platform_width: float = 0.55,
   stair_step_width: float = 0.30,
+  align_to_surface_normal: bool = False,
 ) -> None:
   """Place procedural fall resets on their terrain spawn surface.
 
   Terrain generators expose a collision-safe spawn origin and support normal.
   ``mixed_fall_reset`` samples pose and articulation first; this event then
-  translates the complete robot so the conservative collision AABB support is
-  just above that plane.  The flat/stair/rough origins are the highest support
-  under the reset footprint, while a directed slope uses its exact plane normal.
-  No terrain height, type, or reset label is added to actor observations.
+  translates the complete robot so its exact primitive support is just above
+  that plane.  Optional surface alignment rotates a flat-world fall pose onto
+  the directed slope before the support translation is computed.  Stair
+  profiles use conservative footprint samples against the analytic tread
+  height.  No terrain height, type, or reset label is added to actor
+  observations.
   """
   if env_ids is None:
     env_ids = torch.arange(env.num_envs, device=env.device)
@@ -2090,13 +2140,11 @@ def ground_procedural_fall_on_terrain(
     return
 
   robot = env.scene["robot"]
-  _, _, aabb_center, aabb_half, _ = _collision_vertical_geometry(
-    env, grounded_ids, collision_geom_pattern
-  )
   terrain = env.scene["terrain"]
+  dtype = robot.data.root_link_pos_w.dtype
   if surface_normal_levels is not None:
     normal_levels = torch.tensor(
-      surface_normal_levels, dtype=aabb_center.dtype, device=env.device
+      surface_normal_levels, dtype=dtype, device=env.device
     )
     normal_levels /= torch.clamp(
       torch.linalg.vector_norm(normal_levels, dim=-1, keepdim=True), min=1e-6
@@ -2106,7 +2154,7 @@ def ground_procedural_fall_on_terrain(
     ]
   else:
     normal_options = torch.tensor(
-      surface_normals, dtype=aabb_center.dtype, device=env.device
+      surface_normals, dtype=dtype, device=env.device
     )
     normal_options /= torch.clamp(
       torch.linalg.vector_norm(normal_options, dim=-1, keepdim=True), min=1e-6
@@ -2116,11 +2164,40 @@ def ground_procedural_fall_on_terrain(
     else:
       terrain_types = env.scene["terrain"].terrain_types[grounded_ids]
       normals = normal_options[terrain_types]
+
+  if align_to_surface_normal:
+    # Shortest quaternion rotating world +Z onto the terrain normal.  All
+    # registered slopes have positive z normals, so the antiparallel singular
+    # case is outside the supported terrain contract.
+    root_state = torch.cat(
+      (
+        robot.data.root_link_pose_w[grounded_ids].clone(),
+        torch.zeros(grounded_ids.numel(), 6, device=env.device),
+      ),
+      dim=-1,
+    )
+    quat_w = torch.sqrt(torch.clamp((1.0 + normals[:, 2]) * 0.5, min=1.0e-8))
+    surface_quat = torch.stack(
+      (
+        quat_w,
+        -normals[:, 1] / (2.0 * quat_w),
+        normals[:, 0] / (2.0 * quat_w),
+        torch.zeros_like(quat_w),
+      ),
+      dim=-1,
+    )
+    root_state[:, 3:7] = quat_mul(surface_quat, root_state[:, 3:7])
+    robot.write_root_state_to_sim(root_state, env_ids=grounded_ids)
+    env.sim.forward()
+
+  geom_pos, _, aabb_center, aabb_half, geom_ids = _collision_vertical_geometry(
+    env, grounded_ids, collision_geom_pattern
+  )
   origins = env.scene.env_origins[grounded_ids]
-  signed_center = ((aabb_center - origins[:, None, :]) * normals[:, None, :]).sum(
+  signed_center = ((geom_pos - origins[:, None, :]) * normals[:, None, :]).sum(
     dim=-1
   )
-  support_extent = (aabb_half * normals[:, None, :].abs()).sum(dim=-1)
+  support_extent = _primitive_support_extent(env, grounded_ids, geom_ids, normals)
   lowest_signed_distance = (signed_center - support_extent).amin(dim=-1)
   translation = (ground_clearance - lowest_signed_distance)[:, None] * normals
 
@@ -2183,7 +2260,157 @@ def ground_procedural_fall_on_terrain(
   root_state[:, :3] += translation
   robot.write_root_state_to_sim(root_state, env_ids=grounded_ids)
   env.sim.forward()
+  if not hasattr(env, "_terrain_reset_grounded"):
+    env._terrain_reset_grounded = torch.zeros(  # type: ignore[attr-defined]
+      env.num_envs, dtype=torch.bool, device=env.device
+    )
+    env._terrain_reset_normal = torch.zeros(  # type: ignore[attr-defined]
+      env.num_envs, 3, dtype=dtype, device=env.device
+    )
+  env._terrain_reset_grounded[env_ids] = False  # type: ignore[attr-defined]
+  env._terrain_reset_grounded[grounded_ids] = True  # type: ignore[attr-defined]
+  env._terrain_reset_normal[grounded_ids] = normals  # type: ignore[attr-defined]
   _prime_smp_history_from_current_state(env, grounded_ids)
+
+
+@torch.no_grad()
+def validate_terrain_reset_contact(
+  env: ManagerBasedRlEnv,
+  env_ids: torch.Tensor | None = None,
+  sensor_name: str = "terrain_reset_ground_contact",
+  max_refinements: int = 8,
+  refinement_step: float = 0.002,
+  max_penetration: float = 0.012,
+) -> None:
+  """Fail closed unless every grounded reset reaches real terrain contact.
+
+  The grounding pass deliberately starts just above the analytical support
+  surface.  This validator reads MuJoCo's actual robot--terrain contact sensor
+  after ``forward`` and lowers only unsupported worlds by a small bounded
+  amount along their support normal.  A reset that still has no contact, has
+  excessive penetration, or contains non-finite state never reaches policy
+  inference.
+  """
+  if env_ids is None:
+    env_ids = torch.arange(env.num_envs, device=env.device)
+  if env_ids.numel() == 0:
+    return
+  grounded = getattr(env, "_terrain_reset_grounded", None)
+  normals = getattr(env, "_terrain_reset_normal", None)
+  if grounded is None or normals is None or not bool(grounded[env_ids].all()):
+    raise RuntimeError("TERRAIN_RESET_ALERT: terrain grounding did not cover all ids")
+  if max_refinements < 0 or refinement_step <= 0.0:
+    raise ValueError("terrain contact refinement bounds must be positive")
+
+  robot = env.scene["robot"]
+  sensor = env.scene[sensor_name]
+  refinement_count = torch.zeros(
+    env_ids.numel(), dtype=torch.long, device=env.device
+  )
+  contact = torch.zeros(env_ids.numel(), dtype=torch.bool, device=env.device)
+  min_distance = torch.zeros(env_ids.numel(), device=env.device)
+  penetration_ok = torch.ones(env_ids.numel(), dtype=torch.bool, device=env.device)
+  finite_contact = torch.ones(env_ids.numel(), dtype=torch.bool, device=env.device)
+
+  for attempt in range(max_refinements + 1):
+    env.sim.forward()
+    sensor.reset(env_ids)
+    data = sensor.data
+    if data.found is None or data.dist is None:
+      raise RuntimeError("TERRAIN_RESET_ALERT: reset sensor lacks found/dist fields")
+    found = (data.found[env_ids] > 0).flatten(start_dim=1)
+    distance = data.dist[env_ids].flatten(start_dim=1)
+    finite_contact = torch.isfinite(distance).all(dim=-1)
+    contact = found.any(dim=-1)
+    masked_distance = torch.where(
+      found, distance, torch.full_like(distance, torch.inf)
+    )
+    min_distance = masked_distance.amin(dim=-1)
+    min_distance = torch.where(contact, min_distance, torch.zeros_like(min_distance))
+    penetration_ok = (~contact) | (min_distance >= -max_penetration)
+    valid = contact & finite_contact & penetration_ok
+    if bool(valid.all()):
+      break
+    unsupported = ~contact & finite_contact
+    if attempt == max_refinements or not bool(unsupported.any()):
+      break
+    unsupported_ids = env_ids[unsupported]
+    root_state = torch.cat(
+      (
+        robot.data.root_link_pose_w[unsupported_ids].clone(),
+        torch.zeros(unsupported_ids.numel(), 6, device=env.device),
+      ),
+      dim=-1,
+    )
+    root_state[:, :3] -= refinement_step * normals[unsupported_ids]
+    robot.write_root_state_to_sim(root_state, env_ids=unsupported_ids)
+    refinement_count[unsupported] += 1
+
+  root_state = torch.cat(
+    (
+      robot.data.root_link_pose_w[env_ids],
+      robot.data.root_link_lin_vel_w[env_ids],
+      robot.data.root_link_ang_vel_w[env_ids],
+    ),
+    dim=-1,
+  )
+  finite_state = (
+    torch.isfinite(root_state).all(dim=-1)
+    & torch.isfinite(robot.data.joint_pos[env_ids]).all(dim=-1)
+    & torch.isfinite(robot.data.joint_vel[env_ids]).all(dim=-1)
+  )
+  valid = contact & finite_contact & penetration_ok & finite_state
+  if not bool(valid.all()):
+    failed = env_ids[~valid].detach().cpu().tolist()
+    terrain = env.scene["terrain"]
+    failed_ids = env_ids[~valid]
+    terrain_types = terrain.terrain_types[failed_ids].detach().cpu().tolist()
+    terrain_levels = terrain.terrain_levels[failed_ids].detach().cpu().tolist()
+    no_contact = int((~contact).sum())
+    bad_penetration = int((contact & ~penetration_ok).sum())
+    bad_finite = int((~finite_contact | ~finite_state).sum())
+    raise RuntimeError(
+      "TERRAIN_RESET_ALERT: unsupported/non-finite/penetrating reset "
+      f"ids={failed[:32]} count={len(failed)} no_contact={no_contact} "
+      f"bad_penetration={bad_penetration} bad_finite={bad_finite} "
+      f"terrain_types={terrain_types[:32]} terrain_levels={terrain_levels[:32]}"
+    )
+
+  if not hasattr(env, "_terrain_reset_contact_valid"):
+    env._terrain_reset_contact_valid = torch.zeros(  # type: ignore[attr-defined]
+      env.num_envs, dtype=torch.bool, device=env.device
+    )
+    env._terrain_reset_refinement_steps = torch.zeros(  # type: ignore[attr-defined]
+      env.num_envs, dtype=torch.long, device=env.device
+    )
+    env._terrain_reset_min_distance = torch.zeros(  # type: ignore[attr-defined]
+      env.num_envs, device=env.device
+    )
+  env._terrain_reset_contact_valid[env_ids] = valid  # type: ignore[attr-defined]
+  env._terrain_reset_refinement_steps[env_ids] = refinement_count  # type: ignore[attr-defined]
+  env._terrain_reset_min_distance[env_ids] = min_distance  # type: ignore[attr-defined]
+  _prime_smp_history_from_current_state(env, env_ids)
+
+
+def terrain_reset_contact_valid_metric(env: ManagerBasedRlEnv) -> torch.Tensor:
+  value = getattr(env, "_terrain_reset_contact_valid", None)
+  if value is None:
+    return torch.zeros(env.num_envs, device=env.device)
+  return value.float()
+
+
+def terrain_reset_refinement_steps_metric(env: ManagerBasedRlEnv) -> torch.Tensor:
+  value = getattr(env, "_terrain_reset_refinement_steps", None)
+  if value is None:
+    return torch.zeros(env.num_envs, device=env.device)
+  return value.float()
+
+
+def terrain_reset_min_distance_metric(env: ManagerBasedRlEnv) -> torch.Tensor:
+  value = getattr(env, "_terrain_reset_min_distance", None)
+  if value is None:
+    return torch.zeros(env.num_envs, device=env.device)
+  return value
 
 
 def _head_height_and_upright(

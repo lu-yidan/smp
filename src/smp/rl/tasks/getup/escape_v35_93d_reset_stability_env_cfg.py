@@ -16,7 +16,15 @@ from smp.rl.tasks.getup import mdp
 from smp.rl.tasks.getup.escape_v34_93d_env_cfg import (
   g1_getup_escape_plate_v34_93d_smp_env_cfg,
 )
-from smp.rl.tasks.getup.terrain_v35_env_cfg import SLOPE_DEGREES
+from smp.rl.tasks.getup.terrain_v35_env_cfg import (
+  RESET_POSE_WEIGHTS,
+  SLOPE_DEGREES,
+  STAIR_APRON_WIDTH_M,
+  STAIR_HEIGHTS_M,
+  TERRAIN_PATCH_SIZE,
+  terrain_generator_v35,
+  terrain_surface_normals_v35,
+)
 from smp.rl.tasks.getup.terrain_v36_env_cfg import terrain_generator_v36
 
 _TERRAIN_NAMES = ("flat", "slope", "stairs", "rough")
@@ -174,7 +182,9 @@ def _add_post_stand_wrench(cfg, play: bool) -> None:
   )
 
 
-def _terrain_surface_normal_levels():
+def _terrain_surface_normal_levels(
+  terrain_names: tuple[str, ...] = _TERRAIN_NAMES,
+):
   vertical = tuple((0.0, 0.0, 1.0) for _ in range(4))
   slopes = tuple(
     (
@@ -184,18 +194,85 @@ def _terrain_surface_normal_levels():
     )
     for angle in SLOPE_DEGREES
   )
-  return (vertical, slopes, vertical, vertical)
+  by_name = {
+    "flat": vertical,
+    "slope": slopes,
+    "stairs": vertical,
+    "rough": vertical,
+  }
+  return tuple(by_name[name] for name in terrain_names)
 
 
-def _add_terrain(cfg, play: bool) -> None:
+def _training_terrain_generator(family: str, safe_spawn: bool = False):
   generator = terrain_generator_v36(seed=20261820)
+  if safe_spawn:
+    # A recovery reset must start on a real support patch.  The historical
+    # 0.55 m island is narrower than a prone G1 footprint and lets an AABB
+    # corner falsely select the upper tread while every real primitive hangs
+    # over a lower tread.  Terrain complexity begins outside this 2.4 m
+    # landing island; later edge-reset studies can be added as a separate arm.
+    generator.sub_terrains["stairs"].platform_width = 2.40
+    generator.sub_terrains["rough"].platform_width = 2.40
+  if family == "mixed":
+    return generator
+  if family != "stairs":
+    raise ValueError(f"unsupported V36 terrain family {family!r}")
+  stairs = generator.sub_terrains["stairs"]
+  stairs.proportion = 1.0
+  generator.sub_terrains = {"stairs": stairs}
+  generator.num_cols = 1
+  return generator
+
+
+def _play_terrain_spec(default_family: str):
+  kind = os.environ.get("SMP_PLAY_TERRAIN_TYPE", default_family)
+  level_text = os.environ.get("SMP_PLAY_TERRAIN_LEVEL", "1")
+  try:
+    level = int(level_text)
+  except ValueError as exc:
+    raise ValueError("terrain level must be an integer from 0 to 3") from exc
+  reset_pose = os.environ.get("SMP_PLAY_TERRAIN_RESET_POSE", "mixed")
+  if reset_pose not in RESET_POSE_WEIGHTS:
+    choices = ", ".join(RESET_POSE_WEIGHTS)
+    raise ValueError(f"unknown terrain reset pose {reset_pose!r}; choose {choices}")
+  return kind, level, reset_pose
+
+
+def _add_terrain(
+  cfg,
+  play: bool,
+  family: str = "mixed",
+  safe_spawn: bool = True,
+) -> None:
+  if play:
+    kind, level, reset_pose = _play_terrain_spec(family)
+    generator = terrain_generator_v35(kind, level, seed=20261820)
+    if safe_spawn and "stairs" in generator.sub_terrains:
+      generator.sub_terrains["stairs"].platform_width = 2.40
+    if safe_spawn and "rough" in generator.sub_terrains:
+      generator.sub_terrains["rough"].platform_width = 2.40
+    terrain_names = tuple(generator.sub_terrains)
+    surface_params = {
+      "surface_normals": terrain_surface_normals_v35(kind, level),
+    }
+    cfg.events["curriculum_validated_fall_reset"].params["mode_weights"] = (
+      RESET_POSE_WEIGHTS[reset_pose]
+    )
+    max_init_level = 0
+  else:
+    generator = _training_terrain_generator(family, safe_spawn=safe_spawn)
+    terrain_names = tuple(generator.sub_terrains)
+    surface_params = {
+      "surface_normal_levels": _terrain_surface_normal_levels(terrain_names),
+    }
+    max_init_level = 2
   # Sample the three preregistered train levels without coupling treatment to
   # an online curriculum success signal.  Level 3 remains held out for eval.
   cfg.scene.terrain = TerrainEntityCfg(
     terrain_type="generator",
     terrain_generator=generator,
     env_spacing=None,
-    max_init_terrain_level=2,
+    max_init_terrain_level=max_init_level,
     debug_vis=play,
   )
   cfg.scene.extent = 7.0
@@ -207,16 +284,37 @@ def _add_terrain(cfg, play: bool) -> None:
     mode="reset",
     params={
       # Type zero is an accepted GSI state; types one through four are the
-      # continuous procedural pose families.
-      "eligible_reset_types": (0, 1, 2, 3, 4),
-      "ground_clearance": 0.006,
-      "surface_normal_levels": _terrain_surface_normal_levels(),
+      # continuous procedural pose families.  Type five is failure replay;
+      # it must be re-grounded after replay writes the robot state.
+      "eligible_reset_types": (0, 1, 2, 3, 4, 5),
+      "ground_clearance": 0.002,
+      "align_to_surface_normal": True,
+      "use_stair_height_profile": True,
+      "stair_step_heights": STAIR_HEIGHTS_M,
+      "terrain_size": TERRAIN_PATCH_SIZE[0],
+      "stair_border_width": STAIR_APRON_WIDTH_M,
+      "stair_platform_width": generator.sub_terrains["stairs"].platform_width
+      if "stairs" in generator.sub_terrains
+      else 0.55,
+      "stair_step_width": 0.30,
+      **surface_params,
+    },
+  )
+  contact_validation = EventTermCfg(
+    func=mdp.validate_terrain_reset_contact,
+    mode="reset",
+    params={
+      "sensor_name": "terrain_reset_ground_contact",
+      "max_refinements": 16,
+      "refinement_step": 0.005,
+      "max_penetration": 0.012,
     },
   )
   reset_plate = cfg.events.pop("reset_escape_obstacle")
+  reset_recovery_stage = cfg.events.pop("reset_recovery_stage")
   reset_plate.params.update(
     {
-      "eligible_terrain_names": _TERRAIN_NAMES,
+      "eligible_terrain_names": terrain_names,
       "reground_robot": False,
     }
   )
@@ -224,12 +322,26 @@ def _add_terrain(cfg, play: bool) -> None:
   inserted = False
   for name, term in cfg.events.items():
     reordered[name] = term
-    if name == "curriculum_validated_fall_reset":
+    if name == "failure_state_replay_reset":
       reordered["ground_fall_on_training_terrain"] = grounding
+      reordered["validate_training_terrain_contact"] = contact_validation
       reordered["reset_escape_obstacle"] = reset_plate
+      reordered["reset_recovery_stage"] = reset_recovery_stage
       inserted = True
   if not inserted:
-    raise RuntimeError("V35 terrain treatment requires validated reset ordering")
+    # The new no-replay study intentionally removes the replay ring.  In that
+    # case the validated fall sampler is the last robot-state writer.
+    reordered = {}
+    for name, term in cfg.events.items():
+      reordered[name] = term
+      if name == "curriculum_validated_fall_reset":
+        reordered["ground_fall_on_training_terrain"] = grounding
+        reordered["validate_training_terrain_contact"] = contact_validation
+        reordered["reset_escape_obstacle"] = reset_plate
+        reordered["reset_recovery_stage"] = reset_recovery_stage
+        inserted = True
+    if not inserted:
+      raise RuntimeError("V35 terrain treatment requires validated reset ordering")
   cfg.events = reordered
 
   cfg.events["reset_recovery_stage"].params["relative_to_env_origin"] = True
@@ -272,9 +384,24 @@ def _add_terrain(cfg, play: bool) -> None:
     num_slots=1,
     history_length=2,
   )
+  terrain_reset_ground = ContactSensorCfg(
+    name="terrain_reset_ground_contact",
+    primary=ContactMatch(
+      mode="geom",
+      pattern=r".*_collision$",
+      entity="robot",
+    ),
+    secondary=ContactMatch(mode="body", pattern="terrain"),
+    fields=("found", "dist"),
+    reduce="mindist",
+    num_slots=1,
+    history_length=1,
+  )
   existing_sensors = {sensor.name for sensor in cfg.scene.sensors or ()}
   if terrain_foot_ground.name not in existing_sensors:
     cfg.scene.sensors = (cfg.scene.sensors or ()) + (terrain_foot_ground,)
+  if terrain_reset_ground.name not in existing_sensors:
+    cfg.scene.sensors = (cfg.scene.sensors or ()) + (terrain_reset_ground,)
   cfg.rewards.update(
     {
       "terrain_planar_displacement": RewardTermCfg(
@@ -303,6 +430,15 @@ def _add_terrain(cfg, play: bool) -> None:
       "terrain_stance_width": MetricsTermCfg(
         func=mdp.terrain_stance_width_excess_l2,
         params={"max_width": 0.65},
+      ),
+      "terrain_reset_contact_valid": MetricsTermCfg(
+        func=mdp.terrain_reset_contact_valid_metric,
+      ),
+      "terrain_reset_refinement_steps": MetricsTermCfg(
+        func=mdp.terrain_reset_refinement_steps_metric,
+      ),
+      "terrain_reset_min_distance": MetricsTermCfg(
+        func=mdp.terrain_reset_min_distance_metric,
       ),
     }
   )
@@ -337,9 +473,57 @@ def g1_getup_escape_plate_v35_93d_reset_stability_terrain_wrench_smp_env_cfg(
   return cfg
 
 
+def _g1_getup_v36_93d_safe_terrain_cfg(
+  play: bool,
+  family: str,
+  wrench: bool,
+):
+  """Terrain-only continuation with audited reset contact and no plate.
+
+  Unlike the failed V35 RT/RTD arms, this study cannot mix a guided plate with
+  terrain and cannot replay a flat/old-terrain failure state after grounding.
+  Mixed and stairs-only arms otherwise share the same reset, reward, actor,
+  optimizer warm-start, and optional post-stand wrench contracts.
+  """
+  cfg = g1_getup_escape_plate_v35_93d_reset_stability_smp_env_cfg(play=play)
+  plate = cfg.events["reset_escape_obstacle"]
+  plate.params.update(
+    {
+      "obstacle_probability": 0.0,
+      "inactive_xy": (20.0, 20.0),
+    }
+  )
+  for event_name in ("record_failure_states", "failure_state_replay_reset"):
+    cfg.events.pop(event_name, None)
+  _add_terrain(cfg, play, family=family, safe_spawn=True)
+  if wrench:
+    _add_post_stand_wrench(cfg, play)
+  return cfg
+
+
+def g1_getup_v36_93d_safe_mixed_smp_env_cfg(play: bool = False):
+  return _g1_getup_v36_93d_safe_terrain_cfg(play, "mixed", False)
+
+
+def g1_getup_v36_93d_safe_mixed_wrench_smp_env_cfg(play: bool = False):
+  return _g1_getup_v36_93d_safe_terrain_cfg(play, "mixed", True)
+
+
+def g1_getup_v36_93d_safe_stairs_smp_env_cfg(play: bool = False):
+  return _g1_getup_v36_93d_safe_terrain_cfg(play, "stairs", False)
+
+
+def g1_getup_v36_93d_safe_stairs_wrench_smp_env_cfg(play: bool = False):
+  return _g1_getup_v36_93d_safe_terrain_cfg(play, "stairs", True)
+
+
 __all__ = [
   "g1_getup_escape_plate_v35_93d_reset_stability_smp_env_cfg",
   "g1_getup_escape_plate_v35_93d_reset_stability_terrain_smp_env_cfg",
   "g1_getup_escape_plate_v35_93d_reset_stability_terrain_wrench_smp_env_cfg",
   "g1_getup_escape_plate_v35_93d_reset_stability_wrench_smp_env_cfg",
+  "g1_getup_v36_93d_safe_mixed_smp_env_cfg",
+  "g1_getup_v36_93d_safe_mixed_wrench_smp_env_cfg",
+  "g1_getup_v36_93d_safe_stairs_smp_env_cfg",
+  "g1_getup_v36_93d_safe_stairs_wrench_smp_env_cfg",
 ]

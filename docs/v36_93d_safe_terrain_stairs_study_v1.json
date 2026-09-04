@@ -1,0 +1,143 @@
+{
+  "schema_version": 1,
+  "study_id": "smp-v36-93d-safe-terrain-stairs-study-v1",
+  "status": "PREREGISTERED_READY_FOR_TRAINING",
+  "study_role": "ENGINEERING_TERRAIN_CONTINUATION_NOT_PROMOTION_OR_RAL_EVIDENCE",
+  "question": "After fixing terrain reset grounding, does a stairs-only continuation preserve recovery better than the matched mixed-terrain continuation?",
+  "diagnostic_origin": {
+    "failed_arms": ["V35-RT", "V35-RTD"],
+    "observed_failure": "systematic invalid escape setup and near-zero recovery, without checkpoint NaN or OOM",
+    "root_cause": [
+      "failure-state replay overwrote the robot after terrain grounding",
+      "guided plate placement ran before failure replay",
+      "the 0.55 m stairs/rough landing island was smaller than the prone G1 footprint",
+      "V35 playback ignored the requested terrain selector"
+    ]
+  },
+  "source_policies": [
+    {
+      "source_seed": 20261801,
+      "training_seed": 20261901,
+      "wandb_run_id": "b7n8ih2u",
+      "checkpoint_path": "logs/rsl_rl/smp_getup_escape_plate_v35_93d_reset_stability_wrench_g1/2026-09-03_12-05-34_v35_rd_6k_seed20261801_online/model_5999.pt",
+      "checkpoint_sha256": "9f31070bd5f22cfa5f6bf0c9ab13755f8dc4d20b4c88ba2a4bb4c8a6fa92c044",
+      "embedded_iteration": 5999,
+      "actor_input_dim": 93,
+      "critic_input_dim": 960
+    },
+    {
+      "source_seed": 20261802,
+      "training_seed": 20261902,
+      "wandb_run_id": "ncifjd87",
+      "checkpoint_path": "logs/rsl_rl/smp_getup_escape_plate_v35_93d_reset_stability_wrench_g1/2026-09-03_12-05-34_v35_rd_6k_seed20261802_online/model_5999.pt",
+      "checkpoint_sha256": "73d7f40b0aea83d69a802358f2e654ed30519140a4f7471348915601889f3257",
+      "embedded_iteration": 5999,
+      "actor_input_dim": 93,
+      "critic_input_dim": 960
+    }
+  ],
+  "arms": [
+    {
+      "arm": "M",
+      "task": "Smp-Getup-V36-93D-Safe-Mixed-G1",
+      "terrain_family": "mixed",
+      "continued_post_stand_wrench": false
+    },
+    {
+      "arm": "MD",
+      "task": "Smp-Getup-V36-93D-Safe-Mixed-Wrench-G1",
+      "terrain_family": "mixed",
+      "continued_post_stand_wrench": true
+    },
+    {
+      "arm": "S",
+      "task": "Smp-Getup-V36-93D-Safe-Stairs-G1",
+      "terrain_family": "stairs_only",
+      "continued_post_stand_wrench": false
+    },
+    {
+      "arm": "SD",
+      "task": "Smp-Getup-V36-93D-Safe-Stairs-Wrench-G1",
+      "terrain_family": "stairs_only",
+      "continued_post_stand_wrench": true
+    }
+  ],
+  "shared_environment_contract": {
+    "guided_plate_probability": 0.0,
+    "failure_state_replay": false,
+    "actor_observation": "93D one-frame proprioception",
+    "actor_forbidden_inputs": [
+      "true_base_linear_velocity",
+      "terrain_identity",
+      "terrain_height",
+      "contact_labels",
+      "reset_labels"
+    ],
+    "training_levels": [0, 1, 2],
+    "held_out_level": 3,
+    "stairs_and_rough_landing_island_m": 2.4,
+    "surface_normal_alignment": true,
+    "actual_mujoco_contact_required_before_policy_step": true,
+    "maximum_contact_penetration_m": 0.012,
+    "contact_refinement_step_m": 0.005,
+    "maximum_contact_refinements": 16,
+    "standing_hold_steps": 100
+  },
+  "training_protocol": {
+    "training_seeds": [20261901, 20261902],
+    "agent_and_environment_seed_identical": true,
+    "paired_source_by_seed_suffix": true,
+    "gpu_assignment": {
+      "M/20261901": 0,
+      "M/20261902": 1,
+      "MD/20261901": 2,
+      "MD/20261902": 3,
+      "S/20261901": 4,
+      "S/20261902": 5,
+      "SD/20261901": 6,
+      "SD/20261902": 7
+    },
+    "warm_start": "paired_v35_rd_actor_critic_and_normalizers_only",
+    "reset_optimizer_iteration_and_environment_steps": true,
+    "num_envs": 4096,
+    "rollout_steps_per_update": 24,
+    "max_iterations": 6000,
+    "save_interval": 500,
+    "evaluation_gates": [0, 500, 1000, 2000, 3500, 5000, 5999],
+    "learning_rate": 0.00001,
+    "wandb_mode": "online",
+    "no_automatic_restart": true
+  },
+  "paired_comparisons": [
+    "S-minus-M at the same training seed and wrench continuation status",
+    "SD-minus-MD at the same training seed",
+    "MD-minus-M and SD-minus-S are continued-wrench diagnostics only because all arms already warm-start from RD"
+  ],
+  "evaluation_protocol": {
+    "must_not_rank_by_training_reward": true,
+    "pose_strata": ["prone", "supine", "left_side", "right_side"],
+    "report_by_policy_seed": true,
+    "required_metrics": [
+      "strict recovery success",
+      "first stable-stand time",
+      "longest stable-stand hold",
+      "terrain reset contact validity",
+      "terrain reset refinement count",
+      "foot slip",
+      "planar drift",
+      "stance width",
+      "action first and second differences",
+      "peak joint speed",
+      "peak joint torque",
+      "peak joint power",
+      "post-stand knockdown"
+    ]
+  },
+  "claim_boundary": {
+    "not_ral_evidence": true,
+    "not_independent_from_scratch_reproducibility": true,
+    "no_hardware_authorization": true,
+    "smoke_protocol_plan_and_checkpoints_are_not_performance_evidence": true,
+    "complete_negative_results_must_be_retained": true
+  }
+}

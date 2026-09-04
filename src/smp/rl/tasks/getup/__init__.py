@@ -30,6 +30,10 @@ from smp.rl.tasks.getup.escape_v35_93d_reset_stability_env_cfg import (
   g1_getup_escape_plate_v35_93d_reset_stability_terrain_smp_env_cfg,
   g1_getup_escape_plate_v35_93d_reset_stability_terrain_wrench_smp_env_cfg,
   g1_getup_escape_plate_v35_93d_reset_stability_wrench_smp_env_cfg,
+  g1_getup_v36_93d_safe_mixed_smp_env_cfg,
+  g1_getup_v36_93d_safe_mixed_wrench_smp_env_cfg,
+  g1_getup_v36_93d_safe_stairs_smp_env_cfg,
+  g1_getup_v36_93d_safe_stairs_wrench_smp_env_cfg,
 )
 from smp.rl.tasks.getup.getup_env_cfg import g1_getup_smp_env_cfg
 from smp.rl.tasks.getup.plate_terrain_v38_env_cfg import (
@@ -596,6 +600,34 @@ register_mjlab_task(
   ),
   rl_cfg=_escape_plate_v35_93d_terrain_wrench_rl,
   runner_cls=SmpCurriculumWarmStartRunner,
+)
+
+
+def _register_v36_93d_safe_terrain_task(task_suffix, experiment_suffix, builder):
+  rl_cfg = unitree_g1_smp_ppo_runner_cfg()
+  rl_cfg.experiment_name = f"smp_getup_v36_93d_safe_{experiment_suffix}_g1"
+  rl_cfg.run_name = f"smp_getup_v36_93d_safe_{experiment_suffix}_g1"
+  rl_cfg.save_interval = 500
+  register_mjlab_task(
+    task_id=f"Smp-Getup-V36-93D-Safe-{task_suffix}-G1",
+    env_cfg=builder(play=False),
+    play_env_cfg=builder(play=True),
+    rl_cfg=rl_cfg,
+    runner_cls=SmpCurriculumWarmStartRunner,
+  )
+
+
+_register_v36_93d_safe_terrain_task(
+  "Mixed", "mixed", g1_getup_v36_93d_safe_mixed_smp_env_cfg
+)
+_register_v36_93d_safe_terrain_task(
+  "Mixed-Wrench", "mixed_wrench", g1_getup_v36_93d_safe_mixed_wrench_smp_env_cfg
+)
+_register_v36_93d_safe_terrain_task(
+  "Stairs", "stairs", g1_getup_v36_93d_safe_stairs_smp_env_cfg
+)
+_register_v36_93d_safe_terrain_task(
+  "Stairs-Wrench", "stairs_wrench", g1_getup_v36_93d_safe_stairs_wrench_smp_env_cfg
 )
 
 _terrain_v35_getup_rl = unitree_g1_smp_ppo_runner_cfg()
