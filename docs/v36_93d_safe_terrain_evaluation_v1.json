@@ -1,0 +1,126 @@
+{
+  "schema_version": 1,
+  "evaluation_id": "smp-v36-93d-safe-terrain-final-diagnostic-v1",
+  "status": "PREREGISTERED_READY_FOR_EVALUATION",
+  "claim_boundary": "ENGINEERING_DIAGNOSTIC_NOT_PROMOTION_RAL_OR_HARDWARE_AUTHORIZATION",
+  "training_protocol": {
+    "path": "docs/v36_93d_safe_terrain_stairs_study_v1.json",
+    "sha256": "b829e243e6f04d0c6d28c2996e28ebc443c9b692f5064bacfcc280133c382ba2",
+    "minimum_training_commit": "0e145e8f57c3634dfddc043f2c4f2d3e991cccaa"
+  },
+  "policies": [
+    {
+      "arm": "M",
+      "seed": 20261901,
+      "task": "Smp-Getup-V36-93D-Safe-Mixed-G1",
+      "wandb_run_id": "icftcoum",
+      "checkpoint": "logs/rsl_rl/smp_getup_v36_93d_safe_mixed_g1/2026-09-04_12-00-47_v36_m_6k_seed20261901_online/model_5999.pt",
+      "checkpoint_sha256": "9c9e82d8b1849d97a66cb7b90223580d08500944bf86c59a127210e4b9f06c42"
+    },
+    {
+      "arm": "M",
+      "seed": 20261902,
+      "task": "Smp-Getup-V36-93D-Safe-Mixed-G1",
+      "wandb_run_id": "otlppw18",
+      "checkpoint": "logs/rsl_rl/smp_getup_v36_93d_safe_mixed_g1/2026-09-04_12-00-47_v36_m_6k_seed20261902_online/model_5999.pt",
+      "checkpoint_sha256": "257d8117ea35b8135225c52cd01a3ba6cef52036a9c09a1a164c9a86ecf6164c"
+    },
+    {
+      "arm": "MD",
+      "seed": 20261901,
+      "task": "Smp-Getup-V36-93D-Safe-Mixed-Wrench-G1",
+      "wandb_run_id": "0az55o9s",
+      "checkpoint": "logs/rsl_rl/smp_getup_v36_93d_safe_mixed_wrench_g1/2026-09-04_12-00-47_v36_md_6k_seed20261901_online/model_5999.pt",
+      "checkpoint_sha256": "ab7e3b8ec48df22655ad9486b9a1eeae7087377f8f33d96a87c0fa1a7252a512"
+    },
+    {
+      "arm": "MD",
+      "seed": 20261902,
+      "task": "Smp-Getup-V36-93D-Safe-Mixed-Wrench-G1",
+      "wandb_run_id": "s02prrgq",
+      "checkpoint": "logs/rsl_rl/smp_getup_v36_93d_safe_mixed_wrench_g1/2026-09-04_12-00-47_v36_md_6k_seed20261902_online/model_5999.pt",
+      "checkpoint_sha256": "c47849147404194bdd31404603d79fc9be3bce26a7ed54bf9383949649b18416"
+    },
+    {
+      "arm": "S",
+      "seed": 20261901,
+      "task": "Smp-Getup-V36-93D-Safe-Stairs-G1",
+      "wandb_run_id": "1qgbvt21",
+      "checkpoint": "logs/rsl_rl/smp_getup_v36_93d_safe_stairs_g1/2026-09-04_12-00-47_v36_s_6k_seed20261901_online/model_5999.pt",
+      "checkpoint_sha256": "b7af18f255e24af9c556db5f09f09d9d74b56080cbad1bec8f0cbf259b59f478"
+    },
+    {
+      "arm": "S",
+      "seed": 20261902,
+      "task": "Smp-Getup-V36-93D-Safe-Stairs-G1",
+      "wandb_run_id": "whmy97gr",
+      "checkpoint": "logs/rsl_rl/smp_getup_v36_93d_safe_stairs_g1/2026-09-04_12-00-47_v36_s_6k_seed20261902_online/model_5999.pt",
+      "checkpoint_sha256": "b63062103feb3c28bc13d66db5b8591a0c9fe56ddb3e8580daec7972d0fbefde"
+    },
+    {
+      "arm": "SD",
+      "seed": 20261901,
+      "task": "Smp-Getup-V36-93D-Safe-Stairs-Wrench-G1",
+      "wandb_run_id": "kp36fbil",
+      "checkpoint": "logs/rsl_rl/smp_getup_v36_93d_safe_stairs_wrench_g1/2026-09-04_12-00-47_v36_sd_6k_seed20261901_online/model_5999.pt",
+      "checkpoint_sha256": "dc592680db95e09980c4d08d1c0ab52d34430dcee7ce2e80907e205e28c38743"
+    },
+    {
+      "arm": "SD",
+      "seed": 20261902,
+      "task": "Smp-Getup-V36-93D-Safe-Stairs-Wrench-G1",
+      "wandb_run_id": "2yehj243",
+      "checkpoint": "logs/rsl_rl/smp_getup_v36_93d_safe_stairs_wrench_g1/2026-09-04_12-00-47_v36_sd_6k_seed20261902_online/model_5999.pt",
+      "checkpoint_sha256": "5a2c09641ec3389b699f344b50e846a248309ba4777994611838b0b149ba9311"
+    }
+  ],
+  "matrix": {
+    "terrain_types": ["flat", "slope", "stairs", "rough"],
+    "terrain_level": 3,
+    "flat_level_note": "flat is geometrically invariant across difficulty levels",
+    "reset_poses": ["prone", "supine", "left_side", "right_side"],
+    "cells_per_policy": 16,
+    "total_cells": 128,
+    "num_envs_per_cell": 256,
+    "steps_per_cell": 750,
+    "eval_seed": 20261910,
+    "terrain_generator_seed": 20261820,
+    "automatic_disturbances": false,
+    "disturbance_note": "clean matched matrix isolates recovery and terrain generalization; wrench playback remains a separate diagnostic"
+  },
+  "strict_success": {
+    "head_height_above_local_support_m": 1.1,
+    "upright_min": 0.85,
+    "linear_speed_max_m_s": 0.5,
+    "angular_speed_max_rad_s": 1.0,
+    "consecutive_hold_steps": 25
+  },
+  "failure_reason_codebook": [
+    "success",
+    "invalid_reset_contact",
+    "invalid_dynamics",
+    "terrain_exit",
+    "head_height_not_reached",
+    "upright_not_reached",
+    "linear_speed_not_settled",
+    "angular_speed_not_settled",
+    "strict_candidate_not_held"
+  ],
+  "required_outputs": [
+    "schema_version_2",
+    "one_mutually_exclusive_failure_reason_per_environment",
+    "per_environment_gate_and_safety_arrays",
+    "terrain_reset_contact_validity_and_refinement",
+    "macro_and_worst_pose_success_by_independent_policy_seed",
+    "recovery_time_secondary_fall_foot_slip_planar_drift_stance_width",
+    "action_first_and_second_difference",
+    "peak_joint_speed_torque_and_power"
+  ],
+  "interpretation": {
+    "all_eight_policies_are_retained": true,
+    "no_selective_reruns": true,
+    "no_training_reward_ranking": true,
+    "two_warm_started_seeds_are_descriptive_not_from_scratch_reproducibility": true,
+    "no_hardware_authorization": true
+  }
+}

@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
+import os
 from dataclasses import asdict, dataclass
 from pathlib import Path
 
@@ -17,6 +19,9 @@ from mjlab.utils.torch import configure_torch_backends
 @dataclass(frozen=True)
 class EvalCfg:
   checkpoint: Path
+  checkpoint_sha256: str = ""
+  protocol: Path | None = None
+  protocol_sha256: str = ""
   task: str = "Smp-Getup-Terrain-V35-G1"
   terrain_types: tuple[str, ...] = ("flat", "slope", "stairs", "rough")
   levels: tuple[int, ...] = (1,)
@@ -33,6 +38,14 @@ def _quantile(values: torch.Tensor, q: float) -> float:
   return float(torch.quantile(values, q)) if values.numel() else 0.0
 
 
+def _sha256(path: Path) -> str:
+  digest = hashlib.sha256()
+  with path.open("rb") as stream:
+    for chunk in iter(lambda: stream.read(1024 * 1024), b""):
+      digest.update(chunk)
+  return digest.hexdigest()
+
+
 def _run_case(
   cfg: EvalCfg,
   terrain_type: str,
@@ -40,8 +53,19 @@ def _run_case(
   reset_mode: str,
   edge_cohort: str | None = None,
 ) -> dict[str, object]:
-  # Task registration happens only after CLI parsing.  The selected benchmark
-  # case then replaces the prebuilt play terrain without changing observations.
+  checkpoint_sha256 = _sha256(cfg.checkpoint)
+  if cfg.checkpoint_sha256 and checkpoint_sha256 != cfg.checkpoint_sha256:
+    raise RuntimeError("checkpoint SHA-256 does not match the frozen evaluation")
+  protocol_sha256 = _sha256(cfg.protocol) if cfg.protocol is not None else None
+  if cfg.protocol_sha256 and protocol_sha256 != cfg.protocol_sha256:
+    raise RuntimeError("protocol SHA-256 does not match the frozen evaluation")
+  # Task registration happens only after CLI parsing.  Select the play terrain
+  # before constructing the task so V36 uses the same fixed-terrain and
+  # contact-validation path as interactive playback.
+  os.environ["SMP_PLAY_TERRAIN_TYPE"] = terrain_type
+  os.environ["SMP_PLAY_TERRAIN_LEVEL"] = str(level)
+  os.environ["SMP_PLAY_TERRAIN_RESET_POSE"] = reset_mode
+  os.environ.pop("SMP_PLAY_AUTO_DISTURBANCES", None)
   import smp.rl.tasks  # noqa: F401
   from smp.rl.tasks.getup import mdp
   from smp.rl.tasks.getup.terrain_v35_env_cfg import (
@@ -66,12 +90,16 @@ def _run_case(
   agent_cfg = load_rl_cfg(cfg.task)
   env_cfg.scene.num_envs = cfg.num_envs
   env_cfg.seed = cfg.seed
-  env_cfg.scene.terrain.terrain_generator = terrain_generator_v35(
-    terrain_type, level, cfg.seed
-  )
-  env_cfg.events["ground_procedural_fall_on_terrain"].params["surface_normals"] = (
-    terrain_surface_normals_v35(terrain_type, level)
-  )
+  # Older V35 tasks did not consume the play selectors during construction.
+  # Keep their explicit replacement path while leaving V36's safe landing
+  # island and audited reset ordering intact.
+  if "V36" not in cfg.task:
+    env_cfg.scene.terrain.terrain_generator = terrain_generator_v35(
+      terrain_type, level, cfg.seed
+    )
+    env_cfg.events["ground_procedural_fall_on_terrain"].params[
+      "surface_normals"
+    ] = terrain_surface_normals_v35(terrain_type, level)
   env_cfg.terminations = {}
   for event_name in (
     "stratified_post_stand_wrench",
@@ -79,12 +107,20 @@ def _run_case(
     "failure_state_replay_reset",
   ):
     env_cfg.events.pop(event_name, None)
-  env_cfg.events["mixed_fall_reset"].params.update(
-    {
-      "procedural_probability": 1.0,
-      "mode_weights": RESET_POSE_WEIGHTS[reset_mode],
-    }
-  )
+  if "curriculum_validated_fall_reset" in env_cfg.events:
+    reset_event = env_cfg.events["curriculum_validated_fall_reset"]
+    reset_event.params["balanced_probability"] = 1.0
+    reset_event.params["target_probability"] = 1.0
+    reset_event.params["mode_weights"] = RESET_POSE_WEIGHTS[reset_mode]
+  elif "mixed_fall_reset" in env_cfg.events:
+    env_cfg.events["mixed_fall_reset"].params.update(
+      {
+        "procedural_probability": 1.0,
+        "mode_weights": RESET_POSE_WEIGHTS[reset_mode],
+      }
+    )
+  else:
+    raise RuntimeError("terrain evaluation requires a supported fall reset event")
   if edge_cohort is not None:
     weights = tuple(float(name == edge_cohort) for name in EDGE_RESET_COHORTS)
     edge_event = env_cfg.events["sample_terrain_edge_reset"]
@@ -93,6 +129,10 @@ def _run_case(
   raw_env = ManagerBasedRlEnv(env_cfg, device=cfg.device)
   env = RslRlVecEnvWrapper(raw_env, clip_actions=agent_cfg.clip_actions)
   runner_cls = load_runner_cls(cfg.task) or MjlabOnPolicyRunner
+  # Curriculum runners enforce training-only warm-start contracts.  Evaluation
+  # is an actor-only strict load and must use the ordinary inference runner.
+  if runner_cls.__name__ == "SmpCurriculumWarmStartRunner":
+    runner_cls = MjlabOnPolicyRunner
   runner = runner_cls(env, asdict(agent_cfg), device=cfg.device)
   runner.load(
     str(cfg.checkpoint),
@@ -111,6 +151,11 @@ def _run_case(
     reset_anchor_xy - origins[:, :2], dim=-1
   )
   initial_support_delta = support_height - origins[:, 2]
+  reset_contact_valid = getattr(raw_env, "_terrain_reset_contact_valid", None)
+  reset_refinement_steps = getattr(raw_env, "_terrain_reset_refinement_steps", None)
+  reset_min_distance = getattr(raw_env, "_terrain_reset_min_distance", None)
+  if reset_contact_valid is None or reset_refinement_steps is None:
+    raise RuntimeError("terrain evaluation requires audited reset-contact telemetry")
   root_xy_start = robot.data.root_link_pos_w[:, :2].clone()
   foot_ids = robot.find_sites(["left_foot", "right_foot"], preserve_order=True)[0]
   head_idx = robot.find_sites(["head"], preserve_order=True)[0][0]
@@ -119,16 +164,31 @@ def _run_case(
   max_joint_speed = torch.zeros_like(max_planar_displacement)
   max_torque = torch.zeros_like(max_planar_displacement)
   max_power = torch.zeros_like(max_planar_displacement)
+  max_stance_width = torch.zeros_like(max_planar_displacement)
   foot_slip_sum = torch.zeros_like(max_planar_displacement)
   foot_contact_steps = torch.zeros_like(max_planar_displacement)
   first_success = torch.full(
     (cfg.num_envs,), -1, dtype=torch.long, device=raw_env.device
   )
   stand_hold = torch.zeros_like(first_success)
+  longest_stand_hold = torch.zeros_like(first_success)
+  first_head_height = torch.full_like(first_success, -1)
+  first_upright = torch.full_like(first_success, -1)
+  first_linear_settled = torch.full_like(first_success, -1)
+  first_angular_settled = torch.full_like(first_success, -1)
+  first_strict_candidate = torch.full_like(first_success, -1)
   secondary_fall_hold = torch.zeros_like(first_success)
   secondary_fall = torch.zeros(cfg.num_envs, dtype=torch.bool, device=raw_env.device)
   terrain_exit = torch.zeros_like(secondary_fall)
   invalid_dynamics = torch.zeros_like(secondary_fall)
+  action_delta_sum = torch.zeros_like(max_planar_displacement)
+  action_delta2_sum = torch.zeros_like(max_planar_displacement)
+  action_delta_steps = torch.zeros_like(max_planar_displacement)
+  action_delta2_steps = torch.zeros_like(max_planar_displacement)
+  action_delta_max = torch.zeros_like(max_planar_displacement)
+  action_delta2_max = torch.zeros_like(max_planar_displacement)
+  previous_action = None
+  previous_delta = None
   terrain_generator = raw_env.scene.terrain.cfg.terrain_generator
   terrain_exit_radius = 0.5 * min(terrain_generator.size) - 0.5
 
@@ -136,6 +196,21 @@ def _run_case(
     with torch.inference_mode():
       actions = policy(obs)
       obs, _, _, _ = env.step(actions)
+
+    current_action = actions.detach()
+    if previous_action is not None:
+      current_delta = current_action - previous_action
+      delta = torch.linalg.vector_norm(current_delta, dim=-1)
+      action_delta_sum += delta
+      action_delta_steps += 1.0
+      action_delta_max = torch.maximum(action_delta_max, delta)
+      if previous_delta is not None:
+        delta2 = torch.linalg.vector_norm(current_delta - previous_delta, dim=-1)
+        action_delta2_sum += delta2
+        action_delta2_steps += 1.0
+        action_delta2_max = torch.maximum(action_delta2_max, delta2)
+      previous_delta = current_delta
+    previous_action = current_action.clone()
 
     raw_root_pos = robot.data.root_link_pos_w
     raw_displacement = torch.linalg.vector_norm(
@@ -158,7 +233,33 @@ def _run_case(
       & (linear_speed < 0.50)
       & (angular_speed < 1.0)
     )
+    first_head_height = torch.where(
+      (first_head_height < 0) & ((head_z - support_height) >= 1.10),
+      torch.full_like(first_head_height, step + 1),
+      first_head_height,
+    )
+    first_upright = torch.where(
+      (first_upright < 0) & (upright >= 0.85),
+      torch.full_like(first_upright, step + 1),
+      first_upright,
+    )
+    first_linear_settled = torch.where(
+      (first_linear_settled < 0) & (linear_speed < 0.50),
+      torch.full_like(first_linear_settled, step + 1),
+      first_linear_settled,
+    )
+    first_angular_settled = torch.where(
+      (first_angular_settled < 0) & (angular_speed < 1.0),
+      torch.full_like(first_angular_settled, step + 1),
+      first_angular_settled,
+    )
+    first_strict_candidate = torch.where(
+      (first_strict_candidate < 0) & standing,
+      torch.full_like(first_strict_candidate, step + 1),
+      first_strict_candidate,
+    )
     stand_hold = torch.where(standing, stand_hold + 1, torch.zeros_like(stand_hold))
+    longest_stand_hold = torch.maximum(longest_stand_hold, stand_hold)
     newly_successful = active & (first_success < 0) & (stand_hold >= 25)
     first_success[newly_successful] = step + 1
 
@@ -204,6 +305,11 @@ def _run_case(
     power = torch.nan_to_num(mdp.max_joint_power_metric(raw_env), nan=0.0)
     max_torque = torch.maximum(max_torque, torch.where(active, torque, 0.0))
     max_power = torch.maximum(max_power, torch.where(active, power, 0.0))
+    foot_xy = robot.data.site_pos_w[:, foot_ids, :2]
+    stance_width = torch.linalg.vector_norm(foot_xy[:, 0] - foot_xy[:, 1], dim=-1)
+    max_stance_width = torch.maximum(
+      max_stance_width, torch.where(active, stance_width, 0.0)
+    )
 
     found = raw_env.scene["terrain_foot_ground_contact"].data.found
     if found is None:
@@ -236,8 +342,58 @@ def _run_case(
   recovery_steps = first_success[success].float()
   successful_secondary_fall = secondary_fall & success
   foot_slip = foot_slip_sum / torch.clamp(foot_contact_steps, min=1.0)
+  action_delta_mean = action_delta_sum / torch.clamp(action_delta_steps, min=1.0)
+  action_delta2_mean = action_delta2_sum / torch.clamp(action_delta2_steps, min=1.0)
+
+  failure_reasons = []
+  for index in range(cfg.num_envs):
+    if bool(success[index]):
+      reason = "success"
+    elif not bool(reset_contact_valid[index]):
+      reason = "invalid_reset_contact"
+    elif bool(invalid_dynamics[index]):
+      reason = "invalid_dynamics"
+    elif bool(terrain_exit[index]):
+      reason = "terrain_exit"
+    elif int(first_head_height[index]) < 0:
+      reason = "head_height_not_reached"
+    elif int(first_upright[index]) < 0:
+      reason = "upright_not_reached"
+    elif int(first_linear_settled[index]) < 0:
+      reason = "linear_speed_not_settled"
+    elif int(first_angular_settled[index]) < 0:
+      reason = "angular_speed_not_settled"
+    else:
+      reason = "strict_candidate_not_held"
+    failure_reasons.append(reason)
+  reason_counts = {
+    reason: failure_reasons.count(reason)
+    for reason in (
+      "success",
+      "invalid_reset_contact",
+      "invalid_dynamics",
+      "terrain_exit",
+      "head_height_not_reached",
+      "upright_not_reached",
+      "linear_speed_not_settled",
+      "angular_speed_not_settled",
+      "strict_candidate_not_held",
+    )
+  }
+  if sum(reason_counts.values()) != cfg.num_envs or reason_counts["success"] != int(
+    success.sum()
+  ):
+    raise RuntimeError("strict failure-reason accounting is inconsistent")
+
+  def _list(value: torch.Tensor) -> list[object]:
+    return value.detach().cpu().tolist()
+
   result: dict[str, object] = {
-    "checkpoint": cfg.checkpoint.name,
+    "schema_version": 2,
+    "checkpoint": str(cfg.checkpoint),
+    "checkpoint_sha256": checkpoint_sha256,
+    "protocol": str(cfg.protocol) if cfg.protocol is not None else None,
+    "protocol_sha256": protocol_sha256,
     "task": cfg.task,
     "terrain_type": terrain_type,
     "terrain_level": level,
@@ -248,6 +404,13 @@ def _run_case(
     "steps": cfg.steps,
     "success": int(success.sum()),
     "success_rate": float(success.float().mean()),
+    "strict_success_hold_steps": 25,
+    "strict_success_thresholds": {
+      "head_height_above_support_m": 1.10,
+      "upright": 0.85,
+      "linear_speed_m_s": 0.50,
+      "angular_speed_rad_s": 1.0,
+    },
     "recovery_time_median_s": (
       float(recovery_steps.median() * raw_env.step_dt)
       if recovery_steps.numel()
@@ -266,6 +429,12 @@ def _run_case(
     "initial_reset_offset_min_m": float(initial_reset_offset.min()),
     "initial_reset_offset_max_m": float(initial_reset_offset.max()),
     "initial_support_delta_median_m": float(initial_support_delta.median()),
+    "terrain_reset_contact_valid_rate": float(reset_contact_valid.float().mean()),
+    "terrain_reset_refinement_steps_mean": float(reset_refinement_steps.float().mean()),
+    "terrain_reset_refinement_steps_max": int(reset_refinement_steps.max()),
+    "terrain_reset_min_distance_min_m": (
+      float(reset_min_distance.min()) if reset_min_distance is not None else None
+    ),
     "terrain_exit_radius_m": terrain_exit_radius,
     "invalid_dynamics_rate": float(invalid_dynamics.float().mean()),
     "planar_displacement_median_m": float(max_planar_displacement.median()),
@@ -278,6 +447,43 @@ def _run_case(
     "max_joint_speed_p95_rad_s": _quantile(max_joint_speed, 0.95),
     "max_torque_mean_nm": float(max_torque.mean()),
     "max_power_mean_w": float(max_power.mean()),
+    "max_power_p95_w": _quantile(max_power, 0.95),
+    "max_torque_p95_nm": _quantile(max_torque, 0.95),
+    "max_stance_width_mean_m": float(max_stance_width.mean()),
+    "max_stance_width_p95_m": _quantile(max_stance_width, 0.95),
+    "action_first_difference_mean_l2": float(action_delta_mean.mean()),
+    "action_first_difference_p95_l2": _quantile(action_delta_mean, 0.95),
+    "action_second_difference_mean_l2": float(action_delta2_mean.mean()),
+    "action_second_difference_p95_l2": _quantile(action_delta2_mean, 0.95),
+    "strict_failure_diagnosis": {
+      "schema_version": 1,
+      "reason_codebook": list(reason_counts),
+      "reason_counts": reason_counts,
+    },
+    "per_env": {
+      "strict_success": _list(success),
+      "strict_success_step": _list(first_success),
+      "failure_reason": failure_reasons,
+      "first_head_height_step": _list(first_head_height),
+      "first_upright_step": _list(first_upright),
+      "first_linear_speed_settled_step": _list(first_linear_settled),
+      "first_angular_speed_settled_step": _list(first_angular_settled),
+      "first_strict_candidate_step": _list(first_strict_candidate),
+      "longest_stable_stand_hold_steps": _list(longest_stand_hold),
+      "secondary_fall": _list(secondary_fall),
+      "terrain_exit": _list(terrain_exit),
+      "invalid_dynamics": _list(invalid_dynamics),
+      "terrain_reset_contact_valid": _list(reset_contact_valid),
+      "terrain_reset_refinement_steps": _list(reset_refinement_steps),
+      "foot_slip_mean_m_s": _list(foot_slip),
+      "max_planar_displacement_m": _list(max_planar_displacement),
+      "max_stance_width_m": _list(max_stance_width),
+      "action_first_difference_mean_l2": _list(action_delta_mean),
+      "action_second_difference_mean_l2": _list(action_delta2_mean),
+      "max_joint_speed_rad_s": _list(max_joint_speed),
+      "max_torque_nm": _list(max_torque),
+      "max_power_w": _list(max_power),
+    },
   }
   raw_env.close()
   del policy, runner, env, raw_env
