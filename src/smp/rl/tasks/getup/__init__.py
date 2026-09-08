@@ -138,6 +138,10 @@ from smp.rl.tasks.getup.v6_env_cfg import (
 )
 from smp.rl.tasks.getup.v7_env_cfg import g1_getup_v7_route_smp_env_cfg
 from smp.rl.tasks.getup.v8_env_cfg import g1_getup_v8_natural_smp_env_cfg
+from smp.rl.tasks.getup.v37_support_transition_env_cfg import (
+  g1_getup_v37_93d_actuator_env_cfg,
+  g1_getup_v37_93d_support_env_cfg,
+)
 from smp.rl.warm_start_runner import SmpCurriculumWarmStartRunner
 
 _getup_rl = unitree_g1_smp_ppo_runner_cfg()
@@ -628,6 +632,28 @@ _register_v36_93d_safe_terrain_task(
 )
 _register_v36_93d_safe_terrain_task(
   "Stairs-Wrench", "stairs_wrench", g1_getup_v36_93d_safe_stairs_wrench_smp_env_cfg
+)
+
+
+def _register_v37_93d_support_task(task_suffix, experiment_suffix, builder):
+  rl_cfg = unitree_g1_smp_ppo_runner_cfg()
+  rl_cfg.experiment_name = f"smp_getup_v37_93d_{experiment_suffix}_g1"
+  rl_cfg.run_name = f"smp_getup_v37_93d_{experiment_suffix}_g1"
+  rl_cfg.save_interval = 500
+  register_mjlab_task(
+    task_id=f"Smp-Getup-V37-93D-{task_suffix}-G1",
+    env_cfg=builder(play=False),
+    play_env_cfg=builder(play=True),
+    rl_cfg=rl_cfg,
+    runner_cls=SmpCurriculumWarmStartRunner,
+  )
+
+
+_register_v37_93d_support_task(
+  "Actuator", "actuator", g1_getup_v37_93d_actuator_env_cfg
+)
+_register_v37_93d_support_task(
+  "Support", "support", g1_getup_v37_93d_support_env_cfg
 )
 
 _terrain_v35_getup_rl = unitree_g1_smp_ppo_runner_cfg()

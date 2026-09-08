@@ -1,0 +1,153 @@
+{
+  "schema_version": 1,
+  "study_id": "smp-v37-93d-support-transition-study-v1",
+  "status": "PREREGISTERED_READY_FOR_TRAINING",
+  "study_role": "ENGINEERING_SIM2REAL_TRANSITION_STUDY_NOT_RAL_OR_HARDWARE_EVIDENCE",
+  "question": "Under an identical deployable actuator envelope, does bilateral-support shaping plus a grounded seated-trap reset cohort reduce the one-leg seated/crouched failure observed on hardware?",
+  "diagnostic_origin": {
+    "source_observation": "V35 and V36 can enter a low-pelvis wide/asymmetric seated pose on hardware and demand a rapid one-leg transition that succeeds in simulation but is actuator-infeasible on the robot.",
+    "photo_is_not_state_replay": true,
+    "missing_hardware_fields": [
+      "joint position",
+      "joint velocity",
+      "base pose and velocity",
+      "motor torque/current",
+      "foot and hand contact force"
+    ],
+    "interpretation_boundary": "The V37-B trap family is a photo-informed synthetic pose distribution, not an exact hardware-state replay."
+  },
+  "source_policy": {
+    "task": "Smp-Getup-V36-93D-Safe-Stairs-Wrench-G1",
+    "training_seed": 20261902,
+    "wandb_run_id": "2yehj243",
+    "checkpoint_path": "logs/rsl_rl/smp_getup_v36_93d_safe_stairs_wrench_g1/2026-09-04_12-00-47_v36_sd_6k_seed20261902_online/model_5999.pt",
+    "checkpoint_sha256": "5a2c09641ec3389b699f344b50e846a248309ba4777994611838b0b149ba9311",
+    "embedded_iteration": 5999,
+    "actor_input_dim": 93,
+    "critic_input_dim": 960
+  },
+  "arms": [
+    {
+      "arm": "A",
+      "task": "Smp-Getup-V37-93D-Actuator-G1",
+      "treatment": "actuator feasibility control"
+    },
+    {
+      "arm": "B",
+      "task": "Smp-Getup-V37-93D-Support-G1",
+      "treatment": "A plus bilateral support transition and seated-trap reset cohort"
+    }
+  ],
+  "shared_environment_contract": {
+    "terrain": "flat",
+    "guided_plate_probability": 0.0,
+    "automatic_wrench": false,
+    "failure_state_replay": false,
+    "actor_observation": "93D one-frame proprioception",
+    "actor_forbidden_inputs": [
+      "true_base_linear_velocity",
+      "contact_labels",
+      "reset_labels",
+      "terrain_identity",
+      "future_reference"
+    ],
+    "training_only_privileged_signals": [
+      "foot contact",
+      "foot contact force"
+    ],
+    "policy_rate_hz": 50,
+    "target_velocity_limit_rad_s": 2.5,
+    "target_acceleration_limit_rad_s2": 15.0,
+    "existing_effort_derating": 0.9,
+    "additional_effort_derating": 0.8,
+    "effective_nominal_effort_fraction": 0.72,
+    "standing_hold_steps": 100
+  },
+  "treatment_contract": {
+    "synthetic_seated_trap_probability": 0.15,
+    "bilateral_stage_holds": {
+      "seated_steps": 15,
+      "crouched_steps": 25,
+      "standing_steps": 100
+    },
+    "minimum_smaller_foot_load_share": {
+      "seated": 0.1,
+      "crouched": 0.18,
+      "standing": 0.15
+    },
+    "maximum_stance_width_m": {
+      "seated": 0.7,
+      "crouched": 0.58,
+      "standing": 0.55
+    }
+  },
+  "training_protocol": {
+    "training_seeds": [20262001, 20262002, 20262003],
+    "agent_and_environment_seed_identical": true,
+    "gpu_assignment": {
+      "A/20262001": 0,
+      "A/20262002": 1,
+      "A/20262003": 2,
+      "B/20262001": 3,
+      "B/20262002": 4,
+      "B/20262003": 5
+    },
+    "gpus_6_and_7_reserved": true,
+    "warm_start": "same_v36_sd_2yehj243_actor_critic_and_normalizers_only",
+    "reset_optimizer_iteration_and_environment_steps": true,
+    "num_envs": 4096,
+    "rollout_steps_per_update": 24,
+    "max_iterations": 6000,
+    "save_interval": 500,
+    "evaluation_gates": [0, 500, 1000, 2000, 3500, 5000, 5999],
+    "learning_rate": 0.00001,
+    "wandb_mode": "online",
+    "no_automatic_restart": true
+  },
+  "paired_comparisons": [
+    "B-minus-A at each matched training seed",
+    "each policy seed must be reported independently",
+    "no selection by training reward"
+  ],
+  "evaluation_protocol": {
+    "pose_strata": [
+      "prone",
+      "supine",
+      "left_side",
+      "right_side",
+      "synthetic_seated_trap"
+    ],
+    "strict_stable_stand": {
+      "head_height_m": 1.08,
+      "minimum_upright": 0.85,
+      "maximum_absolute_head_vertical_speed_m_s": 0.12,
+      "hold_steps": 100
+    },
+    "required_metrics": [
+      "strict recovery success",
+      "first stable-stand time",
+      "longest stable-stand hold",
+      "trap dwell time",
+      "bilateral foot support fraction",
+      "minimum foot load share",
+      "stance width",
+      "leg asymmetry",
+      "foot slip",
+      "root drift",
+      "action first and second differences",
+      "peak joint speed",
+      "peak joint torque",
+      "peak joint power",
+      "finite action rate",
+      "invalid dynamics rate"
+    ]
+  },
+  "claim_boundary": {
+    "not_ral_evidence": true,
+    "not_independent_from_scratch_reproducibility": true,
+    "no_hardware_authorization": true,
+    "hardware_limits_are_not_certified_by_this_protocol": true,
+    "smoke_protocol_plan_and_checkpoints_are_not_performance_evidence": true,
+    "complete_negative_results_must_be_retained": true
+  }
+}

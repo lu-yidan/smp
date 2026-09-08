@@ -1878,6 +1878,140 @@ def curriculum_validated_fall_reset(
   env._physical_reset_rejected_gsi[env_ids] = ~valid[env_ids]  # type: ignore[attr-defined]
 
 
+@torch.no_grad()
+def photo_informed_seated_trap_reset(
+  env: ManagerBasedRlEnv,
+  env_ids: torch.Tensor | None = None,
+  probability: float = 0.15,
+  joint_noise: float = 0.08,
+  joint_limit_margin: float = 0.03,
+  max_penetration: float = 0.012,
+  max_support_gap: float = 0.025,
+) -> None:
+  """Inject a grounded synthetic approximation of the observed seated trap.
+
+  This is deliberately *not* presented as a replay of a real-robot state: no
+  synchronized hardware state log exists for the photograph.  It only expands
+  training coverage around low-pelvis, wide/asymmetric seated configurations
+  that the deployed V35/V36 policies were observed to enter.  Every sampled
+  state is joint-limit clamped, grounded, and passed through the same physical
+  reset audit as the other procedural reset families before it reaches policy.
+  """
+  if env_ids is None:
+    env_ids = torch.arange(env.num_envs, device=env.device)
+  if env_ids.numel() == 0:
+    return
+  if not 0.0 <= probability <= 1.0:
+    raise ValueError("seated trap probability must lie in [0, 1]")
+  if joint_noise < 0.0 or joint_limit_margin < 0.0:
+    raise ValueError("seated trap joint noise and margin must be non-negative")
+
+  selected = torch.rand(env_ids.numel(), device=env.device) < probability
+  trap_ids = env_ids[selected]
+  if trap_ids.numel() == 0:
+    if not hasattr(env, "_v37_seated_trap_reset"):
+      env._v37_seated_trap_reset = torch.zeros(  # type: ignore[attr-defined]
+        env.num_envs, dtype=torch.bool, device=env.device
+      )
+    env._v37_seated_trap_reset[env_ids] = False  # type: ignore[attr-defined]
+    return
+
+  robot = env.scene["robot"]
+  n = trap_ids.numel()
+  default_root = robot.data.default_root_state[trap_ids].clone()
+  roll = torch.empty(n, device=env.device).uniform_(-0.18, 0.18)
+  pitch = torch.empty(n, device=env.device).uniform_(0.12, 0.38)
+  yaw = torch.empty(n, device=env.device).uniform_(-torch.pi, torch.pi)
+  quat = quat_mul(default_root[:, 3:7], quat_from_euler_xyz(roll, pitch, yaw))
+  origins = env.scene.env_origins[trap_ids]
+  xy = torch.empty(n, 2, device=env.device).uniform_(-0.08, 0.08)
+  pos = torch.cat(
+    (xy, torch.full((n, 1), 0.48, device=env.device)), dim=-1
+  ) + origins
+  robot.write_root_state_to_sim(
+    torch.cat((pos, quat, torch.zeros(n, 6, device=env.device)), dim=-1),
+    env_ids=trap_ids,
+  )
+
+  joint_pos = robot.data.default_joint_pos[trap_ids].clone()
+  target_by_name = {
+    "left_hip_pitch_joint": -0.95,
+    "right_hip_pitch_joint": -0.95,
+    "left_hip_roll_joint": 0.38,
+    "right_hip_roll_joint": -0.38,
+    "left_hip_yaw_joint": 0.24,
+    "right_hip_yaw_joint": -0.24,
+    "left_knee_joint": 1.45,
+    "right_knee_joint": 1.45,
+    "left_ankle_pitch_joint": -0.55,
+    "right_ankle_pitch_joint": -0.55,
+  }
+  for name, target in target_by_name.items():
+    joint_ids = robot.find_joints([name], preserve_order=True)[0]
+    if len(joint_ids) != 1:
+      raise RuntimeError(f"V37_RESET_ALERT: missing unique joint {name}")
+    joint_pos[:, joint_ids[0]] = target
+
+  # Half the cohort receives a mirrored flexion imbalance.  This covers the
+  # one-leg-folded failure without selecting a preferred physical side.
+  asymmetric = torch.rand(n, device=env.device) < 0.50
+  mirror = torch.rand(n, device=env.device) < 0.50
+  left_knee = robot.find_joints(["left_knee_joint"], preserve_order=True)[0][0]
+  right_knee = robot.find_joints(["right_knee_joint"], preserve_order=True)[0][0]
+  left_hip = robot.find_joints(["left_hip_pitch_joint"], preserve_order=True)[0][0]
+  right_hip = robot.find_joints(["right_hip_pitch_joint"], preserve_order=True)[0][0]
+  left_asymmetric = asymmetric & ~mirror
+  right_asymmetric = asymmetric & mirror
+  joint_pos[left_asymmetric, left_knee] = 0.55
+  joint_pos[left_asymmetric, left_hip] = -0.35
+  joint_pos[right_asymmetric, right_knee] = 0.55
+  joint_pos[right_asymmetric, right_hip] = -0.35
+  joint_pos += torch.empty_like(joint_pos).uniform_(-joint_noise, joint_noise)
+
+  joint_limits = getattr(robot.data, "soft_joint_pos_limits", None)
+  if joint_limits is None:
+    joint_limits = robot.data.joint_pos_limits
+  joint_limits = joint_limits[trap_ids]
+  lower = joint_limits[..., 0] + joint_limit_margin
+  upper = joint_limits[..., 1] - joint_limit_margin
+  if not bool(torch.all(lower <= upper)):
+    raise RuntimeError("V37_RESET_ALERT: joint margin collapsed a limit")
+  joint_pos = torch.maximum(torch.minimum(joint_pos, upper), lower)
+  robot.write_joint_state_to_sim(
+    joint_pos, torch.zeros_like(joint_pos), env_ids=trap_ids
+  )
+  ground_procedural_fall_on_terrain(env, trap_ids, ground_clearance=0.006)
+  env.sim.forward()
+  valid = _physical_reset_postcheck(
+    env,
+    trap_ids,
+    max_penetration=max_penetration,
+    max_support_gap=max_support_gap,
+  )
+  if not bool(valid.all()):
+    failed = trap_ids[~valid].detach().cpu().tolist()
+    raise RuntimeError(f"V37_RESET_ALERT: invalid seated trap ids={failed}")
+  _prime_smp_history_from_current_state(env, trap_ids)
+  reset_types = getattr(env, "_robust_reset_type", None)
+  if reset_types is None:
+    reset_types = torch.zeros(env.num_envs, dtype=torch.long, device=env.device)
+    env._robust_reset_type = reset_types  # type: ignore[attr-defined]
+  reset_types[trap_ids] = 6
+  if not hasattr(env, "_v37_seated_trap_reset"):
+    env._v37_seated_trap_reset = torch.zeros(  # type: ignore[attr-defined]
+      env.num_envs, dtype=torch.bool, device=env.device
+    )
+  env._v37_seated_trap_reset[env_ids] = False  # type: ignore[attr-defined]
+  env._v37_seated_trap_reset[trap_ids] = True  # type: ignore[attr-defined]
+
+
+def seated_trap_reset_metric(env: ManagerBasedRlEnv) -> torch.Tensor:
+  value = getattr(env, "_v37_seated_trap_reset", None)
+  if value is None:
+    return torch.zeros(env.num_envs, device=env.device)
+  return value.float()
+
+
 def physical_gsi_rejection_metric(env: ManagerBasedRlEnv) -> torch.Tensor:
   rejected = getattr(env, "_physical_reset_rejected_gsi", None)
   if rejected is None:
@@ -2548,6 +2682,144 @@ def update_recovery_stage(
   transition[advance_standing] = 3
   advanced = torch.cat([advance_seated, advance_crouched, advance_standing])
   hold[advanced] = 0
+
+
+def _v37_bilateral_foot_state(
+  env: ManagerBasedRlEnv,
+  sensor_name: str,
+) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+  sensor = env.scene[sensor_name]
+  found = sensor.data.found
+  force = sensor.data.force
+  if found is None or force is None:
+    raise RuntimeError(f"{sensor_name} must expose found and force")
+  flat_found = found.reshape(env.num_envs, -1) > 0
+  split = max(flat_found.shape[1] // 2, 1)
+  left_found = flat_found[:, :split].any(dim=-1)
+  right_found = flat_found[:, split:].any(dim=-1)
+  if flat_found.shape[1] == 1:
+    right_found = left_found
+  flat_force = force.reshape(env.num_envs, -1, 3)
+  force_split = max(flat_force.shape[1] // 2, 1)
+  left_force = torch.linalg.vector_norm(flat_force[:, :force_split], dim=-1).amax(
+    dim=-1
+  )
+  right_force = torch.linalg.vector_norm(flat_force[:, force_split:], dim=-1).amax(
+    dim=-1
+  )
+  if flat_force.shape[1] == 1:
+    right_force = left_force
+  total = left_force + right_force
+  minimum_share = torch.minimum(left_force, right_force) / torch.clamp(total, min=1.0)
+  return left_found, right_found, minimum_share
+
+
+@torch.no_grad()
+def update_recovery_stage_with_bilateral_support(
+  env: ManagerBasedRlEnv,
+  env_ids: torch.Tensor | None = None,
+  foot_sensor_name: str = "v37_foot_ground_contact",
+  seated_hold_steps: int = 15,
+  crouched_hold_steps: int = 25,
+  standing_hold_steps: int = 100,
+  seated_min_load_share: float = 0.10,
+  crouched_min_load_share: float = 0.18,
+  standing_min_load_share: float = 0.15,
+  seated_max_stance_width: float = 0.70,
+  crouched_max_stance_width: float = 0.58,
+  standing_max_stance_width: float = 0.55,
+  relative_to_env_origin: bool = False,
+) -> None:
+  """Advance low-to-high recovery only through bilateral foot support.
+
+  Contact and force are training-only privileged signals.  They affect stage
+  accounting and reward, but are never appended to the deployable actor input.
+  """
+  if env_ids is None:
+    env_ids = torch.arange(env.num_envs, device=env.device)
+  if env_ids.numel() == 0:
+    return
+  if not hasattr(env, "_v4_recovery_stage"):
+    reset_recovery_stage(env, env_ids, relative_to_env_origin=relative_to_env_origin)
+
+  stage = env._v4_recovery_stage  # type: ignore[attr-defined]
+  hold = env._v4_stage_hold  # type: ignore[attr-defined]
+  transition = env._v4_stage_transition  # type: ignore[attr-defined]
+  transition[env_ids] = 0
+  head_z, head_vz, upright, knee_flexion = _head_height_and_upright(
+    env, env_ids, relative_to_env_origin=relative_to_env_origin
+  )
+  local_stage = stage[env_ids]
+  left, right, load_share = _v37_bilateral_foot_state(env, foot_sensor_name)
+  bilateral = left[env_ids] & right[env_ids]
+  load_share = load_share[env_ids]
+  robot = env.scene["robot"]
+  foot_ids = robot.find_sites(["left_foot", "right_foot"], preserve_order=True)[0]
+  feet_xy = robot.data.site_pos_w[env_ids][:, foot_ids, :2]
+  stance_width = torch.linalg.vector_norm(feet_xy[:, 0] - feet_xy[:, 1], dim=-1)
+
+  fallen = (head_z < 0.65) & (upright < 0.45)
+  fallen_ids = env_ids[fallen & (local_stage > 0)]
+  stage[fallen_ids] = 0
+  hold[fallen_ids] = 0
+  local_stage = stage[env_ids]
+
+  seated = (
+    (local_stage == 0)
+    & (head_z >= 0.55)
+    & (upright >= 0.55)
+    & (knee_flexion >= 1.00)
+    & (torch.abs(head_vz) <= 0.16)
+    & bilateral
+    & (load_share >= seated_min_load_share)
+    & (stance_width <= seated_max_stance_width)
+  )
+  crouched = (
+    (local_stage == 1)
+    & (head_z >= 0.78)
+    & (upright >= 0.72)
+    & (knee_flexion >= 0.80)
+    & (torch.abs(head_vz) <= 0.18)
+    & bilateral
+    & (load_share >= crouched_min_load_share)
+    & (stance_width <= crouched_max_stance_width)
+  )
+  standing = (
+    (local_stage == 2)
+    & (head_z >= 1.08)
+    & (upright >= 0.85)
+    & (torch.abs(head_vz) <= 0.12)
+    & bilateral
+    & (load_share >= standing_min_load_share)
+    & (stance_width <= standing_max_stance_width)
+  )
+  satisfied = seated | crouched | standing
+  hold[env_ids] = torch.where(satisfied, hold[env_ids] + 1, 0)
+  advance_seated = env_ids[seated & (hold[env_ids] >= seated_hold_steps)]
+  advance_crouched = env_ids[crouched & (hold[env_ids] >= crouched_hold_steps)]
+  advance_standing = env_ids[standing & (hold[env_ids] >= standing_hold_steps)]
+  stage[advance_seated] = 1
+  stage[advance_crouched] = 2
+  stage[advance_standing] = 3
+  transition[advance_seated] = 1
+  transition[advance_crouched] = 2
+  transition[advance_standing] = 3
+  advanced = torch.cat((advance_seated, advance_crouched, advance_standing))
+  hold[advanced] = 0
+
+  if not hasattr(env, "_v37_bilateral_support"):
+    env._v37_bilateral_support = torch.zeros(  # type: ignore[attr-defined]
+      env.num_envs, dtype=torch.bool, device=env.device
+    )
+    env._v37_min_foot_load_share = torch.zeros(  # type: ignore[attr-defined]
+      env.num_envs, device=env.device
+    )
+    env._v37_stance_width = torch.zeros(  # type: ignore[attr-defined]
+      env.num_envs, device=env.device
+    )
+  env._v37_bilateral_support[env_ids] = bilateral  # type: ignore[attr-defined]
+  env._v37_min_foot_load_share[env_ids] = load_share  # type: ignore[attr-defined]
+  env._v37_stance_width[env_ids] = stance_width  # type: ignore[attr-defined]
 
 
 @torch.no_grad()

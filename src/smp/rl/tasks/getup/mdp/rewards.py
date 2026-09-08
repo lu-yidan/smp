@@ -972,6 +972,130 @@ def terrain_stance_width_excess_l2(
   return gate * torch.square(excess)
 
 
+def _v37_foot_contact_loads(
+  env: ManagerBasedRlEnv,
+  sensor_name: str,
+) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
+  sensor = env.scene[sensor_name]
+  found = sensor.data.found
+  force = sensor.data.force
+  if found is None or force is None:
+    raise RuntimeError(f"{sensor_name} must expose found and force")
+  flat_found = found.reshape(env.num_envs, -1) > 0
+  split = max(flat_found.shape[1] // 2, 1)
+  left_found = flat_found[:, :split].any(dim=-1)
+  right_found = flat_found[:, split:].any(dim=-1)
+  if flat_found.shape[1] == 1:
+    right_found = left_found
+  flat_force = force.reshape(env.num_envs, -1, 3)
+  force_split = max(flat_force.shape[1] // 2, 1)
+  left_force = torch.linalg.vector_norm(flat_force[:, :force_split], dim=-1).amax(
+    dim=-1
+  )
+  right_force = torch.linalg.vector_norm(flat_force[:, force_split:], dim=-1).amax(
+    dim=-1
+  )
+  if flat_force.shape[1] == 1:
+    right_force = left_force
+  return left_found, right_found, left_force, right_force
+
+
+def bilateral_foot_support_score(
+  env: ManagerBasedRlEnv,
+  sensor_name: str = "v37_foot_ground_contact",
+  full_score_load_share: float = 0.35,
+) -> torch.Tensor:
+  """Reward two-foot contact and a non-degenerate load split during recovery."""
+  left, right, left_force, right_force = _v37_foot_contact_loads(env, sensor_name)
+  total = left_force + right_force
+  minimum_share = torch.minimum(left_force, right_force) / torch.clamp(total, min=1.0)
+  balanced = torch.clamp(minimum_share / max(full_score_load_share, 1.0e-6), 0.0, 1.0)
+  stage = _recovery_stage(env)
+  active = (stage <= 2).float()
+  return active * (left & right).float() * (0.35 + 0.65 * balanced)
+
+
+def bilateral_load_imbalance_l2(
+  env: ManagerBasedRlEnv,
+  sensor_name: str = "v37_foot_ground_contact",
+  free_imbalance: float = 0.25,
+) -> torch.Tensor:
+  """Penalize strongly unilateral loading only while both feet support."""
+  left, right, left_force, right_force = _v37_foot_contact_loads(env, sensor_name)
+  total = left_force + right_force
+  normalized = torch.abs(left_force - right_force) / torch.clamp(total, min=1.0)
+  excess = torch.clamp(normalized - free_imbalance, min=0.0)
+  active = (_recovery_stage(env) <= 2).float()
+  return active * (left & right).float() * torch.square(excess)
+
+
+def transition_leg_asymmetry_l2(
+  env: ManagerBasedRlEnv,
+  max_head_height: float = 1.08,
+  free_knee_difference: float = 0.20,
+  free_hip_pitch_difference: float = 0.20,
+) -> torch.Tensor:
+  """Penalize the one-leg-folded shortcut during seated/crouched transition."""
+  robot = env.scene["robot"]
+  joint_ids = robot.find_joints(
+    [
+      "left_knee_joint",
+      "right_knee_joint",
+      "left_hip_pitch_joint",
+      "right_hip_pitch_joint",
+    ],
+    preserve_order=True,
+  )[0]
+  joint = robot.data.joint_pos[:, joint_ids]
+  knee = torch.clamp(
+    torch.abs(joint[:, 0] - joint[:, 1]) - free_knee_difference, min=0.0
+  )
+  hip = torch.clamp(
+    torch.abs(joint[:, 2] - joint[:, 3]) - free_hip_pitch_difference, min=0.0
+  )
+  head_z = _head_height(env, relative_to_env_origin=False)
+  active = ((_recovery_stage(env) <= 2) & (head_z <= max_head_height)).float()
+  return active * (torch.square(knee) + torch.square(hip))
+
+
+def transition_stance_width_excess_l2(
+  env: ManagerBasedRlEnv,
+  max_width: float = 0.55,
+  min_head_height: float = 0.50,
+  site_names: tuple[str, str] = ("left_foot", "right_foot"),
+) -> torch.Tensor:
+  """Constrain wide seated/crouched stance before the old quiet-stand gate."""
+  robot = env.scene["robot"]
+  site_ids = robot.find_sites(list(site_names), preserve_order=True)[0]
+  feet_xy = robot.data.site_pos_w[:, site_ids, :2]
+  width = torch.linalg.vector_norm(feet_xy[:, 0] - feet_xy[:, 1], dim=-1)
+  excess = torch.clamp(width - max_width, min=0.0)
+  head_z = _head_height(env, relative_to_env_origin=False)
+  active = ((_recovery_stage(env) <= 2) & (head_z >= min_head_height)).float()
+  return active * torch.square(excess)
+
+
+def v37_bilateral_support_metric(env: ManagerBasedRlEnv) -> torch.Tensor:
+  value = getattr(env, "_v37_bilateral_support", None)
+  if value is None:
+    return torch.zeros(env.num_envs, device=env.device)
+  return value.float()
+
+
+def v37_min_foot_load_share_metric(env: ManagerBasedRlEnv) -> torch.Tensor:
+  value = getattr(env, "_v37_min_foot_load_share", None)
+  if value is None:
+    return torch.zeros(env.num_envs, device=env.device)
+  return value
+
+
+def v37_stance_width_metric(env: ManagerBasedRlEnv) -> torch.Tensor:
+  value = getattr(env, "_v37_stance_width", None)
+  if value is None:
+    return torch.zeros(env.num_envs, device=env.device)
+  return value
+
+
 def _cached_score(env: ManagerBasedRlEnv, name: str) -> torch.Tensor:
   value = getattr(env, name, None)
   if value is None:
