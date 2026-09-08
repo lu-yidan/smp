@@ -2005,7 +2005,29 @@ def photo_informed_seated_trap_reset(
   )
   if not bool(valid.all()):
     failed = trap_ids[~valid].detach().cpu().tolist()
-    raise RuntimeError(f"V37_RESET_ALERT: invalid seated trap ids={failed}")
+    failed_ids = trap_ids[~valid]
+    geom_pos, z_extent, _, _, _ = _collision_vertical_geometry(
+      env, failed_ids, r".*_collision$"
+    )
+    lowest = (
+      (geom_pos[..., 2] - z_extent).amin(dim=-1)
+      - env.scene.env_origins[failed_ids, 2]
+    )
+    failed_root = robot.data.root_link_pose_w[failed_ids]
+    failed_joint = robot.data.joint_pos[failed_ids]
+    failed_limits = getattr(robot.data, "soft_joint_pos_limits", None)
+    if failed_limits is None:
+      failed_limits = robot.data.joint_pos_limits
+    failed_limits = failed_limits[failed_ids]
+    lower_margin = (failed_joint - failed_limits[..., 0]).amin(dim=-1)
+    upper_margin = (failed_limits[..., 1] - failed_joint).amin(dim=-1)
+    raise RuntimeError(
+      "V37_RESET_ALERT: invalid seated trap "
+      f"ids={failed} lowest={lowest.detach().cpu().tolist()} "
+      f"quat_norm={torch.linalg.vector_norm(failed_root[:, 3:7], dim=-1).detach().cpu().tolist()} "
+      f"lower_margin={lower_margin.detach().cpu().tolist()} "
+      f"upper_margin={upper_margin.detach().cpu().tolist()}"
+    )
   _prime_smp_history_from_current_state(env, trap_ids)
   if not hasattr(env, "_v37_seated_trap_reset"):
     env._v37_seated_trap_reset = torch.zeros(  # type: ignore[attr-defined]
