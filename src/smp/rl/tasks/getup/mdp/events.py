@@ -33,6 +33,7 @@ __all__ = [
   "curriculum_validated_fall_reset",
   "physical_gsi_rejection_metric",
   "physical_procedural_reset_metric",
+  "photo_informed_seated_trap_reset",
   "procedural_joint_noise_level_metric",
   "procedural_orientation_offset_metric",
   "sample_terrain_edge_reset",
@@ -47,9 +48,11 @@ __all__ = [
   "reset_recovery_stage",
   "reset_sustained_constraint",
   "reset_stand_counter",
+  "seated_trap_reset_metric",
   "stratified_post_stand_wrench",
   "update_escape_phase",
   "update_recovery_stage",
+  "update_recovery_stage_with_bilateral_support",
 ]
 
 _MATCHED_BANK_SHAPES = {

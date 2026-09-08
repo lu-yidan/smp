@@ -15,6 +15,8 @@ __all__ = [
   "active_wrench_metric",
   "action_rate_rms_metric",
   "base_stationary_when_upright",
+  "bilateral_foot_support_score",
+  "bilateral_load_imbalance_l2",
   "joint_power_excess_l2",
   "joint_speed_tail_barrier",
   "joint_speed_excess_l2",
@@ -108,6 +110,8 @@ __all__ = [
   "terrain_planar_displacement_l2",
   "terrain_reset_offset_metric",
   "terrain_stance_width_excess_l2",
+  "transition_leg_asymmetry_l2",
+  "transition_stance_width_excess_l2",
   "track_head_velocity_profile",
   "unordered_stable_stand_metric",
   "upright_posture",
@@ -115,6 +119,9 @@ __all__ = [
   "v6_active_wrench_metric",
   "v6_push_cohort_metric",
   "v6_push_count_metric",
+  "v37_bilateral_support_metric",
+  "v37_min_foot_load_share_metric",
+  "v37_stance_width_metric",
 ]
 
 
