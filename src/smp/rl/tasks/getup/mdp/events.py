@@ -1996,6 +1996,24 @@ def photo_informed_seated_trap_reset(
     eligible_reset_types=(6,),
     ground_clearance=0.006,
   )
+  # The generic grounder uses exact primitive support along an arbitrary
+  # normal, whereas the frozen physical reset audit uses conservative vertical
+  # AABB extents.  Reconcile the two definitions explicitly on flat ground so
+  # a rotated limb cannot begin several centimetres below the audit plane.
+  geom_pos, z_extent, _, _, _ = _collision_vertical_geometry(
+    env, trap_ids, r".*_collision$"
+  )
+  origins = env.scene.env_origins[trap_ids]
+  lowest = (geom_pos[..., 2] - z_extent).amin(dim=-1) - origins[:, 2]
+  root_state = torch.cat(
+    (
+      robot.data.root_link_pose_w[trap_ids].clone(),
+      torch.zeros(n, 6, device=env.device),
+    ),
+    dim=-1,
+  )
+  root_state[:, 2] += 0.006 - lowest
+  robot.write_root_state_to_sim(root_state, env_ids=trap_ids)
   env.sim.forward()
   valid = _physical_reset_postcheck(
     env,
