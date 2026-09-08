@@ -1983,7 +1983,19 @@ def photo_informed_seated_trap_reset(
   robot.write_joint_state_to_sim(
     joint_pos, torch.zeros_like(joint_pos), env_ids=trap_ids
   )
-  ground_procedural_fall_on_terrain(env, trap_ids, ground_clearance=0.006)
+  reset_types = getattr(env, "_robust_reset_type", None)
+  if reset_types is None:
+    reset_types = torch.zeros(env.num_envs, dtype=torch.long, device=env.device)
+    env._robust_reset_type = reset_types  # type: ignore[attr-defined]
+  # Mark the new family before grounding so the eligibility filter cannot
+  # accidentally retain its provisional airborne placement.
+  reset_types[trap_ids] = 6
+  ground_procedural_fall_on_terrain(
+    env,
+    trap_ids,
+    eligible_reset_types=(6,),
+    ground_clearance=0.006,
+  )
   env.sim.forward()
   valid = _physical_reset_postcheck(
     env,
@@ -1995,11 +2007,6 @@ def photo_informed_seated_trap_reset(
     failed = trap_ids[~valid].detach().cpu().tolist()
     raise RuntimeError(f"V37_RESET_ALERT: invalid seated trap ids={failed}")
   _prime_smp_history_from_current_state(env, trap_ids)
-  reset_types = getattr(env, "_robust_reset_type", None)
-  if reset_types is None:
-    reset_types = torch.zeros(env.num_envs, dtype=torch.long, device=env.device)
-    env._robust_reset_type = reset_types  # type: ignore[attr-defined]
-  reset_types[trap_ids] = 6
   if not hasattr(env, "_v37_seated_trap_reset"):
     env._v37_seated_trap_reset = torch.zeros(  # type: ignore[attr-defined]
       env.num_envs, dtype=torch.bool, device=env.device
