@@ -111,7 +111,7 @@ def _run_case(
   # Older V35 tasks did not consume the play selectors during construction.
   # Keep their explicit replacement path while leaving V36's safe landing
   # island and audited reset ordering intact.
-  if "V36" not in cfg.task:
+  if "V36" not in cfg.task and "V37" not in cfg.task:
     env_cfg.scene.terrain.terrain_generator = terrain_generator_v35(
       terrain_type, level, cfg.seed
     )
@@ -202,14 +202,9 @@ def _run_case(
   reset_contact_valid = getattr(raw_env, "_terrain_reset_contact_valid", None)
   reset_refinement_steps = getattr(raw_env, "_terrain_reset_refinement_steps", None)
   reset_min_distance = getattr(raw_env, "_terrain_reset_min_distance", None)
-  if reset_contact_valid is None or reset_refinement_steps is None:
-    raise RuntimeError("terrain evaluation requires audited reset-contact telemetry")
-  if is_v37_trap:
+  if "V37" in cfg.task:
     from smp.rl.tasks.getup.mdp.events import _physical_reset_postcheck
 
-    trap_selected = getattr(raw_env, "_v37_seated_trap_reset", None)
-    if trap_selected is None or not bool(trap_selected.all()):
-      raise RuntimeError("V37_EVAL_ALERT: trap reset did not cover every environment")
     all_env_ids = torch.arange(cfg.num_envs, device=raw_env.device)
     reset_contact_valid = _physical_reset_postcheck(
       raw_env,
@@ -221,7 +216,13 @@ def _run_case(
       cfg.num_envs, dtype=torch.long, device=raw_env.device
     )
     if not bool(reset_contact_valid.all()):
-      raise RuntimeError("V37_EVAL_ALERT: invalid grounded seated-trap reset")
+      raise RuntimeError("V37_EVAL_ALERT: invalid grounded reset")
+  elif reset_contact_valid is None or reset_refinement_steps is None:
+    raise RuntimeError("terrain evaluation requires audited reset-contact telemetry")
+  if is_v37_trap:
+    trap_selected = getattr(raw_env, "_v37_seated_trap_reset", None)
+    if trap_selected is None or not bool(trap_selected.all()):
+      raise RuntimeError("V37_EVAL_ALERT: trap reset did not cover every environment")
   root_xy_start = robot.data.root_link_pos_w[:, :2].clone()
   foot_ids = robot.find_sites(["left_foot", "right_foot"], preserve_order=True)[0]
   head_idx = robot.find_sites(["head"], preserve_order=True)[0][0]
@@ -278,7 +279,11 @@ def _run_case(
   previous_action = None
   previous_delta = None
   terrain_generator = raw_env.scene.terrain.cfg.terrain_generator
-  terrain_exit_radius = 0.5 * min(terrain_generator.size) - 0.5
+  terrain_exit_radius = (
+    4.0
+    if terrain_generator is None
+    else 0.5 * min(terrain_generator.size) - 0.5
+  )
 
   for step in range(cfg.steps):
     with torch.inference_mode():
@@ -451,7 +456,11 @@ def _run_case(
     trap_dwell_steps += still_trapped.long()
     left_trap |= (head_z - support_height >= 0.75) | ~active
 
-    found = raw_env.scene["terrain_foot_ground_contact"].data.found
+    found = (
+      v37_found
+      if "V37" in cfg.task
+      else raw_env.scene["terrain_foot_ground_contact"].data.found
+    )
     if found is None:
       raise RuntimeError("terrain foot contact sensor must expose found")
     in_contact = found.reshape(cfg.num_envs, -1).any(dim=-1)
