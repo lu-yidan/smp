@@ -2161,6 +2161,24 @@ def post_roll_supine_failure_reset(
   ground_procedural_fall_on_terrain(
     env, reset_ids, eligible_reset_types=(7,), ground_clearance=0.006
   )
+  # Reconcile exact primitive support with the conservative vertical AABB
+  # used by the frozen physical-reset audit.  Without this second alignment,
+  # a rotated knee or hand can pass exact support while its AABB appears a few
+  # millimetres below the flat plane.
+  geom_pos, z_extent, _, _, _ = _collision_vertical_geometry(
+    env, reset_ids, r".*_collision$"
+  )
+  origins = env.scene.env_origins[reset_ids]
+  lowest = (geom_pos[..., 2] - z_extent).amin(dim=-1) - origins[:, 2]
+  root_state = torch.cat(
+    (
+      robot.data.root_link_pose_w[reset_ids].clone(),
+      torch.zeros(n, 6, device=env.device),
+    ),
+    dim=-1,
+  )
+  root_state[:, 2] += 0.006 - lowest
+  robot.write_root_state_to_sim(root_state, env_ids=reset_ids)
   env.sim.forward()
   valid = _physical_reset_postcheck(
     env,
