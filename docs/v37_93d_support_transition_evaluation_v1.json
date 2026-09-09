@@ -1,0 +1,96 @@
+{
+  "schema_version": 1,
+  "evaluation_id": "smp-v37-93d-support-transition-evaluation-v1",
+  "status": "PREREGISTERED_READY_FOR_EVALUATION",
+  "registered_before_first_formal_evaluation": true,
+  "training_protocol": {
+    "path": "docs/v37_93d_support_transition_study_v1.json",
+    "sha256": "834331f230ec9a6232a59b2698d26baaf4ec7ca8d03bd4354270d12d69d55005",
+    "launch_plan_id": "c83e1464527d1c6fba65d3345f3a1f71d5522bd8e933ee1476f55a13b5eb4f17",
+    "training_commit": "7cb279c0a285840abd039c0c995de900f96b3c2e"
+  },
+  "arms": {
+    "A": "Smp-Getup-V37-93D-Actuator-G1",
+    "B": "Smp-Getup-V37-93D-Support-G1"
+  },
+  "policy_seeds": [20262001, 20262002, 20262003],
+  "checkpoint_gates": [0, 500, 1000, 2000, 3500, 5000, 5999],
+  "matrix": {
+    "terrain_type": "flat",
+    "terrain_level": 0,
+    "reset_poses": [
+      "prone",
+      "supine",
+      "left_side",
+      "right_side",
+      "synthetic_seated_trap"
+    ],
+    "cells_per_checkpoint": 5,
+    "total_checkpoints": 42,
+    "total_cells": 210,
+    "num_envs_per_cell": 256,
+    "steps_per_cell": 750,
+    "eval_seed": 20262010,
+    "automatic_disturbances": false,
+    "plate_probability": 0.0
+  },
+  "strict_success": {
+    "head_height_above_local_support_m": 1.08,
+    "upright_min": 0.85,
+    "absolute_head_vertical_speed_max_m_s": 0.12,
+    "consecutive_hold_steps": 100,
+    "root_linear_speed_gate_enabled": false,
+    "root_angular_speed_gate_enabled": false
+  },
+  "failure_reason_codebook": [
+    "success",
+    "invalid_reset_contact",
+    "invalid_dynamics",
+    "terrain_exit",
+    "head_height_not_reached",
+    "upright_not_reached",
+    "linear_speed_not_settled",
+    "angular_speed_not_settled",
+    "head_vertical_speed_not_settled",
+    "strict_candidate_not_held"
+  ],
+  "required_per_environment_telemetry": [
+    "strict_success",
+    "strict_success_step",
+    "failure_reason",
+    "first_head_height_step",
+    "first_upright_step",
+    "first_head_vertical_speed_settled_step",
+    "first_strict_candidate_step",
+    "longest_stable_stand_hold_steps",
+    "secondary_fall",
+    "terrain_exit",
+    "invalid_dynamics",
+    "terrain_reset_contact_valid",
+    "foot_slip_mean_m_s",
+    "max_planar_displacement_m",
+    "max_stance_width_m",
+    "stance_width_mean_m",
+    "bilateral_foot_support_fraction",
+    "minimum_foot_load_share_mean",
+    "leg_asymmetry_mean_rad",
+    "trap_dwell_steps",
+    "action_first_difference_mean_l2",
+    "action_second_difference_mean_l2",
+    "max_joint_speed_rad_s",
+    "max_torque_nm",
+    "max_power_w",
+    "finite_action"
+  ],
+  "analysis": {
+    "sampling_unit": "independent_policy_seed",
+    "primary_paired_effect": "B-minus-A at matched policy seed",
+    "bootstrap_repetitions": 20000,
+    "bootstrap_seed": 20262010,
+    "report_each_seed_independently": true,
+    "report_macro_and_worst_pose": true,
+    "no_training_reward_ranking": true,
+    "no_selective_reruns": true
+  },
+  "claim_boundary": "ENGINEERING_DIAGNOSTIC_NOT_RAL_EVIDENCE_OR_HARDWARE_AUTHORIZATION"
+}

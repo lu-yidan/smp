@@ -21,6 +21,15 @@ from launch_smp_v37_support_transition import (  # noqa: E402
   _PROTOCOL_SHA256,
   _validate_protocol,
 )
+from evaluate_terrain_recovery import EvalCfg  # noqa: E402
+from run_smp_v37_support_transition_eval import (  # noqa: E402
+  _GATES as EVAL_GATES,
+  _PER_ENV as EVAL_PER_ENV,
+  _POSES as EVAL_POSES,
+  _PROTOCOL_SHA256 as EVAL_PROTOCOL_SHA256,
+  _REASONS as EVAL_REASONS,
+  _validate_protocol as validate_eval_protocol,
+)
 
 
 class V37SupportTransitionTest(unittest.TestCase):
@@ -140,6 +149,38 @@ class V37SupportTransitionTest(unittest.TestCase):
     self.assertTrue(protocol["diagnostic_origin"]["photo_is_not_state_replay"])
     self.assertTrue(protocol["claim_boundary"]["not_ral_evidence"])
     self.assertTrue(protocol["claim_boundary"]["no_hardware_authorization"])
+
+  def test_evaluation_protocol_is_frozen_before_first_run(self) -> None:
+    path = (
+      Path(__file__).parents[1]
+      / "docs/v37_93d_support_transition_evaluation_v1.json"
+    )
+    protocol = validate_eval_protocol(path)
+    self.assertEqual(protocol["status"], "PREREGISTERED_READY_FOR_EVALUATION")
+    self.assertTrue(protocol["registered_before_first_formal_evaluation"])
+    self.assertEqual(tuple(protocol["checkpoint_gates"]), EVAL_GATES)
+    self.assertEqual(tuple(protocol["matrix"]["reset_poses"]), EVAL_POSES)
+    self.assertEqual(tuple(protocol["failure_reason_codebook"]), EVAL_REASONS)
+    self.assertEqual(
+      tuple(protocol["required_per_environment_telemetry"]), EVAL_PER_ENV
+    )
+    self.assertEqual(protocol["matrix"]["total_cells"], 210)
+    self.assertEqual(protocol["matrix"]["num_envs_per_cell"], 256)
+    self.assertEqual(protocol["matrix"]["steps_per_cell"], 750)
+    self.assertEqual(protocol["strict_success"]["consecutive_hold_steps"], 100)
+    self.assertEqual(
+      protocol["strict_success"]["absolute_head_vertical_speed_max_m_s"], 0.12
+    )
+    self.assertEqual(
+      EVAL_PROTOCOL_SHA256,
+      "d15d9d8e03e0b1d01d191f1c224c9201a176e103231d8975bea8ad07c90e1ab3",
+    )
+
+  def test_terrain_evaluator_exposes_v37_strict_gates(self) -> None:
+    cfg = EvalCfg(checkpoint=Path("unused.pt"))
+    self.assertEqual(cfg.stand_head_height_m, 1.10)
+    self.assertEqual(cfg.stand_max_abs_head_vertical_speed_m_s, 1.0e9)
+    self.assertEqual(cfg.stable_hold_steps, 25)
 
 
 if __name__ == "__main__":

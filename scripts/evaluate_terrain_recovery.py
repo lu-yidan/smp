@@ -32,6 +32,12 @@ class EvalCfg:
   seed: int = 20260818
   device: str = "cuda:0"
   output: Path = Path("logs/evaluation/terrain_v35.jsonl")
+  stand_head_height_m: float = 1.10
+  stand_min_upright: float = 0.85
+  stand_max_linear_speed_m_s: float = 0.50
+  stand_max_angular_speed_rad_s: float = 1.0
+  stand_max_abs_head_vertical_speed_m_s: float = 1.0e9
+  stable_hold_steps: int = 25
 
 
 def _quantile(values: torch.Tensor, q: float) -> float:
@@ -64,7 +70,13 @@ def _run_case(
   # contact-validation path as interactive playback.
   os.environ["SMP_PLAY_TERRAIN_TYPE"] = terrain_type
   os.environ["SMP_PLAY_TERRAIN_LEVEL"] = str(level)
-  os.environ["SMP_PLAY_TERRAIN_RESET_POSE"] = reset_mode
+  is_v37_trap = reset_mode == "synthetic_seated_trap"
+  # The parent V35/V36 selector only knows the four canonical lying poses.
+  # A V37 trap evaluation first constructs a valid prone reset, then the
+  # frozen grounded trap event deterministically replaces the whole cohort.
+  os.environ["SMP_PLAY_TERRAIN_RESET_POSE"] = (
+    "prone" if is_v37_trap else reset_mode
+  )
   os.environ.pop("SMP_PLAY_AUTO_DISTURBANCES", None)
   import smp.rl.tasks  # noqa: F401
   from smp.rl.tasks.getup import mdp
@@ -80,8 +92,14 @@ def _run_case(
     raise ValueError("terrain_types must contain flat, slope, stairs, or rough")
   if level not in range(4):
     raise ValueError("levels must contain only 0, 1, 2, or 3")
-  if reset_mode not in RESET_POSE_WEIGHTS or reset_mode == "mixed":
-    raise ValueError("reset_modes must contain prone, supine, left_side, or right_side")
+  if (
+    reset_mode not in RESET_POSE_WEIGHTS
+    and not is_v37_trap
+  ) or reset_mode == "mixed":
+    raise ValueError(
+      "reset_modes must contain prone, supine, left_side, right_side, "
+      "or synthetic_seated_trap"
+    )
   if edge_cohort is not None:
     if terrain_type != "stairs" or edge_cohort not in EDGE_RESET_COHORTS:
       raise ValueError("edge_cohorts require stairs and a supported V3.7 cohort")
@@ -111,16 +129,46 @@ def _run_case(
     reset_event = env_cfg.events["curriculum_validated_fall_reset"]
     reset_event.params["balanced_probability"] = 1.0
     reset_event.params["target_probability"] = 1.0
-    reset_event.params["mode_weights"] = RESET_POSE_WEIGHTS[reset_mode]
+    reset_event.params["mode_weights"] = RESET_POSE_WEIGHTS[
+      "prone" if is_v37_trap else reset_mode
+    ]
   elif "mixed_fall_reset" in env_cfg.events:
     env_cfg.events["mixed_fall_reset"].params.update(
       {
         "procedural_probability": 1.0,
-        "mode_weights": RESET_POSE_WEIGHTS[reset_mode],
+        "mode_weights": RESET_POSE_WEIGHTS[
+          "prone" if is_v37_trap else reset_mode
+        ],
       }
     )
   else:
     raise RuntimeError("terrain evaluation requires a supported fall reset event")
+  if is_v37_trap:
+    if "V37" not in cfg.task:
+      raise ValueError("synthetic_seated_trap requires a V37 task")
+    from mjlab.managers.event_manager import EventTermCfg
+
+    trap = env_cfg.events.get("photo_informed_seated_trap_reset")
+    if trap is None:
+      trap = EventTermCfg(
+        func=mdp.photo_informed_seated_trap_reset,
+        mode="reset",
+        params={
+          "probability": 1.0,
+          "joint_noise": 0.08,
+          "joint_limit_margin": 0.03,
+          "max_penetration": 0.012,
+          "max_support_gap": 0.025,
+        },
+      )
+      reordered = {}
+      for name, term in env_cfg.events.items():
+        reordered[name] = term
+        if name == "curriculum_validated_fall_reset":
+          reordered["photo_informed_seated_trap_reset"] = trap
+      env_cfg.events = reordered
+    else:
+      trap.params["probability"] = 1.0
   if edge_cohort is not None:
     weights = tuple(float(name == edge_cohort) for name in EDGE_RESET_COHORTS)
     edge_event = env_cfg.events["sample_terrain_edge_reset"]
@@ -156,9 +204,40 @@ def _run_case(
   reset_min_distance = getattr(raw_env, "_terrain_reset_min_distance", None)
   if reset_contact_valid is None or reset_refinement_steps is None:
     raise RuntimeError("terrain evaluation requires audited reset-contact telemetry")
+  if is_v37_trap:
+    from smp.rl.tasks.getup.mdp.events import _physical_reset_postcheck
+
+    trap_selected = getattr(raw_env, "_v37_seated_trap_reset", None)
+    if trap_selected is None or not bool(trap_selected.all()):
+      raise RuntimeError("V37_EVAL_ALERT: trap reset did not cover every environment")
+    all_env_ids = torch.arange(cfg.num_envs, device=raw_env.device)
+    reset_contact_valid = _physical_reset_postcheck(
+      raw_env,
+      all_env_ids,
+      max_penetration=0.012,
+      max_support_gap=0.025,
+    )
+    reset_refinement_steps = torch.zeros(
+      cfg.num_envs, dtype=torch.long, device=raw_env.device
+    )
+    if not bool(reset_contact_valid.all()):
+      raise RuntimeError("V37_EVAL_ALERT: invalid grounded seated-trap reset")
   root_xy_start = robot.data.root_link_pos_w[:, :2].clone()
   foot_ids = robot.find_sites(["left_foot", "right_foot"], preserve_order=True)[0]
   head_idx = robot.find_sites(["head"], preserve_order=True)[0][0]
+  v37_joint_ids = (
+    robot.find_joints(
+      [
+        "left_knee_joint",
+        "right_knee_joint",
+        "left_hip_pitch_joint",
+        "right_hip_pitch_joint",
+      ],
+      preserve_order=True,
+    )[0]
+    if "V37" in cfg.task
+    else []
+  )
   max_planar_displacement = torch.zeros(cfg.num_envs, device=raw_env.device)
   max_terrain_descent = torch.zeros_like(max_planar_displacement)
   max_joint_speed = torch.zeros_like(max_planar_displacement)
@@ -176,11 +255,20 @@ def _run_case(
   first_upright = torch.full_like(first_success, -1)
   first_linear_settled = torch.full_like(first_success, -1)
   first_angular_settled = torch.full_like(first_success, -1)
+  first_head_vertical_settled = torch.full_like(first_success, -1)
   first_strict_candidate = torch.full_like(first_success, -1)
   secondary_fall_hold = torch.zeros_like(first_success)
   secondary_fall = torch.zeros(cfg.num_envs, dtype=torch.bool, device=raw_env.device)
   terrain_exit = torch.zeros_like(secondary_fall)
   invalid_dynamics = torch.zeros_like(secondary_fall)
+  finite_action = torch.ones_like(secondary_fall)
+  bilateral_support_steps = torch.zeros_like(max_planar_displacement)
+  active_steps = torch.zeros_like(max_planar_displacement)
+  minimum_foot_load_share_sum = torch.zeros_like(max_planar_displacement)
+  trap_dwell_steps = torch.zeros_like(first_success)
+  left_trap = torch.zeros_like(secondary_fall)
+  leg_asymmetry_sum = torch.zeros_like(max_planar_displacement)
+  stance_width_sum = torch.zeros_like(max_planar_displacement)
   action_delta_sum = torch.zeros_like(max_planar_displacement)
   action_delta2_sum = torch.zeros_like(max_planar_displacement)
   action_delta_steps = torch.zeros_like(max_planar_displacement)
@@ -195,6 +283,9 @@ def _run_case(
   for step in range(cfg.steps):
     with torch.inference_mode():
       actions = policy(obs)
+      action_is_finite = torch.isfinite(actions).all(dim=-1)
+      finite_action &= action_is_finite
+      actions = torch.nan_to_num(actions, nan=0.0, posinf=0.0, neginf=0.0)
       obs, _, _, _ = env.step(actions)
 
     current_action = actions.detach()
@@ -219,37 +310,42 @@ def _run_case(
     finite = torch.isfinite(raw_root_pos).all(dim=-1) & torch.isfinite(
       robot.data.joint_vel
     ).all(dim=-1)
-    invalid_dynamics |= ~finite
+    invalid_dynamics |= ~finite | ~finite_action
     terrain_exit |= (raw_displacement > terrain_exit_radius) | ~finite
     active = ~terrain_exit
 
     head_z = robot.data.site_pos_w[:, head_idx, 2]
+    head_vertical_speed = torch.abs(robot.data.site_lin_vel_w[:, head_idx, 2])
     upright = torch.clamp(-robot.data.projected_gravity_b[:, 2], 0.0, 1.0)
     linear_speed = torch.linalg.vector_norm(robot.data.root_link_lin_vel_w, dim=-1)
     angular_speed = torch.linalg.vector_norm(robot.data.root_link_ang_vel_w, dim=-1)
     standing = (
-      (head_z - support_height >= 1.10)
-      & (upright >= 0.85)
-      & (linear_speed < 0.50)
-      & (angular_speed < 1.0)
+      (head_z - support_height >= cfg.stand_head_height_m)
+      & (upright >= cfg.stand_min_upright)
+      & (linear_speed < cfg.stand_max_linear_speed_m_s)
+      & (angular_speed < cfg.stand_max_angular_speed_rad_s)
+      & (head_vertical_speed <= cfg.stand_max_abs_head_vertical_speed_m_s)
     )
     first_head_height = torch.where(
-      (first_head_height < 0) & ((head_z - support_height) >= 1.10),
+      (first_head_height < 0)
+      & ((head_z - support_height) >= cfg.stand_head_height_m),
       torch.full_like(first_head_height, step + 1),
       first_head_height,
     )
     first_upright = torch.where(
-      (first_upright < 0) & (upright >= 0.85),
+      (first_upright < 0) & (upright >= cfg.stand_min_upright),
       torch.full_like(first_upright, step + 1),
       first_upright,
     )
     first_linear_settled = torch.where(
-      (first_linear_settled < 0) & (linear_speed < 0.50),
+      (first_linear_settled < 0)
+      & (linear_speed < cfg.stand_max_linear_speed_m_s),
       torch.full_like(first_linear_settled, step + 1),
       first_linear_settled,
     )
     first_angular_settled = torch.where(
-      (first_angular_settled < 0) & (angular_speed < 1.0),
+      (first_angular_settled < 0)
+      & (angular_speed < cfg.stand_max_angular_speed_rad_s),
       torch.full_like(first_angular_settled, step + 1),
       first_angular_settled,
     )
@@ -258,9 +354,17 @@ def _run_case(
       torch.full_like(first_strict_candidate, step + 1),
       first_strict_candidate,
     )
+    first_head_vertical_settled = torch.where(
+      (first_head_vertical_settled < 0)
+      & (head_vertical_speed <= cfg.stand_max_abs_head_vertical_speed_m_s),
+      torch.full_like(first_head_vertical_settled, step + 1),
+      first_head_vertical_settled,
+    )
     stand_hold = torch.where(standing, stand_hold + 1, torch.zeros_like(stand_hold))
     longest_stand_hold = torch.maximum(longest_stand_hold, stand_hold)
-    newly_successful = active & (first_success < 0) & (stand_hold >= 25)
+    newly_successful = (
+      active & (first_success < 0) & (stand_hold >= cfg.stable_hold_steps)
+    )
     first_success[newly_successful] = step + 1
 
     fallen_after_success = (first_success >= 0) & (
@@ -310,6 +414,42 @@ def _run_case(
     max_stance_width = torch.maximum(
       max_stance_width, torch.where(active, stance_width, 0.0)
     )
+
+    active_steps += active.float()
+    stance_width_sum += torch.where(active, stance_width, 0.0)
+    if "V37" in cfg.task:
+      v37_sensor = raw_env.scene["v37_foot_ground_contact"]
+      v37_found = v37_sensor.data.found
+      v37_force = v37_sensor.data.force
+      if v37_found is None or v37_force is None:
+        raise RuntimeError("V37 foot sensor must expose found and force")
+      flat_found = v37_found.reshape(cfg.num_envs, -1) > 0
+      found_split = max(flat_found.shape[1] // 2, 1)
+      left_found = flat_found[:, :found_split].any(dim=-1)
+      right_found = flat_found[:, found_split:].any(dim=-1)
+      flat_force = v37_force.reshape(cfg.num_envs, -1, 3)
+      force_split = max(flat_force.shape[1] // 2, 1)
+      left_force = torch.linalg.vector_norm(
+        flat_force[:, :force_split], dim=-1
+      ).amax(dim=-1)
+      right_force = torch.linalg.vector_norm(
+        flat_force[:, force_split:], dim=-1
+      ).amax(dim=-1)
+      total_force = left_force + right_force
+      minimum_share = torch.minimum(left_force, right_force) / torch.clamp(
+        total_force, min=1.0
+      )
+      both_feet = left_found & right_found & active
+      bilateral_support_steps += both_feet.float()
+      minimum_foot_load_share_sum += torch.where(active, minimum_share, 0.0)
+      joint = robot.data.joint_pos[:, v37_joint_ids]
+      leg_asymmetry = torch.abs(joint[:, 0] - joint[:, 1]) + torch.abs(
+        joint[:, 2] - joint[:, 3]
+      )
+      leg_asymmetry_sum += torch.where(active, leg_asymmetry, 0.0)
+    still_trapped = (head_z - support_height < 0.75) & ~left_trap & active
+    trap_dwell_steps += still_trapped.long()
+    left_trap |= (head_z - support_height >= 0.75) | ~active
 
     found = raw_env.scene["terrain_foot_ground_contact"].data.found
     if found is None:
@@ -363,6 +503,8 @@ def _run_case(
       reason = "linear_speed_not_settled"
     elif int(first_angular_settled[index]) < 0:
       reason = "angular_speed_not_settled"
+    elif int(first_head_vertical_settled[index]) < 0:
+      reason = "head_vertical_speed_not_settled"
     else:
       reason = "strict_candidate_not_held"
     failure_reasons.append(reason)
@@ -377,6 +519,7 @@ def _run_case(
       "upright_not_reached",
       "linear_speed_not_settled",
       "angular_speed_not_settled",
+      "head_vertical_speed_not_settled",
       "strict_candidate_not_held",
     )
   }
@@ -404,12 +547,16 @@ def _run_case(
     "steps": cfg.steps,
     "success": int(success.sum()),
     "success_rate": float(success.float().mean()),
-    "strict_success_hold_steps": 25,
+    "finite_action_rate": float(finite_action.float().mean()),
+    "strict_success_hold_steps": cfg.stable_hold_steps,
     "strict_success_thresholds": {
-      "head_height_above_support_m": 1.10,
-      "upright": 0.85,
-      "linear_speed_m_s": 0.50,
-      "angular_speed_rad_s": 1.0,
+      "head_height_above_support_m": cfg.stand_head_height_m,
+      "upright": cfg.stand_min_upright,
+      "linear_speed_m_s": cfg.stand_max_linear_speed_m_s,
+      "angular_speed_rad_s": cfg.stand_max_angular_speed_rad_s,
+      "absolute_head_vertical_speed_m_s": (
+        cfg.stand_max_abs_head_vertical_speed_m_s
+      ),
     },
     "recovery_time_median_s": (
       float(recovery_steps.median() * raw_env.step_dt)
@@ -455,6 +602,19 @@ def _run_case(
     "action_first_difference_p95_l2": _quantile(action_delta_mean, 0.95),
     "action_second_difference_mean_l2": float(action_delta2_mean.mean()),
     "action_second_difference_p95_l2": _quantile(action_delta2_mean, 0.95),
+    "bilateral_foot_support_fraction_mean": float(
+      (bilateral_support_steps / torch.clamp(active_steps, min=1.0)).mean()
+    ),
+    "minimum_foot_load_share_mean": float(
+      (minimum_foot_load_share_sum / torch.clamp(active_steps, min=1.0)).mean()
+    ),
+    "stance_width_mean_m": float(
+      (stance_width_sum / torch.clamp(active_steps, min=1.0)).mean()
+    ),
+    "leg_asymmetry_mean_rad": float(
+      (leg_asymmetry_sum / torch.clamp(active_steps, min=1.0)).mean()
+    ),
+    "trap_dwell_time_mean_s": float(trap_dwell_steps.float().mean() * raw_env.step_dt),
     "strict_failure_diagnosis": {
       "schema_version": 1,
       "reason_codebook": list(reason_counts),
@@ -468,6 +628,9 @@ def _run_case(
       "first_upright_step": _list(first_upright),
       "first_linear_speed_settled_step": _list(first_linear_settled),
       "first_angular_speed_settled_step": _list(first_angular_settled),
+      "first_head_vertical_speed_settled_step": _list(
+        first_head_vertical_settled
+      ),
       "first_strict_candidate_step": _list(first_strict_candidate),
       "longest_stable_stand_hold_steps": _list(longest_stand_hold),
       "secondary_fall": _list(secondary_fall),
@@ -483,6 +646,20 @@ def _run_case(
       "max_joint_speed_rad_s": _list(max_joint_speed),
       "max_torque_nm": _list(max_torque),
       "max_power_w": _list(max_power),
+      "finite_action": _list(finite_action),
+      "bilateral_foot_support_fraction": _list(
+        bilateral_support_steps / torch.clamp(active_steps, min=1.0)
+      ),
+      "minimum_foot_load_share_mean": _list(
+        minimum_foot_load_share_sum / torch.clamp(active_steps, min=1.0)
+      ),
+      "stance_width_mean_m": _list(
+        stance_width_sum / torch.clamp(active_steps, min=1.0)
+      ),
+      "leg_asymmetry_mean_rad": _list(
+        leg_asymmetry_sum / torch.clamp(active_steps, min=1.0)
+      ),
+      "trap_dwell_steps": _list(trap_dwell_steps),
     },
   }
   raw_env.close()
