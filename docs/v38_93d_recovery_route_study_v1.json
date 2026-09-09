@@ -1,0 +1,178 @@
+{
+  "schema_version": 1,
+  "study_id": "smp-v38-93d-post-roll-recovery-route-v1",
+  "status": "PREREGISTERED_READY_FOR_TRAINING",
+  "study_role": "ENGINEERING_SIM2REAL_RECOVERY_ROUTE_STUDY_NOT_RAL_OR_HARDWARE_EVIDENCE",
+  "question": "Does a stage-dependent hand/knee-to-bilateral-foot route plus grounded post-roll supine coverage eliminate the prone-to-supine local optimum while preserving the V37 actuator envelope?",
+  "diagnostic_origin": {
+    "observation": "V37 policies often roll from prone to supine and then remain down; V37-B improved bilateral support but did not produce strict recovery.",
+    "v37_formal_status": "FAILURE_TELEMETRY_ALERT_ENGINEERING_DIAGNOSTIC_ONLY",
+    "causal_hypothesis": "Applying bilateral-foot shaping during the lying stage makes supine foot planting locally attractive, while the reset distribution under-covers crossed/asymmetric post-roll states and supplies no non-farmable supported-route progress.",
+    "not_hardware_state_replay": true
+  },
+  "source_policies": [
+    {
+      "source_policy_seed": 20262001,
+      "wandb_run_id": "q6lhwc4l",
+      "checkpoint_path": "logs/rsl_rl/smp_getup_v37_93d_support_g1/2026-09-08_17-49-17_v37_b_6k_seed20262001_online/model_5999.pt",
+      "checkpoint_sha256": "e72d54a5f425955cc461fa26f9aad5c7b8aa1fe90afcc735c1ed8a8be3b68ea0"
+    },
+    {
+      "source_policy_seed": 20262002,
+      "wandb_run_id": "rzrsjl84",
+      "checkpoint_path": "logs/rsl_rl/smp_getup_v37_93d_support_g1/2026-09-08_17-49-17_v37_b_6k_seed20262002_online/model_5999.pt",
+      "checkpoint_sha256": "c724d8093612aaef03c40017e3d8ccf3236b28a09b80d227f86330931a676375"
+    },
+    {
+      "source_policy_seed": 20262003,
+      "wandb_run_id": "kxzso22o",
+      "checkpoint_path": "logs/rsl_rl/smp_getup_v37_93d_support_g1/2026-09-08_17-49-17_v37_b_6k_seed20262003_online/model_5999.pt",
+      "checkpoint_sha256": "20b470011d8bf03f2b9b9431e18c7bc23450fe65b9098072489f957bb26e50a3"
+    }
+  ],
+  "source_contract": {
+    "embedded_iteration": 5999,
+    "actor_input_dim": 93,
+    "critic_input_dim": 960,
+    "same_seed_source_mapping": {
+      "20262101": 20262001,
+      "20262102": 20262002,
+      "20262103": 20262003
+    }
+  },
+  "arms": [
+    {
+      "arm": "A",
+      "task": "Smp-Getup-V38-93D-Control-G1",
+      "treatment": "exact V37-B environment continuation control"
+    },
+    {
+      "arm": "B",
+      "task": "Smp-Getup-V38-93D-Route-G1",
+      "treatment": "A plus stage-dependent support graph, non-farmable route progress, prone hand-knee support, and grounded post-roll supine reset coverage"
+    }
+  ],
+  "shared_contract": {
+    "episode_length_s": 20.0,
+    "terrain": "flat",
+    "plate_probability": 0.0,
+    "automatic_wrench": false,
+    "actor_observation": "93D one-frame proprioception",
+    "actor_forbidden_inputs": [
+      "true_base_linear_velocity",
+      "contact_labels",
+      "reset_labels",
+      "terrain_identity",
+      "future_reference"
+    ],
+    "policy_rate_hz": 50,
+    "target_velocity_limit_rad_s": 2.5,
+    "target_acceleration_limit_rad_s2": 15.0,
+    "effective_nominal_effort_fraction": 0.72,
+    "stage_hold_steps": {
+      "seated": 15,
+      "crouched": 25,
+      "standing": 100
+    }
+  },
+  "treatment_contract": {
+    "post_roll_supine_probability": 0.20,
+    "post_roll_state": "grounded supine with mirrored crossed/asymmetric hip and knee configuration",
+    "lying_stage_support": "hand plus knee or feet; bilateral feet alone also accepted",
+    "bilateral_foot_reward_minimum_stage": 1,
+    "route_progress": "positive increment in per-episode best staged support potential only",
+    "training_only_privileged_signals": [
+      "hand contact",
+      "knee/shin contact",
+      "foot contact and force",
+      "recovery stage"
+    ]
+  },
+  "training_protocol": {
+    "training_seeds": [20262101, 20262102, 20262103],
+    "agent_and_environment_seed_identical": true,
+    "gpu_assignment": {
+      "A/20262101": 0,
+      "A/20262102": 1,
+      "A/20262103": 2,
+      "B/20262101": 3,
+      "B/20262102": 4,
+      "B/20262103": 5
+    },
+    "gpus_6_and_7_reserved": true,
+    "warm_start": "matched V37-B actor critic and normalizers by source seed",
+    "reset_optimizer_iteration_and_environment_steps": true,
+    "num_envs": 4096,
+    "rollout_steps_per_update": 24,
+    "max_iterations": 8000,
+    "save_interval": 500,
+    "evaluation_gates": [0, 1000, 2000, 4000, 6000, 7999],
+    "learning_rate": 0.00001,
+    "wandb_mode": "online",
+    "no_automatic_restart": true
+  },
+  "evaluation_protocol": {
+    "eval_seed": 20262110,
+    "num_envs_per_cell": 256,
+    "steps_per_cell": 750,
+    "pose_strata": [
+      "prone",
+      "supine",
+      "left_side",
+      "right_side",
+      "synthetic_seated_trap",
+      "post_roll_supine_crossed"
+    ],
+    "strict_success": {
+      "head_height_m": 1.08,
+      "minimum_upright": 0.85,
+      "maximum_absolute_head_vertical_speed_m_s": 0.12,
+      "consecutive_hold_steps": 100
+    },
+    "failure_reason_codebook": [
+      "success",
+      "invalid_initialization",
+      "invalid_dynamics",
+      "nonfinite_action",
+      "head_height_not_reached",
+      "upright_not_reached",
+      "head_vertical_speed_not_settled",
+      "stable_hold_too_short"
+    ],
+    "required_per_environment_telemetry": [
+      "strict_success",
+      "failure_reason",
+      "first_head_height_step",
+      "first_upright_step",
+      "first_head_vertical_speed_step",
+      "first_strict_candidate_step",
+      "longest_strict_hold_steps",
+      "max_head_z",
+      "max_upright",
+      "bilateral_support_fraction",
+      "hand_support_fraction",
+      "knee_support_fraction",
+      "foot_slip",
+      "root_drift",
+      "action_first_difference",
+      "action_second_difference",
+      "peak_joint_speed",
+      "peak_joint_torque",
+      "peak_joint_power"
+    ],
+    "telemetry_invariants": [
+      "reason counts equal num_envs",
+      "success reason count equals strict successes",
+      "every required per-environment array length equals num_envs"
+    ]
+  },
+  "claim_boundary": {
+    "not_ral_evidence": true,
+    "not_from_scratch_reproducibility": true,
+    "no_hardware_authorization": true,
+    "training_reward_is_not_selection_evidence": true,
+    "complete_negative_results_are_retained": true,
+    "no_threshold_relaxation_or_selective_seed_rerun": true,
+    "smoke_protocol_plan_and_checkpoints_are_not_performance_evidence": true
+  }
+}

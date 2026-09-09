@@ -17,6 +17,7 @@ __all__ = [
   "base_stationary_when_upright",
   "bilateral_foot_support_score",
   "bilateral_load_imbalance_l2",
+  "stage_delayed_bilateral_foot_support_score",
   "joint_power_excess_l2",
   "joint_speed_tail_barrier",
   "joint_speed_excess_l2",
@@ -122,6 +123,9 @@ __all__ = [
   "v37_bilateral_support_metric",
   "v37_min_foot_load_share_metric",
   "v37_stance_width_metric",
+  "v38_route_progress_reward",
+  "v38_hand_support_metric",
+  "v38_knee_support_metric",
 ]
 
 
@@ -1034,6 +1038,43 @@ def bilateral_load_imbalance_l2(
   excess = torch.clamp(normalized - free_imbalance, min=0.0)
   active = (_recovery_stage(env) <= 2).float()
   return active * (left & right).float() * torch.square(excess)
+
+
+def stage_delayed_bilateral_foot_support_score(
+  env: ManagerBasedRlEnv,
+  sensor_name: str = "v37_foot_ground_contact",
+  full_score_load_share: float = 0.35,
+  minimum_stage: int = 1,
+) -> torch.Tensor:
+  """Apply bilateral-foot shaping only after the low support waypoint."""
+  score = bilateral_foot_support_score(
+    env,
+    sensor_name=sensor_name,
+    full_score_load_share=full_score_load_share,
+  )
+  return score * (_recovery_stage(env) >= minimum_stage).float()
+
+
+def v38_route_progress_reward(env: ManagerBasedRlEnv) -> torch.Tensor:
+  """One-step normalized gain in the best support-route potential."""
+  value = getattr(env, "_v38_route_delta", None)
+  if value is None:
+    return torch.zeros(env.num_envs, device=env.device)
+  return value
+
+
+def v38_hand_support_metric(env: ManagerBasedRlEnv) -> torch.Tensor:
+  value = getattr(env, "_v38_hand_support", None)
+  if value is None:
+    return torch.zeros(env.num_envs, device=env.device)
+  return value.float()
+
+
+def v38_knee_support_metric(env: ManagerBasedRlEnv) -> torch.Tensor:
+  value = getattr(env, "_v38_knee_support", None)
+  if value is None:
+    return torch.zeros(env.num_envs, device=env.device)
+  return value.float()
 
 
 def transition_leg_asymmetry_l2(
