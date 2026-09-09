@@ -11,7 +11,6 @@ from typing import Any
 
 from run_smp_v37_support_transition_eval import _read_rows
 
-
 _METRICS = (
   "foot_slip_mean_m_s",
   "max_planar_displacement_m",

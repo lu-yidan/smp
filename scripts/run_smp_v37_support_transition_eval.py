@@ -16,7 +16,6 @@ from typing import Any
 import torch
 import tyro
 
-
 _PROTOCOL_SHA256 = "d15d9d8e03e0b1d01d191f1c224c9201a176e103231d8975bea8ad07c90e1ab3"
 _TRAINING_PROTOCOL_SHA256 = (
   "834331f230ec9a6232a59b2698d26baaf4ec7ca8d03bd4354270d12d69d55005"
