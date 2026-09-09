@@ -530,4 +530,4 @@ def main(cfg: V37EvalCfg) -> None:
 
 
 if __name__ == "__main__":
-  tyro.cli(main)
+  main(tyro.cli(V37EvalCfg))
