@@ -23,3 +23,11 @@ No procedural fall-reset mixture, static pose bank, V6 prior, extra smoothing/st
 Preflight: each16 environments /2 updates, full4096 GSI pool; explicitly trigger refresh at step2400 and assert pool head advances1024. Preflight weights/states are never used for full training. Original source files remain byte-identical to master. Baseline termination occurs after original25-step standing hold (~0.5s), not10s quiet standing; training counters are not fixed lying-recovery evaluation success.
 
 Observational logs add head height,raw SMP,GSI pool head,termination fractions without changing reward/actions/dones. No new collision filter or safety termination is silently added to native master. Explicit deployment pairs would override geom DR, so a deployment-only startup event propagates the existing foot friction samples to the pairs.
+
+## Continuous deployment recovery,20s (GPU2)
+
+`deploy93_continuous20_10000` is a fresh-policy counterpart to GPU1 deploy93. Only change the episode/termination protocol using `--continuous-20s`:20 seconds, timeout or numerical instability only. No low-SMP termination; no stood-up termination. GSI pool/refresh, generated velocities/history, f2s2 prior, original task reward, fixed0.30 action std,lr1e-3,gamma0.99,noise and DR remain unchanged. No extra quiet-standing reward is introduced. Same seed and93D architecture allow identical initial actor/critic weights to the5s deploy93 arm.
+
+Numerical instability means nonfinite qpos/qvel/qacc/qacc_warmstart/sensor data or absolute qpos/qvel>1000,qacc/warmstart>1e6. This is not a termination for ordinary falling or motion quality.
+
+The comparison jointly changes horizon and early termination, so it tests the combined continued-recovery protocol rather than isolating those effects. Longer post-rise experience may help, but the unchanged task/prior does not explicitly prohibit small steps. Existing master96 and deploy93 five-second reference jobs remain. The two30-second flat93 E/F jobs were stopped at user request; the two20-second flat93 jobs remain.

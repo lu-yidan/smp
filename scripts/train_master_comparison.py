@@ -11,6 +11,7 @@ import numpy as np
 import torch
 from mjlab.envs import ManagerBasedRlEnv
 from mjlab.managers.event_manager import EventTermCfg, requires_model_fields
+from mjlab.managers.termination_manager import TerminationTermCfg
 from mjlab.rl import MjlabOnPolicyRunner, RslRlVecEnvWrapper
 from mjlab.utils.os import dump_yaml
 
@@ -53,7 +54,7 @@ class LoggedWrapper(RslRlVecEnvWrapper):
         "Recovery/gsi_pool_head": float(getattr(env, "_smp_gsi_head", 0)),
       }
     )
-    for name in ["smp_too_low", "stood_up", "time_out"]:
+    for name in env.cfg.terminations:
       extras["log"]["Termination/" + name] = (
         env.termination_manager.get_term(name).float().mean().detach()
       )
@@ -67,7 +68,10 @@ def main():
   p.add_argument("--iterations", type=int, default=10000)
   p.add_argument("--log-dir", type=Path, required=True)
   p.add_argument("--preflight", action="store_true")
+  p.add_argument("--continuous-20s", action="store_true")
   a = p.parse_args()
+  if a.continuous_20s and a.arm != "deploy93":
+    p.error("continuous-20s is an explicit deployment-only ablation")
   cfg, agent = g1_getup_smp_env_cfg(), unitree_g1_smp_ppo_runner_cfg()
   cfg.seed = agent.seed = 20260910
   cfg.scene.num_envs = a.num_envs
@@ -81,6 +85,14 @@ def main():
   np.random.seed(cfg.seed)
   torch.manual_seed(cfg.seed)
   assert cfg.episode_length_s == 5
+  if a.continuous_20s:
+    from smp.rl.tasks.getup.continuous_recovery import unstable_sim_state
+
+    cfg.episode_length_s = 20.0
+    cfg.terminations = {
+      "time_out": cfg.terminations["time_out"],
+      "unstable_sim_state": TerminationTermCfg(func=unstable_sim_state),
+    }
   assert cfg.events["gsi_refresh"].params == {
     "num_samples": 1024,
     "step_interval": 2400,
@@ -95,6 +107,9 @@ def main():
   a.log_dir.mkdir(parents=True, exist_ok=False)
   metadata = dict(
     arm=a.arm,
+    continuous_20s=a.continuous_20s,
+    episode_seconds=cfg.episode_length_s,
+    terminations=list(cfg.terminations),
     master_reference="0e67286",
     seed=cfg.seed,
     num_envs=a.num_envs,
