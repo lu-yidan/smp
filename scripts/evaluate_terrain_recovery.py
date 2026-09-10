@@ -71,12 +71,19 @@ def _run_case(
   os.environ["SMP_PLAY_TERRAIN_TYPE"] = terrain_type
   os.environ["SMP_PLAY_TERRAIN_LEVEL"] = str(level)
   is_v37_trap = reset_mode == "synthetic_seated_trap"
-  # The parent V35/V36 selector only knows the four canonical lying poses.
-  # A V37 trap evaluation first constructs a valid prone reset, then the
-  # frozen grounded trap event deterministically replaces the whole cohort.
-  os.environ["SMP_PLAY_TERRAIN_RESET_POSE"] = (
-    "prone" if is_v37_trap else reset_mode
+  is_v38_post_roll = reset_mode == "post_roll_supine_crossed"
+  is_support_transition = "V37" in cfg.task or "V38" in cfg.task
+  canonical_reset_mode = (
+    "prone" if is_v37_trap else "supine" if is_v38_post_roll else reset_mode
   )
+  # The parent V35/V36 selector only knows the four canonical lying poses.
+  # Synthetic cohorts first construct a canonical grounded reset, then their
+  # frozen event deterministically replaces the whole cohort.
+  os.environ["SMP_PLAY_TERRAIN_RESET_POSE"] = canonical_reset_mode
+  if is_v38_post_roll:
+    os.environ["SMP_PLAY_V38_POST_ROLL_RESET"] = "1"
+  else:
+    os.environ.pop("SMP_PLAY_V38_POST_ROLL_RESET", None)
   os.environ.pop("SMP_PLAY_AUTO_DISTURBANCES", None)
   import smp.rl.tasks  # noqa: F401
   from smp.rl.tasks.getup import mdp
@@ -93,12 +100,11 @@ def _run_case(
   if level not in range(4):
     raise ValueError("levels must contain only 0, 1, 2, or 3")
   if (
-    reset_mode not in RESET_POSE_WEIGHTS
-    and not is_v37_trap
+    reset_mode not in RESET_POSE_WEIGHTS and not is_v37_trap and not is_v38_post_roll
   ) or reset_mode == "mixed":
     raise ValueError(
       "reset_modes must contain prone, supine, left_side, right_side, "
-      "or synthetic_seated_trap"
+      "synthetic_seated_trap, or post_roll_supine_crossed"
     )
   if edge_cohort is not None:
     if terrain_type != "stairs" or edge_cohort not in EDGE_RESET_COHORTS:
@@ -108,16 +114,51 @@ def _run_case(
   agent_cfg = load_rl_cfg(cfg.task)
   env_cfg.scene.num_envs = cfg.num_envs
   env_cfg.seed = cfg.seed
+  if "V38" in cfg.task:
+    # Evaluation-only sensors make A/B support telemetry symmetric.  They are
+    # manager-side measurements and never enter the frozen 93D actor input.
+    from mjlab.sensor.contact_sensor import ContactMatch, ContactSensorCfg
+
+    support_sensors = (
+      ContactSensorCfg(
+        name="v38_hand_ground_contact",
+        primary=ContactMatch(
+          mode="geom", pattern=r"(left|right)_hand_collision$", entity="robot"
+        ),
+        secondary=ContactMatch(mode="body", pattern="terrain"),
+        fields=("found", "force"),
+        reduce="maxforce",
+        num_slots=1,
+        history_length=4,
+      ),
+      ContactSensorCfg(
+        name="v38_knee_ground_contact",
+        primary=ContactMatch(
+          mode="geom",
+          pattern=r"(left|right)_(shin|linkage_brace)_collision$",
+          entity="robot",
+        ),
+        secondary=ContactMatch(mode="body", pattern="terrain"),
+        fields=("found", "force"),
+        reduce="maxforce",
+        num_slots=1,
+        history_length=4,
+      ),
+    )
+    existing_sensors = {sensor.name for sensor in env_cfg.scene.sensors or ()}
+    env_cfg.scene.sensors = (env_cfg.scene.sensors or ()) + tuple(
+      sensor for sensor in support_sensors if sensor.name not in existing_sensors
+    )
   # Older V35 tasks did not consume the play selectors during construction.
   # Keep their explicit replacement path while leaving V36's safe landing
   # island and audited reset ordering intact.
-  if "V36" not in cfg.task and "V37" not in cfg.task:
+  if "V36" not in cfg.task and not is_support_transition:
     env_cfg.scene.terrain.terrain_generator = terrain_generator_v35(
       terrain_type, level, cfg.seed
     )
-    env_cfg.events["ground_procedural_fall_on_terrain"].params[
-      "surface_normals"
-    ] = terrain_surface_normals_v35(terrain_type, level)
+    env_cfg.events["ground_procedural_fall_on_terrain"].params["surface_normals"] = (
+      terrain_surface_normals_v35(terrain_type, level)
+    )
   env_cfg.terminations = {}
   for event_name in (
     "stratified_post_stand_wrench",
@@ -129,23 +170,19 @@ def _run_case(
     reset_event = env_cfg.events["curriculum_validated_fall_reset"]
     reset_event.params["balanced_probability"] = 1.0
     reset_event.params["target_probability"] = 1.0
-    reset_event.params["mode_weights"] = RESET_POSE_WEIGHTS[
-      "prone" if is_v37_trap else reset_mode
-    ]
+    reset_event.params["mode_weights"] = RESET_POSE_WEIGHTS[canonical_reset_mode]
   elif "mixed_fall_reset" in env_cfg.events:
     env_cfg.events["mixed_fall_reset"].params.update(
       {
         "procedural_probability": 1.0,
-        "mode_weights": RESET_POSE_WEIGHTS[
-          "prone" if is_v37_trap else reset_mode
-        ],
+        "mode_weights": RESET_POSE_WEIGHTS[canonical_reset_mode],
       }
     )
   else:
     raise RuntimeError("terrain evaluation requires a supported fall reset event")
   if is_v37_trap:
-    if "V37" not in cfg.task:
-      raise ValueError("synthetic_seated_trap requires a V37 task")
+    if not is_support_transition:
+      raise ValueError("synthetic_seated_trap requires a V37/V38 task")
     from mjlab.managers.event_manager import EventTermCfg
 
     trap = env_cfg.events.get("photo_informed_seated_trap_reset")
@@ -169,6 +206,41 @@ def _run_case(
       env_cfg.events = reordered
     else:
       trap.params["probability"] = 1.0
+  if is_v38_post_roll:
+    if "V38" not in cfg.task:
+      raise ValueError("post_roll_supine_crossed requires a V38 task")
+    from mjlab.managers.event_manager import EventTermCfg
+
+    post_roll = env_cfg.events.get("post_roll_supine_failure_reset")
+    if post_roll is None:
+      post_roll = EventTermCfg(
+        func=mdp.post_roll_supine_failure_reset,
+        mode="reset",
+        params={
+          "probability": 1.0,
+          "joint_noise": 0.08,
+          "joint_limit_margin": 0.03,
+          "max_penetration": 0.012,
+          "max_support_gap": 0.025,
+        },
+      )
+      after = (
+        "photo_informed_seated_trap_reset"
+        if "photo_informed_seated_trap_reset" in env_cfg.events
+        else "curriculum_validated_fall_reset"
+      )
+      reordered = {}
+      inserted = False
+      for name, term in env_cfg.events.items():
+        reordered[name] = term
+        if name == after:
+          reordered["post_roll_supine_failure_reset"] = post_roll
+          inserted = True
+      if not inserted:
+        raise RuntimeError("V38_EVAL_ALERT: post-roll reset insertion point missing")
+      env_cfg.events = reordered
+    else:
+      post_roll.params["probability"] = 1.0
   if edge_cohort is not None:
     weights = tuple(float(name == edge_cohort) for name in EDGE_RESET_COHORTS)
     edge_event = env_cfg.events["sample_terrain_edge_reset"]
@@ -202,7 +274,7 @@ def _run_case(
   reset_contact_valid = getattr(raw_env, "_terrain_reset_contact_valid", None)
   reset_refinement_steps = getattr(raw_env, "_terrain_reset_refinement_steps", None)
   reset_min_distance = getattr(raw_env, "_terrain_reset_min_distance", None)
-  if "V37" in cfg.task:
+  if is_support_transition:
     from smp.rl.tasks.getup.mdp.events import _physical_reset_postcheck
 
     all_env_ids = torch.arange(cfg.num_envs, device=raw_env.device)
@@ -216,13 +288,19 @@ def _run_case(
       cfg.num_envs, dtype=torch.long, device=raw_env.device
     )
     if not bool(reset_contact_valid.all()):
-      raise RuntimeError("V37_EVAL_ALERT: invalid grounded reset")
+      raise RuntimeError("SUPPORT_TRANSITION_EVAL_ALERT: invalid grounded reset")
   elif reset_contact_valid is None or reset_refinement_steps is None:
     raise RuntimeError("terrain evaluation requires audited reset-contact telemetry")
   if is_v37_trap:
     trap_selected = getattr(raw_env, "_v37_seated_trap_reset", None)
     if trap_selected is None or not bool(trap_selected.all()):
       raise RuntimeError("V37_EVAL_ALERT: trap reset did not cover every environment")
+  if is_v38_post_roll:
+    selected = getattr(raw_env, "_v38_post_roll_supine_reset", None)
+    if selected is None or not bool(selected.all()):
+      raise RuntimeError(
+        "V38_EVAL_ALERT: post-roll reset did not cover every environment"
+      )
   root_xy_start = robot.data.root_link_pos_w[:, :2].clone()
   foot_ids = robot.find_sites(["left_foot", "right_foot"], preserve_order=True)[0]
   head_idx = robot.find_sites(["head"], preserve_order=True)[0][0]
@@ -236,7 +314,7 @@ def _run_case(
       ],
       preserve_order=True,
     )[0]
-    if "V37" in cfg.task
+    if is_support_transition
     else []
   )
   max_planar_displacement = torch.zeros(cfg.num_envs, device=raw_env.device)
@@ -247,6 +325,8 @@ def _run_case(
   max_stance_width = torch.zeros_like(max_planar_displacement)
   foot_slip_sum = torch.zeros_like(max_planar_displacement)
   foot_contact_steps = torch.zeros_like(max_planar_displacement)
+  max_head_z = robot.data.site_pos_w[:, head_idx, 2].clone()
+  max_upright = torch.zeros_like(max_planar_displacement)
   first_success = torch.full(
     (cfg.num_envs,), -1, dtype=torch.long, device=raw_env.device
   )
@@ -264,6 +344,8 @@ def _run_case(
   invalid_dynamics = torch.zeros_like(secondary_fall)
   finite_action = torch.ones_like(secondary_fall)
   bilateral_support_steps = torch.zeros_like(max_planar_displacement)
+  hand_support_steps = torch.zeros_like(max_planar_displacement)
+  knee_support_steps = torch.zeros_like(max_planar_displacement)
   active_steps = torch.zeros_like(max_planar_displacement)
   minimum_foot_load_share_sum = torch.zeros_like(max_planar_displacement)
   trap_dwell_steps = torch.zeros_like(first_success)
@@ -280,9 +362,7 @@ def _run_case(
   previous_delta = None
   terrain_generator = raw_env.scene.terrain.cfg.terrain_generator
   terrain_exit_radius = (
-    4.0
-    if terrain_generator is None
-    else 0.5 * min(terrain_generator.size) - 0.5
+    4.0 if terrain_generator is None else 0.5 * min(terrain_generator.size) - 0.5
   )
 
   for step in range(cfg.steps):
@@ -322,6 +402,8 @@ def _run_case(
     head_z = robot.data.site_pos_w[:, head_idx, 2]
     head_vertical_speed = torch.abs(robot.data.site_lin_vel_w[:, head_idx, 2])
     upright = torch.clamp(-robot.data.projected_gravity_b[:, 2], 0.0, 1.0)
+    max_head_z = torch.maximum(max_head_z, torch.where(active, head_z, -torch.inf))
+    max_upright = torch.maximum(max_upright, torch.where(active, upright, 0.0))
     linear_speed = torch.linalg.vector_norm(robot.data.root_link_lin_vel_w, dim=-1)
     angular_speed = torch.linalg.vector_norm(robot.data.root_link_ang_vel_w, dim=-1)
     standing = (
@@ -332,8 +414,7 @@ def _run_case(
       & (head_vertical_speed <= cfg.stand_max_abs_head_vertical_speed_m_s)
     )
     first_head_height = torch.where(
-      (first_head_height < 0)
-      & ((head_z - support_height) >= cfg.stand_head_height_m),
+      (first_head_height < 0) & ((head_z - support_height) >= cfg.stand_head_height_m),
       torch.full_like(first_head_height, step + 1),
       first_head_height,
     )
@@ -343,14 +424,12 @@ def _run_case(
       first_upright,
     )
     first_linear_settled = torch.where(
-      (first_linear_settled < 0)
-      & (linear_speed < cfg.stand_max_linear_speed_m_s),
+      (first_linear_settled < 0) & (linear_speed < cfg.stand_max_linear_speed_m_s),
       torch.full_like(first_linear_settled, step + 1),
       first_linear_settled,
     )
     first_angular_settled = torch.where(
-      (first_angular_settled < 0)
-      & (angular_speed < cfg.stand_max_angular_speed_rad_s),
+      (first_angular_settled < 0) & (angular_speed < cfg.stand_max_angular_speed_rad_s),
       torch.full_like(first_angular_settled, step + 1),
       first_angular_settled,
     )
@@ -422,7 +501,7 @@ def _run_case(
 
     active_steps += active.float()
     stance_width_sum += torch.where(active, stance_width, 0.0)
-    if "V37" in cfg.task:
+    if is_support_transition:
       v37_sensor = raw_env.scene["v37_foot_ground_contact"]
       v37_found = v37_sensor.data.found
       v37_force = v37_sensor.data.force
@@ -434,12 +513,12 @@ def _run_case(
       right_found = flat_found[:, found_split:].any(dim=-1)
       flat_force = v37_force.reshape(cfg.num_envs, -1, 3)
       force_split = max(flat_force.shape[1] // 2, 1)
-      left_force = torch.linalg.vector_norm(
-        flat_force[:, :force_split], dim=-1
-      ).amax(dim=-1)
-      right_force = torch.linalg.vector_norm(
-        flat_force[:, force_split:], dim=-1
-      ).amax(dim=-1)
+      left_force = torch.linalg.vector_norm(flat_force[:, :force_split], dim=-1).amax(
+        dim=-1
+      )
+      right_force = torch.linalg.vector_norm(flat_force[:, force_split:], dim=-1).amax(
+        dim=-1
+      )
       total_force = left_force + right_force
       minimum_share = torch.minimum(left_force, right_force) / torch.clamp(
         total_force, min=1.0
@@ -452,13 +531,24 @@ def _run_case(
         joint[:, 2] - joint[:, 3]
       )
       leg_asymmetry_sum += torch.where(active, leg_asymmetry, 0.0)
+      if "V38" in cfg.task:
+        hand_found = raw_env.scene["v38_hand_ground_contact"].data.found
+        knee_found = raw_env.scene["v38_knee_ground_contact"].data.found
+        if hand_found is None or knee_found is None:
+          raise RuntimeError("V38 support sensors must expose found")
+        hand_support_steps += (
+          hand_found.reshape(cfg.num_envs, -1).any(dim=-1) & active
+        ).float()
+        knee_support_steps += (
+          knee_found.reshape(cfg.num_envs, -1).any(dim=-1) & active
+        ).float()
     still_trapped = (head_z - support_height < 0.75) & ~left_trap & active
     trap_dwell_steps += still_trapped.long()
     left_trap |= (head_z - support_height >= 0.75) | ~active
 
     found = (
       v37_found
-      if "V37" in cfg.task
+      if is_support_transition
       else raw_env.scene["terrain_foot_ground_contact"].data.found
     )
     if found is None:
@@ -499,27 +589,43 @@ def _run_case(
     if bool(success[index]):
       reason = "success"
     elif not bool(reset_contact_valid[index]):
-      reason = "invalid_reset_contact"
+      reason = (
+        "invalid_initialization" if "V38" in cfg.task else "invalid_reset_contact"
+      )
+    elif not bool(finite_action[index]) and "V38" in cfg.task:
+      reason = "nonfinite_action"
     elif bool(invalid_dynamics[index]):
       reason = "invalid_dynamics"
-    elif bool(terrain_exit[index]):
+    elif bool(terrain_exit[index]) and "V38" not in cfg.task:
       reason = "terrain_exit"
     elif int(first_head_height[index]) < 0:
       reason = "head_height_not_reached"
     elif int(first_upright[index]) < 0:
       reason = "upright_not_reached"
-    elif int(first_linear_settled[index]) < 0:
+    elif int(first_linear_settled[index]) < 0 and "V38" not in cfg.task:
       reason = "linear_speed_not_settled"
-    elif int(first_angular_settled[index]) < 0:
+    elif int(first_angular_settled[index]) < 0 and "V38" not in cfg.task:
       reason = "angular_speed_not_settled"
     elif int(first_head_vertical_settled[index]) < 0:
       reason = "head_vertical_speed_not_settled"
     else:
-      reason = "strict_candidate_not_held"
+      reason = (
+        "stable_hold_too_short" if "V38" in cfg.task else "strict_candidate_not_held"
+      )
     failure_reasons.append(reason)
-  reason_counts = {
-    reason: failure_reasons.count(reason)
-    for reason in (
+  reason_codebook = (
+    (
+      "success",
+      "invalid_initialization",
+      "invalid_dynamics",
+      "nonfinite_action",
+      "head_height_not_reached",
+      "upright_not_reached",
+      "head_vertical_speed_not_settled",
+      "stable_hold_too_short",
+    )
+    if "V38" in cfg.task
+    else (
       "success",
       "invalid_reset_contact",
       "invalid_dynamics",
@@ -531,7 +637,8 @@ def _run_case(
       "head_vertical_speed_not_settled",
       "strict_candidate_not_held",
     )
-  }
+  )
+  reason_counts = {reason: failure_reasons.count(reason) for reason in reason_codebook}
   if sum(reason_counts.values()) != cfg.num_envs or reason_counts["success"] != int(
     success.sum()
   ):
@@ -563,9 +670,7 @@ def _run_case(
       "upright": cfg.stand_min_upright,
       "linear_speed_m_s": cfg.stand_max_linear_speed_m_s,
       "angular_speed_rad_s": cfg.stand_max_angular_speed_rad_s,
-      "absolute_head_vertical_speed_m_s": (
-        cfg.stand_max_abs_head_vertical_speed_m_s
-      ),
+      "absolute_head_vertical_speed_m_s": (cfg.stand_max_abs_head_vertical_speed_m_s),
     },
     "recovery_time_median_s": (
       float(recovery_steps.median() * raw_env.step_dt)
@@ -637,9 +742,7 @@ def _run_case(
       "first_upright_step": _list(first_upright),
       "first_linear_speed_settled_step": _list(first_linear_settled),
       "first_angular_speed_settled_step": _list(first_angular_settled),
-      "first_head_vertical_speed_settled_step": _list(
-        first_head_vertical_settled
-      ),
+      "first_head_vertical_speed_settled_step": _list(first_head_vertical_settled),
       "first_strict_candidate_step": _list(first_strict_candidate),
       "longest_stable_stand_hold_steps": _list(longest_stand_hold),
       "secondary_fall": _list(secondary_fall),
@@ -669,6 +772,28 @@ def _run_case(
         leg_asymmetry_sum / torch.clamp(active_steps, min=1.0)
       ),
       "trap_dwell_steps": _list(trap_dwell_steps),
+      # V38 frozen additive telemetry.  These aliases intentionally preserve
+      # the older field names above so historical V37 results remain readable.
+      "max_head_z": _list(max_head_z),
+      "max_upright": _list(max_upright),
+      "bilateral_support_fraction": _list(
+        bilateral_support_steps / torch.clamp(active_steps, min=1.0)
+      ),
+      "hand_support_fraction": _list(
+        hand_support_steps / torch.clamp(active_steps, min=1.0)
+      ),
+      "knee_support_fraction": _list(
+        knee_support_steps / torch.clamp(active_steps, min=1.0)
+      ),
+      "foot_slip": _list(foot_slip),
+      "root_drift": _list(max_planar_displacement),
+      "action_first_difference": _list(action_delta_mean),
+      "action_second_difference": _list(action_delta2_mean),
+      "peak_joint_speed": _list(max_joint_speed),
+      "peak_joint_torque": _list(max_torque),
+      "peak_joint_power": _list(max_power),
+      "first_head_vertical_speed_step": _list(first_head_vertical_settled),
+      "longest_strict_hold_steps": _list(longest_stand_hold),
     },
   }
   raw_env.close()
