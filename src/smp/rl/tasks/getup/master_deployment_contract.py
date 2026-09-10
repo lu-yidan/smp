@@ -1,4 +1,4 @@
-"""V33 continuation on a frozen RoboMimic deployment dynamics contract."""
+"""Frozen RoboMimic dynamics adapter, independent of V33 task logic."""
 
 from __future__ import annotations
 
