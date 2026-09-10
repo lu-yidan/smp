@@ -57,7 +57,9 @@ __all__ = [
   "update_recovery_stage_with_bilateral_support",
   "update_recovery_stage_with_support_graph",
   "reset_v38_route_progress",
+  "reset_v39_support_exit",
   "update_v38_route_progress",
+  "update_v39_support_exit",
 ]
 
 _MATCHED_BANK_SHAPES = {
@@ -3206,6 +3208,114 @@ def update_v38_route_progress(
     delta / max(delta_scale, 1.0e-6), 0.0, 1.0
   )
   env._v38_route_best[env_ids] = torch.maximum(best, current)  # type: ignore[attr-defined]
+
+
+@torch.no_grad()
+def reset_v39_support_exit(
+  env: ManagerBasedRlEnv,
+  env_ids: torch.Tensor | None = None,
+) -> None:
+  """Reset the V39 support-dwell and pure-height progress state."""
+  if env_ids is None:
+    env_ids = torch.arange(env.num_envs, device=env.device)
+  if not hasattr(env, "_v39_support_dwell_steps"):
+    env._v39_support_dwell_steps = torch.zeros(  # type: ignore[attr-defined]
+      env.num_envs, dtype=torch.long, device=env.device
+    )
+    env._v39_support_dwell_penalty = torch.zeros(  # type: ignore[attr-defined]
+      env.num_envs, device=env.device
+    )
+    env._v39_foot_transfer = torch.zeros(  # type: ignore[attr-defined]
+      env.num_envs, device=env.device
+    )
+    env._v39_head_best = torch.zeros(env.num_envs, device=env.device)  # type: ignore[attr-defined]
+    env._v39_head_best_delta = torch.zeros(  # type: ignore[attr-defined]
+      env.num_envs, device=env.device
+    )
+    env._v39_head_best_initialized = torch.zeros(  # type: ignore[attr-defined]
+      env.num_envs, dtype=torch.bool, device=env.device
+    )
+  env._v39_support_dwell_steps[env_ids] = 0  # type: ignore[attr-defined]
+  env._v39_support_dwell_penalty[env_ids] = 0.0  # type: ignore[attr-defined]
+  env._v39_foot_transfer[env_ids] = 0.0  # type: ignore[attr-defined]
+  env._v39_head_best[env_ids] = 0.0  # type: ignore[attr-defined]
+  env._v39_head_best_delta[env_ids] = 0.0  # type: ignore[attr-defined]
+  env._v39_head_best_initialized[env_ids] = False  # type: ignore[attr-defined]
+
+
+@torch.no_grad()
+def update_v39_support_exit(
+  env: ManagerBasedRlEnv,
+  env_ids: torch.Tensor | None = None,
+  hand_sensor_name: str = "v38_hand_ground_contact",
+  knee_sensor_name: str = "v38_knee_ground_contact",
+  foot_sensor_name: str = "v37_foot_ground_contact",
+  grace_steps: int = 60,
+  full_penalty_steps: int = 180,
+  exit_height: float = 0.55,
+  exit_upright: float = 0.55,
+  progress_scale: float = 0.0125,
+  relative_to_env_origin: bool = False,
+) -> None:
+  """Make hands and knees a temporary bridge to balanced two-foot support.
+
+  The dwell cost is inactive while genuinely lying. It ramps only after the
+  robot has reached a supported upright low waypoint. A separate best-so-far
+  head-height increment cannot be farmed by holding the kneeling pose.
+  """
+  if env_ids is None:
+    env_ids = torch.arange(env.num_envs, device=env.device)
+  if not hasattr(env, "_v39_support_dwell_steps"):
+    reset_v39_support_exit(env, env_ids)
+
+  head_z, _, upright, _ = _head_height_and_upright(
+    env, env_ids, relative_to_env_origin=relative_to_env_origin
+  )
+  hand = _support_sensor_any(env, hand_sensor_name)[env_ids]
+  knee = _support_sensor_any(env, knee_sensor_name)[env_ids]
+  left, right, load_share = _v37_bilateral_foot_state(env, foot_sensor_name)
+  bilateral = left[env_ids] & right[env_ids]
+  load_share = load_share[env_ids]
+
+  exit_ready = (head_z >= exit_height) & (upright >= exit_upright)
+  lingering = exit_ready & (hand | knee)
+  dwell = env._v39_support_dwell_steps[env_ids]  # type: ignore[attr-defined]
+  dwell = torch.where(lingering, dwell + 1, torch.zeros_like(dwell))
+  env._v39_support_dwell_steps[env_ids] = dwell  # type: ignore[attr-defined]
+  ramp = torch.clamp(
+    (dwell.float() - float(grace_steps))
+    / float(max(full_penalty_steps - grace_steps, 1)),
+    min=0.0,
+    max=1.0,
+  )
+  env._v39_support_dwell_penalty[env_ids] = ramp * (  # type: ignore[attr-defined]
+    0.55 * hand.float() + knee.float()
+  )
+
+  height_progress = torch.clamp((head_z - 0.50) / 0.58, 0.0, 1.0)
+  upright_progress = torch.clamp((upright - 0.45) / 0.40, 0.0, 1.0)
+  load_balance = torch.clamp(load_share / 0.35, 0.0, 1.0)
+  support_release = torch.clamp(
+    1.0 - 0.45 * hand.float() - 0.75 * knee.float(), min=0.0
+  )
+  env._v39_foot_transfer[env_ids] = (  # type: ignore[attr-defined]
+    bilateral.float()
+    * load_balance
+    * torch.sqrt(height_progress * upright_progress)
+    * support_release
+  )
+
+  pure_height = torch.clamp((head_z - 0.45) / 0.67, 0.0, 1.0)
+  initialized = env._v39_head_best_initialized[env_ids]  # type: ignore[attr-defined]
+  best = env._v39_head_best[env_ids]  # type: ignore[attr-defined]
+  delta = torch.where(initialized, torch.clamp(pure_height - best, min=0.0), 0.0)
+  env._v39_head_best_delta[env_ids] = torch.clamp(  # type: ignore[attr-defined]
+    delta / max(progress_scale, 1.0e-6), 0.0, 1.0
+  )
+  env._v39_head_best[env_ids] = torch.where(  # type: ignore[attr-defined]
+    initialized, torch.maximum(best, pure_height), pure_height
+  )
+  env._v39_head_best_initialized[env_ids] = True  # type: ignore[attr-defined]
 
 
 @torch.no_grad()

@@ -38,6 +38,9 @@ __all__ = [
   "lafan_milestone_stage_metric",
   "prone_leg_splay_excess_l2",
   "prone_support_route",
+  "v39_foot_transfer_reward",
+  "v39_head_best_progress_reward",
+  "v39_support_dwell_penalty",
   "recovery_initiation_progress",
   "cached_smp_score",
   "cached_task_score",
@@ -1075,6 +1078,29 @@ def v38_knee_support_metric(env: ManagerBasedRlEnv) -> torch.Tensor:
   if value is None:
     return torch.zeros(env.num_envs, device=env.device)
   return value.float()
+
+def v39_support_dwell_penalty(env: ManagerBasedRlEnv) -> torch.Tensor:
+  """Ramped post-waypoint hand/knee dwell cost cached by the V39 event."""
+  value = getattr(env, "_v39_support_dwell_penalty", None)
+  if value is None:
+    return torch.zeros(env.num_envs, device=env.device)
+  return value
+
+
+def v39_foot_transfer_reward(env: ManagerBasedRlEnv) -> torch.Tensor:
+  """Balanced two-foot load with hand/knee release and upward progress."""
+  value = getattr(env, "_v39_foot_transfer", None)
+  if value is None:
+    return torch.zeros(env.num_envs, device=env.device)
+  return value
+
+
+def v39_head_best_progress_reward(env: ManagerBasedRlEnv) -> torch.Tensor:
+  """Positive increment in pure head height, independent of support labels."""
+  value = getattr(env, "_v39_head_best_delta", None)
+  if value is None:
+    return torch.zeros(env.num_envs, device=env.device)
+  return value
 
 
 def transition_leg_asymmetry_l2(

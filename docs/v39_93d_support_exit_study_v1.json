@@ -1,0 +1,155 @@
+{
+  "schema_version": 1,
+  "study_id": "smp-v39-93d-support-exit-v1",
+  "status": "PREREGISTERED_READY_FOR_TRAINING",
+  "study_role": "ENGINEERING_SIM2REAL_SUPPORT_EXIT_STUDY_NOT_RAL_OR_HARDWARE_EVIDENCE",
+  "question": "Can time-limited hand/knee support, pure height progress, and balanced two-foot transfer escape the V38 kneeling local optimum without weakening the deployable actuator envelope?",
+  "diagnostic_origin": {
+    "v38_evaluation_plan_id": "aed12a0fba0d5339504bec946575f3d6494996f82f4b54d200ce7ca03c88b6d6",
+    "v38_cells": 216,
+    "v38_rollouts": 55296,
+    "v38_strict_success_rate": 0.0,
+    "observation": "V38-B raised mean maximum head height and uprightness but converged to persistent hand/knee or low seated support; no policy seed reached 1.08 m strict standing.",
+    "causal_hypothesis": "Persistent low-support reward and support-bearing route potential do not create enough incentive to release hands and knees after the first waypoint and transfer load to both feet.",
+    "not_hardware_state_replay": true
+  },
+  "source_policies": [
+    {
+      "source_policy_seed": 20262101,
+      "wandb_run_id": "eg3y2pkx",
+      "checkpoint_path": "logs/rsl_rl/smp_getup_v38_93d_route_g1/2026-09-09_18-23-05_v38_b_8k_seed20262101_online/model_7999.pt",
+      "checkpoint_sha256": "9916557d1fc332e7026d3540af4524881c316e108185229bd5a7cee947b7948f"
+    },
+    {
+      "source_policy_seed": 20262102,
+      "wandb_run_id": "z0yusgoe",
+      "checkpoint_path": "logs/rsl_rl/smp_getup_v38_93d_route_g1/2026-09-09_18-23-05_v38_b_8k_seed20262102_online/model_7999.pt",
+      "checkpoint_sha256": "7da545c5a5d0f14fbbebc07ee188a32444463e868616d2318226dae8258d54bb"
+    },
+    {
+      "source_policy_seed": 20262103,
+      "wandb_run_id": "n9065j9b",
+      "checkpoint_path": "logs/rsl_rl/smp_getup_v38_93d_route_g1/2026-09-09_18-23-05_v38_b_8k_seed20262103_online/model_7999.pt",
+      "checkpoint_sha256": "7827252f6904f1dc45547bf5b138d8b5ac5ac484407dbdde68b1bada741cb823"
+    }
+  ],
+  "source_contract": {
+    "embedded_iteration": 7999,
+    "actor_input_dim": 93,
+    "critic_input_dim": 960,
+    "same_seed_source_mapping": {
+      "20262201": 20262101,
+      "20262202": 20262102,
+      "20262203": 20262103
+    }
+  },
+  "arms": [
+    {
+      "arm": "A",
+      "task": "Smp-Getup-V39-93D-Control-G1",
+      "treatment": "exact V38-B environment continuation control"
+    },
+    {
+      "arm": "B",
+      "task": "Smp-Getup-V39-93D-Support-Exit-G1",
+      "treatment": "A plus time-limited post-waypoint hand/knee support, pure best-height progress, and balanced two-foot transfer with support release"
+    }
+  ],
+  "shared_contract": {
+    "episode_length_s": 20.0,
+    "terrain": "flat",
+    "plate_probability": 0.0,
+    "automatic_wrench": false,
+    "actor_observation": "93D one-frame proprioception",
+    "actor_forbidden_inputs": [
+      "true_base_linear_velocity",
+      "contact_labels",
+      "reset_labels",
+      "terrain_identity",
+      "future_reference"
+    ],
+    "policy_rate_hz": 50,
+    "target_velocity_limit_rad_s": 2.5,
+    "target_acceleration_limit_rad_s2": 15.0,
+    "effective_nominal_effort_fraction": 0.72,
+    "stage_hold_steps": {"seated": 15, "crouched": 25, "standing": 100}
+  },
+  "treatment_contract": {
+    "support_exit_grace_steps": 60,
+    "support_exit_full_penalty_steps": 180,
+    "support_exit_minimum_head_height_m": 0.55,
+    "support_exit_minimum_upright": 0.55,
+    "hand_dwell_coefficient": 0.55,
+    "knee_dwell_coefficient": 1.0,
+    "support_dwell_reward_weight": -0.24,
+    "pure_best_head_height_progress_weight": 0.55,
+    "balanced_two_foot_transfer_weight": 0.35,
+    "v38_route_progress_weight": 0.20,
+    "prone_support_route_weight": 0.04,
+    "training_only_privileged_signals": [
+      "hand contact",
+      "knee/shin contact",
+      "foot contact and force",
+      "recovery stage",
+      "head height and uprightness"
+    ]
+  },
+  "training_protocol": {
+    "training_seeds": [20262201, 20262202, 20262203],
+    "agent_and_environment_seed_identical": true,
+    "gpu_assignment": {
+      "A/20262201": 0,
+      "A/20262202": 1,
+      "A/20262203": 2,
+      "B/20262201": 3,
+      "B/20262202": 4,
+      "B/20262203": 5
+    },
+    "gpus_6_and_7_reserved": true,
+    "warm_start": "matched V38-B actor critic and normalizers by source seed",
+    "reset_optimizer_iteration_and_environment_steps": true,
+    "num_envs": 4096,
+    "rollout_steps_per_update": 24,
+    "max_iterations": 12000,
+    "save_interval": 500,
+    "evaluation_gates": [0, 2000, 4000, 8000, 11999],
+    "learning_rate": 0.00001,
+    "wandb_mode": "online",
+    "no_automatic_restart": true
+  },
+  "evaluation_protocol": {
+    "eval_seed": 20262210,
+    "num_envs_per_cell": 256,
+    "steps_per_cell": 750,
+    "pose_strata": [
+      "prone",
+      "supine",
+      "left_side",
+      "right_side",
+      "synthetic_seated_trap",
+      "post_roll_supine_crossed"
+    ],
+    "strict_success": {
+      "head_height_m": 1.08,
+      "minimum_upright": 0.85,
+      "maximum_absolute_head_vertical_speed_m_s": 0.12,
+      "consecutive_hold_steps": 100
+    },
+    "required_outcomes": [
+      "strict success by pose and independent policy seed",
+      "maximum head height and uprightness",
+      "hand knee and bilateral-foot support dwell",
+      "foot slip root drift action first and second differences",
+      "peak joint speed torque and power"
+    ]
+  },
+  "claim_boundary": {
+    "not_ral_evidence": true,
+    "not_from_scratch_reproducibility": true,
+    "no_hardware_authorization": true,
+    "training_reward_is_not_selection_evidence": true,
+    "complete_negative_results_are_retained": true,
+    "no_threshold_relaxation_or_selective_seed_rerun": true,
+    "smoke_protocol_plan_and_checkpoints_are_not_performance_evidence": true
+  }
+}
