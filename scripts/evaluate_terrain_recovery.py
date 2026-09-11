@@ -72,7 +72,7 @@ def _run_case(
   os.environ["SMP_PLAY_TERRAIN_LEVEL"] = str(level)
   is_v37_trap = reset_mode == "synthetic_seated_trap"
   is_v38_post_roll = reset_mode == "post_roll_supine_crossed"
-  is_support_transition = "V37" in cfg.task or "V38" in cfg.task
+  is_support_transition = any(tag in cfg.task for tag in ("V37", "V38", "V39"))
   canonical_reset_mode = (
     "prone" if is_v37_trap else "supine" if is_v38_post_roll else reset_mode
   )
@@ -114,7 +114,7 @@ def _run_case(
   agent_cfg = load_rl_cfg(cfg.task)
   env_cfg.scene.num_envs = cfg.num_envs
   env_cfg.seed = cfg.seed
-  if "V38" in cfg.task:
+  if "V38" in cfg.task or "V39" in cfg.task:
     # Evaluation-only sensors make A/B support telemetry symmetric.  They are
     # manager-side measurements and never enter the frozen 93D actor input.
     from mjlab.sensor.contact_sensor import ContactMatch, ContactSensorCfg
@@ -182,7 +182,7 @@ def _run_case(
     raise RuntimeError("terrain evaluation requires a supported fall reset event")
   if is_v37_trap:
     if not is_support_transition:
-      raise ValueError("synthetic_seated_trap requires a V37/V38 task")
+      raise ValueError("synthetic_seated_trap requires a V37/V38/V39 task")
     from mjlab.managers.event_manager import EventTermCfg
 
     trap = env_cfg.events.get("photo_informed_seated_trap_reset")
@@ -531,7 +531,7 @@ def _run_case(
         joint[:, 2] - joint[:, 3]
       )
       leg_asymmetry_sum += torch.where(active, leg_asymmetry, 0.0)
-      if "V38" in cfg.task:
+      if "V38" in cfg.task or "V39" in cfg.task:
         hand_found = raw_env.scene["v38_hand_ground_contact"].data.found
         knee_found = raw_env.scene["v38_knee_ground_contact"].data.found
         if hand_found is None or knee_found is None:
