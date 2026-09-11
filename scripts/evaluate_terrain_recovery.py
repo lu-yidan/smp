@@ -73,6 +73,7 @@ def _run_case(
   is_v37_trap = reset_mode == "synthetic_seated_trap"
   is_v38_post_roll = reset_mode == "post_roll_supine_crossed"
   is_support_transition = any(tag in cfg.task for tag in ("V37", "V38", "V39"))
+  uses_v38_schema = "V38" in cfg.task or "V39" in cfg.task
   canonical_reset_mode = (
     "prone" if is_v37_trap else "supine" if is_v38_post_roll else reset_mode
   )
@@ -114,7 +115,7 @@ def _run_case(
   agent_cfg = load_rl_cfg(cfg.task)
   env_cfg.scene.num_envs = cfg.num_envs
   env_cfg.seed = cfg.seed
-  if "V38" in cfg.task or "V39" in cfg.task:
+  if uses_v38_schema:
     # Evaluation-only sensors make A/B support telemetry symmetric.  They are
     # manager-side measurements and never enter the frozen 93D actor input.
     from mjlab.sensor.contact_sensor import ContactMatch, ContactSensorCfg
@@ -207,8 +208,8 @@ def _run_case(
     else:
       trap.params["probability"] = 1.0
   if is_v38_post_roll:
-    if "V38" not in cfg.task:
-      raise ValueError("post_roll_supine_crossed requires a V38 task")
+    if not uses_v38_schema:
+      raise ValueError("post_roll_supine_crossed requires a V38/V39 task")
     from mjlab.managers.event_manager import EventTermCfg
 
     post_roll = env_cfg.events.get("post_roll_supine_failure_reset")
@@ -531,7 +532,7 @@ def _run_case(
         joint[:, 2] - joint[:, 3]
       )
       leg_asymmetry_sum += torch.where(active, leg_asymmetry, 0.0)
-      if "V38" in cfg.task or "V39" in cfg.task:
+      if uses_v38_schema:
         hand_found = raw_env.scene["v38_hand_ground_contact"].data.found
         knee_found = raw_env.scene["v38_knee_ground_contact"].data.found
         if hand_found is None or knee_found is None:
@@ -590,27 +591,27 @@ def _run_case(
       reason = "success"
     elif not bool(reset_contact_valid[index]):
       reason = (
-        "invalid_initialization" if "V38" in cfg.task else "invalid_reset_contact"
+        "invalid_initialization" if uses_v38_schema else "invalid_reset_contact"
       )
-    elif not bool(finite_action[index]) and "V38" in cfg.task:
+    elif not bool(finite_action[index]) and uses_v38_schema:
       reason = "nonfinite_action"
     elif bool(invalid_dynamics[index]):
       reason = "invalid_dynamics"
-    elif bool(terrain_exit[index]) and "V38" not in cfg.task:
+    elif bool(terrain_exit[index]) and not uses_v38_schema:
       reason = "terrain_exit"
     elif int(first_head_height[index]) < 0:
       reason = "head_height_not_reached"
     elif int(first_upright[index]) < 0:
       reason = "upright_not_reached"
-    elif int(first_linear_settled[index]) < 0 and "V38" not in cfg.task:
+    elif int(first_linear_settled[index]) < 0 and not uses_v38_schema:
       reason = "linear_speed_not_settled"
-    elif int(first_angular_settled[index]) < 0 and "V38" not in cfg.task:
+    elif int(first_angular_settled[index]) < 0 and not uses_v38_schema:
       reason = "angular_speed_not_settled"
     elif int(first_head_vertical_settled[index]) < 0:
       reason = "head_vertical_speed_not_settled"
     else:
       reason = (
-        "stable_hold_too_short" if "V38" in cfg.task else "strict_candidate_not_held"
+        "stable_hold_too_short" if uses_v38_schema else "strict_candidate_not_held"
       )
     failure_reasons.append(reason)
   reason_codebook = (
@@ -624,7 +625,7 @@ def _run_case(
       "head_vertical_speed_not_settled",
       "stable_hold_too_short",
     )
-    if "V38" in cfg.task
+    if uses_v38_schema
     else (
       "success",
       "invalid_reset_contact",

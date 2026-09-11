@@ -57,7 +57,7 @@ class V39EvaluationTest(unittest.TestCase):
     ).read_text()
     self.assertIn('reset_mode == "post_roll_supine_crossed"', source)
     self.assertIn('"_v38_post_roll_supine_reset"', source)
-    self.assertIn("V39", source)
+    self.assertIn("uses_v38_schema", source)
     self.assertIn('"first_head_vertical_speed_step"', source)
     self.assertIn('"longest_strict_hold_steps"', source)
 
