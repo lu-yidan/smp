@@ -9,18 +9,20 @@ import subprocess
 def main():
   p = argparse.ArgumentParser(description=__doc__)
   p.add_argument("--preflight", action="store_true")
+  p.add_argument("--longer-holds", action="store_true", help="Launch R3/R4 on GPU4/5 only")
   a = p.parse_args()
   root = Path(__file__).resolve().parents[1]
   suffix = "smoke" if a.preflight else "10000"
-  control = root / "run_control" / f"natural_low_seed20260911_{suffix}"
+  prefix = "natural_low_longer" if a.longer_holds else "natural_low"
+  control = root / "run_control" / f"{prefix}_seed20260911_{suffix}"
   control.mkdir(parents=True, exist_ok=False)
   records = []
-  for arm, gpu in (("R1", 2), ("R2", 3)):
+  for arm, gpu in ((("R3", 4), ("R4", 5)) if a.longer_holds else (("R1", 2), ("R2", 3))):
     logdir = root / "logs/rsl_rl/scratch93_natural_low" / f"{arm}_seed20260911_{suffix}"
     assert not logdir.exists()
     cmd = [str(root/".venv/bin/python"), "-u", "scripts/train_natural_low_ablation.py",
            "--arm", arm, "--num-envs", "128" if a.preflight else "4096",
-           "--iterations", "4" if a.preflight else "10000", "--log-dir", str(logdir)]
+           "--iterations", ("5" if a.longer_holds else "4") if a.preflight else "10000", "--log-dir", str(logdir)]
     if a.preflight: cmd.append("--preflight")
     run_id = f"scratch93-natural-low-{arm.lower()}-seed20260911"
     env = dict(os.environ, CUDA_VISIBLE_DEVICES=str(gpu), PYTHONPATH="src:scripts:.",

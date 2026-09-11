@@ -16,6 +16,14 @@ def main():
     z["scene"]["terrain"]["spec_fn"] = z["scene"]["terrain"]["spec_fn"].__qualname__
     z["terminations"].pop("smp_too_low")
   assert x == y and asdict(aa) == asdict(bb)
+  for arm, hold in (("R3", 1.0), ("R4", 1.5)):
+    c, cc = build_config(arm, path)
+    z = asdict(c)
+    z["scene"]["terrain"]["spec_fn"] = z["scene"]["terrain"]["spec_fn"].__qualname__
+    z["terminations"].pop("smp_too_low")
+    assert z == x and asdict(cc) == asdict(aa)
+    params = c.terminations["smp_too_low"].params
+    assert params["natural_grace_seconds"] == 0.5 and params["natural_hold_seconds"] == hold
   assert a.observations["actor"].enable_corruption
   assert all(k in a.events for k in ("foot_friction", "encoder_bias", "base_com", "push_robot", "gsi_refresh"))
   env = SimpleNamespace(step_dt=0.02, _natural_type=torch.tensor([0, -1]),
@@ -36,12 +44,17 @@ def main():
   env.episode_length_buf.zero_()
   assert not natural_persistent_low_smp(env).any()
   bank=np.load(path); names=("supine","prone","left_side_down","right_side_down")
+  for hold, first_step in ((0.5, 50), (1.0, 75), (1.5, 100)):
+    env._natural_bad_count.zero_(); env._smp_raw_err.fill_(1)
+    for step in range(1, first_step + 1):
+      env.episode_length_buf[:] = step
+      assert bool(natural_persistent_low_smp(env, natural_hold_seconds=hold)[0]) == (step == first_step)
   masses=[float(bank["sampling_weights"][bank["labels"]==n].sum()) for n in names]
   assert np.allclose(masses,[.1,.2,.2,.5])
   train_groups={s.replace("__mirror","") for s in bank["clips"]}
   test=np.load(path.replace(".npz","_heldout.npz"))
   assert not train_groups & {s.replace("__mirror","") for s in test["clips"]}
-  print("PASS: R1/R2 differ only in low-SMP timing; noise/DR retained; grace, persistence, recovery reset and unchanged GSI gate; sampling weights; clip/mirror holdout")
+  print("PASS: R1-R4 differ only in low-SMP timing; noise/DR retained; first termination at steps 50/75/100; recovery clears counter; GSI gate unchanged; sampling weights and clip/mirror holdout")
 
 
 if __name__ == "__main__":

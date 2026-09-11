@@ -24,9 +24,10 @@ def build_config(arm, bank_path, num_envs=4096, seed=20260911):
   cfg, agent = baseline_config("B1", num_envs, seed)
   cfg.events["gsi_reset"] = EventTermCfg(func=natural_mixed_reset, mode="reset",
     params={"bank_path": str(Path(bank_path).resolve()), "probability": 0.1})
-  if arm == "R2":
+  if arm in ("R2", "R3", "R4"):
     cfg.terminations["smp_too_low"].func = natural_persistent_low_smp
-    cfg.terminations["smp_too_low"].params.update(natural_grace_seconds=0.5, natural_hold_seconds=0.5)
+    cfg.terminations["smp_too_low"].params.update(
+      natural_grace_seconds=0.5, natural_hold_seconds={"R2": 0.5, "R3": 1.0, "R4": 1.5}[arm])
   elif arm != "R1":
     raise ValueError(arm)
   return cfg, agent
@@ -61,7 +62,7 @@ class NaturalLoggedWrapper(AblationWrapper):
 
 def main():
   p = argparse.ArgumentParser(description=__doc__)
-  p.add_argument("--arm", choices=("R1", "R2"), required=True)
+  p.add_argument("--arm", choices=("R1", "R2", "R3", "R4"), required=True)
   p.add_argument("--bank", type=Path, default=Path("datasets/reset_banks/natural_low_right_v1.npz"))
   p.add_argument("--num-envs", type=int, default=4096)
   p.add_argument("--iterations", type=int, default=10000)
@@ -85,8 +86,8 @@ def main():
     prior_sha256=prior_hash, bank_sha256=hashlib.sha256(a.bank.read_bytes()).hexdigest(),
     natural_reset_probability=0.1, natural_direction_probability=dict(supine=0.1, prone=0.2, left=0.2, right=0.5),
     natural_velocity="zero; repeated static SMP history", low_smp_threshold=0.02,
-    natural_grace_seconds=0.5 if a.arm == "R2" else 0.1,
-    natural_bad_hold_seconds=0.5 if a.arm == "R2" else 0.0,
+    natural_grace_seconds=0.1 if a.arm == "R1" else 0.5,
+    natural_bad_hold_seconds={"R1": 0.0, "R2": 0.5, "R3": 1.0, "R4": 1.5}[a.arm],
     gsi_termination="original 5-step grace, single low score",
     source_commit=subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip())
   (a.log_dir / "launch.json").write_text(json.dumps(metadata, indent=2))

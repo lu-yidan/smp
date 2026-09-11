@@ -1,6 +1,6 @@
-# R1/R2：从零训练的自然低位 reset 消融
+# R1–R4：从零训练的自然低位 reset 消融
 
-以 B1 为对照：部署适配 93D 单帧 actor、10 秒 episode、原始 f2s2 prior、动态 GSI、原奖励、原 PPO、观测噪声和域随机化。两组不加载任何旧 PPO checkpoint。4096 环境，10000 次更新，每 500 次保存，seed 20260911。
+以 B1 为对照：部署适配 93D 单帧 actor、10 秒 episode、原始 f2s2 prior、动态 GSI、原奖励、原 PPO、观测噪声和域随机化。四组不加载任何旧 PPO checkpoint。4096 环境，10000 次更新，每 500 次保存，seed 20260911。
 
 分支 `codex/scratch-recovery-low-reset`；本地 `/home/luyd/workspace/smp-master-repro`，服务器 `/root/workplace/smp-master-repro`。
 
@@ -9,6 +9,8 @@
 | B1（正在继续） | 1 | 100% 原始 GSI | 不适用，原规则 |
 | R1 | 2 | 90% 原始 GSI + 10% 自然低位 | 原规则：5 步后单次低于阈值即结束 |
 | R2 | 3 | 与 R1 完全相同 | 先宽限 0.5 秒，之后连续低分 0.5 秒才结束 |
+| R3 | 4 | 与 R1 完全相同 | 先宽限 0.5 秒，之后连续低分 1.0 秒才结束 |
+| R4 | 5 | 与 R1 完全相同 | 先宽限 0.5 秒，之后连续低分 1.5 秒才结束 |
 
 B0 在 GPU0 继续。B2–B5 已按用户方向停止，保留最近 checkpoint，停止进度记录在服务器 `run_control/scratch93_termination_seed20260911_10000/stopped_B2_B5_for_reset_experiments.json`，不声称它们完成了 10000 次更新。
 
@@ -47,6 +49,8 @@ B0 在 GPU0 继续。B2–B5 已按用户方向停止，保留最近 checkpoint�
 
 沿用现有管理器时序：终止检查读取上一控制步计算的 raw SMP。R1/R2 只改变上述时间条件，没有改变阈值或奖励。R2 联合检验启动宽限与持续超标计时；若有效，后续才能拆分两者各自贡献。
 
+R3/R4 是用户要求增加的持续时间对照：启动宽限仍为 0.5 秒，只将连续低分阈值改为 1.0/1.5 秒。如果始终低分，最早分别在第75/100步（1.5/2.0秒）结束。中途一次达标即清零连续计时，不累计断续低分。这轮不是把启动宽限改成1/1.5秒；R2/R3/R4之间仅持续低分时间不同。R1/R2原运行不重启。
+
 站起终止仍是头高≥1.2m、base速度<0.5m/s连续0.5秒（作为截断）；10秒超时作为截断；数值不稳定保护始终生效。宽限不关闭这些条件。
 
 ## prior 选择
@@ -64,8 +68,12 @@ W&B：
 
 - R1：https://wandb.ai/tabletennis/smp/runs/scratch93-natural-low-r1-seed20260911
 - R2：https://wandb.ai/tabletennis/smp/runs/scratch93-natural-low-r2-seed20260911
+- R3：https://wandb.ai/tabletennis/smp/runs/scratch93-natural-low-r3-seed20260911
+- R4：https://wandb.ai/tabletennis/smp/runs/scratch93-natural-low-r4-seed20260911
 
 新增 `Natural/*` 日志包括各方向 episode 抽样比例、自然 reset 实际步数占比，以及自然/GSI 各自低 SMP 和站起终止率；这些训练终止率仍不是固定倒地评测成功率。
 
 正式 checkpoint：`logs/rsl_rl/scratch93_natural_low/R{1,2}_seed20260911_10000/`。
 启动记录：`run_control/natural_low_seed20260911_10000/launches.json`。
+
+R3/R4 对应 `R3_seed20260911_10000/` 和 `R4_seed20260911_10000/`，启动记录为 `run_control/natural_low_longer_seed20260911_10000/launches.json`；批量启动入口增加 `--longer-holds` 仅启动GPU4/5上的两组。新增两组试跑为128环境、5次更新，逻辑检查覆盖第50/75/100步边界以及分数恢复后计数清零。
