@@ -36,3 +36,21 @@ assert not fixed_low_smp(x,low_enabled=True).any()
 x.episode_length_buf[:]=500
 assert b.terminations['time_out'].func(x).all()
 print('PASS: sole L0/L1 config difference is low_enabled; quota counts; original >=5 gate; only low groups bypass; timeout/noise/DR/PPO preserved')
+
+# L2 changes only the low-group threshold, with the original timing retained.
+l0,p0=build_config('L0',bank);l2,p2=build_config('L2',bank)
+assert l2.terminations['smp_too_low'].params.pop('low_threshold')==.005
+d0,d2=asdict(l0),asdict(l2)
+d2['scene']['terrain']['spec_fn']=d0['scene']['terrain']['spec_fn']
+assert d0==d2 and asdict(p0)==asdict(p2)
+x._smp_raw_err[:]=.75
+x.episode_length_buf[:]=4
+assert not fixed_low_smp(x,low_threshold=.005).any()
+x.episode_length_buf[:]=5
+assert fixed_low_smp(x).all()
+assert fixed_low_smp(x,low_threshold=.005).tolist()==[True,True,False,False,False,False]
+x._smp_raw_err[:]=1
+assert fixed_low_smp(x,low_threshold=.005).all()
+x._smp_raw_err[:]=0
+assert not fixed_low_smp(x,low_threshold=.005).any()
+print('PASS: L2 changes only low threshold to .005; original timing and other groups preserved')

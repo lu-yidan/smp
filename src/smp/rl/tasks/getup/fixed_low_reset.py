@@ -50,10 +50,13 @@ def reset_fixed_low(env,env_ids=None,bank_path=''):
   env._course_draws+=torch.bincount(env._course_stages[indices],minlength=3)
 
 
-def fixed_low_smp(env,threshold=.02,ws=6.,grace_steps=5,low_enabled=True):
+def fixed_low_smp(env,threshold=.02,ws=6.,grace_steps=5,low_enabled=True,low_threshold=None):
   ordinary=smp_too_low(env,threshold=threshold,ws=ws,grace_steps=grace_steps)
   env._fixed_would_low=ordinary.clone()
-  return ordinary if low_enabled else ordinary & (env._fixed_group<2)
+  if not low_enabled:return ordinary & (env._fixed_group<2)
+  if low_threshold is None:return ordinary
+  relaxed=smp_too_low(env,threshold=low_threshold,ws=ws,grace_steps=grace_steps)
+  return torch.where(env._fixed_group<2,ordinary,relaxed)
 
 
 def recorded_task_smp_product(env,task_terms,**kwargs):

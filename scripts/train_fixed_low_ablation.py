@@ -14,11 +14,12 @@ from smp.rl.tasks.getup.fixed_low_reset import reset_fixed_low,fixed_low_smp,rec
 
 
 def build_config(arm,bank_path,num_envs=4096,seed=20260912):
-  assert arm in ('L0','L1')
+  assert arm in ('L0','L1','L2')
   cfg,agent=natural_config(bank_path,num_envs,seed,initial_lr=1e-4)
   cfg.events['gsi_reset']=EventTermCfg(func=reset_fixed_low,mode='reset',params={'bank_path':str(Path(bank_path).resolve())})
   cfg.terminations['smp_too_low'].func=fixed_low_smp
-  cfg.terminations['smp_too_low'].params['low_enabled']=arm=='L0'
+  cfg.terminations['smp_too_low'].params['low_enabled']=arm!='L1'
+  if arm=='L2':cfg.terminations['smp_too_low'].params['low_threshold']=.005
   cfg.rewards['task_smp_product'].func=recorded_task_smp_product
   return cfg,agent
 
@@ -64,13 +65,13 @@ class FixedRunner(MjlabOnPolicyRunner):
 
 
 def main():
-  p=argparse.ArgumentParser();p.add_argument('--arm',choices=['L0','L1'],required=True);p.add_argument('--bank-dir',type=Path,required=True);p.add_argument('--log-dir',type=Path,required=True);p.add_argument('--eval-workspace',type=Path,required=True);p.add_argument('--eval-gpu',required=True);p.add_argument('--num-envs',type=int,default=4096);p.add_argument('--iterations',type=int,default=10000);p.add_argument('--seed',type=int,default=20260912);p.add_argument('--preflight',action='store_true');a=p.parse_args()
+  p=argparse.ArgumentParser();p.add_argument('--arm',choices=['L0','L1','L2'],required=True);p.add_argument('--bank-dir',type=Path,required=True);p.add_argument('--log-dir',type=Path,required=True);p.add_argument('--eval-workspace',type=Path,required=True);p.add_argument('--eval-gpu',required=True);p.add_argument('--num-envs',type=int,default=4096);p.add_argument('--iterations',type=int,default=10000);p.add_argument('--seed',type=int,default=20260912);p.add_argument('--preflight',action='store_true');a=p.parse_args()
   for key in ('bank_dir','log_dir','eval_workspace'):setattr(a,key,getattr(a,key).resolve())
   cfg,agent=build_config(a.arm,a.bank_dir/'train.npz',a.num_envs,a.seed)
   random.seed(a.seed);np.random.seed(a.seed);torch.manual_seed(a.seed)
   agent.max_iterations=a.iterations;agent.save_interval=500;agent.logger='tensorboard' if a.preflight else 'wandb';agent.upload_model=False;agent.run_name=f'{a.arm}_fixed_low_seed{a.seed}'
   a.log_dir.mkdir(parents=True,exist_ok=False)
-  metadata={'arm':a.arm,'from_scratch':True,'checkpoint_loaded':False,'seed':a.seed,'num_envs':a.num_envs,'iterations':a.iterations,'initial_learning_rate':1e-4,'low_smp_termination':a.arm=='L0','quota_counts_late_middle_supine_prone_left_right':quota_counts(a.num_envs),'quota_scope':'fixed env IDs throughout training; no adaptive curriculum','gsi_pool_size':0,'prior':'f2s2','episode_seconds':10,'save_interval':500,'source_commit':subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip(),'train_bank_sha256':hashlib.sha256((a.bank_dir/'train.npz').read_bytes()).hexdigest(),'validation_bank_sha256':hashlib.sha256((a.bank_dir/'validation.npz').read_bytes()).hexdigest()}
+  metadata={'arm':a.arm,'from_scratch':True,'checkpoint_loaded':False,'seed':a.seed,'num_envs':a.num_envs,'iterations':a.iterations,'initial_learning_rate':1e-4,'low_smp_termination':a.arm!='L1','low_smp_threshold':.005 if a.arm=='L2' else .02,'other_smp_threshold':.02,'grace_steps':5,'quota_counts_late_middle_supine_prone_left_right':quota_counts(a.num_envs),'quota_scope':'fixed env IDs throughout training; no adaptive curriculum','gsi_pool_size':0,'prior':'f2s2','episode_seconds':10,'save_interval':500,'source_commit':subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip(),'train_bank_sha256':hashlib.sha256((a.bank_dir/'train.npz').read_bytes()).hexdigest(),'validation_bank_sha256':hashlib.sha256((a.bank_dir/'validation.npz').read_bytes()).hexdigest()}
   atomic_json(a.log_dir/'launch.json',metadata);dump_yaml(a.log_dir/'params/env.yaml',asdict(cfg));dump_yaml(a.log_dir/'params/agent.yaml',asdict(agent))
   env=None
   try:
