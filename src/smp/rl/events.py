@@ -48,6 +48,7 @@ def init_smp_state(
   gsi_batch_size: int = 256,
   compile_model: bool = True,
   compile_mode: str | None = None,
+  gsi_ckpt_path: str | None = None,
 ) -> None:
   """Startup-mode event: load the frozen denoiser, allocate the feature buffer +
   ``DiffNormalizer`` (stashed on the env), and pre-generate the GSI pool of
@@ -74,6 +75,19 @@ def init_smp_state(
     feature_dim,
     window_size,
   )
+  # Optional independent generator; reward and termination keep _smp_bundle.
+  # Denormalize generated windows using the generator's own checkpoint stats.
+  if gsi_ckpt_path is not None:
+    device = torch.device(env.device)
+    devices = [device.index if device.index is not None else torch.cuda.current_device()] if device.type == "cuda" else []
+    with torch.random.fork_rng(devices=devices):
+      generator_bundle = load_denoiser(gsi_ckpt_path, env.device)
+    if generator_bundle[-2:] != (feature_dim, window_size):
+      raise ValueError("GSI and scoring prior must share feature layout and window size")
+    gm, gs, gl, gh, gf, gw = generator_bundle
+    env._gsi_bundle = (_maybe_compile(gm, compile_model, compile_mode), gs, gl, gh, gf, gw)
+  else:
+    env._gsi_bundle = env._smp_bundle
   robot = env.scene["robot"]
   env._smp_ee_indexes = torch.tensor(  # type: ignore[attr-defined]
     robot.find_bodies(list(EE_BODY_NAMES), preserve_order=True)[0],
@@ -190,7 +204,7 @@ def _prime_sim_and_buffer(
 @torch.no_grad()
 def _ddpm_sample(env: ManagerBasedRlEnv, n: int) -> torch.Tensor:
   """Run DDPM ancestral sampling and return ``n`` denormalized windows."""
-  model, scheduler, q_low, q_high, feature_dim, window_size = env._smp_bundle  # type: ignore[attr-defined]
+  model, scheduler, q_low, q_high, feature_dim, window_size = getattr(env, "_gsi_bundle", env._smp_bundle)
   x_t = torch.randn(n, window_size, feature_dim, device=env.device)
   for t_int in reversed(range(scheduler.num_timesteps)):
     t = torch.full((n,), t_int, dtype=torch.long, device=env.device)
