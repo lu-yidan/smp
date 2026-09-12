@@ -18,6 +18,8 @@ cfg,agent=build_config('datasets/reset_banks/natural_curriculum_v1/train.npz',12
 ref,ra=baseline('B1',128,20260912)
 for field in ['rewards','terminations','observations','actions','sim']:
  assert asdict(cfg)[field]==asdict(ref)[field],field
+assert agent.algorithm.learning_rate==1e-4
+ra.algorithm.learning_rate=1e-4
 assert asdict(agent)==asdict(ra)
 for key in ref.events:
  if key not in ('gsi_reset','gsi_refresh','init_smp_state'):assert asdict(cfg.events[key])==asdict(ref.events[key]),key
@@ -25,4 +27,4 @@ assert cfg.events['init_smp_state'].params['gsi_buffer_size']==0 and 'gsi_refres
 s={name:{'stable_1s':1.} for name in STAGES+DIRECTIONS};assert passes(s,0) and passes(s,1)
 s['right_side_down']['stable_1s']=.14;assert not passes(s,0)
 s['right_side_down']['stable_1s']=.2;assert passes(s,0) and not passes(s,1)
-print('PASS sampling weights, clip-group separation, four-direction validation, gating and unchanged B1 reward/PPO/noise/DR/termination')
+print('PASS sampling weights, clip-group separation, four-direction validation, gating and unchanged B1 reward/noise/DR/termination and PPO apart from shared initial lr1e-4')

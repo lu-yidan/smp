@@ -12,8 +12,9 @@ from train_termination_ablation import build_config as baseline_config, Ablation
 from smp.rl.tasks.getup.natural_curriculum import reset_natural_curriculum, STAGES, DIRECTIONS, MIXES
 
 
-def build_config(bank_path,num_envs=4096,seed=20260912):
+def build_config(bank_path,num_envs=4096,seed=20260912,initial_lr=1e-4):
   cfg,agent=baseline_config('B1',num_envs,seed)
+  agent.algorithm.learning_rate=initial_lr
   cfg.events['init_smp_state'].params['gsi_buffer_size']=0
   cfg.events.pop('gsi_refresh')
   cfg.events['gsi_reset']=EventTermCfg(func=reset_natural_curriculum,mode='reset',params={'bank_path':str(Path(bank_path).resolve())})
@@ -69,7 +70,7 @@ class CourseRunner(MjlabOnPolicyRunner):
     report_path=a.log_dir/'validation'/f'{iteration}.json';report_path.parent.mkdir(exist_ok=True)
     bank=np.load(a.bank_dir/'validation.npz')
     cmd=[str(a.eval_workspace/'.venv/bin/python'),'-u','scripts/audit_recovery_distribution.py','--policy-family','master','--checkpoint',str(Path(path).resolve()),'--steps','1000','--num-envs',str(len(bank['qpos'])),'--eval-bank',str((a.bank_dir/'validation.npz').resolve()),'--output',str(report_path.resolve())]
-    if a.preflight or iteration%1000==0 or iteration==a.iterations-1:
+    if not a.no_video and (a.preflight or iteration%1000==0 or iteration==a.iterations-1):
       cmd+=['--video',str((a.log_dir/'validation'/f'{iteration}_20s.mp4').resolve())]
     with open(report_path.with_suffix('.log'),'w') as log:
       subprocess.run(cmd,cwd=a.eval_workspace,env=dict(os.environ,PYTHONPATH='src:scripts:.',CUDA_VISIBLE_DEVICES=a.eval_gpu,MUJOCO_GL='egl',OMP_NUM_THREADS='4'),stdout=log,stderr=subprocess.STDOUT,check=True)
@@ -97,14 +98,14 @@ class CourseRunner(MjlabOnPolicyRunner):
 
 
 def main():
-  p=argparse.ArgumentParser();p.add_argument('--arm',choices=['N0','N1'],required=True);p.add_argument('--bank-dir',type=Path,required=True);p.add_argument('--log-dir',type=Path,required=True);p.add_argument('--pair-dir',type=Path,required=True);p.add_argument('--b1-checkpoint',type=Path);p.add_argument('--eval-workspace',type=Path,required=True);p.add_argument('--eval-gpu',default='2');p.add_argument('--num-envs',type=int,default=4096);p.add_argument('--iterations',type=int,default=10000);p.add_argument('--seed',type=int,default=20260912);p.add_argument('--preflight',action='store_true');a=p.parse_args()
+  p=argparse.ArgumentParser();p.add_argument('--arm',choices=['N0','N1'],required=True);p.add_argument('--bank-dir',type=Path,required=True);p.add_argument('--log-dir',type=Path,required=True);p.add_argument('--pair-dir',type=Path,required=True);p.add_argument('--b1-checkpoint',type=Path);p.add_argument('--eval-workspace',type=Path,required=True);p.add_argument('--eval-gpu',default='2');p.add_argument('--num-envs',type=int,default=4096);p.add_argument('--iterations',type=int,default=10000);p.add_argument('--seed',type=int,default=20260912);p.add_argument('--preflight',action='store_true');p.add_argument('--initial-lr',type=float,default=1e-4);p.add_argument('--no-video',action='store_true');a=p.parse_args()
   a.bank_dir=a.bank_dir.resolve();a.log_dir=a.log_dir.resolve();a.pair_dir=a.pair_dir.resolve();a.eval_workspace=a.eval_workspace.resolve()
   assert (a.arm=='N1')==(a.b1_checkpoint is not None)
-  cfg,agent=build_config(a.bank_dir/'train.npz',a.num_envs,a.seed)
+  cfg,agent=build_config(a.bank_dir/'train.npz',a.num_envs,a.seed,a.initial_lr)
   random.seed(a.seed);np.random.seed(a.seed);torch.manual_seed(a.seed)
   agent.max_iterations=a.iterations;agent.save_interval=500;agent.logger='tensorboard' if a.preflight else 'wandb';agent.upload_model=False;agent.run_name=f'{a.arm}_natural_curriculum_seed{a.seed}'
   a.log_dir.mkdir(parents=True,exist_ok=False);a.pair_dir.mkdir(parents=True,exist_ok=True)
-  metadata={'arm':a.arm,'initialization':'random actor and critic' if a.arm=='N0' else 'B1 actor and critic including observation normalizers; fresh optimizer, learning rate and iteration','b1_checkpoint':str(a.b1_checkpoint),'prior':'f2s2 frozen','gsi_reset':False,'seed':a.seed,'num_envs':a.num_envs,'iterations':a.iterations,'save_interval':500,'stage_mixes_late_middle_low':MIXES,'low_direction_weights':[.25]*4,'zero_velocity_static_history':True,'episode_seconds':10,'terminations':list(cfg.terminations),'validation_bank_sha256':hashlib.sha256((a.bank_dir/'validation.npz').read_bytes()).hexdigest(),'train_bank_sha256':hashlib.sha256((a.bank_dir/'train.npz').read_bytes()).hexdigest(),'source_commit':subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip()}
+  metadata={'arm':a.arm,'initialization':'random actor and critic' if a.arm=='N0' else 'B1 actor and critic including observation normalizers; fresh optimizer, learning rate and iteration','b1_checkpoint':str(a.b1_checkpoint),'prior':'f2s2 frozen','gsi_reset':False,'seed':a.seed,'initial_learning_rate':a.initial_lr,'num_envs':a.num_envs,'iterations':a.iterations,'save_interval':500,'stage_mixes_late_middle_low':MIXES,'low_direction_weights':[.25]*4,'zero_velocity_static_history':True,'episode_seconds':10,'terminations':list(cfg.terminations),'validation_bank_sha256':hashlib.sha256((a.bank_dir/'validation.npz').read_bytes()).hexdigest(),'train_bank_sha256':hashlib.sha256((a.bank_dir/'train.npz').read_bytes()).hexdigest(),'source_commit':subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip()}
   if a.b1_checkpoint:metadata['b1_sha256']=hashlib.sha256(a.b1_checkpoint.read_bytes()).hexdigest()
   atomic_json(a.log_dir/'launch.json',metadata);dump_yaml(a.log_dir/'params/env.yaml',asdict(cfg));dump_yaml(a.log_dir/'params/agent.yaml',asdict(agent))
   env=None
