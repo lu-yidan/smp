@@ -112,6 +112,11 @@ def main():
     env=ManagerBasedRlEnv(cfg,device='cuda:0');runner=CourseRunner(CourseWrapper(env,clip_actions=agent.clip_actions),asdict(agent),str(a.log_dir),'cuda:0');runner.args=a
     obs,_=env.reset();assert obs['actor'].shape[-1]==93 and obs['critic'].shape[-1]==960
     assert env._smp_gsi_pool.shape[0]==0 and env.sim.data.qvel.abs().max()<1e-6
+    buf=env._smp_buffer
+    for key in ('root_pos_w','root_quat_w','root_lin_vel_w','root_ang_vel_w','ee_pos_w','joint_pos','joint_vel'):
+      value=getattr(buf,key)
+      assert torch.allclose(value,value[:,:1].expand_as(value)),key
+    assert buf.root_lin_vel_w.abs().max()<1e-6 and buf.root_ang_vel_w.abs().max()<1e-6 and buf.joint_vel.abs().max()<1e-6
     assert cfg.observations['actor'].enable_corruption and 'push_robot' in cfg.events
     runner.save(str(a.log_dir/'random_initial.pt'))
     if a.b1_checkpoint:
