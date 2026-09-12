@@ -11,7 +11,12 @@ a,aa=build_config('L0',bank);b,bb=build_config('L1',bank)
 assert a.terminations['smp_too_low'].params['low_enabled'] is True
 assert b.terminations['smp_too_low'].params['low_enabled'] is False
 a.terminations['smp_too_low'].params['low_enabled']=False
-assert asdict(a)==asdict(b) and asdict(aa)==asdict(bb)
+da,db=asdict(a),asdict(b)
+# Terrain's default factory creates distinct, equivalent zero-capture lambdas.
+fa,fb=da['scene']['terrain']['spec_fn'],db['scene']['terrain']['spec_fn']
+assert fa.__code__==fb.__code__ and fa.__defaults__==fb.__defaults__ and fa.__closure__==fb.__closure__
+da['scene']['terrain']['spec_fn']=fb
+assert da==db and asdict(aa)==asdict(bb)
 c,ca=natural_config(bank)
 for key in ['observations','actions','sim','decimation','episode_length_s']:assert asdict(b)[key]==asdict(c)[key],key
 for key in ['time_out','stood_up','unstable_sim_state']:assert asdict(b.terminations[key])==asdict(c.terminations[key]),key

@@ -28,8 +28,14 @@ class FixedWrapper(CourseWrapper):
     env=self.unwrapped
     if not hasattr(self,'counts'):self.counts=torch.zeros(7,5,device=env.device,dtype=torch.float64)
     obs,reward,done,extras=super().step(actions)
+    logs=extras['log']
+    for key in list(logs):
+      if key.startswith('Curriculum/'):
+        value=logs.pop(key)
+        if key!='Curriculum/stage':logs['Quota/'+key[len('Curriculum/'):]]=value
     masks=[env._course_type==i for i in range(3)]+[(env._course_type==2)&(env._course_direction==i) for i in range(4)]
     for name,mask in zip(STAGES+DIRECTIONS,masks):
+      extras['log'][f'Quota/{name}/step_fraction']=mask.float().mean()
       for key,value in [('task_score',env._fixed_task_score),('smp_reward_factor',env._fixed_smp_score),('reward_product',env._fixed_product),('raw_smp_score',torch.exp(-6*env._smp_raw_err)),('would_low',env._fixed_would_low.float()),('current_age_s',env.episode_length_buf.float()*env.step_dt)]:
         extras['log'][f'LowGuidance/{name}/{key}']=value[mask].mean().detach()
     assert torch.bincount(env._fixed_group,minlength=6).tolist()==list(quota_counts(env.num_envs))
