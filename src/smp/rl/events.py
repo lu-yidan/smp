@@ -103,14 +103,15 @@ def init_smp_state(
   )
   env._smp_normalizer = DiffNormalizer(scheduler.num_timesteps, env.device)  # type: ignore[attr-defined]
 
-  if gsi_buffer_size <= 0:
-    msg = f"gsi_buffer_size must be positive, got {gsi_buffer_size}."
+  if gsi_buffer_size < 0:
+    msg = f"gsi_buffer_size must be nonnegative, got {gsi_buffer_size}."
     raise ValueError(msg)
   pool_chunks: list[torch.Tensor] = []
   for start in range(0, gsi_buffer_size, gsi_batch_size):
     bsz = min(gsi_batch_size, gsi_buffer_size - start)
     pool_chunks.append(_ddpm_sample(env, bsz))
-  env._smp_gsi_pool = torch.cat(pool_chunks, dim=0)  # type: ignore[attr-defined]
+  env._smp_gsi_pool = (torch.cat(pool_chunks, dim=0) if pool_chunks else
+                       torch.empty(0, window_size, feature_dim, device=env.device))  # type: ignore[attr-defined]
 
   if compile_model and env.num_envs != gsi_batch_size:
     # Warm the reward-path shape so its Inductor compile happens here.
@@ -119,7 +120,8 @@ def init_smp_state(
       dummy_t = torch.zeros(env.num_envs, dtype=torch.long, device=env.device)
       _ = model(dummy_x, dummy_t)
 
-  gsi_reset(env)
+  if gsi_buffer_size:
+    gsi_reset(env)
 
 
 def _prime_sim_and_buffer(
