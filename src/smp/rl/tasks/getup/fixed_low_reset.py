@@ -8,23 +8,26 @@ from smp.rl.tasks.getup.master_deployment_contract import JOINT_NAMES
 from smp.rl.tasks.getup.mdp.terminations import smp_too_low
 
 
-def quota_counts(num_envs):
-  each_low=max(1,int(num_envs*.025))
-  late=num_envs//2
+def quota_counts(num_envs,low_fraction=.1,late_fraction=.5):
+  if not (0 < low_fraction < 1 and 0 < late_fraction < 1 and low_fraction+late_fraction < 1):
+    raise ValueError("Invalid fixed reset fractions")
+  each_low=max(1,int(num_envs*low_fraction/4))
+  late=int(num_envs*late_fraction)
   middle=num_envs-late-4*each_low
   if middle<=0:raise ValueError('Too few environments for six nonempty groups')
   return (late,middle,each_low,each_low,each_low,each_low)
 
 
-def reset_fixed_low(env,env_ids=None,bank_path=''):
+def reset_fixed_low(env,env_ids=None,bank_path='',low_fraction=.1,late_fraction=.5):
   if env_ids is None:env_ids=torch.arange(env.num_envs,device=env.device)
   if not hasattr(env,'_fixed_group'):
     bank=np.load(bank_path,allow_pickle=False)
     env._course_bank=torch.as_tensor(bank['qpos'],device=env.device)
     env._course_labels=torch.tensor([DIRECTIONS.index(x) if x in DIRECTIONS else 4 for x in bank['labels']],device=env.device)
     env._course_stages=torch.tensor([STAGES.index(x) for x in bank['stages']],device=env.device)
+    env._fixed_quota_counts=quota_counts(env.num_envs,low_fraction,late_fraction)
     rng=torch.Generator(device=env.device).manual_seed(int(env.cfg.seed)+904173)
-    labels=torch.repeat_interleave(torch.arange(6,device=env.device),torch.tensor(quota_counts(env.num_envs),device=env.device))
+    labels=torch.repeat_interleave(torch.arange(6,device=env.device),torch.tensor(env._fixed_quota_counts,device=env.device))
     env._fixed_group=labels[torch.randperm(env.num_envs,device=env.device,generator=rng)]
     env._fixed_rng=torch.Generator(device=env.device).manual_seed(int(env.cfg.seed)+904193)
     base=weights_for(bank,0);env._fixed_pools=[]

@@ -54,3 +54,13 @@ assert fixed_low_smp(x,low_threshold=.005).all()
 x._smp_raw_err[:]=0
 assert not fixed_low_smp(x,low_threshold=.005).any()
 print('PASS: L2 changes only low threshold to .005; original timing and other groups preserved')
+
+# L3 is L1 with a larger, direction-balanced low-state quota only.
+l1,p1=build_config('L1',bank);l3,p3=build_config('L3',bank)
+assert l3.events['gsi_reset'].params.pop('low_fraction')==.2
+assert l3.events['gsi_reset'].params.pop('late_fraction')==.4
+d1,d3=asdict(l1),asdict(l3)
+d3['scene']['terrain']['spec_fn']=d1['scene']['terrain']['spec_fn']
+assert d1==d3 and asdict(p1)==asdict(p3)
+assert quota_counts(4096,.2,.4)==(1638,1642,204,204,204,204)
+print('PASS: L3 changes only reset quota, 816 low environments equally split into four directions')
