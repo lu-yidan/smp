@@ -5,7 +5,7 @@ from smp.rl.tasks.getup.recovery_quality import cost_vectors,speed_reference
 from smp.rl.tasks.getup.master_deployment_contract import JOINT_NAMES
 b='datasets/reset_banks/natural_curriculum_v1/train.npz'
 a,aa=build_config('L4',b)
-for arm,expected in [('L4-Q1',[-.05,-.05,0.]),('L4-Q2',[-.05,-.05,-.02])]:
+for arm,expected in [('L4-Q1',[-.2,-.2,0.]),('L4-Q2',[-.2,-.2,-.002])]:
  c,cc=build_config(arm,b)
  for n,w in zip(['effort_excess','speed_excess','target_slew'],expected):
   assert c.rewards[n].weight==w;c.rewards[n].weight=0.
