@@ -18,30 +18,47 @@ def quota_counts(num_envs,low_fraction=.1,late_fraction=.5):
   return (late,middle,each_low,each_low,each_low,each_low)
 
 
-def reset_fixed_low(env,env_ids=None,bank_path='',low_fraction=.1,late_fraction=.5):
+def reset_fixed_low(env,env_ids=None,bank_path='',low_fraction=.1,late_fraction=.5,procedural_bank_path='',procedural_fraction=0.):
   if env_ids is None:env_ids=torch.arange(env.num_envs,device=env.device)
   if not hasattr(env,'_fixed_group'):
     bank=np.load(bank_path,allow_pickle=False)
-    env._course_bank=torch.as_tensor(bank['qpos'],device=env.device)
-    env._course_labels=torch.tensor([DIRECTIONS.index(x) if x in DIRECTIONS else 4 for x in bank['labels']],device=env.device)
-    env._course_stages=torch.tensor([STAGES.index(x) for x in bank['stages']],device=env.device)
+    qpos=bank['qpos'];labels_np=bank['labels'];stages_np=bank['stages'];source_np=np.zeros(len(qpos),dtype=np.int64)
+    base=weights_for(bank,0)
+    if procedural_bank_path:
+      proc=np.load(procedural_bank_path,allow_pickle=False)
+      assert set(proc['labels'])==set(DIRECTIONS) and np.all(proc['stages']=='low')
+      qpos=np.concatenate([qpos,proc['qpos']]);labels_np=np.concatenate([labels_np,proc['labels']]);stages_np=np.concatenate([stages_np,proc['stages']])
+      source_np=np.concatenate([source_np,np.ones(len(proc['qpos']),dtype=np.int64)]);base=np.concatenate([base,np.ones(len(proc['qpos']))])
+    if procedural_fraction and not procedural_bank_path:raise ValueError('Missing procedural bank')
+    if not 0<=procedural_fraction<=low_fraction:raise ValueError('Procedural fraction must fit low quota')
+    env._course_bank=torch.as_tensor(qpos,device=env.device)
+    env._course_labels=torch.tensor([DIRECTIONS.index(x) if x in DIRECTIONS else 4 for x in labels_np],device=env.device)
+    env._course_stages=torch.tensor([STAGES.index(x) for x in stages_np],device=env.device)
     env._fixed_quota_counts=quota_counts(env.num_envs,low_fraction,late_fraction)
     rng=torch.Generator(device=env.device).manual_seed(int(env.cfg.seed)+904173)
     labels=torch.repeat_interleave(torch.arange(6,device=env.device),torch.tensor(env._fixed_quota_counts,device=env.device))
     env._fixed_group=labels[torch.randperm(env.num_envs,device=env.device,generator=rng)]
     env._fixed_rng=torch.Generator(device=env.device).manual_seed(int(env.cfg.seed)+904193)
-    base=weights_for(bank,0);env._fixed_pools=[]
+    env._fixed_source=torch.zeros(env.num_envs,device=env.device,dtype=torch.long)
+    each_proc=int(env.num_envs*procedural_fraction/4)
+    for group in range(2,6):
+      ids=torch.where(env._fixed_group==group)[0]
+      assert each_proc<=len(ids)
+      env._fixed_source[ids[:each_proc]]=1
+    env._fixed_pools=[]
     for group in range(6):
-      mask=(bank['stages']==STAGES[group]) if group<2 else ((bank['stages']=='low')&(bank['labels']==DIRECTIONS[group-2]))
-      ids=np.flatnonzero(mask);assert len(ids)
-      env._fixed_pools.append((torch.as_tensor(ids,device=env.device),torch.as_tensor(base[ids]/base[ids].sum(),device=env.device,dtype=torch.float32)))
+      for source in (0,1):
+        if not ((env._fixed_group==group)&(env._fixed_source==source)).any():continue
+        mask=(stages_np==STAGES[group]) if group<2 else ((stages_np=='low')&(labels_np==DIRECTIONS[group-2]))
+        ids=np.flatnonzero(mask&(source_np==source));assert len(ids)
+        env._fixed_pools.append((group,source,torch.as_tensor(ids,device=env.device),torch.as_tensor(base[ids]/base[ids].sum(),device=env.device,dtype=torch.float32)))
     env._course_type=torch.where(env._fixed_group<2,env._fixed_group,2)
     env._course_direction=torch.full_like(env._fixed_group,4)
     env._course_draws=torch.zeros(3,device=env.device,dtype=torch.long)
     env._course_stage=0
   indices=torch.empty(len(env_ids),device=env.device,dtype=torch.long)
-  for group,(pool,weight) in enumerate(env._fixed_pools):
-    mask=env._fixed_group[env_ids]==group;n=int(mask.sum())
+  for group,source,pool,weight in env._fixed_pools:
+    mask=(env._fixed_group[env_ids]==group)&(env._fixed_source[env_ids]==source);n=int(mask.sum())
     if n:indices[mask]=pool[torch.multinomial(weight,n,replacement=True,generator=env._fixed_rng)]
   q=env._course_bank[indices];robot=env.scene['robot'];assert tuple(robot.joint_names)==JOINT_NAMES
   root=robot.data.default_root_state[env_ids].clone();root[:,:3]=q[:,:3]+env.scene.env_origins[env_ids];root[:,3:7]=q[:,3:7];root[:,7:]=0

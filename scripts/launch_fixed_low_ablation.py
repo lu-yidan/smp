@@ -1,12 +1,12 @@
 """Launch fixed-quota ablations on GPU4/5; checkpoint evaluation reuses each GPU."""
 import argparse,datetime,json,os,subprocess
 from pathlib import Path
-p=argparse.ArgumentParser();p.add_argument('--preflight',action='store_true');p.add_argument('--arms',nargs='+',choices=['L0','L1','L2','L3'],default=['L0','L1']);a=p.parse_args()
+p=argparse.ArgumentParser();p.add_argument('--preflight',action='store_true');p.add_argument('--arms',nargs='+',choices=['L0','L1','L2','L3','L4','L5'],default=['L0','L1']);a=p.parse_args()
 root=Path.cwd();stamp=datetime.datetime.now().strftime('%Y%m%d_%H%M%S');tag=('preflight_' if a.preflight else 'formal_')+stamp
 control=root/'run_control/fixed_low'/tag;control.mkdir(parents=True)
 records=[]
 for arm in a.arms:
- gpu={'L0':4,'L1':5,'L2':2,'L3':3}[arm]
+ gpu={'L0':4,'L1':5,'L2':2,'L3':3,'L4':4,'L5':5}[arm]
  logdir=root/'logs/rsl_rl/fixed_low'/tag/arm
  cmd=[str(root/'.venv/bin/python'),'-u','scripts/train_fixed_low_ablation.py','--arm',arm,'--bank-dir',str(root/'datasets/reset_banks/natural_curriculum_v1'),'--log-dir',str(logdir),'--eval-workspace','/root/workplace/smp-flat93','--eval-gpu',str(gpu)]
  if a.preflight:cmd+=['--preflight','--iterations','4']
