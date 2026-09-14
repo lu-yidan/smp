@@ -6,7 +6,7 @@ from smp.rl.tasks.getup.mdp.rewards import upward_velocity
 
 # Fixed for all arms. Learn the initial recovery objective before full quality costs.
 def ramp(env):
-    return min(1., max(0., (env.common_step_counter / 24 - 500) / 2000))
+    return min(1., max(0., (env.common_step_counter / 24 - 5000) / 5000))
 
 def no_stand_termination(env, **kwargs):
     return torch.zeros(env.num_envs, device=env.device, dtype=torch.bool)
@@ -32,6 +32,9 @@ def load_costs(tau,dq,limits,speeds):
     # Most-loaded three joints, not all-joint mean that dilutes a single spike.
     return effort.topk(3,dim=-1).values.mean(-1),speed.topk(3,dim=-1).values.mean(-1)
 
+def head_cost(force,vz,age_seconds):
+    return ((force-150).clamp_min(0)/850).square().clamp_max(25)*(.25+.75*(vz.abs()/.3).clamp(0,1))*(age_seconds/.1).clamp(0,1)
+
 def init_buffers(env):
     if hasattr(env,'_r_accum'): return
     robot=env.scene['robot'];device=env.device;n=env.num_envs
@@ -56,8 +59,7 @@ def sample_substep(env):
     force=env.scene['quality_other'].data.force[:,env._r_head_geom,:].norm(dim=-1).amax(-1)
     vz=robot.data.site_lin_vel_w[:,env._r_head,2].abs()
     # Low static force <=150N is not penalized. High dynamic contact costs more.
-    contact=((force-150).clamp_min(0)/850).square().clamp_max(25)*(.25+.75*(vz/.3).clamp(0,1))
-    contact*= (env.episode_length_buf.float()*env.step_dt/.1).clamp(0,1)
+    contact=head_cost(force,vz,env.episode_length_buf.float()*env.step_dt)
     env._r_accum+=torch.stack([effort,speed,contact],-1)
     peaks=torch.stack([tau.abs().amax(-1),dq.abs().amax(-1),(tau*dq).abs().amax(-1),force],-1)
     torch.maximum(env._r_peaks,peaks,out=env._r_peaks);env._r_tick+=1
@@ -85,7 +87,7 @@ def cache_control(env):
     knee=robot.data.joint_pos[:,env._r_knees].abs().amax(-1)
     gate=smooth_gate(z,1.,1.2)*smooth_gate(upright,.8,.95)*smooth_gate(load,5.,20.)
     gate*=smooth_gate(width,.08,.12)*(1-smooth_gate(width,.45,.55))
-    env._r_quiet=gate*torch.exp(-(base/.15).square()-(angular/.3).square()-(joint_rms/.5).square()-(foot_speed/.1).square()-4*(knee-.65).clamp_min(0).square()-other/40)
+    env._r_quiet=gate*torch.exp(-4*(knee-.65).clamp_min(0).square()) / (1+(base/.25).square()+(angular/.5).square()+(joint_rms/2.).square()+(foot_speed/.2).square()) / (1+other/80)
     env._r_stable=(z>=1.15)&(upright>=.93)&(knee<.8)&(base<.15)&(angular<.3)&(joint_rms<.5)&(foot_speed<.1)&(load>20)&(other<20)&(width>=.12)&(width<=.45)
     env._r_hold=torch.where(fresh,0.,env._r_hold)
     env._r_hold=torch.where(env._r_stable,env._r_hold+env.step_dt,0.)

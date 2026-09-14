@@ -32,7 +32,7 @@ def build_config(arm,bank,num_envs=4096,seed=20260912):
     if arm in ('R3','R7'):
         terms=list(cfg.rewards['task_smp_product'].params['task_terms']);fn,w,p=terms[0];terms[0]=(mdp.slow_upward,w,p)
         cfg.rewards['task_smp_product'].params['task_terms']=tuple(terms)
-    weights=[-.05 if arm in ('R4','R7') else 0.,-.1 if arm in ('R4','R7') else 0.,-.005 if arm in ('R5','R7') else 0.,-.02 if arm in ('R6','R7') else 0.]
+    weights=[-.05 if arm in ('R4','R7') else 0.,-.1 if arm in ('R4','R7') else 0.,-.005 if arm in ('R5','R7') else 0.,-.1 if arm in ('R6','R7') else 0.]
     for i,(name,w) in enumerate(zip(COST_NAMES,weights)):cfg.rewards[name]=RewardTermCfg(func=mdp.safety_cost,params={'index':i},weight=w)
     return cfg,agent
 
@@ -100,10 +100,12 @@ def main():
             with torch.inference_mode():
                 for i in range(500):
                     obs,_,_,_=w.step(policy(obs)+.3*torch.randn(env.num_envs,29,device=env.device))
-                    if i%24==23:
-                        mask=env._fixed_group>=2;records.append({'step':i,'costs':env._r_costs[mask].mean(0).cpu().tolist(),'task':float(env._fixed_product[mask].mean()),'quiet':float(env._r_quiet[mask].mean())})
+                    if True:
+                        mask=env._fixed_group>=2;records.append({'step':i,'costs':env._r_costs[mask].mean(0).cpu().tolist(),'task':float(env._fixed_product[mask].mean()),'quiet':float(env._r_quiet[mask].mean()),'head_force_peak':float(env._r_peaks[mask,3].max()),'cost_peaks':env._r_costs[mask].max(0).values.cpu().tolist()})
             atomic_json(a.log_dir/'probe.json',records);atomic_json(a.log_dir/'completed.json',{'probe_only':True});return
-        state=runner.alg.save();meta={'arm':a.arm,'from_scratch':True,'checkpoint_loaded':False,'code_commit':subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip(),'seed':cfg.seed,'num_envs':a.num_envs,'iterations':a.iterations,'initial_lr':agent.algorithm.learning_rate,'actor_sha':tensor_hash(state['actor_state_dict']),'critic_sha':tensor_hash(state['critic_state_dict']),'initial_qpos_sha':hashlib.sha256(env.sim.data.qpos.cpu().numpy().tobytes()).hexdigest(),'quota_counts':env._fixed_quota_counts,'reset_sources':[[int(((env._fixed_group==g)&(env._fixed_source==s)).sum()) for s in (0,1)] for g in range(6)],'reward_weights':{k:v.weight for k,v in cfg.rewards.items()},'quality_ramp_updates':[500,2500],'standing_termination':a.arm=='R0','episode_seconds':cfg.episode_length_s,'smp_reference':'fresh running estimator, saved in every checkpoint; no legacy reconstruction','train_bank_sha':hashlib.sha256((a.bank_dir/'train.npz').read_bytes()).hexdigest()}
+        assert env.sim.data.qvel.abs().max()<1e-6
+        np.savez_compressed(a.log_dir/'initial_reset.npz',qpos=env.sim.data.qpos.cpu().numpy(),qvel=env.sim.data.qvel.cpu().numpy(),group=env._fixed_group.cpu().numpy(),source=env._fixed_source.cpu().numpy())
+        state=runner.alg.save();meta={'arm':a.arm,'from_scratch':True,'checkpoint_loaded':False,'code_commit':subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip(),'seed':cfg.seed,'num_envs':a.num_envs,'iterations':a.iterations,'initial_lr':agent.algorithm.learning_rate,'actor_sha':tensor_hash(state['actor_state_dict']),'critic_sha':tensor_hash(state['critic_state_dict']),'initial_qpos_sha':hashlib.sha256(env.sim.data.qpos.cpu().numpy().tobytes()).hexdigest(),'quota_counts':env._fixed_quota_counts,'reset_sources':[[int(((env._fixed_group==g)&(env._fixed_source==s)).sum()) for s in (0,1)] for g in range(6)],'reward_weights':{k:v.weight for k,v in cfg.rewards.items()},'quality_ramp_updates':[5000,10000],'standing_termination':a.arm=='R0','episode_seconds':cfg.episode_length_s,'smp_reference':'fresh running estimator, saved in every checkpoint; no legacy reconstruction','train_bank_sha':hashlib.sha256((a.bank_dir/'train.npz').read_bytes()).hexdigest()}
         atomic_json(a.log_dir/'launch.json',meta);runner.save(str(a.log_dir/'initial.pt'));print('SCRATCH_VERIFIED',json.dumps(meta),flush=True)
         a.arm='L4' # Reuse both-bank validation dispatch without changing the run identity.
         runner.active=True;runner.learn(num_learning_iterations=a.iterations,init_at_random_ep_len=False)
