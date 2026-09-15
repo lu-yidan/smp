@@ -60,7 +60,7 @@ class Runner(FixedRunner):
         if not self.active or (self.current_learning_iteration==0 and Path(path).name=='model_0.pt'):return
         # The same 128 initial poses at every checkpoint; load diagnostics at 2ms.
         a=self.args;ep=self.current_learning_iteration;out=a.log_dir/'validation'/f'{ep}_loads.json'
-        cmd=[str(a.eval_workspace/'.venv/bin/python'),'-u',str(Path(__file__).with_name('audit_tradeoff_loads.py').resolve()),'--loads-output',str(out),'--policy-family','master','--checkpoint',str(Path(path).resolve()),'--num-envs','128','--steps','1000','--output',str(out.with_name(f'{ep}_regular.json'))]
+        cmd=[str(a.eval_workspace/'.venv/bin/python'),'-u',str(getattr(a,'load_audit_script',Path(__file__).with_name('audit_tradeoff_loads.py').resolve())),'--loads-output',str(out),'--policy-family','master','--checkpoint',str(Path(path).resolve()),'--num-envs','128','--steps','1000','--output',str(out.with_name(f'{ep}_regular.json'))]
         with open(out.with_suffix('.log'),'w') as f:subprocess.run(cmd,cwd=a.eval_workspace,env=dict(os.environ,PYTHONPATH='src:scripts:.',CUDA_VISIBLE_DEVICES=a.eval_gpu,MUJOCO_GL='egl',OMP_NUM_THREADS='4'),stdout=f,stderr=subprocess.STDOUT,check=True)
         values=json.loads(out.read_text());summary={}
         for key in ['peak_tau','peak_dq','peak_power']:
@@ -71,6 +71,14 @@ class Runner(FixedRunner):
             ids=[i for i,n in enumerate(names) if 'head' in n]
             if ids:
                 v=np.asarray(values['contact_peak'][sensor])[:,ids].max(1);summary['head_force_peak']=float(v.max());summary['head_force_env_p95']=float(np.percentile(v,95))
+        regular=json.loads(out.with_name(f'{ep}_regular.json').read_text())['per_env']
+        summary['regular_stable_10s']=float(np.mean(regular['success_10s']))
+        times=np.asarray(regular['first_upright_s']);summary['ever_upright_fraction']=float(np.mean(times>=0))
+        if np.any(times>=0):summary['first_upright_median_s']=float(np.median(times[times>=0]))
+        if 'near_stand_time_s' in values:summary['near_stand_valid_fraction']=float(np.mean(np.asarray(values['near_stand_time_s'])>0))
+        for key in ['near_stand_pose_error','near_stand_tau_ratio_rms','near_stand_effort_fraction','near_stand_time_s']:
+            if key in values:
+                v=np.asarray(values[key]);summary[key+'_mean']=float(v.mean());summary[key+'_max']=float(v.max())
         atomic_json(a.log_dir/'load_progress.json',{'iteration':ep,'summary':summary})
         for k,v in summary.items():self.logger.writer.add_scalar('LoadValidation/'+k,v,ep)
         print('LOAD_VALIDATION_COMPLETE',ep,json.dumps(summary),flush=True)
