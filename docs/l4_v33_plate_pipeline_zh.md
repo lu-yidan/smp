@@ -155,3 +155,7 @@ W&B：
 - [E1_prone](https://wandb.ai/tabletennis/smp/runs/plate-ft12k-e1_prone-20260916_180706)
 - [E2_plate](https://wandb.ai/tabletennis/smp/runs/plate-ft12k-e2_plate-20260916_180706)
 - [E3_guided](https://wandb.ai/tabletennis/smp/runs/plate-ft12k-e3_guided-20260916_180706)
+
+## 评测更正（protocol v2）
+
+独立评测手动设置姿态后，现已同步重置action manager的warmup entry。此前baseline_verified目录的v1数值/视频受前0.2秒旧entry混合影响，保留作历史记录但不与v2直接比较。新报告包含protocol_version=2，修正仅影响评测，不改变训练。FT12k的v2基线位于outputs/baseline_protocol_v2。

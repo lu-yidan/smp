@@ -52,6 +52,7 @@ def main():
                     longitudinal_offset_curriculum=(0.,0.) if hard else (.18,.18),lateral_offset_curriculum=(0.,0.) if hard else (.22,.22),overlap_curriculum_steps=1,
                     xy_offset_range=.005,surface_gap=.001,collision_geom_pattern=COLLISION_PATTERN,inactive_xy=(20,20))
             env.sim.forward();prime_static_history(env,ids);v.reset(env,ids)
+            env.action_manager.reset(ids)  # warmup entry must match the manually installed evaluation pose
             env.observation_manager.reset(ids);obs=env.observation_manager.compute(update_history=True)
             # Verify initial collision setup in CPU model, not just floating-base height.
             cpu=mujoco.MjData(env.sim.mj_model);qinit=env.sim.data.qpos.cpu().numpy();mpos=env.sim.data.mocap_pos.cpu().numpy();mquat=env.sim.data.mocap_quat.cpu().numpy();depths=[];worst=[]
@@ -82,7 +83,7 @@ def main():
                     for j in selected:
                         cfg.viewer.env_idx=j;im=Image.fromarray(env.render());draw=ImageDraw.Draw(im);draw.rectangle((0,0,640,42),fill='black');draw.text((8,8),f'{case} env {j} | t={(step+1)*env.step_dt:.2f}s | hold {float(hold[j]):.2f}s | phase {int(env._escape_phase[j])}',fill='white');tiles.append(np.asarray(im))
                     writer.append_data(np.concatenate([np.concatenate(tiles[:2],axis=1),np.concatenate(tiles[2:],axis=1)],axis=0))
-            metrics={'stable_10s':float((best>=10.-1e-4).float().mean()),'stable_1s':float((best>=1.-1e-4).float().mean()),'escaped_fraction':float(escaped.float().mean()),'invalid_plate_fraction':float((env._escape_phase==4).float().mean()),'simulation_failure_fraction':float((~alive).float().mean()),'n':env.num_envs,'initial_penetration_max_m':float(-min(depths))}
+            metrics={'protocol_version':2,'stable_10s':float((best>=10.-1e-4).float().mean()),'stable_1s':float((best>=1.-1e-4).float().mean()),'escaped_fraction':float(escaped.float().mean()),'invalid_plate_fraction':float((env._escape_phase==4).float().mean()),'simulation_failure_fraction':float((~alive).float().mean()),'n':env.num_envs,'initial_penetration_max_m':float(-min(depths))}
             for j,name in enumerate(['tau','speed','power','head_force']):metrics[name+'_env_peak_p95']=float(np.percentile(peak[:,j].cpu().numpy(),95))
             if case=='flat':
                 for j,label in enumerate(('supine','prone','left','right')):metrics[label+'_stable_10s']=float((best[j*a.num_envs//4:(j+1)*a.num_envs//4]>=10.-1e-4).float().mean())
