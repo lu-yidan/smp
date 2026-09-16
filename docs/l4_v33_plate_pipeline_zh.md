@@ -132,3 +132,26 @@ export PYTHONPATH=src:scripts:.
 运行信息见`run_control/plate_transfer/*/launches.json`，配置见每组`params/`、`launch.json`，评测见`validation/`。W&B项目`tabletennis/smp`，group `ft12k-plate-transfer`。
 
 A/B历史复现入口见同目录`v33_reward_transfer.md`及`scripts/train_fixed_low_ablation.py`、`scripts/train_v33_reward_transfer.py`。本轮没有重跑A/B，也没有把不完整的历史SMP统计伪装成精确续训。
+
+## 2026-09-16 验证与启动记录
+
+- 代码：`8107aca`，独立分支 `codex/ft12k-plate-recovery`。
+- 预检：`preflight_20260916_180116`，四组各4096环境、4次PPO更新，全部完成checkpoint及四条件评测；E1/E2/E3机器人初始qpos逐元素一致；全部验证初始碰撞深度为0。
+- 正式：`formal_20260916_180706`，E0/E1/E2/E3分别GPU0/1/2/3，源checkpoint重新载入FT12k，未使用预检训练后的actor。旧GPU4/5运行未停止。
+- 验证报告：`outputs/plate_preflight/plate_preflight_verified.json`（本地）；服务器为`outputs/plate_preflight_verified.json`。
+- 视频：本地`outputs/baseline_verified/`，服务器同名目录。这里是训练前FT12k，不是新训练成果。
+
+|原FT12k固定验证条件|n|连续稳定10秒|有效脱困|
+|---|---:|---:|---:|
+|flat|64|95.31%|0.00%|
+|prone|64|79.69%|0.00%|
+|plate_easy|64|0.00%|1.56%|
+|plate_hard|64|0.00%|0.00%|
+
+无板条件的“有效脱困”不适用，其0不代表起身失败。平地64例为仰卧/伏卧/左/右各16；对应稳定率100%/81.25%/100%/100%。新支撑伏卧无板为79.69%；两种压板均未达到稳定10秒。该结果支持继续学习的必要性，不证明任何消融组已优于原模型。初始无穿透不等于整个rollout无穿透；压板评测无效比例约29.7%，需在训练中跟踪降低。
+
+W&B：
+- [E0_flat](https://wandb.ai/tabletennis/smp/runs/plate-ft12k-e0_flat-20260916_180706)
+- [E1_prone](https://wandb.ai/tabletennis/smp/runs/plate-ft12k-e1_prone-20260916_180706)
+- [E2_plate](https://wandb.ai/tabletennis/smp/runs/plate-ft12k-e2_plate-20260916_180706)
+- [E3_guided](https://wandb.ai/tabletennis/smp/runs/plate-ft12k-e3_guided-20260916_180706)
