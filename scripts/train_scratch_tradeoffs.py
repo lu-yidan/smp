@@ -79,6 +79,12 @@ class Runner(FixedRunner):
         for key in ['near_stand_pose_error','near_stand_tau_ratio_rms','near_stand_effort_fraction','near_stand_time_s']:
             if key in values:
                 v=np.asarray(values[key]);summary[key+'_mean']=float(v.mean());summary[key+'_max']=float(v.max())
+        if 'phase' in values:
+            phase=values['phase']
+            for key in ['pre_gate_speed_peak','gate_active_speed_peak']:
+                summary['phase_'+key+'_env_p95']=float(np.percentile(phase[key],95))
+            summary['phase_peak_before_gate_fraction']=float(np.mean((np.asarray(phase['speed_peak_head_height'])<=1.)|(np.asarray(phase['speed_peak_upright'])<=.8)))
+            summary['phase_peak_time_median_s']=float(np.median(phase['speed_peak_time_s']))
         atomic_json(a.log_dir/'load_progress.json',{'iteration':ep,'summary':summary})
         for k,v in summary.items():self.logger.writer.add_scalar('LoadValidation/'+k,v,ep)
         print('LOAD_VALIDATION_COMPLETE',ep,json.dumps(summary),flush=True)

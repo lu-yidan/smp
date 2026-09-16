@@ -29,3 +29,15 @@ e=SimpleNamespace(common_step_counter=600000,_f_start_counter=480000,_c_start_co
 assert f.ramp(e)==1 and c.ramp(e)==0
 e.common_step_counter+=6000;assert f.ramp(e)==1 and c.ramp(e)==.5
 print('PASS: paired 2x2 configs; F2 fully retained; low idle unchanged; smooth height transition; early overspeed covered; independent ramp')
+# Exercise the actual quality callback: pose/velocity/support influence score, low idle stays low.
+class Scene(dict):pass
+n=4;data=SimpleNamespace(site_pos_w=torch.zeros(n,1,3),site_lin_vel_w=torch.zeros(n,1,3),projected_gravity_b=torch.tensor([[0.,0.,-1.]]).repeat(n,1),body_link_pos_w=torch.zeros(n,2,3),body_link_lin_vel_w=torch.zeros(n,2,3),root_link_lin_vel_w=torch.zeros(n,3),root_link_ang_vel_w=torch.zeros(n,3),joint_vel=torch.zeros(n,29))
+data.site_pos_w[:,:,2]=1.2;data.site_pos_w[3,:,2]=.3;data.body_link_pos_w[:,1,1]=.2
+force=torch.zeros(n,2,3);force[:,:,2]=100;force[2,1,2]=0
+scene=Scene(robot=SimpleNamespace(data=data,find_sites=lambda *args,**kw:([0],['head'])),quality_feet=SimpleNamespace(data=SimpleNamespace(force=force)),quality_other=SimpleNamespace(data=SimpleNamespace(force=torch.zeros(n,1,3))))
+scene.env_origins=torch.zeros(n,3)
+e=SimpleNamespace(scene=scene,num_envs=n,device='cpu',_r_accum=True,_f_effort_ms=True,_r_head=0,_r_feet=[0,1],common_step_counter=1,_f_cache_step=1,_f_values=torch.zeros(n,4),_f_pose_error=torch.tensor([0.,9.,0.,0.]),cfg=SimpleNamespace(decimation=10))
+q=c.cache(e).clone();assert torch.allclose(q,torch.tensor([1.,.775,0.,1.]))
+assert torch.isclose(e._c_new_up[3],torch.tensor(math.exp(-6.25)))
+data.joint_vel[0]=4.;e.common_step_counter+=1;e._f_cache_step+=1;c.cache(e);assert e._c_quality[0]<q[0]
+print('PASS: actual quality callback responds to posture, velocity and bilateral support; low-state idle reward remains unchanged')
