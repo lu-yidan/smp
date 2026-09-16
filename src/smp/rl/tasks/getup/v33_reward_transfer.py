@@ -38,7 +38,8 @@ def reset(env,env_ids=None):
     env._v_stage[env_ids]=s;env._v_hold[env_ids]=0
     env._v_accum[env_ids]=0;env._f_effort_ms[env_ids]=0
     env._v_last_action[env_ids]=0;env._v_last_delta[env_ids]=0
-    env._v_cache=-1
+    # Keep the pre-reset reward cache for this control step; other environments
+    # must not advance their stage twice when just one environment resets.
 
 def sample_substep(env):
     init(env)

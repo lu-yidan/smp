@@ -47,10 +47,15 @@ class Runner(BaseRunner):
         if self.active and self.current_learning_iteration==self.args.start_iteration:return
         env=self.env.unwrapped
         super().save(path,infos={**(infos or {}),'v33_transfer':{'start_counter':env._v_start_counter,'ramp_updates':env._v_ramp_updates,'label':self.args.label}})
+        if self.active:
+            out=self.args.log_dir/'validation'/f'{self.current_learning_iteration}_loads.json'
+            data=json.loads(out.read_text());phase=data['phase']
+            for key,value in [('head_vz_env_p95',float(np.percentile(phase['head_vz_peak'],95))),('head_vz_above_02_fraction',float(np.mean(phase['head_vz_exceed_samples'])/data['physics_samples']))]:
+                self.logger.writer.add_scalar('LoadValidation/'+key,value,self.current_learning_iteration)
 
 def main():
     p=argparse.ArgumentParser();p.add_argument('--mode',choices=['FT','Scratch'],required=True);p.add_argument('--checkpoint',type=Path);p.add_argument('--log-dir',type=Path,required=True);p.add_argument('--eval-gpu',required=True);p.add_argument('--updates',type=int);p.add_argument('--num-envs',type=int,default=4096);p.add_argument('--preflight',action='store_true');p.add_argument('--probe',action='store_true');a=p.parse_args()
-    root=Path.cwd();a.bank_dir=root/'datasets/reset_banks/natural_curriculum_v1';a.eval_workspace=Path('/root/workplace/smp-flat93');a.log_dir=a.log_dir.resolve();a.log_dir.mkdir(parents=True,exist_ok=False);a.label='V33-'+a.mode;a.arm='L4';a.load_audit_script=Path(__file__).with_name('audit_task_phase_loads.py').resolve()
+    root=Path.cwd();a.bank_dir=root/'datasets/reset_banks/natural_curriculum_v1';a.eval_workspace=Path('/root/workplace/smp-flat93');a.log_dir=a.log_dir.resolve();a.log_dir.mkdir(parents=True,exist_ok=False);a.label='V33-'+a.mode;a.arm='L4';a.load_audit_script=Path(__file__).with_name('audit_v33_transfer_loads.py').resolve()
     if a.updates is None:a.updates=10000 if a.mode=='FT' else 20000
     parent=None
     if a.mode=='FT':
