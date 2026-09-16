@@ -20,3 +20,18 @@ e.common_step_counter+=1;e._v_stage[:]=3;r.data.site_pos_w[:,:,2]=1.15;r.data.pr
 q[:,:2]=.3;q[1,:2]=1.5
 t=m.components(e);assert t[0,0]>t[1,0]
 print('PASS: slow rise preference, overspeed cost, one stage update per step, reset isolation, crouch penalty')
+from dataclasses import asdict
+from pathlib import Path
+from train_v33_reward_transfer import build_config
+from train_scratch_tradeoffs import build_config as old_config
+c,a=build_config(Path('datasets/reset_banks/natural_curriculum_v1/train.npz'));o,oa=old_config('R1',Path('datasets/reset_banks/natural_curriculum_v1/train.npz'))
+def canonical(x):
+    if callable(x):return (x.__module__,x.__qualname__)
+    if isinstance(x,dict):return {k:canonical(v) for k,v in x.items()}
+    if isinstance(x,(list,tuple)):return [canonical(v) for v in x]
+    return x
+assert c.observations==o.observations and c.terminations==o.terminations and a==oa
+assert canonical(asdict(c.scene))==canonical(asdict(o.scene))
+for k,v in o.events.items():assert c.events[k]==v,k
+assert abs(sum(m.TASK_WEIGHTS)-1)<1e-8
+print('PASS: observations, scene, reset, noise, push, DR, terminations and PPO configuration preserved')
