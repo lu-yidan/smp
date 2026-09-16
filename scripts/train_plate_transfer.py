@@ -69,6 +69,7 @@ class Runner(MjlabOnPolicyRunner):
         if ep==0:return
         out=a.log_dir/'validation'/str(ep);out.mkdir(parents=True,exist_ok=True)
         cmd=[os.sys.executable,'-u','scripts/evaluate_plate_transfer.py','--checkpoint',str(Path(path).resolve()),'--out',str(out),'--num-envs',str(64 if a.preflight else 256)]
+        if not a.preflight and (ep%1000==0 or ep==a.updates-1):cmd+=['--video']
         with open(out/'eval.log','w') as f:subprocess.run(cmd,stdout=f,stderr=subprocess.STDOUT,check=True)
         data=json.loads((out/'summary.json').read_text())
         for case,values in data.items():
@@ -96,7 +97,7 @@ def main():
         assert cfg.observations['actor'].enable_corruption and 'push_robot' in cfg.events
         expected=.5 if a.arm in ('E2_plate','E3_guided') else 0.
         assert float(env._plate_active.float().mean())==expected
-        meta={'arm':a.arm,'source_checkpoint':str(a.checkpoint),'source_sha256':SOURCE_SHA,'updates':a.updates,'num_envs':a.num_envs,'episode_s':20,'plate_fraction':expected,'prepared_prone_fraction':float(env._plate_cohort.float().mean()),'source_actor_exact':True,'fresh_critic':True,'fresh_optimizer':True,'lr':runner.alg.learning_rate,'smp_reference':'exact FT12k saved mean/count','actor_noise':True,'events':list(cfg.events),'terminations':list(cfg.terminations),'reward_weights':{k:t.weight for k,t in cfg.rewards.items()},'commit':subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip()}
+        meta={'arm':a.arm,'source_checkpoint':str(a.checkpoint),'source_sha256':SOURCE_SHA,'updates':a.updates,'num_envs':a.num_envs,'episode_s':20,'plate_fraction':expected,'prepared_prone_fraction':float(env._plate_cohort.float().mean()),'source_actor_exact':True,'fresh_critic':True,'fresh_optimizer':True,'lr':runner.alg.learning_rate,'smp_reference':'exact FT12k saved mean/count','actor_noise':True,'events':list(cfg.events),'terminations':list(cfg.terminations),'reward_weights':{k:t.weight for k,t in cfg.rewards.items()},'prepared_bank_sha256':hashlib.sha256(Path('datasets/reset_banks/plate_prone_v1/train.npz').read_bytes()).hexdigest(),'commit':subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip()}
         atomic_json(a.log_dir/'launch.json',meta)
         np.savez_compressed(a.log_dir/'initial_reset.npz',qpos=env.sim.data.qpos.cpu().numpy(),qvel=env.sim.data.qvel.cpu().numpy(),cohort=env._plate_cohort.cpu().numpy(),active=env._plate_active.cpu().numpy())
         runner.save(str(a.log_dir/'initial.pt'))

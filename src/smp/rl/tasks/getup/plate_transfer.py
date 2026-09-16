@@ -1,6 +1,7 @@
 """FT12k paired reset/plate/shaping experiment; actor remains 93D."""
 from __future__ import annotations
 import mujoco
+import numpy as np
 import torch
 from mjlab.managers.event_manager import requires_model_fields, RecomputeLevel
 from mjlab.utils.lab_api.math import quat_from_euler_xyz
@@ -38,19 +39,18 @@ def reset(env,env_ids=None,arm='E0_flat',**bank_params):
             env._course_type=torch.where(env._fixed_group<2,env._fixed_group,2)
             reset_fixed_low(env,env_ids,**bank_params)
     ids=env_ids[env._plate_cohort[env_ids]];r=env.scene['robot'];n=len(ids)
-    # Matched canonical prone starts for E1/E2/E3. Arm/support preparation below
-    # is identical even when the actual plate is parked outside the arena.
+    # Pre-screened current-model bank; no legacy arm/root convention assumed.
+    if not hasattr(env,'_plate_bank'):
+        env._plate_bank=torch.as_tensor(np.load('datasets/reset_banks/plate_prone_v1/train.npz')['qpos'],device=env.device)
+        env._plate_rng=torch.Generator(device=env.device).manual_seed(env.cfg.seed+1267)
     if n:
-        state=r.data.default_root_state[ids].clone();state[:,:3]=env.scene.env_origins[ids];state[:,2]+=.4;state[:,7:]=0
-        roll=torch.empty(n,device=env.device).uniform_(-.04,.04)
-        pitch=torch.empty(n,device=env.device).uniform_(-.04,.04)-torch.pi/2
-        yaw=torch.empty(n,device=env.device).uniform_(-torch.pi,torch.pi)
-        state[:,3:7]=quat_from_euler_xyz(roll,pitch,yaw)
-        q=r.data.default_joint_pos[ids].clone()+torch.empty_like(r.data.joint_pos[ids]).uniform_(-.10,.10)
-        r.write_root_state_to_sim(state,env_ids=ids);r.write_joint_state_to_sim(q,torch.zeros_like(q),env_ids=ids);env.sim.forward()
+        rows=torch.randint(len(env._plate_bank),(n,),device=env.device,generator=env._plate_rng)
+        q=env._plate_bank[rows];state=r.data.default_root_state[ids].clone()
+        state[:,:3]=q[:,:3]+env.scene.env_origins[ids];state[:,3:7]=q[:,3:7];state[:,7:]=0
+        r.write_root_state_to_sim(state,env_ids=ids);r.write_joint_state_to_sim(q[:,7:],torch.zeros_like(q[:,7:]),env_ids=ids);env.sim.forward()
         env._course_direction[ids]=1
     g.reset_guided_escape_plate_curriculum(env,env_ids,plate_mass_range=(4.,12.),initial_max_mass=6.,mass_curriculum_steps=100000,
-        active_mask=env._plate_active,prepare_mask=env._plate_cohort,crawl_ready_prone=True,crawl_arm_noise=.035,
+        active_mask=env._plate_active,prepare_mask=env._plate_cohort,crawl_ready_prone=False,crawl_arm_noise=0.,
         ground_clearance=.004,surface_gap=.001,align_to_body=True,longitudinal_offset=-.10,
         longitudinal_offset_curriculum=(.18,.04),lateral_offset_curriculum=(.22,.05),overlap_curriculum_steps=100000,
         xy_offset_range=.005,collision_geom_pattern=COLLISION_PATTERN,inactive_xy=(20.,20.))
