@@ -1,12 +1,13 @@
-"""Launch seven independent cohorts, never touching existing processes."""
+"""Launch eight independent cohorts, never touching existing processes."""
 import argparse,datetime,json,os,subprocess,hashlib
 from pathlib import Path
 from smp.rl.tasks.getup.prior_replay_transfer import ARMS
-p=argparse.ArgumentParser();p.add_argument('--mode',choices=['preflight','formal'],required=True);p.add_argument('--gpus',nargs='+',type=int,default=[0,1,2,3,4,5,6]);p.add_argument('--checkpoint',type=Path,required=True);p.add_argument('--updates',type=int,default=10000);p.add_argument('--arms',nargs='+',choices=ARMS,default=list(ARMS));a=p.parse_args();assert len(a.gpus)==len(a.arms)
+p=argparse.ArgumentParser();p.add_argument('--mode',choices=['preflight','formal'],required=True);p.add_argument('--gpus',nargs='+',type=int,default=[0,1,2,3,4,5,6,7]);p.add_argument('--checkpoint',type=Path,required=True);p.add_argument('--updates',type=int,default=10000);p.add_argument('--arms',nargs='+',choices=ARMS,default=list(ARMS));a=p.parse_args();assert len(a.gpus)==len(a.arms)
 root=Path.cwd();stamp=datetime.datetime.now().strftime('%Y%m%d_%H%M%S');tag=a.mode+'_'+stamp;control=root/'run_control/prior_replay_transfer'/tag;control.mkdir(parents=True);rows=[]
 if a.mode=='formal':
     evidence=root/'outputs/prior_replay_preflight_verified.json'
     report=json.loads(evidence.read_text());assert report['passed'] and report['source_sha256']=='8f05543b644b0a1d11246e85778f99220460ef2a744417ea940296eed768c768'
+    assert all(arm in report['results'] and report['results'][arm]['passed'] for arm in a.arms)
     for name,digest in report['code_hashes'].items():assert hashlib.sha256(Path(name).read_bytes()).hexdigest()==digest,name
 for gpu,arm in zip(a.gpus,a.arms):
     log=root/'logs/rsl_rl/prior_replay_transfer'/tag/arm

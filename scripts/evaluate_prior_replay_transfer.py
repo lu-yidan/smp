@@ -57,6 +57,9 @@ def main():
                     longitudinal_offset_curriculum=(0.,0.) if hard else (.18,.18),lateral_offset_curriculum=(0.,0.) if hard else (.22,.22),overlap_curriculum_steps=1,
                     xy_offset_range=.005,surface_gap=.001,collision_geom_pattern=COLLISION_PATTERN,inactive_xy=(20,20))
             env.sim.forward();prime_static_history(env,ids);v.reset(env,ids)
+            if a.arm=='P7_transition':
+                from smp.rl.tasks.getup import supported_transition
+                supported_transition.reset(env,ids)
             env.action_manager.reset(ids)  # warmup entry must match the manually installed evaluation pose
             env.observation_manager.reset(ids);obs=env.observation_manager.compute(update_history=True)
             # Verify initial collision setup in CPU model, not just floating-base height.

@@ -45,8 +45,8 @@ def build_config(arm,bank,n=4096):
     cfg.events['gsi_reset'].params['arm']=arm
     if arm in ('P1_v7','P2_v7_ws4'):
         cfg.events['init_smp_state'].params['ckpt_path']='datasets/pretrain_ckpt/pretrained_getup_lafan_route_v7.pt'
-    cfg.rewards['task_smp_product'].params['ws']=4. if arm in ('P2_v7_ws4','P6_combined') else 6.
-    if arm in ('P3_no_smp_term','P6_combined'):
+    cfg.rewards['task_smp_product'].params['ws']=4. if arm in ('P2_v7_ws4','P6_combined','P7_transition') else 6.
+    if arm in ('P3_no_smp_term','P6_combined','P7_transition'):
         cfg.terminations.pop('smp_too_low',None)
     else:
         cfg.terminations['smp_too_low'].func=prt.termination
@@ -54,6 +54,10 @@ def build_config(arm,bank,n=4096):
     if arm in prt.REPLAY_ARMS:
         from mjlab.managers.metrics_manager import MetricsTermCfg
         cfg.metrics['failure_replay_capture']=MetricsTermCfg(func=prt.record)
+    if arm=='P7_transition':
+        from smp.rl.tasks.getup import supported_transition as transition
+        cfg.events['supported_transition_reset']=EventTermCfg(func=transition.reset,mode='reset')
+        cfg.rewards['supported_transition']=RewardTermCfg(func=transition.progress,weight=.20)
     return cfg,agent
 
 class Wrapper(RslRlVecEnvWrapper):

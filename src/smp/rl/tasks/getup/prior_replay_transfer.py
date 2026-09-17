@@ -8,9 +8,9 @@ from smp.rl.tasks.getup import plate_transfer as p, v33_reward_transfer as v
 from smp.rl.tasks.getup.fixed_low_reset import reset_fixed_low, fixed_low_smp
 from smp.rl.tasks.getup.natural_low_reset import prime_static_history
 
-ARMS=('P0_control','P1_v7','P2_v7_ws4','P3_no_smp_term','P4_replay','P5_all_low','P6_combined')
-LOW_ARMS=('P5_all_low','P6_combined')
-REPLAY_ARMS=('P4_replay','P6_combined')
+ARMS=('P0_control','P1_v7','P2_v7_ws4','P3_no_smp_term','P4_replay','P5_all_low','P6_combined','P7_transition')
+LOW_ARMS=('P5_all_low','P6_combined','P7_transition')
+REPLAY_ARMS=('P4_replay','P6_combined','P7_transition')
 BUFFER_FIELDS=('root_pos_w','root_quat_w','root_lin_vel_w','root_ang_vel_w','ee_pos_w','joint_pos','joint_vel')
 
 
