@@ -34,3 +34,12 @@ f2s2、ws6；全部低位，不因低SMP终止；站起后继续，episode10秒�
 独立评测20秒，不推扰/不加观测噪声，板统一6kg；两个评测域：标称与整个上半身质量/惯量×1.3。后者是压力测试，未宣称为实机标定。按场景/方向报告连续稳定1/10秒、有效脱困、无效接触、速度/力矩/功率/头部接触力峰值P95；完整trace与视频保留供检查第一次坐起、重复甩腿。当前未实现可靠的自动“甩腿次数”分类器，不能把稳定率当作该指标。
 
 原多地形T_P5/T_FT12k/T_L4与原P5/P6不修改、不停止。新组只使用空闲GPU3/4，GPU7保留。
+
+## 正式启动记录
+
+2026-09-17 已启动，运行目录 `/root/workplace/smp-p5-balanced/logs/rsl_rl/balanced/formal_20260917_balanced_v1`。B0 PID205014，B1 PID205015；均已执行 PPO 更新，W&B 在线。两个 Actor 精确等于 FT12k，新的 critic hash 相同。保存的课程审计显示初始缩放范围约0.900–1.100。
+
+- B0：https://wandb.ai/tabletennis/smp/runs/formal_20260917_balanced_v1-b0_reset
+- B1：https://wandb.ai/tabletennis/smp/runs/formal_20260917_balanced_v1-b1_dynamics
+
+初始 FT 在各64个场景样本的独立20秒验证中：平地连续稳定10秒61/64，压板有效脱困0/64。此结果不是新训练模型成绩。增重评测重载检查使用4更新预检checkpoint，仅验证保存/重载/压力评测链路，不作为正式基线排名。
