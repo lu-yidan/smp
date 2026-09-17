@@ -1,5 +1,5 @@
 """Launch eight independent cohorts, never touching existing processes."""
-import argparse,datetime,json,os,subprocess,hashlib
+import argparse,datetime,json,os,subprocess,hashlib,fcntl
 from pathlib import Path
 from smp.rl.tasks.getup.prior_replay_transfer import ARMS
 p=argparse.ArgumentParser();p.add_argument('--mode',choices=['preflight','formal'],required=True);p.add_argument('--gpus',nargs='+',type=int,default=[0,1,2,3,4,5,6,7]);p.add_argument('--checkpoint',type=Path,required=True);p.add_argument('--updates',type=int,default=10000);p.add_argument('--arms',nargs='+',choices=ARMS,default=list(ARMS));a=p.parse_args();assert len(a.gpus)==len(a.arms)
@@ -9,7 +9,20 @@ if a.mode=='formal':
     report=json.loads(evidence.read_text());assert report['passed'] and report['source_sha256']=='8f05543b644b0a1d11246e85778f99220460ef2a744417ea940296eed768c768'
     assert all(arm in report['results'] and report['results'][arm]['passed'] for arm in a.arms)
     for name,digest in report['code_hashes'].items():assert hashlib.sha256(Path(name).read_bytes()).hexdigest()==digest,name
+# Serialize formal launches across concurrent Codex tasks and reuse live arms.
+lock=None;active={}
+if a.mode=='formal':
+    lock_path=root/'run_control/prior_replay_transfer/formal_launch.lock'
+    lock_path.parent.mkdir(parents=True,exist_ok=True)
+    lock=open(lock_path,'a');fcntl.flock(lock,fcntl.LOCK_EX)
+    for manifest in lock_path.parent.glob('formal_*/launches.json'):
+        for row in json.loads(manifest.read_text()):
+            cmdline=Path('/proc')/str(row['pid'])/'cmdline'
+            if cmdline.exists() and row['log_dir'] in cmdline.read_bytes().replace(b'\0',b' ').decode():
+                active[row['arm']]=row
 for gpu,arm in zip(a.gpus,a.arms):
+    if arm in active:
+        rows.append(active[arm]);continue
     log=root/'logs/rsl_rl/prior_replay_transfer'/tag/arm
     cmd=[str(root/'.venv/bin/python'),'-u','scripts/train_prior_replay_transfer.py','--arm',arm,'--checkpoint',str(a.checkpoint.resolve()),'--log-dir',str(log),'--num-envs','4096','--updates',str(8 if a.mode=='preflight' else a.updates)]
     if a.mode=='preflight':cmd+=['--preflight']
