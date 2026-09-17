@@ -56,7 +56,7 @@ def sample_substep(env):
     if env._r_tick%env.cfg.decimation==0:env._r_accum.zero_();env._r_peaks.zero_()
     robot=env.scene['robot'];tau=robot.data.qfrc_actuator;dq=robot.data.joint_vel
     effort,speed=load_costs(tau,dq,env._r_limits,env._r_speeds)
-    force=env.scene['quality_other'].data.force[:,env._r_head_geom,:].norm(dim=-1).amax(-1)
+    force=ground_force(env,'quality_other')[:,env._r_head_geom,:].norm(dim=-1).amax(-1)
     vz=robot.data.site_lin_vel_w[:,env._r_head,2].abs()
     # Low static force <=150N is not penalized. High dynamic contact costs more.
     contact=head_cost(force,vz,env.episode_length_buf.float()*env.step_dt)
@@ -76,12 +76,15 @@ def cache_control(env):
     env._r_costs[:,:2]=env._r_accum[:,:2]/env.cfg.decimation
     env._r_costs[:,2]=slew;env._r_costs[:,3]=env._r_accum[:,2]/env.cfg.decimation
     z=robot.data.site_pos_w[:,env._r_head,2]-env.scene.env_origins[:,2]
+    if hasattr(env,'_mt_bank'):
+        from smp.rl.tasks.getup.multiterrain import height
+        z=height(env)
     upright=(-robot.data.projected_gravity_b[:,2]).clamp(0,1)
     feet=robot.data.body_link_pos_w[:,env._r_feet,:]
     width=(feet[:,0,:2]-feet[:,1,:2]).norm(dim=-1)
     foot_speed=robot.data.body_link_lin_vel_w[:,env._r_feet,:].norm(dim=-1).amax(-1)
-    load=env.scene['quality_feet'].data.force[...,2].abs().amin(-1)
-    other=env.scene['quality_other'].data.force[...,2].abs().sum(-1)
+    load=ground_force(env,'quality_feet')[...,2].abs().amin(-1)
+    other=ground_force(env,'quality_other')[...,2].abs().sum(-1)
     base=robot.data.root_link_lin_vel_w.norm(dim=-1);angular=robot.data.root_link_ang_vel_w.norm(dim=-1)
     joint_rms=robot.data.joint_vel.square().mean(-1).sqrt()
     knee=robot.data.joint_pos[:,env._r_knees].abs().amax(-1)
@@ -99,3 +102,9 @@ def quiet_reward(env):
 def safety_cost(env,index):
     cache_control(env)
     return env._r_costs[:,index]*ramp(env)
+
+
+def ground_force(env,name):
+    force=env.scene[name].data.force
+    if hasattr(env,'_mt_bank'):force=force+env.scene[name+'_terrain'].data.force
+    return force

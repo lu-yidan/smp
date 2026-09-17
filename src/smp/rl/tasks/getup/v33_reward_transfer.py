@@ -29,6 +29,9 @@ def reset(env,env_ids=None):
     init(env)
     if env_ids is None:env_ids=torch.arange(env.num_envs,device=env.device)
     r=env.scene['robot'];z=r.data.site_pos_w[env_ids,env._r_head,2]-env.scene.env_origins[env_ids,2]
+    if hasattr(env,'_mt_bank'):
+        from smp.rl.tasks.getup.multiterrain import height
+        z=height(env)[env_ids]
     u=(-r.data.projected_gravity_b[env_ids,2]).clamp(0,1)
     # Start from the current pose: late resets need not crouch down to unlock standing.
     s=torch.zeros_like(env_ids)
@@ -63,11 +66,14 @@ def components(env):
     if env._v_cache==env.common_step_counter:return env._v_task
     env._v_cache=env.common_step_counter
     r=env.scene['robot'];z=r.data.site_pos_w[:,env._r_head,2]-env.scene.env_origins[:,2]
+    if hasattr(env,'_mt_bank'):
+        from smp.rl.tasks.getup.multiterrain import height
+        z=height(env)
     vz=r.data.site_lin_vel_w[:,env._r_head,2];u=(-r.data.projected_gravity_b[:,2]).clamp(0,1)
     knees=r.data.joint_pos[:,env._r_knees];s=env._v_stage
     fallen=(z<.65)&(u<.45);s[fallen]=0;env._v_hold[fallen]=0
     # Contact-supported holds; reset labels do not determine eligibility.
-    load=env.scene['quality_feet'].data.force[...,2].abs().amin(-1)
+    load=ground_force(env,'quality_feet')[...,2].abs().amin(-1)
     ready=((s==0)&(z>=.55)&(u>=.55)&(knees.amin(-1)>=.8)&(vz.abs()<=.16))|((s==1)&(z>=.78)&(u>=.72)&(knees.amin(-1)>=.6)&(vz.abs()<=.18))|((s==2)&(z>=1.08)&(u>=.85)&(knees.abs().amax(-1)<.8)&(load>20)&(vz.abs()<=.12))
     env._v_hold=torch.where(ready,env._v_hold+1,0)
     advance=env._v_hold>=torch.where(s==2,25,10)
@@ -97,3 +103,9 @@ def cost(env,index):
     components(env)
     return env._v_cost[:,index]*ramp(env)
 def metric(env):return components(env)[:,0]
+
+
+def ground_force(env,name):
+    force=env.scene[name].data.force
+    if hasattr(env,'_mt_bank'):force=force+env.scene[name+'_terrain'].data.force
+    return force

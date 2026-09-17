@@ -51,6 +51,15 @@ def smp_guidance_reward(
   _update_buffer_from_sim(env)
 
   features = buffer.compute_features()
+  if hasattr(env, "_mt_bank"):
+    # Preserve world-frame temporal displacements/velocities. Only the absolute
+    # height feature is re-referenced; translating an entire recovery onto a
+    # platform must not itself count as a style violation.
+    from smp.rl.tasks.getup.multiterrain_geometry import support_height
+    feet = env.scene["robot"].data.body_link_pos_w[:, env._r_feet] - env.scene.env_origins[:, None]
+    ground = support_height(feet[..., :2]).amax(-1)
+    features = features.clone()
+    features[..., 2] -= ground[:, None]
   x_0 = 2.0 * (features - q_low) / (q_high - q_low + 1e-8) - 1.0
   num_envs = x_0.shape[0]
 
