@@ -1,6 +1,6 @@
 # FT12k 压板下一轮消融计划
 
-状态：训练入口和回放已实现，正在执行正式启动前的4096环境预检。所有组训练 episode 固定10秒，评估20秒；不复用20秒E3作为严格对照。来源统一 FT/model_12000.pt，93D部署合同不变。4096环境，10k追加更新，每500保存。
+状态：八组4096环境预检已通过，P0–P7正式运行已启动。所有组训练 episode 固定10秒，评估20秒；不复用20秒E3作为严格对照。来源统一 FT/model_12000.pt，93D部署合同不变。4096环境，10k追加更新，每500保存。
 
 ## 单项组
 
@@ -78,3 +78,20 @@ P0–P4的50%准备伏卧压板已经计入60%低位；其余约10%低位为四�
 P0–P6正式运行：formal_20260917_113521；GPU0–6，每组独占一张卡，已确认W&B在线。P7独立预检：preflight_20260917_113557。另一同项目任务也创建了P7预检，正式启动器已加文件锁和存活进程检查，避免重复正式训练。运行中的P0–P6训练核心未改变。
 
 V7参考统计及接触回放集成报告保存在 outputs/verification/。P7奖励不重复领取、受困无奖励、无支撑无奖励、超速无奖励的CPU性质检查已通过；冻结FT12k的1024环境400步校准新增奖励/任务奖励约0.00470，最大单episode实际信用0.0535（理论上限0.20）。校准时实际执行的源文件也已存档，后续另一任务对诊断脚本的改动保留，未覆盖。
+
+## 正式运行与 W&B
+
+P0–P6 于 2026-09-17 11:35 启动；P7 于 11:43 启动。预检是代码/配置/接触合法性验证，不代表这些新策略已经学会任务。
+
+|组|GPU|PID|W&B|
+|---|---:|---:|---|
+|P0_control|0|160743|[打开](https://wandb.ai/tabletennis/smp/runs/prior-replay-ft12k-p0_control-20260917_113521)|
+|P1_v7|1|160744|[打开](https://wandb.ai/tabletennis/smp/runs/prior-replay-ft12k-p1_v7-20260917_113521)|
+|P2_v7_ws4|2|160745|[打开](https://wandb.ai/tabletennis/smp/runs/prior-replay-ft12k-p2_v7_ws4-20260917_113521)|
+|P3_no_smp_term|3|160746|[打开](https://wandb.ai/tabletennis/smp/runs/prior-replay-ft12k-p3_no_smp_term-20260917_113521)|
+|P4_replay|4|160747|[打开](https://wandb.ai/tabletennis/smp/runs/prior-replay-ft12k-p4_replay-20260917_113521)|
+|P5_all_low|5|160748|[打开](https://wandb.ai/tabletennis/smp/runs/prior-replay-ft12k-p5_all_low-20260917_113521)|
+|P6_combined|6|160749|[打开](https://wandb.ai/tabletennis/smp/runs/prior-replay-ft12k-p6_combined-20260917_113521)|
+|P7_transition|7|164992|[打开](https://wandb.ai/tabletennis/smp/runs/prior-replay-ft12k-p7_transition-20260917_114311)|
+
+服务器目录 `/root/workplace/smp-prior-replay-ft`，运行清单 `outputs/formal_all_eight_launches.json`。检查证据见本地 `outputs/verification/all_eight_preflight_verified.json`。旧E/O剩余训练已按用户要求停止，其checkpoint和日志保留。
