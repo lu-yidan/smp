@@ -51,7 +51,7 @@ def smp_guidance_reward(
   _update_buffer_from_sim(env)
 
   features = buffer.compute_features()
-  if hasattr(env, "_mt_bank"):
+  if hasattr(env, "_mt_bank") and not getattr(env, "_bd_flat_support", False):
     # Preserve world-frame temporal displacements/velocities. Only the absolute
     # height feature is re-referenced; translating an entire recovery onto a
     # platform must not itself count as a style violation.

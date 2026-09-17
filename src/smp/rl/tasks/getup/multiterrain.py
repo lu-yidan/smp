@@ -13,6 +13,7 @@ from smp.rl.tasks.getup import v33_reward_transfer as v
 def height(env):
     r=env.scene['robot'];pos=r.data.site_pos_w[:,env._r_head]-env.scene.env_origins
     feet=r.data.body_link_pos_w[:,env._r_feet]-env.scene.env_origins[:,None]
+    if getattr(env,'_bd_flat_support',False):return pos[:,2]
     # Highest ground directly under either foot is conservative for split-level standing.
     support=support_height(feet[...,:2]).amax(-1)
     return pos[:,2]-support
