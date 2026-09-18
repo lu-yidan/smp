@@ -1,0 +1,168 @@
+{
+  "B2_FT": {
+    "preflight_iteration": 3,
+    "common_critic_sha": "6345f93938783e54384cd718df0737c22c93855f412deef3ad0b5109e95e1d98",
+    "code_sha256": "52b22afebf85414da8f62ebe8075f1f2db7591bc0c036f706e34e7e9a0e6c86b",
+    "actor_exact": true,
+    "actor_noise": true,
+    "dynamics": {
+      "model_mass_inertia_verified": true,
+      "actuator_gain_verified": true,
+      "effort_caps_unchanged": true,
+      "delay_0_and_10ms_verified": true
+    },
+    "calibration": {
+      "eligible_initial": 0,
+      "eligible_supine_fraction": 0.0,
+      "guidance_integral_mean": 0.0,
+      "task_integral_mean": 2.54089617729187,
+      "guidance_to_task": 0.0,
+      "max_episode_raw_credit": 0.0,
+      "theoretical_return_cap": 6.0,
+      "scene_counts": [
+        64,
+        64
+      ]
+    },
+    "reload_eval_scenarios": 40
+  },
+  "B3_L4": {
+    "preflight_iteration": 3,
+    "common_critic_sha": "6345f93938783e54384cd718df0737c22c93855f412deef3ad0b5109e95e1d98",
+    "code_sha256": "52b22afebf85414da8f62ebe8075f1f2db7591bc0c036f706e34e7e9a0e6c86b",
+    "actor_exact": true,
+    "actor_noise": true,
+    "dynamics": {
+      "model_mass_inertia_verified": true,
+      "actuator_gain_verified": true,
+      "effort_caps_unchanged": true,
+      "delay_0_and_10ms_verified": true
+    },
+    "calibration": {
+      "eligible_initial": 0,
+      "eligible_supine_fraction": 0.0,
+      "guidance_integral_mean": 0.0,
+      "task_integral_mean": 3.000044345855713,
+      "guidance_to_task": 0.0,
+      "max_episode_raw_credit": 0.0,
+      "theoretical_return_cap": 6.0,
+      "scene_counts": [
+        64,
+        64
+      ]
+    },
+    "reload_eval_scenarios": 40
+  },
+  "B4_FT_guidance": {
+    "preflight_iteration": 3,
+    "common_critic_sha": "6345f93938783e54384cd718df0737c22c93855f412deef3ad0b5109e95e1d98",
+    "code_sha256": "52b22afebf85414da8f62ebe8075f1f2db7591bc0c036f706e34e7e9a0e6c86b",
+    "actor_exact": true,
+    "actor_noise": true,
+    "dynamics": {
+      "model_mass_inertia_verified": true,
+      "actuator_gain_verified": true,
+      "effort_caps_unchanged": true,
+      "delay_0_and_10ms_verified": true
+    },
+    "calibration": {
+      "eligible_initial": 16,
+      "eligible_supine_fraction": 1.0,
+      "guidance_integral_mean": 0.011597071774303913,
+      "task_integral_mean": 2.5473170280456543,
+      "guidance_to_task": 0.004552661441266537,
+      "max_episode_raw_credit": 0.08875171095132828,
+      "theoretical_return_cap": 6.0,
+      "scene_counts": [
+        64,
+        64
+      ]
+    },
+    "reload_eval_scenarios": 40
+  },
+  "B5_L4_guidance": {
+    "preflight_iteration": 3,
+    "common_critic_sha": "6345f93938783e54384cd718df0737c22c93855f412deef3ad0b5109e95e1d98",
+    "code_sha256": "52b22afebf85414da8f62ebe8075f1f2db7591bc0c036f706e34e7e9a0e6c86b",
+    "actor_exact": true,
+    "actor_noise": true,
+    "dynamics": {
+      "model_mass_inertia_verified": true,
+      "actuator_gain_verified": true,
+      "effort_caps_unchanged": true,
+      "delay_0_and_10ms_verified": true
+    },
+    "calibration": {
+      "eligible_initial": 16,
+      "eligible_supine_fraction": 1.0,
+      "guidance_integral_mean": 0.008221601136028767,
+      "task_integral_mean": 3.0124964714050293,
+      "guidance_to_task": 0.002729165367782116,
+      "max_episode_raw_credit": 0.06290587037801743,
+      "theoretical_return_cap": 6.0,
+      "scene_counts": [
+        64,
+        64
+      ]
+    },
+    "reload_eval_scenarios": 40
+  },
+  "B6_FT_terrain": {
+    "preflight_iteration": 3,
+    "common_critic_sha": "6345f93938783e54384cd718df0737c22c93855f412deef3ad0b5109e95e1d98",
+    "code_sha256": "52b22afebf85414da8f62ebe8075f1f2db7591bc0c036f706e34e7e9a0e6c86b",
+    "actor_exact": true,
+    "actor_noise": true,
+    "dynamics": {
+      "model_mass_inertia_verified": true,
+      "actuator_gain_verified": true,
+      "effort_caps_unchanged": true,
+      "delay_0_and_10ms_verified": true
+    },
+    "calibration": {
+      "eligible_initial": 8,
+      "eligible_supine_fraction": 1.0,
+      "guidance_integral_mean": 0.005375193431973457,
+      "task_integral_mean": 2.4030380249023438,
+      "guidance_to_task": 0.0022368323989212513,
+      "max_episode_raw_credit": 0.030144482851028442,
+      "theoretical_return_cap": 6.0,
+      "scene_counts": [
+        32,
+        32,
+        32,
+        32
+      ]
+    },
+    "reload_eval_scenarios": 40
+  },
+  "B7_L4_terrain": {
+    "preflight_iteration": 3,
+    "common_critic_sha": "6345f93938783e54384cd718df0737c22c93855f412deef3ad0b5109e95e1d98",
+    "code_sha256": "52b22afebf85414da8f62ebe8075f1f2db7591bc0c036f706e34e7e9a0e6c86b",
+    "actor_exact": true,
+    "actor_noise": true,
+    "dynamics": {
+      "model_mass_inertia_verified": true,
+      "actuator_gain_verified": true,
+      "effort_caps_unchanged": true,
+      "delay_0_and_10ms_verified": true
+    },
+    "calibration": {
+      "eligible_initial": 8,
+      "eligible_supine_fraction": 1.0,
+      "guidance_integral_mean": 0.004638524726033211,
+      "task_integral_mean": 3.6921067237854004,
+      "guidance_to_task": 0.0012563355267047882,
+      "max_episode_raw_credit": 0.02811223268508911,
+      "theoretical_return_cap": 6.0,
+      "scene_counts": [
+        32,
+        32,
+        32,
+        32
+      ]
+    },
+    "reload_eval_scenarios": 40
+  }
+}

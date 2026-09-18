@@ -42,3 +42,17 @@ BeyondMimic `fallAndGetUp2_subject2_mj.npz` 中 3–10秒实际是站到躺下�
 所有组独立评测同样四场景、四方向，20秒，不推扰/无Actor噪声；压板统一6kg。评测标称动力学以及上身质量/惯量×1.3压力域。报告有效脱困、连续站稳1秒/10秒、无效接触、每轨迹峰值的P95（力矩、速度、功率、头部接触力）。站稳率不等于安全，也不自动衡量甩腿次数；同步查看视频/trace。
 
 B2/B3比较初始化；B4/B2、B5/B3比较局部引导；B6/B4、B7/B5比较混合地形。最后两对同时改变平地/原压板配额，结论应称“混合场景训练配置的效果”，不能拆解成自由板或台阶的单独因果作用。仅一个新seed，不能据小幅成功率差异宣称显著优势。
+
+## 正式运行记录（2026-09-18）
+
+服务器目录 `logs/rsl_rl/b_series/formal_20260918_b_v1`。六组均已进入PPO更新并连接W&B；运行代码提交 `d8bbb750cd7ec1032c722c37d40e44b68d2adeef`，服务器 `outputs/source_revision.json` 逐文件SHA核对通过。
+
+全部通过4096环境4更新预检、实际动力学/延迟审计、局部reset隔离检查和128环境20秒checkpoint重载四场景评测。预检成绩不是正式训练成绩。校准及验证摘要见 `b_series_preflight_20260918.json`。权重5时，冻结策略的引导积分/全环境任务积分约0.13%–0.46%，仅平地仰卧受益；后续需要观察其是否足以改变起身路径。直接回放参考特征可完整推进路径，重复回放无额外进度收益。
+
+W&B：
+- [B2_FT](https://wandb.ai/tabletennis/smp/runs/formal_20260918_b_v1-b2_ft)
+- [B3_L4](https://wandb.ai/tabletennis/smp/runs/formal_20260918_b_v1-b3_l4)
+- [B4_FT_guidance](https://wandb.ai/tabletennis/smp/runs/formal_20260918_b_v1-b4_ft_guidance)
+- [B5_L4_guidance](https://wandb.ai/tabletennis/smp/runs/formal_20260918_b_v1-b5_l4_guidance)
+- [B6_FT_terrain](https://wandb.ai/tabletennis/smp/runs/formal_20260918_b_v1-b6_ft_terrain)
+- [B7_L4_terrain](https://wandb.ai/tabletennis/smp/runs/formal_20260918_b_v1-b7_l4_terrain)
