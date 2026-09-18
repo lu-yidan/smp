@@ -31,16 +31,17 @@ class DelayedPositionAction(DeploymentPositionAction):
 class DelayedPositionActionCfg(DeploymentPositionActionCfg):
     def build(self,env):return DelayedPositionAction(self,env)
 
-def initialize(env,bank_path):
+def initialize(env,bank_path,multiterrain=False):
     mt._init(env,bank_path)
     if hasattr(env,'_bd_rng'):return
     n=env.num_envs;dev=env.device;assert n%32==0
-    env._mt_scene=torch.arange(n,device=dev)//(n//2)
-    env._mt_stratum=env._mt_scene.clone()
-    env._mt_direction=(torch.arange(n,device=dev)%(n//2))//(n//8)
-    env._mt_source=((torch.arange(n,device=dev)%(n//8))<(n//32)).long()
-    env._fixed_group=env._mt_direction+2;env._fixed_source=env._mt_source
-    env._bd_flat_support=True
+    if not multiterrain:
+        env._mt_scene=torch.arange(n,device=dev)//(n//2)
+        env._mt_stratum=env._mt_scene.clone()
+        env._mt_direction=(torch.arange(n,device=dev)%(n//2))//(n//8)
+        env._mt_source=((torch.arange(n,device=dev)%(n//8))<(n//32)).long()
+        env._fixed_group=env._mt_direction+2;env._fixed_source=env._mt_source
+    env._bd_flat_support=not multiterrain
     env._bd_rng=torch.Generator(device=dev).manual_seed(env.cfg.seed+131071)
     env._bd_lag=torch.zeros(n,dtype=torch.long,device=dev)
     env._bd_mass=torch.ones((n,4),device=dev);env._bd_gain=torch.ones((n,6),device=dev)
@@ -66,8 +67,8 @@ def initialize(env,bank_path):
         env._bd_act_groups.append(g)
 
 @requires_model_fields('body_mass','body_inertia','geom_size',recompute=RecomputeLevel.set_const)
-def reset(env,env_ids=None,bank_path='outputs/multiterrain_bank/train.npz',dynamics=False,stress_upper=1.,evaluation=False):
-    initialize(env,bank_path)
+def reset(env,env_ids=None,bank_path='outputs/multiterrain_bank/train.npz',dynamics=False,stress_upper=1.,evaluation=False,multiterrain=False):
+    initialize(env,bank_path,multiterrain)
     ids=torch.arange(env.num_envs,device=env.device) if env_ids is None else env_ids
     n=len(ids);dev=env.device
     # Width grows from +/-10% to +/-20% over the first 2000 PPO updates.
@@ -92,9 +93,10 @@ def reset(env,env_ids=None,bank_path='outputs/multiterrain_bank/train.npz',dynam
         act.set_gains(ids,kp=act.default_stiffness[ids]*gains[:,g,None],kd=act.default_damping[ids]*gains[:,g,None])
     mt.reset(env,ids,bank_path=bank_path)
     if evaluation:
-        e=env.scene['escape_obstacle'];bid=e.indexing.body_ids[-1].long();ei=ids[env._mt_scene[ids]==1]
-        env.sim.model.body_mass[ei,bid]=6.
-        env.sim.model.body_inertia[ei,bid]=env.sim.get_default_field('body_inertia')[bid]*6./env.sim.get_default_field('body_mass')[bid]
+        for scene,name in [(1,'escape_obstacle'),(2,'free_obstacle')]:
+            e=env.scene[name];bid=e.indexing.body_ids[-1].long();ei=ids[env._mt_scene[ids]==scene]
+            env.sim.model.body_mass[ei,bid]=6.
+            env.sim.model.body_inertia[ei,bid]=env.sim.get_default_field('body_inertia')[bid]*6./env.sim.get_default_field('body_mass')[bid]
 
 
 def audit_dynamics(env):
