@@ -44,3 +44,17 @@ episode10秒，站起继续，无低SMP终止，保留数值异常终止。原V3
 10秒冻结L4 Actor、保留训练噪声/随机化、完整代价权重的校准中，R1/R2任务积分约6.557/6.551，头部超速代价约-0.822/-0.726。新配置减弱了上行代价但未改变其权重。校准不是训练结果或运动安全性证明。详细数字见 `ft_speed_preflight_20260918.json`。
 
 评测中的头部上行峰值为控制步采样（20ms）；力矩/关节速度/功率峰值复用原物理子步统计。接触切换是代理指标，不能直接当真实步数。
+
+## 正式启动记录
+
+2026-09-18，三组均已完成至少10次正式PPO更新，W&B在线。代码提交 `8531d2d87175e22c80206bebfdcd322f974dca13`，服务器逐文件hash核对通过。
+
+目录 `/root/workplace/smp-ft-speed/logs/rsl_rl/ft_prone_speed/formal_20260918_ft_speed_v1`，分支 `codex/l4-ft-prone-speed`。
+
+|组|GPU|W&B|
+|---|---:|---|
+|FT_R0|1|[FT_R0](https://wandb.ai/tabletennis/smp/runs/formal_20260918_ft_speed_v1-ft_r0)|
+|FT_R1|5|[FT_R1](https://wandb.ai/tabletennis/smp/runs/formal_20260918_ft_speed_v1-ft_r1)|
+|FT_R2|7|[FT_R2](https://wandb.ai/tabletennis/smp/runs/formal_20260918_ft_speed_v1-ft_r2)|
+
+B2、D1/D2/D3/D4保持运行，未修改它们的代码快照或参数。本轮未加入失败回放，留待采样和速度效果明确后再独立比较。
