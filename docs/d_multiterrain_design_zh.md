@@ -46,3 +46,18 @@ C恢复系数为0.5+0.5×头高门控(.55→.85m)×直立门控(.45→.80)×双�
 D5实际配额：平地中间姿态412/4096（过渡208、蹲姿204），其余3684低位；四场景仍各1024。四方向低位剩余配额保持对称。
 
 评测已新增低位静止超过2秒的时间占比与进展积分；第一次进展时间缓存在环境中，目前未导出汇总，“反复甩腿次数”仍需视频/轨迹分析，不能把这些代理指标当成完整动作分类器。
+
+## 正式启动
+
+2026-09-18，六组已完成至少9次正式PPO更新，W&B在线。代码提交 `1d57a9cba10d11886767e8c16656bc3d741e10ed`，服务器 `outputs/source_revision.json` 的逐文件hash核对通过。目录 `/root/workplace/smp-d-series/logs/rsl_rl/d_series/formal_20260918_d_v1`。
+
+|组|GPU|W&B|
+|---|---:|---|
+|D0|1|[D0](https://wandb.ai/tabletennis/smp/runs/formal_20260918_d_v1-d0)|
+|D1|2|[D1](https://wandb.ai/tabletennis/smp/runs/formal_20260918_d_v1-d1)|
+|D2|3|[D2](https://wandb.ai/tabletennis/smp/runs/formal_20260918_d_v1-d2)|
+|D3|4|[D3](https://wandb.ai/tabletennis/smp/runs/formal_20260918_d_v1-d3)|
+|D4|6|[D4](https://wandb.ai/tabletennis/smp/runs/formal_20260918_d_v1-d4)|
+|D5|7|[D5](https://wandb.ai/tabletennis/smp/runs/formal_20260918_d_v1-d5)|
+
+B2/B5保留GPU0/5，未修改配置或终止。训练结果需后续独立评测，启动和校准不代表策略已改善。
