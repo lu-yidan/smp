@@ -9,6 +9,16 @@ TASK_WEIGHTS=(.22,.18,.10,.15,.08,.07,.07,.06,.07)
 COST_NAMES=('action_rate','action_acc','joint_acc','torque','joint_speed','joint_power','head_overspeed','sustained_effort')
 COST_WEIGHTS=(-.0015,-.0012,-5e-8,-1e-6,-.02,-2e-6,-1.,-.05)
 
+def speed_parameters(stage,like,relaxed=False):
+    targets=(.10,.15,.20,0.) if relaxed else (.06,.08,.10,0.)
+    up_limits=(.25,.30,.30,.12) if relaxed else (.16,.18,.18,.12)
+    return like.new_tensor(targets)[stage],like.new_tensor(up_limits)[stage],like.new_tensor((.16,.18,.18,.12))[stage]
+
+def vertical_overspeed(vz,stage,relaxed=False):
+    if not relaxed:return (vz.abs()-.2).clamp_min(0).square()
+    up=vz.new_tensor((.30,.30,.30,.20))[stage]
+    return (vz-up).clamp_min(0).square()+(-vz-.20).clamp_min(0).square()
+
 def init(env):
     b.init_buffers(env);f.init(env)
     if hasattr(env,'_v_stage'):return
@@ -57,7 +67,7 @@ def sample_substep(env):
         tau.square().sum(-1)*dq.new_tensor((.5,.75,1.,1.))[s],
         (dq.abs()-limits).clamp_min(0).square().sum(-1),
         ((tau*dq).abs()-powers).clamp_min(0).square().mean(-1),
-        (vz.abs()-.2).clamp_min(0).square(),f.effort_cost(env._f_effort_ms)],-1)
+        vertical_overspeed(vz,s,getattr(env,'_ft_relaxed',False)),f.effort_cost(env._f_effort_ms)],-1)
     env._v_tick+=1
     return vz.abs()
 
@@ -82,9 +92,10 @@ def components(env):
     klo=z.new_tensor((.8,.6,0.,0.))[s,None];khi=z.new_tensor((1.8,1.6,.65,.65))[s,None]
     kerr=((klo-knees).clamp_min(0).square()+(knees-khi).clamp_min(0).square()).mean(-1)
     pose=torch.exp(-8*(height-z).clamp_min(0).square()-6*(upr-u).clamp_min(0).square()-5*kerr)
-    target=z.new_tensor((.06,.08,.10,0.))[s]*((height-z)/.2).clamp(0,1)
-    limit=z.new_tensor((.16,.18,.18,.12))[s]
-    vel=torch.exp(-45*(vz-target).square()-140*(vz.abs()-limit).clamp_min(0).square())
+    target,up_limit,down_limit=speed_parameters(s,z,getattr(env,'_ft_relaxed',False))
+    target=target*((height-z)/.2).clamp(0,1)
+    excess=(vz-up_limit).clamp_min(0).square()+(-vz-down_limit).clamp_min(0).square()
+    vel=torch.exp(-45*(vz-target).square()-140*excess)
     gate=b.smooth_gate(z,.85,1.15)*b.smooth_gate(u,.7,.93)
     foot=r.data.body_link_lin_vel_w[:,env._r_feet,:].square().sum(-1).mean(-1)
     delta=env.action_manager.action-env._v_last_action

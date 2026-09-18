@@ -1,0 +1,248 @@
+{
+  "FT_R0": {
+    "launch": {
+      "arm": "FT_R0",
+      "checkpoint": "/root/workplace/smp-master-repro/logs/rsl_rl/fixed_low/formal_20260913_112049/L4/model_9999.pt",
+      "sha256": "7e98c06aa72f4ced7ab1f5bcfc67c011096fb5b3b4cdc453e43f7aac97409813",
+      "actor_exact": true,
+      "fresh_critic": true,
+      "fresh_optimizer": true,
+      "common_critic_sha": "6345f93938783e54384cd718df0737c22c93855f412deef3ad0b5109e95e1d98",
+      "num_envs": 4096,
+      "updates": 4,
+      "bank_sha": "287eae8e8840c1b3281e7010a84182b824fefacd34439c4f993e9f130af1027a",
+      "seed": 20261013,
+      "cost_ramp_updates": 500,
+      "low_smp_termination": false,
+      "reset_counts": [
+        1638,
+        1638,
+        205,
+        205,
+        205,
+        205
+      ],
+      "relaxed_upward_speed": false,
+      "reset_bank_sha": {
+        "natural_curriculum_v1": "e9f94540520d7927dee01150a0f0bae39ad2aad5ae008b1c7c71f521650e44b9",
+        "procedural_low_v1": "e289bed8d1c93e87fbdcf969fc5fc741f2d8500a0908ed145d2a4e02e7fe116d"
+      },
+      "actor_noise": true,
+      "events": [
+        "init_smp_state",
+        "gsi_reset",
+        "push_robot",
+        "foot_friction",
+        "encoder_bias",
+        "base_com",
+        "reset_stand_counter",
+        "deployment_pair_friction",
+        "v33_stage_reset"
+      ],
+      "episode_seconds": 10.0,
+      "code_sha256": "48dab5639c0281196474084a387a3f8a3830748168b052ea73ddbda211cefec5"
+    },
+    "reset": {
+      "counts": {
+        "late": 1638,
+        "middle": 1638,
+        "supine": 205,
+        "prone": 205,
+        "left_side_down": 205,
+        "right_side_down": 205
+      },
+      "procedural_count": 204,
+      "minimum_contact_distance": -0.001993322286718807,
+      "relaxed_upward_speed": false
+    },
+    "dynamics": {
+      "model_mass_inertia_verified": true,
+      "actuator_gain_verified": true,
+      "effort_caps_unchanged": true,
+      "delay_0_and_10ms_verified": true
+    },
+    "calibration": {
+      "weighted_term_integrals": {
+        "task_smp_product": 6.766016960144043,
+        "quiet_stand": 0.0,
+        "effort_top3": 0.0,
+        "speed_top3": 0.0,
+        "target_slew": 0.0,
+        "head_impact": 0.0,
+        "v33_action_rate": -0.11061669141054153,
+        "v33_action_acc": -0.16100603342056274,
+        "v33_joint_acc": -0.13345523178577423,
+        "v33_torque": -0.019552910700440407,
+        "v33_joint_speed": -1.0288716554641724,
+        "v33_joint_power": -0.006271375343203545,
+        "v33_head_overspeed": -0.5812073945999146,
+        "v33_sustained_effort": -0.0028794596437364817,
+        "v33_joint_limits": -0.009095926769077778
+      }
+    }
+  },
+  "FT_R1": {
+    "launch": {
+      "arm": "FT_R1",
+      "checkpoint": "/root/workplace/smp-master-repro/logs/rsl_rl/fixed_low/formal_20260913_112049/L4/model_9999.pt",
+      "sha256": "7e98c06aa72f4ced7ab1f5bcfc67c011096fb5b3b4cdc453e43f7aac97409813",
+      "actor_exact": true,
+      "fresh_critic": true,
+      "fresh_optimizer": true,
+      "common_critic_sha": "6345f93938783e54384cd718df0737c22c93855f412deef3ad0b5109e95e1d98",
+      "num_envs": 4096,
+      "updates": 4,
+      "bank_sha": "287eae8e8840c1b3281e7010a84182b824fefacd34439c4f993e9f130af1027a",
+      "seed": 20261013,
+      "cost_ramp_updates": 500,
+      "low_smp_termination": false,
+      "reset_counts": [
+        819,
+        1639,
+        273,
+        819,
+        273,
+        273
+      ],
+      "relaxed_upward_speed": false,
+      "reset_bank_sha": {
+        "natural_curriculum_v1": "e9f94540520d7927dee01150a0f0bae39ad2aad5ae008b1c7c71f521650e44b9",
+        "procedural_low_v1": "e289bed8d1c93e87fbdcf969fc5fc741f2d8500a0908ed145d2a4e02e7fe116d"
+      },
+      "actor_noise": true,
+      "events": [
+        "init_smp_state",
+        "gsi_reset",
+        "push_robot",
+        "foot_friction",
+        "encoder_bias",
+        "base_com",
+        "reset_stand_counter",
+        "deployment_pair_friction",
+        "v33_stage_reset"
+      ],
+      "episode_seconds": 10.0,
+      "code_sha256": "48dab5639c0281196474084a387a3f8a3830748168b052ea73ddbda211cefec5"
+    },
+    "reset": {
+      "counts": {
+        "late": 819,
+        "middle": 1639,
+        "supine": 273,
+        "prone": 819,
+        "left_side_down": 273,
+        "right_side_down": 273
+      },
+      "procedural_count": 409,
+      "minimum_contact_distance": -0.001993322286718807,
+      "relaxed_upward_speed": false
+    },
+    "dynamics": {
+      "model_mass_inertia_verified": true,
+      "actuator_gain_verified": true,
+      "effort_caps_unchanged": true,
+      "delay_0_and_10ms_verified": true
+    },
+    "calibration": {
+      "weighted_term_integrals": {
+        "task_smp_product": 6.557149887084961,
+        "quiet_stand": 0.0,
+        "effort_top3": 0.0,
+        "speed_top3": 0.0,
+        "target_slew": 0.0,
+        "head_impact": 0.0,
+        "v33_action_rate": -0.10241656750440598,
+        "v33_action_acc": -0.13656212389469147,
+        "v33_joint_acc": -0.12938977777957916,
+        "v33_torque": -0.01921047642827034,
+        "v33_joint_speed": -1.569024682044983,
+        "v33_joint_power": -0.010598639026284218,
+        "v33_head_overspeed": -0.8218126893043518,
+        "v33_sustained_effort": -0.0021446621976792812,
+        "v33_joint_limits": -0.009739050641655922
+      }
+    }
+  },
+  "FT_R2": {
+    "launch": {
+      "arm": "FT_R2",
+      "checkpoint": "/root/workplace/smp-master-repro/logs/rsl_rl/fixed_low/formal_20260913_112049/L4/model_9999.pt",
+      "sha256": "7e98c06aa72f4ced7ab1f5bcfc67c011096fb5b3b4cdc453e43f7aac97409813",
+      "actor_exact": true,
+      "fresh_critic": true,
+      "fresh_optimizer": true,
+      "common_critic_sha": "6345f93938783e54384cd718df0737c22c93855f412deef3ad0b5109e95e1d98",
+      "num_envs": 4096,
+      "updates": 4,
+      "bank_sha": "287eae8e8840c1b3281e7010a84182b824fefacd34439c4f993e9f130af1027a",
+      "seed": 20261013,
+      "cost_ramp_updates": 500,
+      "low_smp_termination": false,
+      "reset_counts": [
+        819,
+        1639,
+        273,
+        819,
+        273,
+        273
+      ],
+      "relaxed_upward_speed": true,
+      "reset_bank_sha": {
+        "natural_curriculum_v1": "e9f94540520d7927dee01150a0f0bae39ad2aad5ae008b1c7c71f521650e44b9",
+        "procedural_low_v1": "e289bed8d1c93e87fbdcf969fc5fc741f2d8500a0908ed145d2a4e02e7fe116d"
+      },
+      "actor_noise": true,
+      "events": [
+        "init_smp_state",
+        "gsi_reset",
+        "push_robot",
+        "foot_friction",
+        "encoder_bias",
+        "base_com",
+        "reset_stand_counter",
+        "deployment_pair_friction",
+        "v33_stage_reset"
+      ],
+      "episode_seconds": 10.0,
+      "code_sha256": "48dab5639c0281196474084a387a3f8a3830748168b052ea73ddbda211cefec5"
+    },
+    "reset": {
+      "counts": {
+        "late": 819,
+        "middle": 1639,
+        "supine": 273,
+        "prone": 819,
+        "left_side_down": 273,
+        "right_side_down": 273
+      },
+      "procedural_count": 409,
+      "minimum_contact_distance": -0.001993322286718807,
+      "relaxed_upward_speed": true
+    },
+    "dynamics": {
+      "model_mass_inertia_verified": true,
+      "actuator_gain_verified": true,
+      "effort_caps_unchanged": true,
+      "delay_0_and_10ms_verified": true
+    },
+    "calibration": {
+      "weighted_term_integrals": {
+        "task_smp_product": 6.551388263702393,
+        "quiet_stand": 0.0,
+        "effort_top3": 0.0,
+        "speed_top3": 0.0,
+        "target_slew": 0.0,
+        "head_impact": 0.0,
+        "v33_action_rate": -0.10252833366394043,
+        "v33_action_acc": -0.13633766770362854,
+        "v33_joint_acc": -0.12980765104293823,
+        "v33_torque": -0.019160952419042587,
+        "v33_joint_speed": -1.5816069841384888,
+        "v33_joint_power": -0.010850179940462112,
+        "v33_head_overspeed": -0.7262372374534607,
+        "v33_sustained_effort": -0.001950611243955791,
+        "v33_joint_limits": -0.009701947681605816
+      }
+    }
+  }
+}
