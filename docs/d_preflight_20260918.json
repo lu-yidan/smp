@@ -1,0 +1,670 @@
+{
+  "D0": {
+    "launch": {
+      "arm": "D0",
+      "checkpoint": "/root/workplace/smp-master-repro/logs/rsl_rl/v33_reward_transfer/formal_20260916_083821/FT/model_12000.pt",
+      "sha256": "8f05543b644b0a1d11246e85778f99220460ef2a744417ea940296eed768c768",
+      "actor_exact": true,
+      "fresh_critic": true,
+      "fresh_optimizer": true,
+      "common_critic_sha": "6345f93938783e54384cd718df0737c22c93855f412deef3ad0b5109e95e1d98",
+      "num_envs": 4096,
+      "updates": 4,
+      "bank_sha": "287eae8e8840c1b3281e7010a84182b824fefacd34439c4f993e9f130af1027a",
+      "mid_bank_sha": "821b63e7ba36ec61fe58d718794e3624083f7f07dd10833a6435730bab0cf27e",
+      "actor_noise": true,
+      "events": [
+        "init_smp_state",
+        "gsi_reset",
+        "push_robot",
+        "foot_friction",
+        "encoder_bias",
+        "base_com",
+        "reset_stand_counter",
+        "deployment_pair_friction",
+        "v33_stage_reset",
+        "multiterrain_phase"
+      ],
+      "episode_seconds": 10.0,
+      "code_sha256": "efbfaf87b0be0c87f64d77c7be20f17835bbbd37668ca1f9c71e5cd91e7bcb88"
+    },
+    "reset": {
+      "scene_counts": [
+        1024,
+        1024,
+        1024,
+        1024
+      ],
+      "stratum_counts": [
+        1024,
+        1024,
+        1024,
+        204,
+        308,
+        204,
+        104,
+        204
+      ],
+      "direction_counts": [
+        1024,
+        1024,
+        1024,
+        1024
+      ],
+      "middle_counts": [
+        4096,
+        0,
+        0
+      ]
+    },
+    "dynamics": {
+      "model_mass_inertia_verified": true,
+      "actuator_gain_verified": true,
+      "effort_caps_unchanged": true,
+      "delay_0_and_10ms_verified": true
+    },
+    "calibration": {
+      "weighted_term_integrals": {
+        "task_smp_product": 2.385925769805908,
+        "quiet_stand": 0.0,
+        "effort_top3": 0.0,
+        "speed_top3": 0.0,
+        "target_slew": 0.0,
+        "head_impact": 0.0,
+        "v33_action_rate": -0.016772089526057243,
+        "v33_action_acc": -0.013536096550524235,
+        "v33_joint_acc": -0.031227292492985725,
+        "v33_torque": -0.022570235654711723,
+        "v33_joint_speed": -0.154116690158844,
+        "v33_joint_power": -0.0012836073292419314,
+        "v33_head_overspeed": -0.33303552865982056,
+        "v33_sustained_effort": -0.05021129548549652,
+        "v33_joint_limits": -0.10462936758995056,
+        "plate_geometry_progress": 0.09290210902690887,
+        "plate_clearance": 0.1406511813402176,
+        "plate_completion": 0.346312552690506,
+        "plate_force": -0.015842149034142494,
+        "plate_separation": 0.0015695387264713645
+      },
+      "progress_integral_mean": 0.9367055296897888,
+      "task_integral_mean": 2.38592529296875,
+      "max_episode_credit": 2.0,
+      "return_cap": 2.0,
+      "scene_counts": [
+        32,
+        32,
+        32,
+        32
+      ]
+    }
+  },
+  "D1": {
+    "launch": {
+      "arm": "D1",
+      "checkpoint": "/root/workplace/smp-master-repro/logs/rsl_rl/v33_reward_transfer/formal_20260916_083821/FT/model_12000.pt",
+      "sha256": "8f05543b644b0a1d11246e85778f99220460ef2a744417ea940296eed768c768",
+      "actor_exact": true,
+      "fresh_critic": true,
+      "fresh_optimizer": true,
+      "common_critic_sha": "6345f93938783e54384cd718df0737c22c93855f412deef3ad0b5109e95e1d98",
+      "num_envs": 4096,
+      "updates": 4,
+      "bank_sha": "287eae8e8840c1b3281e7010a84182b824fefacd34439c4f993e9f130af1027a",
+      "mid_bank_sha": "821b63e7ba36ec61fe58d718794e3624083f7f07dd10833a6435730bab0cf27e",
+      "actor_noise": true,
+      "events": [
+        "init_smp_state",
+        "gsi_reset",
+        "push_robot",
+        "foot_friction",
+        "encoder_bias",
+        "base_com",
+        "reset_stand_counter",
+        "deployment_pair_friction",
+        "v33_stage_reset",
+        "multiterrain_phase"
+      ],
+      "episode_seconds": 10.0,
+      "code_sha256": "efbfaf87b0be0c87f64d77c7be20f17835bbbd37668ca1f9c71e5cd91e7bcb88"
+    },
+    "reset": {
+      "scene_counts": [
+        1024,
+        1024,
+        1024,
+        1024
+      ],
+      "stratum_counts": [
+        1024,
+        1024,
+        1024,
+        204,
+        308,
+        204,
+        104,
+        204
+      ],
+      "direction_counts": [
+        1024,
+        1024,
+        1024,
+        1024
+      ],
+      "middle_counts": [
+        4096,
+        0,
+        0
+      ]
+    },
+    "dynamics": {
+      "model_mass_inertia_verified": true,
+      "actuator_gain_verified": true,
+      "effort_caps_unchanged": true,
+      "delay_0_and_10ms_verified": true
+    },
+    "calibration": {
+      "weighted_term_integrals": {
+        "task_smp_product": 2.2719621658325195,
+        "quiet_stand": 0.0,
+        "effort_top3": 0.0,
+        "speed_top3": 0.0,
+        "target_slew": 0.0,
+        "head_impact": 0.0,
+        "v33_action_rate": -0.01654658280313015,
+        "v33_action_acc": -0.013636435382068157,
+        "v33_joint_acc": -0.03230345621705055,
+        "v33_torque": -0.02214595302939415,
+        "v33_joint_speed": -0.1471090465784073,
+        "v33_joint_power": -0.0012277840869501233,
+        "v33_head_overspeed": -0.3216892182826996,
+        "v33_sustained_effort": -0.05034712329506874,
+        "v33_joint_limits": -0.10326734930276871,
+        "plate_geometry_progress": 0.09300381690263748,
+        "plate_clearance": 0.13780628144741058,
+        "plate_completion": 0.29653164744377136,
+        "plate_force": -0.015530675649642944,
+        "plate_separation": 0.0016243146965280175,
+        "recovery_progress": 0.8889358043670654
+      },
+      "progress_integral_mean": 0.8889352679252625,
+      "task_integral_mean": 2.2719616889953613,
+      "max_episode_credit": 2.0,
+      "return_cap": 2.0,
+      "scene_counts": [
+        32,
+        32,
+        32,
+        32
+      ]
+    }
+  },
+  "D2": {
+    "launch": {
+      "arm": "D2",
+      "checkpoint": "/root/workplace/smp-master-repro/logs/rsl_rl/v33_reward_transfer/formal_20260916_083821/FT/model_12000.pt",
+      "sha256": "8f05543b644b0a1d11246e85778f99220460ef2a744417ea940296eed768c768",
+      "actor_exact": true,
+      "fresh_critic": true,
+      "fresh_optimizer": true,
+      "common_critic_sha": "6345f93938783e54384cd718df0737c22c93855f412deef3ad0b5109e95e1d98",
+      "num_envs": 4096,
+      "updates": 4,
+      "bank_sha": "287eae8e8840c1b3281e7010a84182b824fefacd34439c4f993e9f130af1027a",
+      "mid_bank_sha": "821b63e7ba36ec61fe58d718794e3624083f7f07dd10833a6435730bab0cf27e",
+      "actor_noise": true,
+      "events": [
+        "init_smp_state",
+        "gsi_reset",
+        "push_robot",
+        "foot_friction",
+        "encoder_bias",
+        "base_com",
+        "reset_stand_counter",
+        "deployment_pair_friction",
+        "v33_stage_reset",
+        "multiterrain_phase"
+      ],
+      "episode_seconds": 10.0,
+      "code_sha256": "efbfaf87b0be0c87f64d77c7be20f17835bbbd37668ca1f9c71e5cd91e7bcb88"
+    },
+    "reset": {
+      "scene_counts": [
+        1024,
+        1024,
+        1024,
+        1024
+      ],
+      "stratum_counts": [
+        1024,
+        1024,
+        1024,
+        204,
+        308,
+        204,
+        104,
+        204
+      ],
+      "direction_counts": [
+        1024,
+        1024,
+        1024,
+        1024
+      ],
+      "middle_counts": [
+        4096,
+        0,
+        0
+      ]
+    },
+    "dynamics": {
+      "model_mass_inertia_verified": true,
+      "actuator_gain_verified": true,
+      "effort_caps_unchanged": true,
+      "delay_0_and_10ms_verified": true
+    },
+    "calibration": {
+      "weighted_term_integrals": {
+        "task_smp_product": 2.371208429336548,
+        "quiet_stand": 0.0,
+        "effort_top3": 0.0,
+        "speed_top3": 0.0,
+        "target_slew": 0.0,
+        "head_impact": 0.0,
+        "v33_action_rate": -0.011660164222121239,
+        "v33_action_acc": -0.009423872455954552,
+        "v33_joint_acc": -0.019729746505618095,
+        "v33_torque": -0.02184624969959259,
+        "v33_joint_speed": -0.07039516419172287,
+        "v33_joint_power": -0.0010948023991659284,
+        "v33_head_overspeed": -0.17479772865772247,
+        "v33_sustained_effort": -0.047805462032556534,
+        "v33_joint_limits": -0.10108420997858047,
+        "plate_geometry_progress": 0.09331765025854111,
+        "plate_clearance": 0.13795964419841766,
+        "plate_completion": 0.26887521147727966,
+        "plate_force": -0.015456575900316238,
+        "plate_separation": 0.001508567831479013
+      },
+      "progress_integral_mean": 0.8891656398773193,
+      "task_integral_mean": 2.371209144592285,
+      "max_episode_credit": 2.0,
+      "return_cap": 2.0,
+      "scene_counts": [
+        32,
+        32,
+        32,
+        32
+      ]
+    }
+  },
+  "D3": {
+    "launch": {
+      "arm": "D3",
+      "checkpoint": "/root/workplace/smp-master-repro/logs/rsl_rl/v33_reward_transfer/formal_20260916_083821/FT/model_12000.pt",
+      "sha256": "8f05543b644b0a1d11246e85778f99220460ef2a744417ea940296eed768c768",
+      "actor_exact": true,
+      "fresh_critic": true,
+      "fresh_optimizer": true,
+      "common_critic_sha": "6345f93938783e54384cd718df0737c22c93855f412deef3ad0b5109e95e1d98",
+      "num_envs": 4096,
+      "updates": 4,
+      "bank_sha": "287eae8e8840c1b3281e7010a84182b824fefacd34439c4f993e9f130af1027a",
+      "mid_bank_sha": "821b63e7ba36ec61fe58d718794e3624083f7f07dd10833a6435730bab0cf27e",
+      "actor_noise": true,
+      "events": [
+        "init_smp_state",
+        "gsi_reset",
+        "push_robot",
+        "foot_friction",
+        "encoder_bias",
+        "base_com",
+        "reset_stand_counter",
+        "deployment_pair_friction",
+        "v33_stage_reset",
+        "multiterrain_phase"
+      ],
+      "episode_seconds": 10.0,
+      "code_sha256": "efbfaf87b0be0c87f64d77c7be20f17835bbbd37668ca1f9c71e5cd91e7bcb88"
+    },
+    "reset": {
+      "scene_counts": [
+        1024,
+        1024,
+        1024,
+        1024
+      ],
+      "stratum_counts": [
+        1024,
+        1024,
+        1024,
+        204,
+        308,
+        204,
+        104,
+        204
+      ],
+      "direction_counts": [
+        1024,
+        1024,
+        1024,
+        1024
+      ],
+      "middle_counts": [
+        4096,
+        0,
+        0
+      ]
+    },
+    "dynamics": {
+      "model_mass_inertia_verified": true,
+      "actuator_gain_verified": true,
+      "effort_caps_unchanged": true,
+      "delay_0_and_10ms_verified": true
+    },
+    "calibration": {
+      "weighted_term_integrals": {
+        "task_smp_product": 2.47299861907959,
+        "quiet_stand": 0.0,
+        "effort_top3": 0.0,
+        "speed_top3": 0.0,
+        "target_slew": 0.0,
+        "head_impact": 0.0,
+        "v33_action_rate": -0.015480105765163898,
+        "v33_action_acc": -0.0129068149253726,
+        "v33_joint_acc": -0.030665112659335136,
+        "v33_torque": -0.02229897864162922,
+        "v33_joint_speed": -0.12710486352443695,
+        "v33_joint_power": -0.001133043086156249,
+        "v33_head_overspeed": -0.28773564100265503,
+        "v33_sustained_effort": -0.04930279403924942,
+        "v33_joint_limits": -0.10175526887178421,
+        "plate_geometry_progress": 0.183575838804245,
+        "plate_clearance": 0.1398695409297943,
+        "plate_completion": 0.37096837162971497,
+        "plate_force": -0.01789735071361065,
+        "plate_separation": 0.003263709135353565,
+        "first_escape": 0.1015625
+      },
+      "progress_integral_mean": 0.9339505434036255,
+      "task_integral_mean": 2.47299861907959,
+      "max_episode_credit": 2.0,
+      "return_cap": 2.0,
+      "scene_counts": [
+        32,
+        32,
+        32,
+        32
+      ]
+    }
+  },
+  "D4": {
+    "launch": {
+      "arm": "D4",
+      "checkpoint": "/root/workplace/smp-master-repro/logs/rsl_rl/v33_reward_transfer/formal_20260916_083821/FT/model_12000.pt",
+      "sha256": "8f05543b644b0a1d11246e85778f99220460ef2a744417ea940296eed768c768",
+      "actor_exact": true,
+      "fresh_critic": true,
+      "fresh_optimizer": true,
+      "common_critic_sha": "6345f93938783e54384cd718df0737c22c93855f412deef3ad0b5109e95e1d98",
+      "num_envs": 4096,
+      "updates": 4,
+      "bank_sha": "287eae8e8840c1b3281e7010a84182b824fefacd34439c4f993e9f130af1027a",
+      "mid_bank_sha": "821b63e7ba36ec61fe58d718794e3624083f7f07dd10833a6435730bab0cf27e",
+      "actor_noise": true,
+      "events": [
+        "init_smp_state",
+        "gsi_reset",
+        "push_robot",
+        "foot_friction",
+        "encoder_bias",
+        "base_com",
+        "reset_stand_counter",
+        "deployment_pair_friction",
+        "v33_stage_reset",
+        "multiterrain_phase"
+      ],
+      "episode_seconds": 10.0,
+      "code_sha256": "efbfaf87b0be0c87f64d77c7be20f17835bbbd37668ca1f9c71e5cd91e7bcb88"
+    },
+    "reset": {
+      "scene_counts": [
+        1024,
+        1024,
+        1024,
+        1024
+      ],
+      "stratum_counts": [
+        1024,
+        1024,
+        1024,
+        204,
+        308,
+        204,
+        104,
+        204
+      ],
+      "direction_counts": [
+        1024,
+        1024,
+        1024,
+        1024
+      ],
+      "middle_counts": [
+        4096,
+        0,
+        0
+      ]
+    },
+    "dynamics": {
+      "model_mass_inertia_verified": true,
+      "actuator_gain_verified": true,
+      "effort_caps_unchanged": true,
+      "delay_0_and_10ms_verified": true
+    },
+    "calibration": {
+      "weighted_term_integrals": {
+        "task_smp_product": 2.524813175201416,
+        "quiet_stand": 0.0,
+        "effort_top3": 0.0,
+        "speed_top3": 0.0,
+        "target_slew": 0.0,
+        "head_impact": 0.0,
+        "v33_action_rate": -0.010635076090693474,
+        "v33_action_acc": -0.008789551444351673,
+        "v33_joint_acc": -0.018554793670773506,
+        "v33_torque": -0.02170841209590435,
+        "v33_joint_speed": -0.07728946954011917,
+        "v33_joint_power": -0.0010999259538948536,
+        "v33_head_overspeed": -0.1872156709432602,
+        "v33_sustained_effort": -0.048361461609601974,
+        "v33_joint_limits": -0.10325797647237778,
+        "plate_geometry_progress": 0.16895397007465363,
+        "plate_clearance": 0.13588060438632965,
+        "plate_completion": 0.3989989757537842,
+        "plate_force": -0.017210930585861206,
+        "plate_separation": 0.003249023575335741,
+        "recovery_progress": 0.9655425548553467,
+        "first_escape": 0.109375
+      },
+      "progress_integral_mean": 0.9655430316925049,
+      "task_integral_mean": 2.524813175201416,
+      "max_episode_credit": 2.0,
+      "return_cap": 2.0,
+      "scene_counts": [
+        32,
+        32,
+        32,
+        32
+      ]
+    }
+  },
+  "D5": {
+    "launch": {
+      "arm": "D5",
+      "checkpoint": "/root/workplace/smp-master-repro/logs/rsl_rl/v33_reward_transfer/formal_20260916_083821/FT/model_12000.pt",
+      "sha256": "8f05543b644b0a1d11246e85778f99220460ef2a744417ea940296eed768c768",
+      "actor_exact": true,
+      "fresh_critic": true,
+      "fresh_optimizer": true,
+      "common_critic_sha": "6345f93938783e54384cd718df0737c22c93855f412deef3ad0b5109e95e1d98",
+      "num_envs": 4096,
+      "updates": 4,
+      "bank_sha": "287eae8e8840c1b3281e7010a84182b824fefacd34439c4f993e9f130af1027a",
+      "mid_bank_sha": "821b63e7ba36ec61fe58d718794e3624083f7f07dd10833a6435730bab0cf27e",
+      "actor_noise": true,
+      "events": [
+        "init_smp_state",
+        "gsi_reset",
+        "push_robot",
+        "foot_friction",
+        "encoder_bias",
+        "base_com",
+        "reset_stand_counter",
+        "deployment_pair_friction",
+        "v33_stage_reset",
+        "multiterrain_phase"
+      ],
+      "episode_seconds": 10.0,
+      "code_sha256": "efbfaf87b0be0c87f64d77c7be20f17835bbbd37668ca1f9c71e5cd91e7bcb88"
+    },
+    "reset": {
+      "scene_counts": [
+        1024,
+        1024,
+        1024,
+        1024
+      ],
+      "stratum_counts": [
+        1024,
+        1024,
+        1024,
+        204,
+        308,
+        204,
+        104,
+        204
+      ],
+      "direction_counts": [
+        1024,
+        1024,
+        1024,
+        1024
+      ],
+      "middle_counts": [
+        3684,
+        208,
+        204
+      ]
+    },
+    "dynamics": {
+      "model_mass_inertia_verified": true,
+      "actuator_gain_verified": true,
+      "effort_caps_unchanged": true,
+      "delay_0_and_10ms_verified": true
+    },
+    "calibration": {
+      "weighted_term_integrals": {
+        "task_smp_product": 2.405082941055298,
+        "quiet_stand": 0.0,
+        "effort_top3": 0.0,
+        "speed_top3": 0.0,
+        "target_slew": 0.0,
+        "head_impact": 0.0,
+        "v33_action_rate": -0.012910138815641403,
+        "v33_action_acc": -0.01052918191999197,
+        "v33_joint_acc": -0.023636620491743088,
+        "v33_torque": -0.022418109700083733,
+        "v33_joint_speed": -0.08812090754508972,
+        "v33_joint_power": -0.0012803708668798208,
+        "v33_head_overspeed": -0.15742500126361847,
+        "v33_sustained_effort": -0.04924128204584122,
+        "v33_joint_limits": -0.09884738177061081,
+        "plate_geometry_progress": 0.17912429571151733,
+        "plate_clearance": 0.12946900725364685,
+        "plate_completion": 0.3082497715950012,
+        "plate_force": -0.0179291944950819,
+        "plate_separation": 0.003158268053084612,
+        "recovery_progress": 0.8307781219482422,
+        "first_escape": 0.0859375
+      },
+      "progress_integral_mean": 0.8307781219482422,
+      "task_integral_mean": 2.405083656311035,
+      "max_episode_credit": 2.0,
+      "return_cap": 2.0,
+      "scene_counts": [
+        32,
+        32,
+        32,
+        32
+      ]
+    }
+  },
+  "B7_L4_terrain": {
+    "weighted_term_integrals": {
+      "task_smp_product": 0.0901494026184082,
+      "quiet_stand": 0.0,
+      "effort_top3": 0.0,
+      "speed_top3": 0.0,
+      "target_slew": 0.0,
+      "head_impact": 0.0,
+      "v33_action_rate": -0.005700182635337114,
+      "v33_action_acc": -0.00640970328822732,
+      "v33_joint_acc": -0.013055061921477318,
+      "v33_torque": -0.008238591253757477,
+      "v33_joint_speed": -0.020242879167199135,
+      "v33_joint_power": -3.8588557799812406e-05,
+      "v33_head_overspeed": -0.0871795117855072,
+      "v33_sustained_effort": -0.028698759153485298,
+      "v33_joint_limits": -0.051392048597335815,
+      "plate_geometry_progress": 0.1573428213596344,
+      "plate_clearance": 0.16288675367832184,
+      "plate_completion": 0.028218822553753853,
+      "plate_force": -0.0006242832751013339,
+      "plate_separation": 0.0011856451164931059
+    },
+    "progress_integral_mean": 0.12160290777683258,
+    "task_integral_mean": 0.09014944732189178,
+    "max_episode_credit": 2.0,
+    "return_cap": 2.0,
+    "scene_counts": [
+      32,
+      32,
+      32,
+      32
+    ]
+  },
+  "B6_FT_terrain": {
+    "weighted_term_integrals": {
+      "task_smp_product": 0.4275508224964142,
+      "quiet_stand": 0.0,
+      "effort_top3": 0.0,
+      "speed_top3": 0.0,
+      "target_slew": 0.0,
+      "head_impact": 0.0,
+      "v33_action_rate": -0.00955269206315279,
+      "v33_action_acc": -0.010659129358828068,
+      "v33_joint_acc": -0.01732892170548439,
+      "v33_torque": -0.009508296847343445,
+      "v33_joint_speed": -0.01991737261414528,
+      "v33_joint_power": -0.00010227557504549623,
+      "v33_head_overspeed": -0.08744694292545319,
+      "v33_sustained_effort": -0.02924664504826069,
+      "v33_joint_limits": -0.031030721962451935,
+      "plate_geometry_progress": 0.11760761588811874,
+      "plate_clearance": 0.1237277016043663,
+      "plate_completion": 0.17474998533725739,
+      "plate_force": -0.0028110365383327007,
+      "plate_separation": 0.0011735110310837626
+    },
+    "progress_integral_mean": 0.2686353325843811,
+    "task_integral_mean": 0.4275509715080261,
+    "max_episode_credit": 2.0,
+    "return_cap": 2.0,
+    "scene_counts": [
+      32,
+      32,
+      32,
+      32
+    ]
+  }
+}

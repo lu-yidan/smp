@@ -1,0 +1,11 @@
+{
+  "source_sha256": "e9f94540520d7927dee01150a0f0bae39ad2aad5ae008b1c7c71f521650e44b9",
+  "counts": [
+    501,
+    28
+  ],
+  "min_original_contact": -0.010660827652476765,
+  "source": "training partition only; centered XY; PD settle .3s; decompress ground penetration+1mm",
+  "joint_limits": "reject settled excess >0.001 rad, clip residual <=0.001 rad then recheck contacts",
+  "selection": "transition head .48-.78,u>.45,ground contact; crouch head .78-1.05,u>.70,both feet in contact,knees>.5"
+}
