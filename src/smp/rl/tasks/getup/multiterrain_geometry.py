@@ -8,8 +8,7 @@ STRATA=('flat','vertical_plate','free_plate','stair_interior','stair_edge','stai
 # Disjoint patches in each independent MuJoCo world. No inter-environment contact.
 BOXES=[((3.2,.0,.05),(.4,1.0,.05),(1,0,0,0)),
        ((4.0,.0,.10),(.4,1.0,.10),(1,0,0,0)),
-       ((4.9,.0,.15),(.5,1.0,.15),(1,0,0,0)),
-       ((8.0,0.,.24),(1.1,.8,.08),(math.cos(math.radians(5)),0,math.sin(math.radians(5)),0))]
+       ((4.9,.0,.15),(.5,1.0,.15),(1,0,0,0))]
 
 def add_terrain(body):
     for i,(pos,size,quat) in enumerate(BOXES):
@@ -30,10 +29,10 @@ def quotas(n):
     scene=np.repeat(np.arange(4),n//4);direction=np.tile(np.repeat(np.arange(4),n//16),4)
     strata=scene.copy()
     for d in range(4):
-        ids=np.flatnonzero((scene==3)&(direction==d));raw=np.array([.2,.3,.2,.1,.2])*len(ids)
+        ids=np.flatnonzero((scene==3)&(direction==d));raw=np.array([.4,.3,.3])*len(ids)
         counts=np.floor(raw).astype(int)
         for i in np.argsort(-(raw-counts))[:len(ids)-counts.sum()]:counts[i]+=1
-        strata[ids]=np.repeat(np.arange(3,8),counts)
+        strata[ids]=np.repeat(np.arange(3,6),counts)
     return scene,direction,strata
 
 def support_height(xy):
