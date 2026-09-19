@@ -83,3 +83,32 @@ natural_curriculum_v1中后段沿用原clip平衡权重，低位地形库沿用�
 ## 启动前验证
 
 八组4096环境4次PPO更新通过；F组内部、T组内部初始qpos/来源/分配逐元素相同；8组fresh critic hash相同、actor与R2精确相同。物理接触初态使用2.1mm容差；动力学随机化和局部reset检查通过。重载20秒评测、冻结R2奖励积分校准和正式启动记录在后续补充。
+
+### 最终预检与校准结果
+
+八组均通过4096环境短程PPO、实际随机化检查、局部reset隔离、256环境20秒重载评测。详细审计见`r2_prelaunch_audit_20260919.json`，真机信号检测校准见`outputs/reward_unit_calibration.json`。
+
+冻结R2、保留训练随机化和push、128环境10秒的加权积分：F组原任务约6.46–6.47，新增站立姿态约+.30，站立三项代价合计约−.069，持续停滞负载约−.008至−.009；T组原任务约3.11–3.32，站立姿态约+.14至+.15，三项站立代价合计约−.034至−.037，持续停滞负载约−.114至−.118，T3额外平面脱困信用约+.135。没有用这些积分声称策略已改善；它们用于排除新增项初始尺度压倒任务。
+
+## 正式启动确认
+
+2026-09-19已启动并确认八组均完成至少3次正式PPO更新，W&B在线，无failed记录。运行代码提交`9e8543b583a49c2711135840f42bcd236f4c6591`，服务器逐文件hash核对通过。运行目录：
+
+`/root/workplace/smp-r2-ablation/logs/rsl_rl/r2_ablation/formal_20260919_r2ft_v1`
+
+W&B组名`r2-flat-plate-ablation`，每组run id为`formal_20260919_r2ft_v1-f0`至`...-f3`、`...-t0`至`...-t3`。
+
+|GPU|实验|W&B|
+|---|---|---|
+|0|F0|[F0](https://wandb.ai/tabletennis/smp/runs/formal_20260919_r2ft_v1-f0)|
+|1|F1|[F1](https://wandb.ai/tabletennis/smp/runs/formal_20260919_r2ft_v1-f1)|
+|2|F2|[F2](https://wandb.ai/tabletennis/smp/runs/formal_20260919_r2ft_v1-f2)|
+|3|F3|[F3](https://wandb.ai/tabletennis/smp/runs/formal_20260919_r2ft_v1-f3)|
+|4|T0|[T0](https://wandb.ai/tabletennis/smp/runs/formal_20260919_r2ft_v1-t0)|
+|5|T1|[T1](https://wandb.ai/tabletennis/smp/runs/formal_20260919_r2ft_v1-t1)|
+|6|T2|[T2](https://wandb.ai/tabletennis/smp/runs/formal_20260919_r2ft_v1-t2)|
+|7|T3|[T3](https://wandb.ai/tabletennis/smp/runs/formal_20260919_r2ft_v1-t3)|
+
+未续训R2_9000的统一冻结基线保存在`outputs/frozen_r2_baseline/{nominal,upper130}`：连续稳定10秒，标准域平地100%、普通板0%、自由板21.9%、台阶87.5%；upper130平地96.9%、普通板0%、自由板26.6%、台阶84.4%。这是当前无斜坡评测集的结果，不能与其他样本构成的历史评测直接相减。
+
+此次没有停止其他用户任务，没有修改真机部署控制参数。新训练尚处启动阶段，不据此声称奖励改动已有效。

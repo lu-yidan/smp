@@ -1,0 +1,1210 @@
+{
+  "source": {
+    "commit": "9e8543b583a49c2711135840f42bcd236f4c6591",
+    "branch": "codex/r2-flat-plate-ablation",
+    "files": {
+      "scripts/train_r2_ablation.py": "7a80407cf77c21da6ca0a8a12f5ccd4cbfa75164a0462a35e224c1a3f3a4fdbd",
+      "scripts/launch_r2_ablation.py": "d0197675abc983d6d0d41e924682dbefcb9fc60079df6f4560b5fb036426759c",
+      "scripts/check_r2_rewards.py": "57ce56e4270930583f0368d0b4f113df597bd171e2d80a27df1eeaebc04ac3ff",
+      "scripts/train_d_series.py": "57862e9ee2c971505461d87ba532636d6058367be5ae5d23e2df81a513d1a4ea",
+      "scripts/train_ft_prone_speed.py": "10fa5a2a3ac94cc605a250cefabc399fe7e83711a1dc8f4a2562543a278991f7",
+      "src/smp/rl/tasks/getup/r2_ablation.py": "cb4d6632ee2315d357a7b86418b73c6b6dbeed6bca716d10bb71cf26e6950583",
+      "src/smp/rl/tasks/getup/multiterrain_geometry.py": "cd70af4409303805ec8e6f0c61b6318b623e0b88d9cfd4d69753a9704f08dda9",
+      "src/smp/rl/tasks/getup/multiterrain.py": "7e5f1de11bf0ca08f37bc6e57dab8eaacd687895b0457bc8ccf0c1fe5ce4fa23",
+      "src/smp/rl/tasks/getup/balanced_dynamics.py": "3ae6d9e6198ed5970fba0a98e42c874ad1ad372d22113825b947c383dbd115f6",
+      "src/smp/rl/tasks/getup/ft_prone_speed.py": "daa2f6b04a155b425d6d2f9d2d6c1b51229f2fb438e522bcff0eb7ff95655ab8",
+      "src/smp/rl/tasks/getup/v33_reward_transfer.py": "59962095e85c53ae763a53961b31b05dad4aef7f6b4ec2deaf081ab8f7b3f8b6"
+    }
+  },
+  "arms": {
+    "F0": {
+      "launch": {
+        "arm": "F0",
+        "checkpoint": "/root/workplace/smp-ft-speed/logs/rsl_rl/ft_prone_speed/formal_20260918_ft_speed_v1/FT_R2/model_9000.pt",
+        "sha256": "8b4889f80c6b7cc675f6e9b1e98f2d4a1886a15e372f86070f63c329ba9ca5d1",
+        "actor_exact": true,
+        "fresh_critic": true,
+        "fresh_optimizer": true,
+        "common_critic_sha": "6345f93938783e54384cd718df0737c22c93855f412deef3ad0b5109e95e1d98",
+        "num_envs": 4096,
+        "updates": 4,
+        "bank_sha": "287eae8e8840c1b3281e7010a84182b824fefacd34439c4f993e9f130af1027a",
+        "seed": 20261013,
+        "cost_ramp_updates": 0,
+        "low_smp_termination": false,
+        "reset_counts": {
+          "scene": [
+            4096,
+            0,
+            0,
+            0
+          ],
+          "stratum": [
+            4096,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "kind_low_middle_late": [
+            1638,
+            1639,
+            819
+          ],
+          "natural_procedural": [
+            3687,
+            409
+          ],
+          "group": [
+            819,
+            1639,
+            273,
+            819,
+            273,
+            273
+          ]
+        },
+        "relaxed_upward_speed": true,
+        "reset_bank_sha": {
+          "natural_curriculum_v1": "e9f94540520d7927dee01150a0f0bae39ad2aad5ae008b1c7c71f521650e44b9",
+          "procedural_low_v1": "e289bed8d1c93e87fbdcf969fc5fc741f2d8500a0908ed145d2a4e02e7fe116d"
+        },
+        "actor_noise": true,
+        "events": [
+          "init_smp_state",
+          "gsi_reset",
+          "push_robot",
+          "foot_friction",
+          "encoder_bias",
+          "base_com",
+          "reset_stand_counter",
+          "deployment_pair_friction",
+          "v33_stage_reset",
+          "multiterrain_phase"
+        ],
+        "episode_seconds": 10.0,
+        "code_sha256": "bee62c44aca99a9fcb38409997d99b7a2d7196e1970a25085e6ad750094dd3df"
+      },
+      "actual_dynamics_check": {
+        "model_mass_inertia_verified": true,
+        "actuator_gain_verified": true,
+        "effort_caps_unchanged": true,
+        "delay_0_and_10ms_verified": true
+      },
+      "partial_reset_pass": {
+        "untouched_worlds": 4092
+      },
+      "reset_audit": {
+        "counts": {
+          "scene": [
+            4096,
+            0,
+            0,
+            0
+          ],
+          "stratum": [
+            4096,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "kind_low_middle_late": [
+            1638,
+            1639,
+            819
+          ],
+          "natural_procedural": [
+            3687,
+            409
+          ],
+          "group": [
+            819,
+            1639,
+            273,
+            819,
+            273,
+            273
+          ]
+        },
+        "minimum_contact_distance": -0.001993322286718807,
+        "relaxed_upward_speed": true
+      },
+      "completed": {
+        "iteration": 3
+      },
+      "calibration": {
+        "weighted_term_integrals": {
+          "task_smp_product": 6.471290588378906,
+          "quiet_stand": 0.0,
+          "effort_top3": 0.0,
+          "speed_top3": 0.0,
+          "target_slew": 0.0,
+          "head_impact": 0.0,
+          "v33_action_rate": -0.018347084522247314,
+          "v33_action_acc": -0.017191167920827866,
+          "v33_joint_acc": -0.03461207449436188,
+          "v33_torque": -0.01624690182507038,
+          "v33_joint_speed": -0.12507465481758118,
+          "v33_joint_power": -0.0007805784116499126,
+          "v33_head_overspeed": -0.2153249979019165,
+          "v33_sustained_effort": -0.03107069618999958,
+          "v33_joint_limits": -0.01679457537829876
+        }
+      },
+      "reload_passed": true
+    },
+    "F1": {
+      "launch": {
+        "arm": "F1",
+        "checkpoint": "/root/workplace/smp-ft-speed/logs/rsl_rl/ft_prone_speed/formal_20260918_ft_speed_v1/FT_R2/model_9000.pt",
+        "sha256": "8b4889f80c6b7cc675f6e9b1e98f2d4a1886a15e372f86070f63c329ba9ca5d1",
+        "actor_exact": true,
+        "fresh_critic": true,
+        "fresh_optimizer": true,
+        "common_critic_sha": "6345f93938783e54384cd718df0737c22c93855f412deef3ad0b5109e95e1d98",
+        "num_envs": 4096,
+        "updates": 4,
+        "bank_sha": "287eae8e8840c1b3281e7010a84182b824fefacd34439c4f993e9f130af1027a",
+        "seed": 20261013,
+        "cost_ramp_updates": 0,
+        "low_smp_termination": false,
+        "reset_counts": {
+          "scene": [
+            4096,
+            0,
+            0,
+            0
+          ],
+          "stratum": [
+            4096,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "kind_low_middle_late": [
+            1638,
+            1639,
+            819
+          ],
+          "natural_procedural": [
+            3687,
+            409
+          ],
+          "group": [
+            819,
+            1639,
+            273,
+            819,
+            273,
+            273
+          ]
+        },
+        "relaxed_upward_speed": true,
+        "reset_bank_sha": {
+          "natural_curriculum_v1": "e9f94540520d7927dee01150a0f0bae39ad2aad5ae008b1c7c71f521650e44b9",
+          "procedural_low_v1": "e289bed8d1c93e87fbdcf969fc5fc741f2d8500a0908ed145d2a4e02e7fe116d"
+        },
+        "actor_noise": true,
+        "events": [
+          "init_smp_state",
+          "gsi_reset",
+          "push_robot",
+          "foot_friction",
+          "encoder_bias",
+          "base_com",
+          "reset_stand_counter",
+          "deployment_pair_friction",
+          "v33_stage_reset",
+          "multiterrain_phase"
+        ],
+        "episode_seconds": 10.0,
+        "code_sha256": "bee62c44aca99a9fcb38409997d99b7a2d7196e1970a25085e6ad750094dd3df"
+      },
+      "actual_dynamics_check": {
+        "model_mass_inertia_verified": true,
+        "actuator_gain_verified": true,
+        "effort_caps_unchanged": true,
+        "delay_0_and_10ms_verified": true
+      },
+      "partial_reset_pass": {
+        "untouched_worlds": 4092
+      },
+      "reset_audit": {
+        "counts": {
+          "scene": [
+            4096,
+            0,
+            0,
+            0
+          ],
+          "stratum": [
+            4096,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "kind_low_middle_late": [
+            1638,
+            1639,
+            819
+          ],
+          "natural_procedural": [
+            3687,
+            409
+          ],
+          "group": [
+            819,
+            1639,
+            273,
+            819,
+            273,
+            273
+          ]
+        },
+        "minimum_contact_distance": -0.001993322286718807,
+        "relaxed_upward_speed": true
+      },
+      "completed": {
+        "iteration": 3
+      },
+      "calibration": {
+        "weighted_term_integrals": {
+          "task_smp_product": 6.459513187408447,
+          "quiet_stand": 0.0,
+          "effort_top3": 0.0,
+          "speed_top3": 0.0,
+          "target_slew": 0.0,
+          "head_impact": 0.0,
+          "v33_action_rate": -0.018300650641322136,
+          "v33_action_acc": -0.01700972579419613,
+          "v33_joint_acc": -0.03437783196568489,
+          "v33_torque": -0.016169065609574318,
+          "v33_joint_speed": -0.12245676666498184,
+          "v33_joint_power": -0.0007837521261535585,
+          "v33_head_overspeed": -0.21374408900737762,
+          "v33_sustained_effort": -0.030846349895000458,
+          "v33_joint_limits": -0.017076117917895317,
+          "r2_stand_pose": 0.301003098487854,
+          "r2_stand_feet": -0.007417362183332443,
+          "r2_stand_body": -0.05305849760770798,
+          "r2_stand_slew": -0.008577277883887291
+        }
+      },
+      "reload_passed": true
+    },
+    "F2": {
+      "launch": {
+        "arm": "F2",
+        "checkpoint": "/root/workplace/smp-ft-speed/logs/rsl_rl/ft_prone_speed/formal_20260918_ft_speed_v1/FT_R2/model_9000.pt",
+        "sha256": "8b4889f80c6b7cc675f6e9b1e98f2d4a1886a15e372f86070f63c329ba9ca5d1",
+        "actor_exact": true,
+        "fresh_critic": true,
+        "fresh_optimizer": true,
+        "common_critic_sha": "6345f93938783e54384cd718df0737c22c93855f412deef3ad0b5109e95e1d98",
+        "num_envs": 4096,
+        "updates": 4,
+        "bank_sha": "287eae8e8840c1b3281e7010a84182b824fefacd34439c4f993e9f130af1027a",
+        "seed": 20261013,
+        "cost_ramp_updates": 0,
+        "low_smp_termination": false,
+        "reset_counts": {
+          "scene": [
+            4096,
+            0,
+            0,
+            0
+          ],
+          "stratum": [
+            4096,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "kind_low_middle_late": [
+            1638,
+            1639,
+            819
+          ],
+          "natural_procedural": [
+            3687,
+            409
+          ],
+          "group": [
+            819,
+            1639,
+            273,
+            819,
+            273,
+            273
+          ]
+        },
+        "relaxed_upward_speed": true,
+        "reset_bank_sha": {
+          "natural_curriculum_v1": "e9f94540520d7927dee01150a0f0bae39ad2aad5ae008b1c7c71f521650e44b9",
+          "procedural_low_v1": "e289bed8d1c93e87fbdcf969fc5fc741f2d8500a0908ed145d2a4e02e7fe116d"
+        },
+        "actor_noise": true,
+        "events": [
+          "init_smp_state",
+          "gsi_reset",
+          "push_robot",
+          "foot_friction",
+          "encoder_bias",
+          "base_com",
+          "reset_stand_counter",
+          "deployment_pair_friction",
+          "v33_stage_reset",
+          "multiterrain_phase"
+        ],
+        "episode_seconds": 10.0,
+        "code_sha256": "bee62c44aca99a9fcb38409997d99b7a2d7196e1970a25085e6ad750094dd3df"
+      },
+      "actual_dynamics_check": {
+        "model_mass_inertia_verified": true,
+        "actuator_gain_verified": true,
+        "effort_caps_unchanged": true,
+        "delay_0_and_10ms_verified": true
+      },
+      "partial_reset_pass": {
+        "untouched_worlds": 4092
+      },
+      "reset_audit": {
+        "counts": {
+          "scene": [
+            4096,
+            0,
+            0,
+            0
+          ],
+          "stratum": [
+            4096,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "kind_low_middle_late": [
+            1638,
+            1639,
+            819
+          ],
+          "natural_procedural": [
+            3687,
+            409
+          ],
+          "group": [
+            819,
+            1639,
+            273,
+            819,
+            273,
+            273
+          ]
+        },
+        "minimum_contact_distance": -0.001993322286718807,
+        "relaxed_upward_speed": true
+      },
+      "completed": {
+        "iteration": 3
+      },
+      "calibration": {
+        "weighted_term_integrals": {
+          "task_smp_product": 6.467661380767822,
+          "quiet_stand": 0.0,
+          "effort_top3": 0.0,
+          "speed_top3": 0.0,
+          "target_slew": 0.0,
+          "head_impact": 0.0,
+          "v33_action_rate": -0.01834019273519516,
+          "v33_action_acc": -0.017054256051778793,
+          "v33_joint_acc": -0.034471411257982254,
+          "v33_torque": -0.01613372378051281,
+          "v33_joint_speed": -0.12263020873069763,
+          "v33_joint_power": -0.0007719883578829467,
+          "v33_head_overspeed": -0.21311180293560028,
+          "v33_sustained_effort": -0.030893296003341675,
+          "v33_joint_limits": -0.01689433492720127,
+          "r2_stalled_load": -0.008186841383576393
+        }
+      },
+      "reload_passed": true
+    },
+    "F3": {
+      "launch": {
+        "arm": "F3",
+        "checkpoint": "/root/workplace/smp-ft-speed/logs/rsl_rl/ft_prone_speed/formal_20260918_ft_speed_v1/FT_R2/model_9000.pt",
+        "sha256": "8b4889f80c6b7cc675f6e9b1e98f2d4a1886a15e372f86070f63c329ba9ca5d1",
+        "actor_exact": true,
+        "fresh_critic": true,
+        "fresh_optimizer": true,
+        "common_critic_sha": "6345f93938783e54384cd718df0737c22c93855f412deef3ad0b5109e95e1d98",
+        "num_envs": 4096,
+        "updates": 4,
+        "bank_sha": "287eae8e8840c1b3281e7010a84182b824fefacd34439c4f993e9f130af1027a",
+        "seed": 20261013,
+        "cost_ramp_updates": 0,
+        "low_smp_termination": false,
+        "reset_counts": {
+          "scene": [
+            4096,
+            0,
+            0,
+            0
+          ],
+          "stratum": [
+            4096,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "kind_low_middle_late": [
+            1638,
+            1639,
+            819
+          ],
+          "natural_procedural": [
+            3687,
+            409
+          ],
+          "group": [
+            819,
+            1639,
+            273,
+            819,
+            273,
+            273
+          ]
+        },
+        "relaxed_upward_speed": true,
+        "reset_bank_sha": {
+          "natural_curriculum_v1": "e9f94540520d7927dee01150a0f0bae39ad2aad5ae008b1c7c71f521650e44b9",
+          "procedural_low_v1": "e289bed8d1c93e87fbdcf969fc5fc741f2d8500a0908ed145d2a4e02e7fe116d"
+        },
+        "actor_noise": true,
+        "events": [
+          "init_smp_state",
+          "gsi_reset",
+          "push_robot",
+          "foot_friction",
+          "encoder_bias",
+          "base_com",
+          "reset_stand_counter",
+          "deployment_pair_friction",
+          "v33_stage_reset",
+          "multiterrain_phase"
+        ],
+        "episode_seconds": 10.0,
+        "code_sha256": "bee62c44aca99a9fcb38409997d99b7a2d7196e1970a25085e6ad750094dd3df"
+      },
+      "actual_dynamics_check": {
+        "model_mass_inertia_verified": true,
+        "actuator_gain_verified": true,
+        "effort_caps_unchanged": true,
+        "delay_0_and_10ms_verified": true
+      },
+      "partial_reset_pass": {
+        "untouched_worlds": 4092
+      },
+      "reset_audit": {
+        "counts": {
+          "scene": [
+            4096,
+            0,
+            0,
+            0
+          ],
+          "stratum": [
+            4096,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "kind_low_middle_late": [
+            1638,
+            1639,
+            819
+          ],
+          "natural_procedural": [
+            3687,
+            409
+          ],
+          "group": [
+            819,
+            1639,
+            273,
+            819,
+            273,
+            273
+          ]
+        },
+        "minimum_contact_distance": -0.001993322286718807,
+        "relaxed_upward_speed": true
+      },
+      "completed": {
+        "iteration": 3
+      },
+      "calibration": {
+        "weighted_term_integrals": {
+          "task_smp_product": 6.470925331115723,
+          "quiet_stand": 0.0,
+          "effort_top3": 0.0,
+          "speed_top3": 0.0,
+          "target_slew": 0.0,
+          "head_impact": 0.0,
+          "v33_action_rate": -0.01839219033718109,
+          "v33_action_acc": -0.0171924140304327,
+          "v33_joint_acc": -0.034446462988853455,
+          "v33_torque": -0.016318894922733307,
+          "v33_joint_speed": -0.12274279445409775,
+          "v33_joint_power": -0.0007757467683404684,
+          "v33_head_overspeed": -0.21410106122493744,
+          "v33_sustained_effort": -0.031023116782307625,
+          "v33_joint_limits": -0.016689736396074295,
+          "r2_stand_pose": 0.3023442029953003,
+          "r2_stand_feet": -0.007241899613291025,
+          "r2_stand_body": -0.052787307649850845,
+          "r2_stand_slew": -0.008625459857285023,
+          "r2_stalled_load": -0.009265411645174026
+        }
+      },
+      "reload_passed": true
+    },
+    "T0": {
+      "launch": {
+        "arm": "T0",
+        "checkpoint": "/root/workplace/smp-ft-speed/logs/rsl_rl/ft_prone_speed/formal_20260918_ft_speed_v1/FT_R2/model_9000.pt",
+        "sha256": "8b4889f80c6b7cc675f6e9b1e98f2d4a1886a15e372f86070f63c329ba9ca5d1",
+        "actor_exact": true,
+        "fresh_critic": true,
+        "fresh_optimizer": true,
+        "common_critic_sha": "6345f93938783e54384cd718df0737c22c93855f412deef3ad0b5109e95e1d98",
+        "num_envs": 4096,
+        "updates": 4,
+        "bank_sha": "287eae8e8840c1b3281e7010a84182b824fefacd34439c4f993e9f130af1027a",
+        "seed": 20261013,
+        "cost_ramp_updates": 0,
+        "low_smp_termination": false,
+        "reset_counts": {
+          "scene": [
+            1024,
+            1024,
+            1024,
+            1024
+          ],
+          "stratum": [
+            1024,
+            1024,
+            1024,
+            408,
+            308,
+            308,
+            0,
+            0
+          ],
+          "kind_low_middle_late": [
+            3480,
+            412,
+            204
+          ],
+          "natural_procedural": [
+            3224,
+            872
+          ],
+          "group": [
+            204,
+            412,
+            870,
+            870,
+            870,
+            870
+          ]
+        },
+        "relaxed_upward_speed": true,
+        "reset_bank_sha": {
+          "natural_curriculum_v1": "e9f94540520d7927dee01150a0f0bae39ad2aad5ae008b1c7c71f521650e44b9",
+          "procedural_low_v1": "e289bed8d1c93e87fbdcf969fc5fc741f2d8500a0908ed145d2a4e02e7fe116d"
+        },
+        "actor_noise": true,
+        "events": [
+          "init_smp_state",
+          "gsi_reset",
+          "push_robot",
+          "foot_friction",
+          "encoder_bias",
+          "base_com",
+          "reset_stand_counter",
+          "deployment_pair_friction",
+          "v33_stage_reset",
+          "multiterrain_phase"
+        ],
+        "episode_seconds": 10.0,
+        "code_sha256": "bee62c44aca99a9fcb38409997d99b7a2d7196e1970a25085e6ad750094dd3df"
+      },
+      "actual_dynamics_check": {
+        "model_mass_inertia_verified": true,
+        "actuator_gain_verified": true,
+        "effort_caps_unchanged": true,
+        "delay_0_and_10ms_verified": true
+      },
+      "partial_reset_pass": {
+        "untouched_worlds": 4092
+      },
+      "reset_audit": {
+        "counts": {
+          "scene": [
+            1024,
+            1024,
+            1024,
+            1024
+          ],
+          "stratum": [
+            1024,
+            1024,
+            1024,
+            408,
+            308,
+            308,
+            0,
+            0
+          ],
+          "kind_low_middle_late": [
+            3480,
+            412,
+            204
+          ],
+          "natural_procedural": [
+            3224,
+            872
+          ],
+          "group": [
+            204,
+            412,
+            870,
+            870,
+            870,
+            870
+          ]
+        },
+        "minimum_contact_distance": -0.0019885753631205955,
+        "relaxed_upward_speed": true
+      },
+      "completed": {
+        "iteration": 3
+      },
+      "calibration": {
+        "weighted_term_integrals": {
+          "task_smp_product": 3.2339351177215576,
+          "quiet_stand": 0.0,
+          "effort_top3": 0.0,
+          "speed_top3": 0.0,
+          "target_slew": 0.0,
+          "head_impact": 0.0,
+          "v33_action_rate": -0.014964965172111988,
+          "v33_action_acc": -0.012886129319667816,
+          "v33_joint_acc": -0.026456093415617943,
+          "v33_torque": -0.02448152005672455,
+          "v33_joint_speed": -0.11307169497013092,
+          "v33_joint_power": -0.0005813692114315927,
+          "v33_head_overspeed": -0.24768979847431183,
+          "v33_sustained_effort": -0.09008698165416718,
+          "v33_joint_limits": -0.09678613394498825,
+          "plate_geometry_progress": 0.13733923435211182,
+          "plate_clearance": 0.18019650876522064,
+          "plate_completion": 0.39693617820739746,
+          "plate_force": -0.028968680649995804,
+          "plate_separation": 0.002005138201639056
+        }
+      },
+      "reload_passed": true
+    },
+    "T1": {
+      "launch": {
+        "arm": "T1",
+        "checkpoint": "/root/workplace/smp-ft-speed/logs/rsl_rl/ft_prone_speed/formal_20260918_ft_speed_v1/FT_R2/model_9000.pt",
+        "sha256": "8b4889f80c6b7cc675f6e9b1e98f2d4a1886a15e372f86070f63c329ba9ca5d1",
+        "actor_exact": true,
+        "fresh_critic": true,
+        "fresh_optimizer": true,
+        "common_critic_sha": "6345f93938783e54384cd718df0737c22c93855f412deef3ad0b5109e95e1d98",
+        "num_envs": 4096,
+        "updates": 4,
+        "bank_sha": "287eae8e8840c1b3281e7010a84182b824fefacd34439c4f993e9f130af1027a",
+        "seed": 20261013,
+        "cost_ramp_updates": 0,
+        "low_smp_termination": false,
+        "reset_counts": {
+          "scene": [
+            1024,
+            1024,
+            1024,
+            1024
+          ],
+          "stratum": [
+            1024,
+            1024,
+            1024,
+            408,
+            308,
+            308,
+            0,
+            0
+          ],
+          "kind_low_middle_late": [
+            3480,
+            412,
+            204
+          ],
+          "natural_procedural": [
+            3224,
+            872
+          ],
+          "group": [
+            204,
+            412,
+            870,
+            870,
+            870,
+            870
+          ]
+        },
+        "relaxed_upward_speed": true,
+        "reset_bank_sha": {
+          "natural_curriculum_v1": "e9f94540520d7927dee01150a0f0bae39ad2aad5ae008b1c7c71f521650e44b9",
+          "procedural_low_v1": "e289bed8d1c93e87fbdcf969fc5fc741f2d8500a0908ed145d2a4e02e7fe116d"
+        },
+        "actor_noise": true,
+        "events": [
+          "init_smp_state",
+          "gsi_reset",
+          "push_robot",
+          "foot_friction",
+          "encoder_bias",
+          "base_com",
+          "reset_stand_counter",
+          "deployment_pair_friction",
+          "v33_stage_reset",
+          "multiterrain_phase"
+        ],
+        "episode_seconds": 10.0,
+        "code_sha256": "bee62c44aca99a9fcb38409997d99b7a2d7196e1970a25085e6ad750094dd3df"
+      },
+      "actual_dynamics_check": {
+        "model_mass_inertia_verified": true,
+        "actuator_gain_verified": true,
+        "effort_caps_unchanged": true,
+        "delay_0_and_10ms_verified": true
+      },
+      "partial_reset_pass": {
+        "untouched_worlds": 4092
+      },
+      "reset_audit": {
+        "counts": {
+          "scene": [
+            1024,
+            1024,
+            1024,
+            1024
+          ],
+          "stratum": [
+            1024,
+            1024,
+            1024,
+            408,
+            308,
+            308,
+            0,
+            0
+          ],
+          "kind_low_middle_late": [
+            3480,
+            412,
+            204
+          ],
+          "natural_procedural": [
+            3224,
+            872
+          ],
+          "group": [
+            204,
+            412,
+            870,
+            870,
+            870,
+            870
+          ]
+        },
+        "minimum_contact_distance": -0.0019885753631205955,
+        "relaxed_upward_speed": true
+      },
+      "completed": {
+        "iteration": 3
+      },
+      "calibration": {
+        "weighted_term_integrals": {
+          "task_smp_product": 3.2037086486816406,
+          "quiet_stand": 0.0,
+          "effort_top3": 0.0,
+          "speed_top3": 0.0,
+          "target_slew": 0.0,
+          "head_impact": 0.0,
+          "v33_action_rate": -0.014692924916744232,
+          "v33_action_acc": -0.0125508988276124,
+          "v33_joint_acc": -0.025689782574772835,
+          "v33_torque": -0.024269284680485725,
+          "v33_joint_speed": -0.10525641590356827,
+          "v33_joint_power": -0.0005790764698758721,
+          "v33_head_overspeed": -0.23153749108314514,
+          "v33_sustained_effort": -0.09393235296010971,
+          "v33_joint_limits": -0.09172560274600983,
+          "plate_geometry_progress": 0.13872671127319336,
+          "plate_clearance": 0.18212364614009857,
+          "plate_completion": 0.3420003354549408,
+          "plate_force": -0.02487931214272976,
+          "plate_separation": 0.001965323928743601,
+          "r2_stand_pose": 0.14525575935840607,
+          "r2_stand_feet": -0.0036688577383756638,
+          "r2_stand_body": -0.027283182367682457,
+          "r2_stand_slew": -0.004148414358496666
+        }
+      },
+      "reload_passed": true
+    },
+    "T2": {
+      "launch": {
+        "arm": "T2",
+        "checkpoint": "/root/workplace/smp-ft-speed/logs/rsl_rl/ft_prone_speed/formal_20260918_ft_speed_v1/FT_R2/model_9000.pt",
+        "sha256": "8b4889f80c6b7cc675f6e9b1e98f2d4a1886a15e372f86070f63c329ba9ca5d1",
+        "actor_exact": true,
+        "fresh_critic": true,
+        "fresh_optimizer": true,
+        "common_critic_sha": "6345f93938783e54384cd718df0737c22c93855f412deef3ad0b5109e95e1d98",
+        "num_envs": 4096,
+        "updates": 4,
+        "bank_sha": "287eae8e8840c1b3281e7010a84182b824fefacd34439c4f993e9f130af1027a",
+        "seed": 20261013,
+        "cost_ramp_updates": 0,
+        "low_smp_termination": false,
+        "reset_counts": {
+          "scene": [
+            1024,
+            1024,
+            1024,
+            1024
+          ],
+          "stratum": [
+            1024,
+            1024,
+            1024,
+            408,
+            308,
+            308,
+            0,
+            0
+          ],
+          "kind_low_middle_late": [
+            3480,
+            412,
+            204
+          ],
+          "natural_procedural": [
+            3224,
+            872
+          ],
+          "group": [
+            204,
+            412,
+            870,
+            870,
+            870,
+            870
+          ]
+        },
+        "relaxed_upward_speed": true,
+        "reset_bank_sha": {
+          "natural_curriculum_v1": "e9f94540520d7927dee01150a0f0bae39ad2aad5ae008b1c7c71f521650e44b9",
+          "procedural_low_v1": "e289bed8d1c93e87fbdcf969fc5fc741f2d8500a0908ed145d2a4e02e7fe116d"
+        },
+        "actor_noise": true,
+        "events": [
+          "init_smp_state",
+          "gsi_reset",
+          "push_robot",
+          "foot_friction",
+          "encoder_bias",
+          "base_com",
+          "reset_stand_counter",
+          "deployment_pair_friction",
+          "v33_stage_reset",
+          "multiterrain_phase"
+        ],
+        "episode_seconds": 10.0,
+        "code_sha256": "bee62c44aca99a9fcb38409997d99b7a2d7196e1970a25085e6ad750094dd3df"
+      },
+      "actual_dynamics_check": {
+        "model_mass_inertia_verified": true,
+        "actuator_gain_verified": true,
+        "effort_caps_unchanged": true,
+        "delay_0_and_10ms_verified": true
+      },
+      "partial_reset_pass": {
+        "untouched_worlds": 4092
+      },
+      "reset_audit": {
+        "counts": {
+          "scene": [
+            1024,
+            1024,
+            1024,
+            1024
+          ],
+          "stratum": [
+            1024,
+            1024,
+            1024,
+            408,
+            308,
+            308,
+            0,
+            0
+          ],
+          "kind_low_middle_late": [
+            3480,
+            412,
+            204
+          ],
+          "natural_procedural": [
+            3224,
+            872
+          ],
+          "group": [
+            204,
+            412,
+            870,
+            870,
+            870,
+            870
+          ]
+        },
+        "minimum_contact_distance": -0.0019885753631205955,
+        "relaxed_upward_speed": true
+      },
+      "completed": {
+        "iteration": 3
+      },
+      "calibration": {
+        "weighted_term_integrals": {
+          "task_smp_product": 3.108883857727051,
+          "quiet_stand": 0.0,
+          "effort_top3": 0.0,
+          "speed_top3": 0.0,
+          "target_slew": 0.0,
+          "head_impact": 0.0,
+          "v33_action_rate": -0.01526028010994196,
+          "v33_action_acc": -0.012914937920868397,
+          "v33_joint_acc": -0.026929426938295364,
+          "v33_torque": -0.024543438106775284,
+          "v33_joint_speed": -0.11297430098056793,
+          "v33_joint_power": -0.0006190234562382102,
+          "v33_head_overspeed": -0.26716992259025574,
+          "v33_sustained_effort": -0.09328900277614594,
+          "v33_joint_limits": -0.0964309498667717,
+          "plate_geometry_progress": 0.1439628303050995,
+          "plate_clearance": 0.17995911836624146,
+          "plate_completion": 0.32756170630455017,
+          "plate_force": -0.02445659413933754,
+          "plate_separation": 0.001957101048901677,
+          "r2_stand_pose": 0.14000588655471802,
+          "r2_stand_feet": -0.0037163994275033474,
+          "r2_stand_body": -0.026753658428788185,
+          "r2_stand_slew": -0.003968336153775454,
+          "r2_stalled_load": -0.1177089735865593
+        }
+      },
+      "reload_passed": true
+    },
+    "T3": {
+      "launch": {
+        "arm": "T3",
+        "checkpoint": "/root/workplace/smp-ft-speed/logs/rsl_rl/ft_prone_speed/formal_20260918_ft_speed_v1/FT_R2/model_9000.pt",
+        "sha256": "8b4889f80c6b7cc675f6e9b1e98f2d4a1886a15e372f86070f63c329ba9ca5d1",
+        "actor_exact": true,
+        "fresh_critic": true,
+        "fresh_optimizer": true,
+        "common_critic_sha": "6345f93938783e54384cd718df0737c22c93855f412deef3ad0b5109e95e1d98",
+        "num_envs": 4096,
+        "updates": 4,
+        "bank_sha": "287eae8e8840c1b3281e7010a84182b824fefacd34439c4f993e9f130af1027a",
+        "seed": 20261013,
+        "cost_ramp_updates": 0,
+        "low_smp_termination": false,
+        "reset_counts": {
+          "scene": [
+            1024,
+            1024,
+            1024,
+            1024
+          ],
+          "stratum": [
+            1024,
+            1024,
+            1024,
+            408,
+            308,
+            308,
+            0,
+            0
+          ],
+          "kind_low_middle_late": [
+            3480,
+            412,
+            204
+          ],
+          "natural_procedural": [
+            3224,
+            872
+          ],
+          "group": [
+            204,
+            412,
+            870,
+            870,
+            870,
+            870
+          ]
+        },
+        "relaxed_upward_speed": true,
+        "reset_bank_sha": {
+          "natural_curriculum_v1": "e9f94540520d7927dee01150a0f0bae39ad2aad5ae008b1c7c71f521650e44b9",
+          "procedural_low_v1": "e289bed8d1c93e87fbdcf969fc5fc741f2d8500a0908ed145d2a4e02e7fe116d"
+        },
+        "actor_noise": true,
+        "events": [
+          "init_smp_state",
+          "gsi_reset",
+          "push_robot",
+          "foot_friction",
+          "encoder_bias",
+          "base_com",
+          "reset_stand_counter",
+          "deployment_pair_friction",
+          "v33_stage_reset",
+          "multiterrain_phase"
+        ],
+        "episode_seconds": 10.0,
+        "code_sha256": "bee62c44aca99a9fcb38409997d99b7a2d7196e1970a25085e6ad750094dd3df"
+      },
+      "actual_dynamics_check": {
+        "model_mass_inertia_verified": true,
+        "actuator_gain_verified": true,
+        "effort_caps_unchanged": true,
+        "delay_0_and_10ms_verified": true
+      },
+      "partial_reset_pass": {
+        "untouched_worlds": 4092
+      },
+      "reset_audit": {
+        "counts": {
+          "scene": [
+            1024,
+            1024,
+            1024,
+            1024
+          ],
+          "stratum": [
+            1024,
+            1024,
+            1024,
+            408,
+            308,
+            308,
+            0,
+            0
+          ],
+          "kind_low_middle_late": [
+            3480,
+            412,
+            204
+          ],
+          "natural_procedural": [
+            3224,
+            872
+          ],
+          "group": [
+            204,
+            412,
+            870,
+            870,
+            870,
+            870
+          ]
+        },
+        "minimum_contact_distance": -0.0019885753631205955,
+        "relaxed_upward_speed": true
+      },
+      "completed": {
+        "iteration": 3
+      },
+      "calibration": {
+        "weighted_term_integrals": {
+          "task_smp_product": 3.3195137977600098,
+          "quiet_stand": 0.0,
+          "effort_top3": 0.0,
+          "speed_top3": 0.0,
+          "target_slew": 0.0,
+          "head_impact": 0.0,
+          "v33_action_rate": -0.015000883489847183,
+          "v33_action_acc": -0.012972633354365826,
+          "v33_joint_acc": -0.02708166092634201,
+          "v33_torque": -0.024219460785388947,
+          "v33_joint_speed": -0.12045356631278992,
+          "v33_joint_power": -0.0006341139087453485,
+          "v33_head_overspeed": -0.2718278765678406,
+          "v33_sustained_effort": -0.09152951091527939,
+          "v33_joint_limits": -0.09239461272954941,
+          "plate_geometry_progress": 0.13464906811714172,
+          "plate_clearance": 0.186191588640213,
+          "plate_completion": 0.37959372997283936,
+          "plate_force": -0.027162058278918266,
+          "plate_separation": 0.001922482973895967,
+          "r2_stand_pose": 0.1511635035276413,
+          "r2_stand_feet": -0.003947921562939882,
+          "r2_stand_body": -0.028518741950392723,
+          "r2_stand_slew": -0.004282345529645681,
+          "r2_stalled_load": -0.11392688006162643,
+          "r2_escape_credit": 0.13454598188400269
+        }
+      },
+      "reload_passed": true
+    }
+  }
+}
