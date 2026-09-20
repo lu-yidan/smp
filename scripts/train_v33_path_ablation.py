@@ -75,7 +75,7 @@ def main():
 def build_config(n=4096,bank='outputs/multiterrain_bank/train.npz',nominal=False,arm='A0'):
  from train_d_series import build_config as d_config
  cfg,agent=d_config(n,bank,nominal,'D0')
- if arm=='A7':cfg.seed+=1009
+ if arm=='A7' and not nominal:cfg.seed+=1009
  cfg.events['gsi_reset']=EventTermCfg(func=pa.reset,mode='reset',params={'arm':arm,'bank_path':bank,'dynamics':not nominal,'evaluation':nominal})
  cfg.scene.sensors+=(ContactSensorCfg(name='path_hands',primary=ContactMatch(mode='geom',pattern=r'(left|right)_hand_collision$',entity='robot'),secondary=ContactMatch(mode='body',pattern='terrain'),fields=('found','force'),reduce='maxforce',num_slots=1),)
  cfg.metrics.pop('d_progress',None)
