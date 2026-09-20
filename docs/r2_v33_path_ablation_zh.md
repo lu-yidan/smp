@@ -51,3 +51,14 @@ L′：-.20 × max_joint[physics子步均值(负载比例.7→.95平方门控 ×
 报告成功/再跌倒、逐关节力矩速度功率peak P95、持续高负载、低速高负载时长、高负载方向改变、过渡与站后脚切换/滑移/身体角运动，以及板下头高/手支撑和板抬升倾斜。
 站后分段从首次稳定保持1秒开始；20ms采样滑移/反向指标与physics子步峰值指标需区分。接触切换不是严格步数。
 不只按最新checkpoint挑选，不把仿真成功当真机安全证明。
+
+## 启动前结果
+
+运行代码提交 `1b6d7e6`。八组4096环境4更新预检通过，A0–A6的初始qpos、场景、方向、来源和新critic逐项一致。A7改变训练seed，但固定评测seed。
+实际配额：平地2048、导向板1024、自由板1024；低2868、中820、后408；自然3380（含中后段）、程序化716。
+10秒原始R2、128环境校准（不同GPU浮点运行非逐步严格相同）：主任务积分约3.6–3.8；G主要进展约.032–.036；取消手撑A3约.094；Q约−.17；L′约−.24。保留预定权重，不能从该校准推断收敛后策略行为。
+预检与校准原件在服务器 `outputs/path_preflight4096`、`outputs/path_calibration`、`outputs/path_reload_eval`；纯函数反例结果 `outputs/path_reward_invariants.json`。
+
+正式输出：`logs/rsl_rl/v33_path_ablation/formal_20260920_r2_v33path_v1/A0` 至 `A7`，GPU0–7一一对应。
+W&B project `tabletennis/smp`，group `r2-v33-path-ablation`，run ID `formal_20260920_r2_v33path_v1-a0` 至 `-a7`。
+旧轮仍在运行的F1、T0、T1、T2、T3已按用户要求停止；其余已结束。旧checkpoint、评测、视频不删除。
