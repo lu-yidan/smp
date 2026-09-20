@@ -6,14 +6,12 @@ import numpy as np
 DIRECTIONS=('supine','prone','left_side_down','right_side_down')
 STRATA=('flat','vertical_plate','free_plate','stair_interior','stair_edge','stair_straddle','slope_interior','slope_edge')
 # Disjoint patches in each independent MuJoCo world. No inter-environment contact.
-BOXES=[((3.2,.0,.05),(.4,1.0,.05),(1,0,0,0)),
-       ((4.0,.0,.10),(.4,1.0,.10),(1,0,0,0)),
-       ((4.9,.0,.15),(.5,1.0,.15),(1,0,0,0))]
+BOXES=[]  # No stairs or slopes in this experiment.
 
 def add_terrain(body):
-    for i,(pos,size,quat) in enumerate(BOXES):
-        body.add_geom(name=f'surface_{i}',type=mujoco.mjtGeom.mjGEOM_BOX,pos=pos,size=size,quat=quat,
-                      friction=(1.,.005,.0001),rgba=(.35,.45,.55,1),solref=(.01,1.))
+    # Retain the existing terrain contact sensor target, physically out of reach.
+    body.add_geom(name='sensor_target_parked',type=mujoco.mjtGeom.mjGEOM_SPHERE,
+                  pos=(100,100,-10),size=(.01,),rgba=(0,0,0,0))
 
 def terrain_spec():
     s=mujoco.MjSpec();add_terrain(s.worldbody.add_body(name='surfaces'));return s
@@ -25,15 +23,11 @@ def free_plate_spec():
     return s
 
 def quotas(n):
-    assert n%16==0 and n>=16
-    scene=np.repeat(np.arange(4),n//4);direction=np.tile(np.repeat(np.arange(4),n//16),4)
-    strata=scene.copy()
-    for d in range(4):
-        ids=np.flatnonzero((scene==3)&(direction==d));raw=np.array([.4,.3,.3])*len(ids)
-        counts=np.floor(raw).astype(int)
-        for i in np.argsort(-(raw-counts))[:len(ids)-counts.sum()]:counts[i]+=1
-        strata[ids]=np.repeat(np.arange(3,6),counts)
-    return scene,direction,strata
+    assert n%32==0 and n>=32
+    counts=(n//2,n//4,n//4)
+    scene=np.repeat(np.arange(3),counts)
+    direction=np.concatenate([np.repeat(np.arange(4),c//4) for c in counts])
+    return scene,direction,scene.copy()
 
 def support_height(xy):
     """Top ray height for this union of boxes and plane; supports torch or numpy."""
