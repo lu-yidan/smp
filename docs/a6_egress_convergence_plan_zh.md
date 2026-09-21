@@ -52,3 +52,13 @@ EC1闭锁规则：保留真实几何脱困判据（无接触，整体投影离�
 八组4096环境预检全部通过。全部组的初始critic哈希和运行代码哈希一致，actor从同一A6源模型精确加载。初始及最终课程碰撞检查通过。最终课程实际抽样：仰卧/伏卧顶板高度0.421–0.800m；侧卧0.500–0.799m。
 
 修正了框架更新时序：普通step事件在奖励之后执行，无法保证当步奖励使用最新脱困状态；现在在终止判定/任务奖励/路径奖励入口同步当前脱困几何，同一控制步只更新一次，EC0也采用同样同步，确保组间一致。预检确实出现实际脱困样本，EC1–7逐步零进展检查非空通过。MuJoCo派生几何仍遵守框架原有的一物理子步缓存语义（2ms）。
+
+## 正式启动记录
+
+运行目录：`/root/workplace/smp-a6-egress/logs/rsl_rl/egress_convergence/formal_20260921_a6_egress_v1`。
+GPU0–7分别运行EC0–EC7，4096环境/组，10000 updates，500保存/验证、1000录视频。
+W&B项目 `tabletennis/smp`，group `a6-egress-convergence`，run id形如 `formal_20260921_a6_egress_v1-ec1`。
+
+八组通过全部预检、奖励量级标定和20秒checkpoint重载验证后，从原始A6 actor重新启动，未继承四步预检权重。EC0的固定/自由板脱困后向外收益平均积分分别约0.001395/0.000576；EC1–7均为0，并且都有实际脱困样本，非空集验证。初始位置奖励积分约-0.024，与任务×SMP约3.5相比没有压倒任务；这不等同于已经证明训练效果。
+
+`outputs/egress_audit/formal_launches.json`保存启动进程与源模型哈希，`preflight/`保存每组审核记录。`outputs/egress_audit/reset_setup.png`为最终随机化课程下的真实reset示例。`outputs/egress_preview/EC7_preflight4_*_20s.mp4`仅是四步预检策略视频，不是正式训练完成效果。
