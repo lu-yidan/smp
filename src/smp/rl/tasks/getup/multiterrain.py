@@ -8,7 +8,7 @@ from smp.rl.tasks.getup.multiterrain_geometry import quotas,support_height,STRAT
 from smp.rl.tasks.getup.master_deployment_contract import COLLISION_PATTERN
 from smp.rl.tasks.getup.natural_low_reset import prime_static_history
 from smp.rl.tasks.getup.fixed_low_reset import recorded_task_smp_product
-from smp.rl.tasks.getup import v33_reward_transfer as v
+from smp.rl.tasks.getup import v33_reward_transfer as v,egress_convergence as ec
 
 def height(env):
     r=env.scene['robot'];pos=r.data.site_pos_w[:,env._r_head]-env.scene.env_origins
@@ -24,9 +24,6 @@ def _init(env,bank_path):
     b=np.load(bank_path);env._mt_bank=torch.as_tensor(b['qpos'],device=dev,dtype=torch.float32)
     scene,direction,st=quotas(n)
     env._mt_scene=torch.tensor(scene,device=dev);env._mt_direction=torch.tensor(direction,device=dev);env._mt_stratum=torch.tensor(st,device=dev)
-    if not env._ce_evaluation:
-        if env._ce_arm=='C0':env._mt_scene[env._mt_scene>0]=1
-        elif env._ce_arm=='C1':env._mt_scene[env._mt_scene>0]=2
     env._ce_top=torch.as_tensor(b['robot_top'],device=dev)
     env._ce_bottom=torch.zeros(n,device=dev)
     env._mt_source=torch.zeros(n,dtype=torch.long,device=dev)
@@ -86,7 +83,11 @@ def reset(env,env_ids=None,bank_path='outputs/ceiling_bank/train.npz'):
     lo=torch.tensor([.8,.55,.04],device=dev)*(1-p)+torch.tensor([.6,.45,.03],device=dev)*p
     hi=torch.tensor([1.,.75,.07],device=dev)*(1-p)+torch.tensor([1.2,.9,.08],device=dev)*p
     half=(lo+(hi-lo)*rand(n,3))/2
-    bottom=(.55-.05*p)+(.1+.05*p)*rand(n)
+    hcat=rand(n);hu=rand(n)
+    horizontal=env._mt_direction[ids]<2
+    horizontal_h=torch.where(hcat<.25,.42+.08*hu,torch.where(hcat<.75,.50+.15*hu,.65+.15*hu))
+    side_h=torch.where(hcat<.9,.50+.20*hu,.70+.10*hu)
+    bottom=(.55+.10*hu)*(1-p)+torch.where(horizontal,horizontal_h,side_h)*p
     cat=rand(n);u=rand(n)
     target=torch.where(cat<.2,2+2*u,torch.where(cat<.8,4+6*u,10+6*u))
     mass=(4+4*u)*(1-p)+target*p
@@ -98,7 +99,7 @@ def reset(env,env_ids=None,bank_path='outputs/ceiling_bank/train.npz'):
     for (s,d,k),pool in env._mt_pools.items():
         mask=(env._mt_stratum[ids]==s)&(env._mt_direction[ids]==d)&(env._mt_source[ids]==k);nr=int(mask.sum())
         if not nr:continue
-        if s==0:
+        if s in (0,2):
             indices[mask]=pool[torch.randint(len(pool),(nr,),generator=env._mt_rng,device=dev)]
         else:
             eligible=env._ce_top[pool][None,:]<=bottom[mask,None]-.01
@@ -142,6 +143,7 @@ def reset(env,env_ids=None,bank_path='outputs/ceiling_bank/train.npz'):
     # even before touching the robot. Free plate keeps contact-based eligibility.
     env._mt_ever_contact[ids]=env._mt_scene[ids]==1
     env._mt_escaped[ids]=False;env._mt_invalid[ids]=False;env._mt_clear_hold[ids]=0;env._mt_progress[ids]=0
+    ec.reset(env,ids)
     prime_static_history(env,ids)
 
 def update(env,env_ids=None):
@@ -164,11 +166,15 @@ def update(env,env_ids=None):
     env._mt_clear_hold=torch.where(clear,env._mt_clear_hold+1,0)
     env._mt_escaped=env._mt_clear_hold>=15
     env._mt_invalid=active&((depth<-.02)|(force>1500)|((env._mt_scene==2)&(env.episode_length_buf>25)&~env._mt_ever_contact))
+    ec.update(env)
+    allowed=ec.progress_mask(env._ce_arm,env._ec_seen)
+    env._mt_separation_progress*=allowed;env._mt_progress*=allowed
 
 def task(env,task_terms,**kwargs):
+    update(env) # synchronize current geometry before paying any reward
     result=recorded_task_smp_product(env,task_terms,**kwargs)
     constrained=((env._mt_scene==1)|(env._mt_scene==2))&~env._mt_escaped
-    env._plate_product=result*torch.where(constrained,.05,1.)
+    env._plate_product=result*ec.task_multiplier(env._ce_arm,env._mt_scene>0,env._mt_escaped,env._ec_safe_age)
     return env._plate_product
 
 def escape_reward(env,index):
@@ -179,7 +185,9 @@ def escape_reward(env,index):
     if index==4:return env._mt_separation_progress
     return active.float()*((env._mt_force-300).clamp_min(0)/300).square()
 
-def invalid(env):return env._mt_invalid
+def invalid(env):
+    update(env)
+    return env._mt_invalid
 
 
 def ground_force(env,name):

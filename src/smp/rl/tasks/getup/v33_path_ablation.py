@@ -4,11 +4,11 @@ above-board exemption. All arms retain the same escape success criterion.
 """
 import torch
 from mjlab.managers.event_manager import requires_model_fields, RecomputeLevel
-from smp.rl.tasks.getup import r2_ablation as ra, multiterrain as mt
-ARMS=tuple('C'+str(i) for i in range(8))
+from smp.rl.tasks.getup import r2_ablation as ra, multiterrain as mt,egress_convergence as ec
+ARMS=ec.ARMS
 G_ARMS=ARMS
-Q_ARMS=('C3',)
-L_ARMS=('C4',)
+Q_ARMS=ARMS
+L_ARMS=ARMS
 
 def footprint(pos,ext,pp,pe):
     overlap=ext[...,:2]+pe[:,None,:2]-(pos[...,:2]-pp[:,None,:2]).abs()
@@ -36,7 +36,7 @@ def joint_stall_gate(span):
     return (1-span/.10).clamp(0,1)
 
 @requires_model_fields('body_mass','body_inertia','geom_size','geom_aabb','geom_rbound',recompute=RecomputeLevel.set_const)
-def reset(env,env_ids=None,arm='C2',**kwargs):
+def reset(env,env_ids=None,arm='EC0',**kwargs):
     env._ce_arm=arm;env._ce_evaluation=kwargs.get('evaluation',False)
     ra.reset(env,env_ids,arm='T0',**kwargs)
     ids=torch.arange(env.num_envs,device=env.device) if env_ids is None else env_ids
@@ -61,6 +61,7 @@ def sample_substep(env):
     return c
 
 def update(env):
+    mt.update(env)
     ra.update(env)
     if env._pa_tick==env.common_step_counter:return
     env._pa_tick=env.common_step_counter
@@ -70,8 +71,12 @@ def update(env):
     support=(env.scene['path_hands'].data.found>0).float().mean(-1)
     env._pa_support=support
     active=(env._mt_scene>0)&env._mt_ever_contact&~env._mt_escaped&~env._mt_invalid
-    env._pa_progress=path_progress(dc,dd,mt.height(env),torch.ones_like(support) if env._pa_arm in ARMS else support,active)
+    env._pa_progress=path_progress(dc,dd,mt.height(env),support,active)
     env._pa_clearance_score=(env._mt_scene>0)*~env._mt_invalid*(.85*(1-count/env._pa_initial_count.clamp_min(1)).clamp(0,1)+.15*(clearance/.04).clamp(0,1))
+    env._pa_progress*=ec.progress_mask(env._pa_arm,env._ec_seen)
+    if env._pa_arm!='EC0':
+        # Freeze dense clearance at its bounded maximum; no distance incentive.
+        env._pa_clearance_score=torch.where(env._ec_seen,torch.ones_like(score),env._pa_clearance_score)
     env._pa_escape_time=torch.where(env._mt_escaped,env._pa_escape_time+env.step_dt,0.)
     r=env.scene['robot'];env._pa_gate=quiet_gate(mt.height(env),-r.data.projected_gravity_b[:,2])
     span=(env._ra_motion.amax(0)-env._ra_motion.amin(0))[:,:29]
