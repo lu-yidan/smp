@@ -92,11 +92,6 @@ def reset(env,env_ids=None,bank_path='outputs/multiterrain_bank/train.npz',dynam
     for act,g in zip(env.scene['robot'].actuators,env._bd_act_groups):
         act.set_gains(ids,kp=act.default_stiffness[ids]*gains[:,g,None],kd=act.default_damping[ids]*gains[:,g,None])
     mt.reset(env,ids,bank_path=bank_path)
-    if evaluation:
-        for scene,name in [(1,'escape_obstacle'),(2,'free_obstacle')]:
-            e=env.scene[name];bid=e.indexing.body_ids[-1].long();ei=ids[env._mt_scene[ids]==scene]
-            env.sim.model.body_mass[ei,bid]=6.
-            env.sim.model.body_inertia[ei,bid]=env.sim.get_default_field('body_inertia')[bid]*6./env.sim.get_default_field('body_mass')[bid]
 
 
 def audit_dynamics(env):

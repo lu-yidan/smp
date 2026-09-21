@@ -27,7 +27,7 @@ def main():
  p=argparse.ArgumentParser();p.add_argument('--arm',choices=pa.ARMS,required=True);p.add_argument('--checkpoint',type=Path,required=True);p.add_argument('--reference',type=Path,required=True);p.add_argument('--out',type=Path,required=True);p.add_argument('--num-envs',type=int,default=4096);p.add_argument('--updates',type=int,default=10000);p.add_argument('--calibrate',action='store_true');p.add_argument('--eval',action='store_true');p.add_argument('--steps',type=int,default=1000);p.add_argument('--stress-upper',type=float,default=1.);p.add_argument('--video',action='store_true');p.add_argument('--preflight',action='store_true');a=p.parse_args()
  assert hashlib.sha256(a.reference.read_bytes()).hexdigest()=='8f05543b644b0a1d11246e85778f99220460ef2a744417ea940296eed768c768'
  a.out=a.out.resolve();a.checkpoint=a.checkpoint.resolve();a.reference=a.reference.resolve();a.out.mkdir(parents=True,exist_ok=a.eval)
- bank=f'outputs/multiterrain_bank/{"validation" if a.eval else "train"}.npz';cfg,agent=build_config(a.num_envs,bank,a.eval,a.arm)
+ bank=f'outputs/ceiling_bank/{"validation" if a.eval else "train"}.npz';cfg,agent=build_config(a.num_envs,bank,a.eval,a.arm)
  if a.eval:cfg.events['gsi_reset'].params['stress_upper']=a.stress_upper
  random.seed(cfg.seed);np.random.seed(cfg.seed);torch.manual_seed(cfg.seed)
  agent.logger='tensorboard' if a.eval or a.preflight or a.calibrate else 'wandb';agent.upload_model=False;agent.run_name=a.arm;agent.save_interval=500;agent.max_iterations=a.updates
@@ -44,17 +44,27 @@ def main():
   assert cfg.scale_rewards_by_dt and abs(env.step_dt-.02)<1e-8
   assert obs['actor'].shape[-1]==93 and obs['critic'].shape[-1]==960
   audit_reset(env,a.out)
+  if not a.eval:assert cfg.observations['actor'].enable_corruption and 'push_robot' in cfg.events
   if a.preflight:
    atomic_json(a.out/'actual_dynamics_check.json',bd.audit_dynamics(env));obs,_=env.reset()
    assert env._bd_mass.min()>=.9-1e-5 and env._bd_mass.max()<=1.1+1e-5
    env.common_step_counter=48000;obs,_=env.reset();assert env._bd_mass.min()>=.8-1e-5 and env._bd_mass.max()<=1.2+1e-5
+   env.common_step_counter=100000;obs,_=env.reset();audit_reset(env,a.out);assert env.scene['escape_obstacle'].num_joints==0
    env.common_step_counter=0;obs,_=env.reset()
    ids=torch.tensor([0,a.num_envs//4,a.num_envs//2,3*a.num_envs//4],device=env.device)
    mask=torch.ones(a.num_envs,dtype=torch.bool,device=env.device);mask[ids]=False
-   before=env.sim.data.qpos[mask].clone();before_mass=env.sim.model.body_mass[mask].clone();before_gain=env._bd_gain[mask].clone();env._reset_idx(ids)
+   before=env.sim.data.qpos[mask].clone();before_mass=env.sim.model.body_mass[mask].clone();before_gain=env._bd_gain[mask].clone();before_size=env.sim.model.geom_size[mask].clone();env._reset_idx(ids)
    assert torch.equal(before_mass,env.sim.model.body_mass[mask]) and torch.equal(before_gain,env._bd_gain[mask])
-   assert torch.equal(before,env.sim.data.qpos[mask]),'partial reset polluted other worlds'
+   assert torch.equal(before_size,env.sim.model.geom_size[mask]);assert torch.equal(before,env.sim.data.qpos[mask]),'partial reset polluted other worlds'
    obs,_=env.reset()
+   roof_id=env._mt_plate_ids[0];roof=env.sim.data.geom_xpos[:,roof_id].clone();policy=runner.get_inference_policy();unreset=torch.ones(env.num_envs,dtype=torch.bool,device=env.device)
+   for _ in range(30):
+    with torch.no_grad():obs,_,done,_=wrapper.step(policy(obs))
+    unreset&=~done.bool()
+   fixed=(env._mt_scene==1)&unreset
+   assert torch.allclose(env.sim.data.geom_xpos[fixed,roof_id],roof[fixed],atol=1e-6),'roof moved during physics'
+   obs,_=env.reset()
+   atomic_json(a.out/'fixed_roof_check.json',{'zero_joints':True,'unchanged_after_30_control_steps':True})
    atomic_json(a.out/'partial_reset_pass.json',{'untouched_worlds':int(mask.sum())})
   atomic_json(a.out/'launch.json',{'arm':a.arm,'checkpoint':str(a.checkpoint),'sha256':hashlib.sha256(a.checkpoint.read_bytes()).hexdigest(),'actor_exact':True,'fresh_critic':True,'fresh_optimizer':True,'common_critic_sha':initialcritic,'num_envs':a.num_envs,'updates':a.updates,'bank_sha':runner.bank_sha,'seed':cfg.seed,'cost_ramp_updates':0,'low_smp_termination':False,'reset_counts':reset_counts(env),'relaxed_upward_speed':env._ft_relaxed,'reset_bank_sha':{name:hashlib.sha256(Path(f'datasets/reset_banks/{name}/train.npz').read_bytes()).hexdigest() for name in ['natural_curriculum_v1','procedural_low_v1']},'actor_noise':cfg.observations['actor'].enable_corruption,'events':list(cfg.events),'episode_seconds':cfg.episode_length_s,'code_sha256':hashlib.sha256(Path(__file__).read_bytes()+Path(mt.__file__).read_bytes()+Path(bd.__file__).read_bytes()+Path(ft.__file__).read_bytes()+Path(v.__file__).read_bytes()+Path(ra.__file__).read_bytes()+Path(pa.__file__).read_bytes()+Path(__import__('smp.rl.tasks.getup.multiterrain_geometry',fromlist=['BOXES']).__file__).read_bytes()).hexdigest()})
   if a.eval:evaluate(env,wrapper,runner.get_inference_policy(),obs,a)
@@ -72,16 +82,18 @@ def main():
   if env is not None:env.close()
 
 
-def build_config(n=4096,bank='outputs/multiterrain_bank/train.npz',nominal=False,arm='A0'):
+def build_config(n=4096,bank='outputs/ceiling_bank/train.npz',nominal=False,arm='C2'):
  from train_d_series import build_config as d_config
  cfg,agent=d_config(n,bank,nominal,'D0')
- if arm=='A7' and not nominal:cfg.seed+=1009
+ if arm in ('C6','C7') and not nominal:cfg.seed+=1009
+ from smp.rl.tasks.getup.multiterrain_geometry import fixed_ceiling_spec
+ cfg.scene.entities['escape_obstacle']=EntityCfg(spec_fn=fixed_ceiling_spec,init_state=EntityCfg.InitialStateCfg(pos=(20,20,.8)))
  cfg.events['gsi_reset']=EventTermCfg(func=pa.reset,mode='reset',params={'arm':arm,'bank_path':bank,'dynamics':not nominal,'evaluation':nominal})
  cfg.scene.sensors+=(ContactSensorCfg(name='path_hands',primary=ContactMatch(mode='geom',pattern=r'(left|right)_hand_collision$',entity='robot'),secondary=ContactMatch(mode='body',pattern='terrain'),fields=('found','force'),reduce='maxforce',num_slots=1),)
  cfg.metrics.pop('d_progress',None)
  cfg.metrics['r2_load_substep']=MetricsTermCfg(func=pa.sample_substep,per_substep=True)
  cfg.metrics['r2_standing']=MetricsTermCfg(func=pa.metric)
- if arm=='A1':
+ if False:
   for i,(name,w) in enumerate(zip(ra.NAMES[:5],ra.WEIGHTS[:5])):
    cfg.rewards['r2_'+name]=RewardTermCfg(func=ra.reward,params={'index':i},weight=w)
  if arm in pa.G_ARMS:
@@ -89,17 +101,21 @@ def build_config(n=4096,bank='outputs/multiterrain_bank/train.npz',nominal=False
   cfg.rewards['plate_clearance']=RewardTermCfg(func=pa.reward,params={'index':1},weight=.08)
  if arm in pa.Q_ARMS:cfg.rewards['path_quiet_feet']=RewardTermCfg(func=pa.reward,params={'index':2},weight=-.03)
  if arm in pa.L_ARMS:cfg.rewards['path_joint_stall']=RewardTermCfg(func=pa.reward,params={'index':3},weight=-.20)
+ if arm in ('C5','C7'):cfg.rewards['path_post_escape_yaw']=RewardTermCfg(func=pa.reward,params={'index':4},weight=-.02)
  return cfg,agent
 
 class Wrapper(RslRlVecEnvWrapper):
  def step(self,actions):
   obs,r,d,e=super().step(actions);env=self.unwrapped;log=e.setdefault('log',{})
-  for s,name in enumerate(('flat','vertical_plate','free_plate','stairs')):
+  for s,name in enumerate(('flat','fixed_ceiling','free_plate','stairs')):
    mask=env._mt_scene==s
    if mask.any():
     for key,value in [('stable',env._r_stable.float()),('escaped',env._mt_escaped.float()),('smp',env._fixed_smp_score),('task',env._fixed_task_score),('standing_gate',env._ra_gate),('stalled_load',env._ra_values[:,4]),('escape_credit',env._ra_credit),('path_support',env._pa_support),('path_progress',env._pa_progress),('quiet_gate',env._pa_gate),('joint_stall',env._pa_load)]:log[f'Recovery/{name}/{key}']=value[mask].mean().detach()
   for i,name in enumerate(('legs','upper','pelvis')):log['Dynamics/mass_'+name]=env._bd_mass[:,i].mean().detach()
   for i,name in enumerate(('waist','hip','knee','ankle','arm','wrist')):log['Dynamics/gain_'+name]=env._bd_gain[:,i].mean().detach()
+  log['Geometry/ceiling_bottom_mean']=env._ce_bottom.mean().detach()
+  log['Geometry/free_mass_mean']=env.sim.model.body_mass[:,env.scene['free_obstacle'].indexing.body_ids[-1].long()].mean().detach()
+  log['Recovery/invalid_fraction']=env._mt_invalid.float().mean().detach()
   log['Dynamics/nominal_fraction']=env._bd_nominal.float().mean().detach();log['Dynamics/delay_ms']=env._bd_lag.float().mean().detach()*2
   assert torch.isfinite(r).all()
   return obs,r,d,e
@@ -129,15 +145,24 @@ def reset_counts(env):
 
 def audit_reset(env,out):
  import mujoco
+ saved={k:getattr(env.sim.mj_model,k).copy() for k in ('geom_size','geom_aabb','geom_rbound')}
  cpu=mujoco.MjData(env.sim.mj_model);q=env.sim.data.qpos.cpu().numpy();mp=env.sim.data.mocap_pos.cpu().numpy();mq=env.sim.data.mocap_quat.cpu().numpy();depth=[]
  for i in range(env.num_envs):
+  env.sim.mj_model.geom_size[:]=env.sim.model.geom_size[i].cpu().numpy();env.sim.mj_model.geom_aabb[:]=env.sim.model.geom_aabb[i].cpu().numpy().reshape(-1,6);env.sim.mj_model.geom_rbound[:]=env.sim.model.geom_rbound[i].cpu().numpy()
   cpu.qpos[:]=q[i];cpu.mocap_pos[:]=mp[i];cpu.mocap_quat[:]=mq[i];mujoco.mj_forward(env.sim.mj_model,cpu);depth.append(min([float(c.dist) for c in cpu.contact]+[0.]))
+ for k,val in saved.items():getattr(env.sim.mj_model,k)[:]=val
  assert min(depth)>-.0021,min(depth)
+ for gi in env._mt_plate_ids:
+  half=env.sim.model.geom_size[:,gi]
+  assert torch.allclose(env.sim.model.geom_aabb[:,gi,1],half) and torch.allclose(env.sim.model.geom_rbound[:,gi],half.norm(dim=-1))
+ free=env.scene['free_obstacle'];bid=free.indexing.body_ids[-1].long();half=env.sim.model.geom_size[:,env._mt_plate_ids[1]];mass=env.sim.model.body_mass[:,bid]
+ expected=mass[:,None]/3*torch.stack([half[:,1]**2+half[:,2]**2,half[:,0]**2+half[:,2]**2,half[:,0]**2+half[:,1]**2],-1)
+ assert torch.allclose(env.sim.model.body_inertia[:,bid],expected)
  assert not (env._mt_stratum>=3).any()
  assert len(__import__('smp.rl.tasks.getup.multiterrain_geometry',fromlist=['BOXES']).BOXES)==0
  assert env.sim.data.qvel.abs().max()<1e-6
  atomic_json(out/'reset_audit.json',{'counts':reset_counts(env),'minimum_contact_distance':min(depth),'relaxed_upward_speed':env._ft_relaxed})
- np.savez_compressed(out/'initial.npz',qpos=q,scene=env._mt_scene.cpu().numpy(),direction=env._mt_direction.cpu().numpy(),stratum=env._mt_stratum.cpu().numpy(),kind=env._ra_kind.cpu().numpy(),source=env._mt_source.cpu().numpy())
+ np.savez_compressed(out/'initial.npz',qpos=q,scene=env._mt_scene.cpu().numpy(),direction=env._mt_direction.cpu().numpy(),stratum=env._mt_stratum.cpu().numpy(),kind=env._ra_kind.cpu().numpy(),source=env._mt_source.cpu().numpy(),geom_size=env.sim.model.geom_size.cpu().numpy(),mocap_pos=mp,mocap_quat=mq,ceiling_bottom=env._ce_bottom.cpu().numpy())
 
 def evaluate(env,wrapper,policy,obs,a):
  hold=torch.zeros(env.num_envs,device=env.device);best=hold.clone();alive=torch.ones_like(hold,dtype=torch.bool);ever_invalid=~alive;escape=~alive
@@ -190,7 +215,7 @@ def evaluate(env,wrapper,policy,obs,a):
      w.append_data(np.concatenate([np.concatenate(tiles[:2],1),np.concatenate(tiles[2:],1)],0))
  finally:
   for w in writers.values():w.close()
- masks={name:env._mt_scene==s for s,name in enumerate(('flat','vertical_plate','free_plate','stairs'))}
+ masks={name:env._mt_scene==s for s,name in enumerate(('flat','fixed_ceiling','free_plate','stairs'))}
  masks.update({name:env._mt_stratum==s for s,name in enumerate(STRATA[:6])})
  for name,mask in list(masks.items()):
   for d,dr in enumerate(DIRECTIONS):masks[name+'/'+dr]=mask&(env._mt_direction==d)

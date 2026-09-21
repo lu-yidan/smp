@@ -4,7 +4,7 @@ import mujoco
 import numpy as np
 
 DIRECTIONS=('supine','prone','left_side_down','right_side_down')
-STRATA=('flat','vertical_plate','free_plate','stair_interior','stair_edge','stair_straddle','slope_interior','slope_edge')
+STRATA=('flat','fixed_ceiling','free_plate','stair_interior','stair_edge','stair_straddle','slope_interior','slope_edge')
 # Disjoint patches in each independent MuJoCo world. No inter-environment contact.
 BOXES=[]  # No stairs or slopes in this experiment.
 
@@ -54,3 +54,12 @@ def scene_spec(spec):
     from smp.rl.tasks.getup.master_deployment_contract import deployment_contacts
     deployment_contacts(spec)
     add_terrain(spec.worldbody.add_body(name='surfaces'))
+
+
+def fixed_ceiling_spec():
+    """World-anchored obstacle: mocap pose changes only at reset; zero joints."""
+    s=mujoco.MjSpec();b=s.worldbody.add_body(name='escape_plate')
+    b.add_geom(name='escape_plate_geom',type=mujoco.mjtGeom.mjGEOM_BOX,
+        size=(.45,.32,.035),mass=8.,friction=(1.2,.01,.001),
+        rgba=(.2,.65,.8,.7),solref=(.01,1.),solimp=(.98,.995,.001,.5,2),priority=1)
+    return s
