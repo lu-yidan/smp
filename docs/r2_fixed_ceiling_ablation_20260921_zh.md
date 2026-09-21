@@ -83,3 +83,18 @@ W&B group：`r2-fixed-ceiling-ablation`。
 八组均通过每组 4096 环境预检，实测混合组配额：平地 2048、固定顶板 1024、自由板 1024；低/中/后段 2868/820/408；低位四方向各 717；自然/程序化总计 3380/716。验证了质量/惯量与实际模型字段一致、Kp/Kd 实际生效、0/10 ms 指令延迟生效、尺寸与碰撞边界一致、自由板惯量一致、局部 reset 不修改其他世界、固定顶板零关节且在未 reset 的 rollout 中位置不变。
 
 重载评估视频使用仅更新四步的预检 checkpoint，只供检查场景和初期失败模式。它不是正式训练的最终效果，也不能用来决定哪组最好。
+
+### 正式启动
+
+八组已启动，GPU 0–7 分别对应 C0–C7；启动后均已完成至少 4 次正式更新，无 failed.json。运行目录：`/root/workplace/smp-r2-ceiling/logs/rsl_rl/v33_path_ablation/formal_20260921_r2_ceiling_v1`。W&B 已确认在线同步到 `tabletennis/smp`，group 为 `r2-fixed-ceiling-ablation`。
+
+初始策略 10 s 奖励积分标定中，任务×SMP 约 3.93；新增 Q 约 -0.198、L′ 约 -0.098、yaw 约 -0.0018（跨全部环境平均）。此时 yaw 触发少，不代表训练后必然无效，也不能凭这些全环境平均数判断板下 reward balance。
+
+C2 四步预检 checkpoint 的名义 20 s 重载测试：平地 1 s 稳站率 100%，固定顶板 31.25%，自由板 31.25%；固定顶板无效接触率 12.5%。这些是初期失败基线，不是最终成绩。
+
+本地预览：
+- `outputs/ceiling_setup_final_curriculum.png`：实际最终课程 reset，程序化四方向。
+- `outputs/ceiling_setup_lafan.png`：实际最终课程 reset，自然 LAFAN 四方向。自然数据按 base 朝向分桶，包含支撑、半坐等低位姿态，不等于四个严格平躺模板。
+- `outputs/ceiling_preview/C2_preflight4_{flat,fixed_ceiling,free_plate}_20s.mp4`：20 s、四方向拼图，视频底部明确标记四步预检，非最终策略。
+
+图的行序是平地、固定顶板、自由板；列序是仰卧、伏卧、左侧、右侧。蓝色固定顶板、橙色自由板。视频采用名义条件，训练随机化范围见上表。
