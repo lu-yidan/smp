@@ -68,3 +68,13 @@ W&B新增 `Egress/motion_gate`、`horizontal_cost`、`yaw_cost`；这三个训�
 服务器结果目录 `logs/rsl_rl/post_egress_motion/formal_20260922_a6_motion_v1`，`ES*_state.json` 记录 preflight/calibration/reload/queued/training/completed/failed。旧 EC4–7 继续原任务。
 
 W&B project `tabletennis/smp`，group `a6-post-egress-motion`，run id `formal_20260922_a6_motion_v1-es0` 至 `-es3`；正式训练开始后创建。
+
+## 本次启动验证结果
+
+实现提交 `e6ff428`。四组4096环境预检、四步PPO、奖励标定、20秒重载验证全部通过，已进入 `queued`，等待旧EC0–3结束后分别使用GPU0–3。
+
+- source、critic、代码、bank、seed、reset配额全部一致。
+- 四组固定板/自由板重载验证实际脱困样本数：ES0 37/27，ES1 37/22，ES2 38/27，ES3 38/21；均为非空验证。
+- 所有组首次脱困后的向外进展奖励积分为0。
+- 标定的新增水平+转动代价积分：ES1约−0.00982，ES3约−0.01043；同期task×SMP约3.39/3.50。权重较温和，需正式训练验证有效性，不能把四步预检差异解释为训练结论。
+- 本地证据位于 `outputs/post_egress_audit/`，不包含训练模型副本。
