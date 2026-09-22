@@ -101,7 +101,10 @@ def build_config(n=4096,bank='outputs/ceiling_bank/train.npz',nominal=False,arm=
   cfg.rewards['plate_clearance']=RewardTermCfg(func=pa.reward,params={'index':1},weight=.08)
  if arm in pa.Q_ARMS:cfg.rewards['path_quiet_feet']=RewardTermCfg(func=pa.reward,params={'index':2},weight=-.03)
  if arm in pa.L_ARMS:cfg.rewards['path_joint_stall']=RewardTermCfg(func=pa.reward,params={'index':3},weight=-.20)
- if arm in ('EC2','EC7'):cfg.rewards['egress_anchor']=RewardTermCfg(func=ec.reward,weight=-.03)
+ if arm in ec.ANCHOR_ARMS:cfg.rewards['egress_anchor']=RewardTermCfg(func=ec.reward,weight=-.03)
+ if arm in ec.MOTION_ARMS:
+  cfg.rewards['egress_horizontal_motion']=RewardTermCfg(func=ec.motion_reward,params={'index':0},weight=-.03)
+  cfg.rewards['egress_yaw_motion']=RewardTermCfg(func=ec.motion_reward,params={'index':1},weight=-.015)
  return cfg,agent
 
 class Wrapper(RslRlVecEnvWrapper):
@@ -123,6 +126,7 @@ class Wrapper(RslRlVecEnvWrapper):
   log['Egress/max_offset_m']=env._ec_max_offset.mean().detach()
   log['Egress/post_path_m']=env._ec_path.mean().detach()
   log['Egress/world_z_angular_path_rad']=env._ec_yaw.mean().detach()
+  for key in ('motion_gate','horizontal_cost','yaw_cost'):log['Egress/'+key]=getattr(env,'_ec_'+key).mean().detach()
   log['Egress/anchor_cost']=env._ec_anchor_cost.mean().detach()
   log['Egress/speed_multiplier']=torch.as_tensor(ec.scale(env),device=env.device).mean().detach()
   assert torch.isfinite(r).all()
@@ -178,6 +182,7 @@ def evaluate(env,wrapper,policy,obs,a):
  switches=hold.clone();path=hold.clone();previous=torch.zeros(env.num_envs,2,device=env.device,dtype=torch.bool);seen=previous.clone()
  selected=[int(torch.where((env._mt_stratum==st)&(env._mt_direction==dr))[0][0]) for st in range(3) for dr in range(4)]
  writers={};traces=[]
+ clear_time=hold.clone();clear_xy=hold.clone();clear_yaw=hold.clone();reentry=hold.clone();previous_clear=torch.zeros_like(alive)
  post_path=hold.clone();post_offset=hold.clone();post_yaw=hold.clone();post_time=hold.clone();egress_seen=~alive;egress_at=hold.clone();stand_delay=torch.full_like(hold,float('nan'));width_min=torch.full_like(hold,float('inf'));width_max=hold.clone();upright_time=hold.clone();wide_time=hold.clone()
  target_error=torch.zeros_like(env.scene['robot'].data.joint_pos);limit_time=target_error.clone();outward_after=hold.clone()
  phase_time=torch.zeros(env.num_envs,2,device=env.device);phase_switch=phase_time.clone();phase_slip=phase_time.clone();phase_body=phase_time.clone()
@@ -194,6 +199,11 @@ def evaluate(env,wrapper,policy,obs,a):
    stable=env._r_stable&alive&(~plate|(env._mt_escaped&~ever_invalid))
    hold=torch.where(stable,hold+env.step_dt,0);best=torch.maximum(best,hold);escape|=env._mt_escaped&alive
    r=env.scene['robot'];z=mt.height(env);u=-r.data.projected_gravity_b[:,2]
+   now_clear=plate&env._mt_escaped&~env._mt_invalid&alive
+   reentry+=(previous_clear&~env._mt_escaped&alive).float();previous_clear=now_clear.clone()
+   clear_time+=now_clear*env.step_dt
+   clear_xy+=r.data.root_link_lin_vel_w[:,:2].norm(dim=-1)*now_clear*env.step_dt
+   clear_yaw+=r.data.root_link_ang_vel_w[:,2].abs()*now_clear*env.step_dt
    egress_seen|=env._ec_seen&alive
    egress_at=torch.where(env._ec_seen&alive,env._ec_first_escape_time,egress_at)
    for acc,val in [(post_path,env._ec_path),(post_offset,env._ec_max_offset),(post_yaw,env._ec_yaw),(post_time,env._ec_time_after)]:acc.copy_(torch.maximum(acc,val*alive))
@@ -262,6 +272,9 @@ def evaluate(env,wrapper,policy,obs,a):
   vals['high_load_direction_changes_mean']=float(reversals[mask].mean())
   success=(best>=10-1e-4)&~refall
   vals['upright_bad_width_time_fraction']=float(wide_time[mask].sum()/upright_time[mask].sum().clamp_min(.02))
+  vals['reentry_events_mean']=float(reentry[mask].mean())
+  vals['clear_horizontal_speed_mean']=float(clear_xy[mask].sum()/clear_time[mask].sum().clamp_min(.02))
+  vals['clear_world_z_angular_speed_mean']=float(clear_yaw[mask].sum()/clear_time[mask].sum().clamp_min(.02))
   vals['post_egress_outward_reward_mean']=float(outward_after[mask].mean())
   vals['target_error_per_joint_p95']=np.percentile(target_error[mask].cpu().numpy(),95,axis=0).tolist()
   vals['joint_limit_dwell_per_joint_p95']=np.percentile(limit_time[mask].cpu().numpy(),95,axis=0).tolist()

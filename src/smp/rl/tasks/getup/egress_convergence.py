@@ -1,7 +1,9 @@
 """A6 matched ablations: latch egress credit, bound drift, relax ascent."""
 import torch
 
-ARMS=tuple(f'EC{i}' for i in range(8))
+ARMS=tuple(f'EC{i}' for i in range(8))+tuple(f'ES{i}' for i in range(4))
+ANCHOR_ARMS=('EC2','EC7','ES2','ES3')
+MOTION_ARMS=('ES1','ES3')
 
 def latch_step(seen,safe,anchor,xy,age,dt):
     first=safe&~seen
@@ -11,7 +13,7 @@ def progress_mask(arm,seen):
     return torch.ones_like(seen) if arm=='EC0' else ~seen
 
 def speed_multiplier(arm,seen,safe_age):
-    factor={'EC3':1.5,'EC4':2.,'EC7':1.5}.get(arm,1.)
+    factor=1.5 if arm.startswith('ES') else {'EC3':1.5,'EC4':2.,'EC7':1.5}.get(arm,1.)
     return 1+(factor-1)*seen*(safe_age/.5).clamp(0,1)
 
 def task_multiplier(arm,active,safe,safe_age):
@@ -27,7 +29,7 @@ def initialize(env):
     env._ec_seen=torch.zeros(n,dtype=torch.bool,device=dev)
     env._ec_anchor=torch.zeros(n,2,device=dev)
     env._ec_previous_xy=env._ec_anchor.clone()
-    for name in ('safe_age','offset','max_offset','path','yaw','time_after','first_escape_time','anchor_cost'):
+    for name in ('safe_age','offset','max_offset','path','yaw','time_after','first_escape_time','anchor_cost','motion_gate','horizontal_cost','yaw_cost'):
         setattr(env,'_ec_'+name,torch.zeros(n,device=dev))
     env._ec_tick=-1
 
@@ -36,7 +38,7 @@ def reset(env,ids):
     env._ec_seen[ids]=False
     xy=env.scene['robot'].data.root_link_pos_w[ids,:2]
     env._ec_anchor[ids]=xy;env._ec_previous_xy[ids]=xy
-    for name in ('safe_age','offset','max_offset','path','yaw','time_after','first_escape_time','anchor_cost'):
+    for name in ('safe_age','offset','max_offset','path','yaw','time_after','first_escape_time','anchor_cost','motion_gate','horizontal_cost','yaw_cost'):
         getattr(env,'_ec_'+name)[ids]=0
 
 def update(env):
@@ -71,3 +73,24 @@ def reward(env):
     enabled=env._ec_seen&env._mt_escaped&~env._mt_invalid&anchor_clear
     env._ec_anchor_cost.copy_(anchor_cost(env._ec_offset,env._ec_safe_age,enabled))
     return env._ec_anchor_cost
+
+
+def motion_costs(speed_xy, yaw_rate, height, upright, safe_age, enabled):
+    # Posture, not velocity, controls the gate: moving fast cannot turn it off.
+    posture=((height-.85)/.30).clamp(0,1)*((upright-.70)/.23).clamp(0,1)
+    gate=enabled*(safe_age/.5).clamp(0,1)*(.25+.75*posture)
+    horizontal=gate*((speed_xy-.15).clamp_min(0)/.30).square().clamp_max(10)
+    yaw=gate*((yaw_rate.abs()-.30).clamp_min(0)/.60).square().clamp_max(10)
+    return gate,horizontal,yaw
+
+
+def motion_reward(env, index):
+    # Current clearance, not the first-escape latch: reentry removes this cost.
+    r=env.scene['robot']
+    safe=(env._mt_scene>0)&env._mt_escaped&~env._mt_invalid
+    gate,xy,yaw=motion_costs(r.data.root_link_lin_vel_w[:,:2].norm(dim=-1),
+        r.data.root_link_ang_vel_w[:,2],
+        r.data.site_pos_w[:,env._r_head,2]-env.scene.env_origins[:,2],
+        -r.data.projected_gravity_b[:,2],env._ec_safe_age,safe)
+    env._ec_motion_gate.copy_(gate);env._ec_horizontal_cost.copy_(xy);env._ec_yaw_cost.copy_(yaw)
+    return xy if index==0 else yaw
