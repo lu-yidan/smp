@@ -36,11 +36,15 @@ MUJOCO_GL=egl ./recovery build pyramid_stairs --site edge --direction right_side
 
 ## 不再使用裸标签定位策略
 
-主链：`L4-9999 → FT_R2-9000 → V33PATH-A6-9999`。FT12K只提供归一化参考，不是actor链中的一段。
+主链：`L4-9999 → FT_R2-9000 → V33PATH-A6-9999`。SMP奖励归一化参考已独立导出，FT12K只是其历史来源，不是actor链中的一段；旧脚本的文件依赖仍保留。
 
 历史scratch R2与FT_R2不同；旧from-scratch A6与V33Path A6不同。训练分支、run、checkpoint更新数、checkpoint SHA共同标识模型。注册表记录的是原实验分支；工作树现在可能处于后续分支，不能据当前脚本重跑一个历史run并称“精确复现”。
 
 历史文档按内容去重索引见 `configs/recovery_study/documents.json`；`./recovery find v36`、`./recovery find scratch` 同时检索实验登记与文档标题/文件名。索引是快照，可用 `python scripts/recovery_study/index_documents.py` 重建。
+
+## 下一轮混合训练设计
+
+见[混合场景方案与FT_R2依赖澄清](mixed_scene_plan_20260923_zh.md)：允许踩箱/跨级支撑，建议所有任务族混合训练；计划尚未启动。
 
 ## 新场景已实现的范围
 
