@@ -1,0 +1,83 @@
+{
+  "status": "passed",
+  "scope": "collision, directions, object DOF/inertia, hollow openings, negative counterexamples and split audit; not policy success",
+  "source_pose_overlap": 0,
+  "geometry_seed_overlap": 0,
+  "mujoco_version": "3.8.1",
+  "python_version": "3.13.8",
+  "splits": {
+    "development": {
+      "cases": 48,
+      "family_counts": {
+        "crossed_timber": 12,
+        "ladder_boards": 12,
+        "fixed_c_space": 12,
+        "hollow_container": 12
+      },
+      "direction_counts": {
+        "supine": 12,
+        "prone": 12,
+        "left_side_down": 12,
+        "right_side_down": 12
+      },
+      "sources": {
+        "natural": 36,
+        "procedural": 12
+      },
+      "distinct_source_poses": 23,
+      "worst_initial_penetration_m": -0.0007161526080351199,
+      "worst_100ms_passive_penetration_m": -0.0048711753148594425,
+      "max_xml_mass_rounding_kg": 4.891902824155636e-06,
+      "timber_lower_support_counts": {
+        "false": 12
+      },
+      "object_counts": {
+        "crossed_timber/2": 4,
+        "crossed_timber/3": 4,
+        "crossed_timber/4": 4,
+        "ladder_boards/2": 8,
+        "ladder_boards/3": 4,
+        "fixed_c_space/1": 12,
+        "hollow_container/1": 12
+      },
+      "index_sha256": "bba3fcf753b06ea2194e6101cc01585237fc3ad41ae693123ee78818f0e31280"
+    },
+    "heldout": {
+      "cases": 480,
+      "family_counts": {
+        "crossed_timber": 120,
+        "ladder_boards": 120,
+        "fixed_c_space": 120,
+        "hollow_container": 120
+      },
+      "direction_counts": {
+        "supine": 120,
+        "prone": 120,
+        "left_side_down": 120,
+        "right_side_down": 120
+      },
+      "sources": {
+        "natural": 360,
+        "procedural": 120
+      },
+      "distinct_source_poses": 94,
+      "worst_initial_penetration_m": -0.0009164816850721486,
+      "worst_100ms_passive_penetration_m": -0.00576543517764358,
+      "max_xml_mass_rounding_kg": 4.971961691691007e-06,
+      "timber_lower_support_counts": {
+        "false": 84,
+        "true": 36
+      },
+      "object_counts": {
+        "crossed_timber/2": 40,
+        "crossed_timber/3": 40,
+        "crossed_timber/4": 40,
+        "ladder_boards/2": 80,
+        "ladder_boards/3": 40,
+        "fixed_c_space/1": 120,
+        "hollow_container/1": 120
+      },
+      "index_sha256": "a54ed9e2066942e0d7535637e847ec6504d3113d90feaa4b23a2e36536c38c86"
+    }
+  }
+}

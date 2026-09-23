@@ -8,9 +8,31 @@ from smp.recovery.scenes import ROOT,catalog,initialize,DIRECTIONS
 p=argparse.ArgumentParser(description=__doc__)
 s=p.add_subparsers(dest='command',required=True)
 s.add_parser('list')
+cl=s.add_parser('clutter-list');cl.add_argument('--root',type=Path,default=ROOT/'outputs/recovery_study/overhead_clutter_v2')
+cp=s.add_parser('clutter-play');cp.add_argument('--case',type=Path,required=True);cp.add_argument('--passive',action='store_true');cp.add_argument('--render',type=Path)
 f=s.add_parser('find');f.add_argument('query')
 b=s.add_parser('build');b.add_argument('scene',choices=list(catalog()));b.add_argument('--direction',choices=DIRECTIONS,default='prone');b.add_argument('--site',default='center');b.add_argument('--seed',type=int,default=20260923);b.add_argument('--overrides',type=Path);b.add_argument('--bank',type=Path,default=ROOT/'datasets/recovery_benchmark/validation.npz');b.add_argument('--out',type=Path,required=True);b.add_argument('--render',action='store_true')
 a=p.parse_args()
+if a.command=='clutter-list':
+ for split in ('development','heldout'):
+  path=a.root/split/'index.json'
+  if path.exists():
+   index=json.loads(path.read_text());print(split,index['count'],index['family_counts'])
+   print('index:',path)
+ raise SystemExit
+if a.command=='clutter-play':
+ from smp.recovery.clutter_benchmark import load_case,render
+ m,d,meta=load_case(a.case)
+ if a.render:
+  render(m,d,a.render,f"{meta['family']} | {meta['direction']} | initial state")
+  print(a.render);raise SystemExit
+ import mujoco.viewer,time
+ with mujoco.viewer.launch_passive(m,d) as viewer:
+  viewer.cam.lookat[:]=[0,0,.4];viewer.cam.distance=2.75;viewer.cam.azimuth=135;viewer.cam.elevation=-32
+  while viewer.is_running():
+   if a.passive:mujoco.mj_step(m,d)
+   viewer.sync();time.sleep(m.opt.timestep if a.passive else .02)
+ raise SystemExit
 if a.command=='list':
  print('SCENES');print('\n'.join(f'{k}: {v["kind"]}' for k,v in catalog().items()))
  print('\nEXPERIMENTS')

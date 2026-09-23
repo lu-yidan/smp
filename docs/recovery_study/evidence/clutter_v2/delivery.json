@@ -1,0 +1,8 @@
+{
+  "local_root": "/home/luyd/workspace/smp-a6-egress/outputs/recovery_study/overhead_clutter_v2",
+  "server_root": "root@192.168.11.91:17535:/root/workplace/smp-recovery-study/outputs/overhead_clutter_v2",
+  "server_mujoco_version": "3.8.1",
+  "server_split_index_hashes_match": true,
+  "server_reload_one_prone_case_per_family": "passed",
+  "policy_rollouts_run": false
+}
