@@ -1,5 +1,13 @@
 # M 系列混合训练（2026-09-23）
 
+**已启动：** GPU0/1/2，W&B在线同步，正式代码commit `7058342`。
+
+|组|W&B|
+|---|---|
+|M0|[2zqcbitg](https://wandb.ai/tabletennis/smp/runs/2zqcbitg)|
+|M1|[lmfg0vt4](https://wandb.ai/tabletennis/smp/runs/lmfg0vt4)|
+|M2|[g3ub3c4x](https://wandb.ai/tabletennis/smp/runs/g3ub3c4x)|
+
 代码：`codex/recovery-study`，本地 `/home/luyd/workspace/smp-a6-egress`；服务器 `/root/workplace/smp-recovery-study`。独立工作目录不改写历史run。
 
 ## 三组对照

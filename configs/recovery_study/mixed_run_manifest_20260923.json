@@ -1,0 +1,24 @@
+{
+  "code_commit": "7058342",
+  "server_workspace": "/root/workplace/smp-recovery-study",
+  "formal_root": "logs/rsl_rl/mixed_recovery/formal_20260923_v1",
+  "train_bank_sha256": "83ad3089b3e7ef66413e00922272e843ca12d9cbb950b6894d362807af3955de",
+  "validation_bank_sha256": "05a675a7ffb9427ee7450a4933c62d0da0c9fac811154ab04fd62b85c23cce27",
+  "runs": [
+    {
+      "arm": "M0_R2_mix",
+      "gpu": 0,
+      "wandb_url": "https://wandb.ai/tabletennis/smp/runs/2zqcbitg"
+    },
+    {
+      "arm": "M1_R2_mix",
+      "gpu": 1,
+      "wandb_url": "https://wandb.ai/tabletennis/smp/runs/lmfg0vt4"
+    },
+    {
+      "arm": "M2_A6_mix",
+      "gpu": 2,
+      "wandb_url": "https://wandb.ai/tabletennis/smp/runs/g3ub3c4x"
+    }
+  ]
+}
