@@ -125,7 +125,11 @@ def evaluate(env,wrapper,policy,obs,a):
     for sc,w in writers.items():
      tiles=[]
      for j in selected[sc]:
-      env.cfg.viewer.env_idx=j;im=Image.fromarray(env.render());dr=ImageDraw.Draw(im);dr.rectangle((0,0,640,30),fill='black');dr.text((5,7),f'{a.arm} {SCENES[sc]} dir={int(s.tags[j,2])} t={step*.02:.2f} hold={float(hold[j]):.2f}',fill='white');tiles.append(np.asarray(im))
+      env.cfg.viewer.env_idx=j
+      im=Image.fromarray(env.render()) if alive[j] else Image.new('RGB',(640,480),'black')
+      dr=ImageDraw.Draw(im);dr.rectangle((0,0,640,30),fill='black');dr.text((5,7),f'{a.arm} {SCENES[sc]} dir={int(s.tags[j,2])} t={step*.02:.2f} hold={float(hold[j]):.2f}',fill='white')
+      if not alive[j]:dr.text((100,220),'TRIAL TERMINATED - later resets excluded',fill='white')
+      tiles.append(np.asarray(im))
      w.append_data(np.concatenate([np.concatenate(tiles[:2],1),np.concatenate(tiles[2:],1)],0))
  finally:
   for w in writers.values():w.close()
