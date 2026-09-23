@@ -269,7 +269,7 @@
       "server_workspace": "/root/workplace/smp-recovery-study",
       "authoritative_manifest": "/root/workplace/smp-recovery-study/logs/rsl_rl/mixed_recovery/formal_20260923_v2/M0_R2_mix/launch.json",
       "gpu": 0,
-      "index_status": "v1 invalidated; v2 rebuild and verification in progress"
+      "index_status": "formal v2 running; 4096-env preflight and frozen baselines verified; v1 invalidated"
     },
     {
       "id": "MIX20260923-M1_R2_mix",
@@ -281,7 +281,7 @@
       "server_workspace": "/root/workplace/smp-recovery-study",
       "authoritative_manifest": "/root/workplace/smp-recovery-study/logs/rsl_rl/mixed_recovery/formal_20260923_v2/M1_R2_mix/launch.json",
       "gpu": 1,
-      "index_status": "v1 invalidated; v2 rebuild and verification in progress"
+      "index_status": "formal v2 running; 4096-env preflight and frozen baselines verified; v1 invalidated"
     },
     {
       "id": "MIX20260923-M2_A6_mix",
@@ -293,7 +293,7 @@
       "server_workspace": "/root/workplace/smp-recovery-study",
       "authoritative_manifest": "/root/workplace/smp-recovery-study/logs/rsl_rl/mixed_recovery/formal_20260923_v2/M2_A6_mix/launch.json",
       "gpu": 2,
-      "index_status": "v1 invalidated; v2 rebuild and verification in progress"
+      "index_status": "formal v2 running; 4096-env preflight and frozen baselines verified; v1 invalidated"
     }
   ]
 }

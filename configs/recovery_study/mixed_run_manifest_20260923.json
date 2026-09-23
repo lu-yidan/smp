@@ -1,0 +1,26 @@
+{
+  "status": "running; PPO updates verified",
+  "code_commit": "463cf02",
+  "server_workspace": "/root/workplace/smp-recovery-study",
+  "formal_root": "logs/rsl_rl/mixed_recovery/formal_20260923_v2",
+  "train_bank_sha256": "607c7d9c3482fc13d24e10fb89d753662c9538c051870af6803a3515f29f1138",
+  "validation_bank_sha256": "ec5754768b05be77a0e1bb287a5d60e62074b1f2017a901f77e72a1c4530a148",
+  "runs": [
+    {
+      "arm": "M0_R2_mix",
+      "gpu": 0,
+      "wandb_url": "https://wandb.ai/tabletennis/smp/runs/w8l5gqo2"
+    },
+    {
+      "arm": "M1_R2_mix",
+      "gpu": 1,
+      "wandb_url": "https://wandb.ai/tabletennis/smp/runs/0orom1bt"
+    },
+    {
+      "arm": "M2_A6_mix",
+      "gpu": 2,
+      "wandb_url": "https://wandb.ai/tabletennis/smp/runs/1f60r4tk"
+    }
+  ],
+  "supersedes": "INVALIDATED formal_20260923_v1; do not compare its metrics"
+}

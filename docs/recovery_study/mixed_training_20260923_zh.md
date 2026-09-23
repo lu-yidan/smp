@@ -1,6 +1,13 @@
 # M 系列混合训练（2026-09-23）
 
-**正式版本为v2，使用mixed_bank_v5；v1已终止并作废。** 新run链接在完成重启核对后登记。
+**正式v2已在GPU0/1/2开始PPO训练，使用mixed_bank_v5；v1已终止并作废。** 训练代码 `463cf02`。
+
+|组|在线训练曲线|
+|---|---|
+|M0_R2_mix|[W&B](https://wandb.ai/tabletennis/smp/runs/w8l5gqo2)|
+|M1_R2_mix|[W&B](https://wandb.ai/tabletennis/smp/runs/0orom1bt)|
+|M2_A6_mix|[W&B](https://wandb.ai/tabletennis/smp/runs/1f60r4tk)|
+
 
 代码：`codex/recovery-study`，本地 `/home/luyd/workspace/smp-a6-egress`；服务器 `/root/workplace/smp-recovery-study`。独立工作目录不改写历史run。
 
@@ -66,3 +73,15 @@ M0/M1唯一设计因子是解除阻挡后的向外进展关闭及相应净空饱
 v5生成器与CPU接触oracle明确禁用native midphase缓存，枚举允许碰撞的geom对。GPU Warp使用每环境实际AABB，未使用这棵native静态BVH。回归检查故意把机器人放进改尺寸/位置的箱体，确认深穿透可被检测；移开后无误报。几何frame与穿透检查必须同时通过，不能只核对渲染坐标。
 
 CPU/GPU位置矩阵误差阈值1e−5，初态穿透不深于2mm。父actor完全一致、fresh critic、实际质量/增益/延迟、局部reset不污染其他环境仍分别核查。视频首trial终止后改显示说明，不展示自动reset后的下一次尝试；render_smoke只作渲染诊断，不作为20s评测结果。
+
+## 修复后的续训前基线（仅验证筛查）
+
+|20s内连续站稳10s|R2|A6|样本数/策略|
+|---|---:|---:|---:|
+|平地|100.0%|98.8%|80|
+|自由板|29.7%|62.5%|64|
+|导向板|4.2%|70.8%|48|
+|金字塔台阶|75.0%|90.0%|20|
+|固定箱地形|75.0%|75.0%|28|
+
+这些是v5库的单seed验证样本，不是独立测试结果或安全证明。旧v4台阶零成功来自错误初态，已撤回；不得据此推断R2/A6缺少台阶恢复能力。逐trial负载和更难布局仍要评估，不能只看平均成功率。
