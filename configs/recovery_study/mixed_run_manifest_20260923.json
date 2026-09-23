@@ -20,5 +20,7 @@
       "gpu": 2,
       "wandb_url": "https://wandb.ai/tabletennis/smp/runs/g3ub3c4x"
     }
-  ]
+  ],
+  "evaluation_render_revision": "fc68e7e",
+  "evaluation_render_note": "Only video presentation changed: terminated first trials become labeled black tiles; reward, optimizer and numeric evaluation are unchanged."
 }
