@@ -1,0 +1,741 @@
+{
+  "status": "navigation snapshot; duplicated prose is not independent evidence",
+  "documents": [
+    {
+      "sha256": "bada73fdcc60c03c7bc44b3ec39d1aa0ecc2d66ec796a9909af7a73dff6b2742",
+      "title": "V3.5 Zero-Shot Terrain Recovery Benchmark",
+      "filenames": [
+        "terrain_recovery_v35.md"
+      ],
+      "paths": [
+        "/home/luyd/workspace/G1_Recovery_Below_Block/evidence/terrain_history/terrain_recovery_v35.md"
+      ]
+    },
+    {
+      "sha256": "01831b99e3d0ac4cc215931055ce1317ed282b38124b8d9d9db91d62477623aa",
+      "title": "V3.6 Proprioceptive Terrain-Recovery Fine-Tuning",
+      "filenames": [
+        "terrain_recovery_v36.md"
+      ],
+      "paths": [
+        "/home/luyd/workspace/G1_Recovery_Below_Block/evidence/terrain_history/terrain_recovery_v36.md"
+      ]
+    },
+    {
+      "sha256": "98c5bb1e6bd3cb3c7608df8656385df670c857c488133839084a5ef2218859b3",
+      "title": "Constraint-aware recovery roadmap",
+      "filenames": [
+        "constrained_recovery.md"
+      ],
+      "paths": [
+        "/home/luyd/workspace/smp/docs/constrained_recovery.md",
+        "/home/luyd/workspace/smp-flat93/docs/constrained_recovery.md"
+      ]
+    },
+    {
+      "sha256": "fe431ba7756c63e739eda3316c825733dc312873826f3cfbf94624d02420a26b",
+      "title": "V3 contact-safe guided-plate escape",
+      "filenames": [
+        "escape_contact_safe_v3.md"
+      ],
+      "paths": [
+        "/home/luyd/workspace/smp/docs/escape_contact_safe_v3.md",
+        "/home/luyd/workspace/smp-flat93/docs/escape_contact_safe_v3.md"
+      ]
+    },
+    {
+      "sha256": "dc3e8d5aae0b74fd7818d5af8a435d13ab8e2dcfcc1615c4b3cc8eca62db7eb3",
+      "title": "V3.1 prompt-load body-aligned board",
+      "filenames": [
+        "escape_contact_setup_v31.md"
+      ],
+      "paths": [
+        "/home/luyd/workspace/smp/docs/escape_contact_setup_v31.md",
+        "/home/luyd/workspace/smp-flat93/docs/escape_contact_setup_v31.md"
+      ]
+    },
+    {
+      "sha256": "d6964aa4dd1353b9a826866b55b9f2107f27152a3d72ba37ed7ab34357c94e9f",
+      "title": "V3.3 geometry-aware guided-board escape",
+      "filenames": [
+        "escape_geometry_v33.md"
+      ],
+      "paths": [
+        "/home/luyd/workspace/smp/docs/escape_geometry_v33.md",
+        "/home/luyd/workspace/smp-flat93/docs/escape_geometry_v33.md"
+      ]
+    },
+    {
+      "sha256": "504965b1cedae5592ac9451ce553320f2536fbc481678fe26862a1962e611781",
+      "title": "V3.2 settled-reset board escape",
+      "filenames": [
+        "escape_settled_reset_v32.md"
+      ],
+      "paths": [
+        "/home/luyd/workspace/smp/docs/escape_settled_reset_v32.md",
+        "/home/luyd/workspace/smp-flat93/docs/escape_settled_reset_v32.md"
+      ]
+    },
+    {
+      "sha256": "1336286612d1bf211cf7c5f217a016214c0b421b18177e3de41acbc8afef1ea7",
+      "title": "V2 physical-object escape task",
+      "filenames": [
+        "escape_v2.md"
+      ],
+      "paths": [
+        "/home/luyd/workspace/smp/docs/escape_v2.md",
+        "/home/luyd/workspace/smp-flat93/docs/escape_v2.md"
+      ]
+    },
+    {
+      "sha256": "461bf41a7d4979bad08593c6b0f98fd1594ba4e7d9c3e799bde726665e3369a5",
+      "title": "V6 multi-recovery SMP prior",
+      "filenames": [
+        "getup_v6_recovery_prior.md"
+      ],
+      "paths": [
+        "/home/luyd/workspace/smp/docs/getup_v6_recovery_prior.md",
+        "/home/luyd/workspace/smp-flat93/docs/getup_v6_recovery_prior.md"
+      ]
+    },
+    {
+      "sha256": "7f790b58ee6146c4e44e8cc7e912280afd771093dd402e5380efcec1921c13e5",
+      "title": "V7 prone-route prior fine-tuning",
+      "filenames": [
+        "getup_v7_route_prior.md"
+      ],
+      "paths": [
+        "/home/luyd/workspace/smp/docs/getup_v7_route_prior.md",
+        "/home/luyd/workspace/smp-flat93/docs/getup_v7_route_prior.md"
+      ]
+    },
+    {
+      "sha256": "6da40b02da27f3f84d87b4f6d9e10c670b97732c9740a10086e34d9d84bea5ea",
+      "title": "Motion data and the SMP prior",
+      "filenames": [
+        "motion_data_and_prior.md"
+      ],
+      "paths": [
+        "/home/luyd/workspace/smp/docs/motion_data_and_prior.md",
+        "/home/luyd/workspace/smp-flat93/docs/motion_data_and_prior.md"
+      ]
+    },
+    {
+      "sha256": "ca8d4b8b2ac11c94525cbeab424478468208b786271355a9a292b5f6373c6bfe",
+      "title": "V8 natural prone recovery",
+      "filenames": [
+        "natural_recovery_v8.md"
+      ],
+      "paths": [
+        "/home/luyd/workspace/smp/docs/natural_recovery_v8.md",
+        "/home/luyd/workspace/smp-flat93/docs/natural_recovery_v8.md"
+      ]
+    },
+    {
+      "sha256": "871982778878728cdeac7dca0fe1b83073a30dc5215e791f99333a43f9e932d9",
+      "title": "Robust G1 get-up experiment notes",
+      "filenames": [
+        "robust_getup.md"
+      ],
+      "paths": [
+        "/home/luyd/workspace/smp/docs/robust_getup.md",
+        "/home/luyd/workspace/smp-flat93/docs/robust_getup.md"
+      ]
+    },
+    {
+      "sha256": "5405cc331389c5016b65ec98f0513141e74ac45ccff1c857c73f7a928ccfbdd3",
+      "title": "V33 训练端对齐 RoboMimic_Deploy",
+      "filenames": [
+        "v33_deploy_alignment.md"
+      ],
+      "paths": [
+        "/home/luyd/workspace/smp/docs/v33_deploy_alignment.md"
+      ]
+    },
+    {
+      "sha256": "10e22e0f906d6a1f295f6091a12a1528df2426bdb75584311ceb55ed3286e1df",
+      "title": "A6 脱困后收敛实验计划：EC0–EC7",
+      "filenames": [
+        "a6_egress_convergence_plan_zh.md"
+      ],
+      "paths": [
+        "/home/luyd/workspace/smp-a6-egress/docs/a6_egress_convergence_plan_zh.md"
+      ]
+    },
+    {
+      "sha256": "3800fb0bacbf9ee26c5f6ea29c7f521bcdee538408ca89e74d55cc94d5a8ffb2",
+      "title": "A6 脱困后运动收敛 × 位置锚点：ES0–ES3",
+      "filenames": [
+        "a6_post_egress_motion_plan_zh.md"
+      ],
+      "paths": [
+        "/home/luyd/workspace/smp-a6-egress/docs/a6_post_egress_motion_plan_zh.md"
+      ]
+    },
+    {
+      "sha256": "14a1e3ebfdac76a301d055bd8f93bf81d70ab9b3925d51904f59aba249252cd4",
+      "title": "B1 8500 本地播放",
+      "filenames": [
+        "b1_local_play_zh.md"
+      ],
+      "paths": [
+        "/home/luyd/workspace/smp-a6-egress/docs/b1_local_play_zh.md",
+        "/home/luyd/workspace/smp-b-series/docs/b1_local_play_zh.md",
+        "/home/luyd/workspace/smp-d-series/docs/b1_local_play_zh.md",
+        "/home/luyd/workspace/smp-ft-speed/docs/b1_local_play_zh.md",
+        "/home/luyd/workspace/smp-p5-balanced/docs/b1_local_play_zh.md",
+        "/home/luyd/workspace/smp-r2-ablation/docs/b1_local_play_zh.md",
+        "/home/luyd/workspace/smp-r2-ceiling/docs/b1_local_play_zh.md",
+        "/home/luyd/workspace/smp-r2-v33-path/docs/b1_local_play_zh.md"
+      ]
+    },
+    {
+      "sha256": "12a716df56dc8ec50d545649ed4f0757f4408e7f366312d08d8a4ab40b2c7f32",
+      "title": "B2–B7：初始化、局部动作引导与地形对照",
+      "filenames": [
+        "b_series_guidance_terrain_zh.md"
+      ],
+      "paths": [
+        "/home/luyd/workspace/smp-a6-egress/docs/b_series_guidance_terrain_zh.md",
+        "/home/luyd/workspace/smp-b-series/docs/b_series_guidance_terrain_zh.md",
+        "/home/luyd/workspace/smp-d-series/docs/b_series_guidance_terrain_zh.md",
+        "/home/luyd/workspace/smp-ft-speed/docs/b_series_guidance_terrain_zh.md",
+        "/home/luyd/workspace/smp-r2-ablation/docs/b_series_guidance_terrain_zh.md",
+        "/home/luyd/workspace/smp-r2-ceiling/docs/b_series_guidance_terrain_zh.md",
+        "/home/luyd/workspace/smp-r2-v33-path/docs/b_series_guidance_terrain_zh.md"
+      ]
+    },
+    {
+      "sha256": "93c29a38845acbe6c9a757330421df025a92634b72c2de0b0a0a781fd4ae2632",
+      "title": "D系列四地形奖励与reset消融设计",
+      "filenames": [
+        "d_multiterrain_design_zh.md"
+      ],
+      "paths": [
+        "/home/luyd/workspace/smp-a6-egress/docs/d_multiterrain_design_zh.md",
+        "/home/luyd/workspace/smp-d-series/docs/d_multiterrain_design_zh.md",
+        "/home/luyd/workspace/smp-ft-speed/docs/d_multiterrain_design_zh.md",
+        "/home/luyd/workspace/smp-r2-ablation/docs/d_multiterrain_design_zh.md",
+        "/home/luyd/workspace/smp-r2-ceiling/docs/d_multiterrain_design_zh.md",
+        "/home/luyd/workspace/smp-r2-v33-path/docs/d_multiterrain_design_zh.md"
+      ]
+    },
+    {
+      "sha256": "7b5472148e37e84f9ef240f9a635aa3a689891f16cad1219adfef9784c533b70",
+      "title": "ES0–ES3 最终评估（2026-09-23）",
+      "filenames": [
+        "es_final_review_20260923_zh.md"
+      ],
+      "paths": [
+        "/home/luyd/workspace/smp-a6-egress/docs/es_final_review_20260923_zh.md"
+      ]
+    },
+    {
+      "sha256": "fa4cf218d427f92ed440094e8362725d083b33b26ba85477f6d3a5db326b104a",
+      "title": "C0–C3：任务成功定义 × 早段速度约束",
+      "filenames": [
+        "f2_task_speed_ablation.md"
+      ],
+      "paths": [
+        "/home/luyd/workspace/smp-a6-egress/docs/f2_task_speed_ablation.md",
+        "/home/luyd/workspace/smp-b-series/docs/f2_task_speed_ablation.md",
+        "/home/luyd/workspace/smp-d-series/docs/f2_task_speed_ablation.md",
+        "/home/luyd/workspace/smp-escape-ft/docs/f2_task_speed_ablation.md",
+        "/home/luyd/workspace/smp-ft-speed/docs/f2_task_speed_ablation.md",
+        "/home/luyd/workspace/smp-master-repro/docs/f2_task_speed_ablation.md",
+        "/home/luyd/workspace/smp-oscillation-ft/docs/f2_task_speed_ablation.md",
+        "/home/luyd/workspace/smp-p5-balanced/docs/f2_task_speed_ablation.md",
+        "/home/luyd/workspace/smp-p5-terrain/docs/f2_task_speed_ablation.md",
+        "/home/luyd/workspace/smp-prior-replay-ft/docs/f2_task_speed_ablation.md",
+        "/home/luyd/workspace/smp-r2-ablation/docs/f2_task_speed_ablation.md",
+        "/home/luyd/workspace/smp-r2-ceiling/docs/f2_task_speed_ablation.md",
+        "/home/luyd/workspace/smp-r2-v33-path/docs/f2_task_speed_ablation.md"
+      ]
+    },
+    {
+      "sha256": "65e9b9ab167fdaa10babc076beab34c044b48156d5a53153b2fa12e545f57f75",
+      "title": "L0 / L1 固定低位环境配额消融",
+      "filenames": [
+        "fixed_low_smp_ablation.md"
+      ],
+      "paths": [
+        "/home/luyd/workspace/smp-a6-egress/docs/fixed_low_smp_ablation.md",
+        "/home/luyd/workspace/smp-b-series/docs/fixed_low_smp_ablation.md",
+        "/home/luyd/workspace/smp-d-series/docs/fixed_low_smp_ablation.md",
+        "/home/luyd/workspace/smp-escape-ft/docs/fixed_low_smp_ablation.md",
+        "/home/luyd/workspace/smp-ft-speed/docs/fixed_low_smp_ablation.md",
+        "/home/luyd/workspace/smp-master-repro/docs/fixed_low_smp_ablation.md",
+        "/home/luyd/workspace/smp-oscillation-ft/docs/fixed_low_smp_ablation.md",
+        "/home/luyd/workspace/smp-p5-balanced/docs/fixed_low_smp_ablation.md",
+        "/home/luyd/workspace/smp-p5-terrain/docs/fixed_low_smp_ablation.md",
+        "/home/luyd/workspace/smp-prior-replay-ft/docs/fixed_low_smp_ablation.md",
+        "/home/luyd/workspace/smp-r2-ablation/docs/fixed_low_smp_ablation.md",
+        "/home/luyd/workspace/smp-r2-ceiling/docs/fixed_low_smp_ablation.md",
+        "/home/luyd/workspace/smp-r2-v33-path/docs/fixed_low_smp_ablation.md"
+      ]
+    },
+    {
+      "sha256": "6e41224be88a4a6ada52428756ea3768cf4f58c505aaa3933affa7b161daf5ed",
+      "title": "FT12k 压板下一轮消融计划",
+      "filenames": [
+        "ft12k_plate_next_ablations_zh.md"
+      ],
+      "paths": [
+        "/home/luyd/workspace/smp-a6-egress/docs/ft12k_plate_next_ablations_zh.md",
+        "/home/luyd/workspace/smp-b-series/docs/ft12k_plate_next_ablations_zh.md",
+        "/home/luyd/workspace/smp-d-series/docs/ft12k_plate_next_ablations_zh.md",
+        "/home/luyd/workspace/smp-ft-speed/docs/ft12k_plate_next_ablations_zh.md",
+        "/home/luyd/workspace/smp-p5-balanced/docs/ft12k_plate_next_ablations_zh.md",
+        "/home/luyd/workspace/smp-p5-terrain/docs/ft12k_plate_next_ablations_zh.md",
+        "/home/luyd/workspace/smp-prior-replay-ft/docs/ft12k_plate_next_ablations_zh.md",
+        "/home/luyd/workspace/smp-r2-ablation/docs/ft12k_plate_next_ablations_zh.md",
+        "/home/luyd/workspace/smp-r2-ceiling/docs/ft12k_plate_next_ablations_zh.md",
+        "/home/luyd/workspace/smp-r2-v33-path/docs/ft12k_plate_next_ablations_zh.md"
+      ]
+    },
+    {
+      "sha256": "80510afd1a6f6a6f2b0f6ab4dd980466599fda334f1216e537ca7a660724dd5e",
+      "title": "GSI V6 诊断与后续对照",
+      "filenames": [
+        "gsi_v6_diagnosis.md"
+      ],
+      "paths": [
+        "/home/luyd/workspace/smp-a6-egress/docs/gsi_v6_diagnosis.md",
+        "/home/luyd/workspace/smp-b-series/docs/gsi_v6_diagnosis.md",
+        "/home/luyd/workspace/smp-d-series/docs/gsi_v6_diagnosis.md",
+        "/home/luyd/workspace/smp-escape-ft/docs/gsi_v6_diagnosis.md",
+        "/home/luyd/workspace/smp-ft-speed/docs/gsi_v6_diagnosis.md",
+        "/home/luyd/workspace/smp-master-repro/docs/gsi_v6_diagnosis.md",
+        "/home/luyd/workspace/smp-oscillation-ft/docs/gsi_v6_diagnosis.md",
+        "/home/luyd/workspace/smp-p5-balanced/docs/gsi_v6_diagnosis.md",
+        "/home/luyd/workspace/smp-p5-terrain/docs/gsi_v6_diagnosis.md",
+        "/home/luyd/workspace/smp-prior-replay-ft/docs/gsi_v6_diagnosis.md",
+        "/home/luyd/workspace/smp-r2-ablation/docs/gsi_v6_diagnosis.md",
+        "/home/luyd/workspace/smp-r2-ceiling/docs/gsi_v6_diagnosis.md",
+        "/home/luyd/workspace/smp-r2-v33-path/docs/gsi_v6_diagnosis.md"
+      ]
+    },
+    {
+      "sha256": "219a80638765f9f567b27803b264460347bcb264bd6cc2e5f017ead35471ce8a",
+      "title": "L4 → 平地FT：伏卧采样与上行速度",
+      "filenames": [
+        "l4_ft_prone_speed_zh.md"
+      ],
+      "paths": [
+        "/home/luyd/workspace/smp-a6-egress/docs/l4_ft_prone_speed_zh.md",
+        "/home/luyd/workspace/smp-ft-speed/docs/l4_ft_prone_speed_zh.md",
+        "/home/luyd/workspace/smp-r2-ablation/docs/l4_ft_prone_speed_zh.md",
+        "/home/luyd/workspace/smp-r2-ceiling/docs/l4_ft_prone_speed_zh.md",
+        "/home/luyd/workspace/smp-r2-v33-path/docs/l4_ft_prone_speed_zh.md"
+      ]
+    },
+    {
+      "sha256": "7c8e9e1b8fa88d94194be65a1a908978bc7b4cc0627615347b98ac86880c0b8f",
+      "title": "L4 从零训练：R0–R7，20k PPO 更新",
+      "filenames": [
+        "l4_scratch_tradeoffs_20k.md"
+      ],
+      "paths": [
+        "/home/luyd/workspace/smp-a6-egress/docs/l4_scratch_tradeoffs_20k.md",
+        "/home/luyd/workspace/smp-b-series/docs/l4_scratch_tradeoffs_20k.md",
+        "/home/luyd/workspace/smp-d-series/docs/l4_scratch_tradeoffs_20k.md",
+        "/home/luyd/workspace/smp-escape-ft/docs/l4_scratch_tradeoffs_20k.md",
+        "/home/luyd/workspace/smp-ft-speed/docs/l4_scratch_tradeoffs_20k.md",
+        "/home/luyd/workspace/smp-master-repro/docs/l4_scratch_tradeoffs_20k.md",
+        "/home/luyd/workspace/smp-oscillation-ft/docs/l4_scratch_tradeoffs_20k.md",
+        "/home/luyd/workspace/smp-p5-balanced/docs/l4_scratch_tradeoffs_20k.md",
+        "/home/luyd/workspace/smp-p5-terrain/docs/l4_scratch_tradeoffs_20k.md",
+        "/home/luyd/workspace/smp-prior-replay-ft/docs/l4_scratch_tradeoffs_20k.md",
+        "/home/luyd/workspace/smp-r2-ablation/docs/l4_scratch_tradeoffs_20k.md",
+        "/home/luyd/workspace/smp-r2-ceiling/docs/l4_scratch_tradeoffs_20k.md",
+        "/home/luyd/workspace/smp-r2-v33-path/docs/l4_scratch_tradeoffs_20k.md"
+      ]
+    },
+    {
+      "sha256": "f1bc162cb22f37e46af6f253e34c4d4babf0806483d3428f8dc4cacd9e7e42db",
+      "title": "L4 → V33 reward FT → 受限场景 recovery：训练与验证流程",
+      "filenames": [
+        "l4_v33_plate_pipeline_zh.md"
+      ],
+      "paths": [
+        "/home/luyd/workspace/smp-a6-egress/docs/l4_v33_plate_pipeline_zh.md",
+        "/home/luyd/workspace/smp-b-series/docs/l4_v33_plate_pipeline_zh.md",
+        "/home/luyd/workspace/smp-d-series/docs/l4_v33_plate_pipeline_zh.md",
+        "/home/luyd/workspace/smp-escape-ft/docs/l4_v33_plate_pipeline_zh.md",
+        "/home/luyd/workspace/smp-ft-speed/docs/l4_v33_plate_pipeline_zh.md",
+        "/home/luyd/workspace/smp-p5-balanced/docs/l4_v33_plate_pipeline_zh.md",
+        "/home/luyd/workspace/smp-p5-terrain/docs/l4_v33_plate_pipeline_zh.md",
+        "/home/luyd/workspace/smp-prior-replay-ft/docs/l4_v33_plate_pipeline_zh.md",
+        "/home/luyd/workspace/smp-r2-ablation/docs/l4_v33_plate_pipeline_zh.md",
+        "/home/luyd/workspace/smp-r2-ceiling/docs/l4_v33_plate_pipeline_zh.md",
+        "/home/luyd/workspace/smp-r2-v33-path/docs/l4_v33_plate_pipeline_zh.md"
+      ]
+    },
+    {
+      "sha256": "1aabd19373a38341338980b71c205ece04faf94a0e0ebbabff29335020f71a1a",
+      "title": "本地比较 L4 与 V33-FT 12k",
+      "filenames": [
+        "local_recovery_play.md"
+      ],
+      "paths": [
+        "/home/luyd/workspace/smp-a6-egress/docs/local_recovery_play.md",
+        "/home/luyd/workspace/smp-b-series/docs/local_recovery_play.md",
+        "/home/luyd/workspace/smp-d-series/docs/local_recovery_play.md",
+        "/home/luyd/workspace/smp-escape-ft/docs/local_recovery_play.md",
+        "/home/luyd/workspace/smp-ft-speed/docs/local_recovery_play.md",
+        "/home/luyd/workspace/smp-master-repro/docs/local_recovery_play.md",
+        "/home/luyd/workspace/smp-oscillation-ft/docs/local_recovery_play.md",
+        "/home/luyd/workspace/smp-p5-balanced/docs/local_recovery_play.md",
+        "/home/luyd/workspace/smp-p5-terrain/docs/local_recovery_play.md",
+        "/home/luyd/workspace/smp-prior-replay-ft/docs/local_recovery_play.md",
+        "/home/luyd/workspace/smp-r2-ablation/docs/local_recovery_play.md",
+        "/home/luyd/workspace/smp-r2-ceiling/docs/local_recovery_play.md",
+        "/home/luyd/workspace/smp-r2-v33-path/docs/local_recovery_play.md"
+      ]
+    },
+    {
+      "sha256": "b04f00f18841facdc6272028807a0c60dabef4fd6d307242c84640c9b63857af",
+      "title": "Master GSI reproduction versus deployment adaptation",
+      "filenames": [
+        "master_gsi_reproduction.md"
+      ],
+      "paths": [
+        "/home/luyd/workspace/smp-a6-egress/docs/master_gsi_reproduction.md",
+        "/home/luyd/workspace/smp-b-series/docs/master_gsi_reproduction.md",
+        "/home/luyd/workspace/smp-d-series/docs/master_gsi_reproduction.md",
+        "/home/luyd/workspace/smp-escape-ft/docs/master_gsi_reproduction.md",
+        "/home/luyd/workspace/smp-ft-speed/docs/master_gsi_reproduction.md",
+        "/home/luyd/workspace/smp-master-repro/docs/master_gsi_reproduction.md",
+        "/home/luyd/workspace/smp-oscillation-ft/docs/master_gsi_reproduction.md",
+        "/home/luyd/workspace/smp-p5-balanced/docs/master_gsi_reproduction.md",
+        "/home/luyd/workspace/smp-p5-terrain/docs/master_gsi_reproduction.md",
+        "/home/luyd/workspace/smp-prior-replay-ft/docs/master_gsi_reproduction.md",
+        "/home/luyd/workspace/smp-r2-ablation/docs/master_gsi_reproduction.md",
+        "/home/luyd/workspace/smp-r2-ceiling/docs/master_gsi_reproduction.md",
+        "/home/luyd/workspace/smp-r2-v33-path/docs/master_gsi_reproduction.md"
+      ]
+    },
+    {
+      "sha256": "3747ad0e0efadbaa87aafeb39c9de88b1a9fcc5e8d58cd6a550a80b32c8fb2ef",
+      "title": "R1–R4：从零训练的自然低位 reset 消融",
+      "filenames": [
+        "natural_low_reset_ablation.md"
+      ],
+      "paths": [
+        "/home/luyd/workspace/smp-a6-egress/docs/natural_low_reset_ablation.md",
+        "/home/luyd/workspace/smp-b-series/docs/natural_low_reset_ablation.md",
+        "/home/luyd/workspace/smp-d-series/docs/natural_low_reset_ablation.md",
+        "/home/luyd/workspace/smp-escape-ft/docs/natural_low_reset_ablation.md",
+        "/home/luyd/workspace/smp-ft-speed/docs/natural_low_reset_ablation.md",
+        "/home/luyd/workspace/smp-master-repro/docs/natural_low_reset_ablation.md",
+        "/home/luyd/workspace/smp-oscillation-ft/docs/natural_low_reset_ablation.md",
+        "/home/luyd/workspace/smp-p5-balanced/docs/natural_low_reset_ablation.md",
+        "/home/luyd/workspace/smp-p5-terrain/docs/natural_low_reset_ablation.md",
+        "/home/luyd/workspace/smp-prior-replay-ft/docs/natural_low_reset_ablation.md",
+        "/home/luyd/workspace/smp-r2-ablation/docs/natural_low_reset_ablation.md",
+        "/home/luyd/workspace/smp-r2-ceiling/docs/natural_low_reset_ablation.md",
+        "/home/luyd/workspace/smp-r2-v33-path/docs/natural_low_reset_ablation.md"
+      ]
+    },
+    {
+      "sha256": "bb37510b5f31f57db4a2cb86dda2dc1225003099bad370a4054356004b5a3f2d",
+      "title": "N0/N1 无GSI的自然reset课程",
+      "filenames": [
+        "natural_reset_curriculum.md"
+      ],
+      "paths": [
+        "/home/luyd/workspace/smp-a6-egress/docs/natural_reset_curriculum.md",
+        "/home/luyd/workspace/smp-b-series/docs/natural_reset_curriculum.md",
+        "/home/luyd/workspace/smp-d-series/docs/natural_reset_curriculum.md",
+        "/home/luyd/workspace/smp-escape-ft/docs/natural_reset_curriculum.md",
+        "/home/luyd/workspace/smp-ft-speed/docs/natural_reset_curriculum.md",
+        "/home/luyd/workspace/smp-master-repro/docs/natural_reset_curriculum.md",
+        "/home/luyd/workspace/smp-oscillation-ft/docs/natural_reset_curriculum.md",
+        "/home/luyd/workspace/smp-p5-balanced/docs/natural_reset_curriculum.md",
+        "/home/luyd/workspace/smp-p5-terrain/docs/natural_reset_curriculum.md",
+        "/home/luyd/workspace/smp-prior-replay-ft/docs/natural_reset_curriculum.md",
+        "/home/luyd/workspace/smp-r2-ablation/docs/natural_reset_curriculum.md",
+        "/home/luyd/workspace/smp-r2-ceiling/docs/natural_reset_curriculum.md",
+        "/home/luyd/workspace/smp-r2-v33-path/docs/natural_reset_curriculum.md"
+      ]
+    },
+    {
+      "sha256": "fa615d479eaa6777c88c8ac885c63565827d334f363637c82e9a776c0a3b65ef",
+      "title": "FT12k → 四方向压板 P5：reset 与动力学对照",
+      "filenames": [
+        "p5_balanced_dynamics_zh.md"
+      ],
+      "paths": [
+        "/home/luyd/workspace/smp-a6-egress/docs/p5_balanced_dynamics_zh.md",
+        "/home/luyd/workspace/smp-b-series/docs/p5_balanced_dynamics_zh.md",
+        "/home/luyd/workspace/smp-d-series/docs/p5_balanced_dynamics_zh.md",
+        "/home/luyd/workspace/smp-ft-speed/docs/p5_balanced_dynamics_zh.md",
+        "/home/luyd/workspace/smp-p5-balanced/docs/p5_balanced_dynamics_zh.md",
+        "/home/luyd/workspace/smp-r2-ablation/docs/p5_balanced_dynamics_zh.md",
+        "/home/luyd/workspace/smp-r2-ceiling/docs/p5_balanced_dynamics_zh.md",
+        "/home/luyd/workspace/smp-r2-v33-path/docs/p5_balanced_dynamics_zh.md"
+      ]
+    },
+    {
+      "sha256": "85d78fd583cec1f18fccbb29fa67f31aa8e512731fba1e207491d68947598793",
+      "title": "P5 多地形续训协议",
+      "filenames": [
+        "p5_multiterrain_v1_zh.md"
+      ],
+      "paths": [
+        "/home/luyd/workspace/smp-a6-egress/docs/p5_multiterrain_v1_zh.md",
+        "/home/luyd/workspace/smp-b-series/docs/p5_multiterrain_v1_zh.md",
+        "/home/luyd/workspace/smp-d-series/docs/p5_multiterrain_v1_zh.md",
+        "/home/luyd/workspace/smp-ft-speed/docs/p5_multiterrain_v1_zh.md",
+        "/home/luyd/workspace/smp-p5-balanced/docs/p5_multiterrain_v1_zh.md",
+        "/home/luyd/workspace/smp-p5-terrain/docs/p5_multiterrain_v1_zh.md",
+        "/home/luyd/workspace/smp-r2-ablation/docs/p5_multiterrain_v1_zh.md",
+        "/home/luyd/workspace/smp-r2-ceiling/docs/p5_multiterrain_v1_zh.md",
+        "/home/luyd/workspace/smp-r2-v33-path/docs/p5_multiterrain_v1_zh.md"
+      ]
+    },
+    {
+      "sha256": "c322c32a5c76ee6159c2b62ecee115b8b980fe5a50e6b49ea6df765c31bf4ec6",
+      "title": "F0–F4：从同一个 R1 出发验证姿态、持续负载和末段减速",
+      "filenames": [
+        "r1_quality_finetune.md"
+      ],
+      "paths": [
+        "/home/luyd/workspace/smp-a6-egress/docs/r1_quality_finetune.md",
+        "/home/luyd/workspace/smp-b-series/docs/r1_quality_finetune.md",
+        "/home/luyd/workspace/smp-d-series/docs/r1_quality_finetune.md",
+        "/home/luyd/workspace/smp-escape-ft/docs/r1_quality_finetune.md",
+        "/home/luyd/workspace/smp-ft-speed/docs/r1_quality_finetune.md",
+        "/home/luyd/workspace/smp-master-repro/docs/r1_quality_finetune.md",
+        "/home/luyd/workspace/smp-oscillation-ft/docs/r1_quality_finetune.md",
+        "/home/luyd/workspace/smp-p5-balanced/docs/r1_quality_finetune.md",
+        "/home/luyd/workspace/smp-p5-terrain/docs/r1_quality_finetune.md",
+        "/home/luyd/workspace/smp-prior-replay-ft/docs/r1_quality_finetune.md",
+        "/home/luyd/workspace/smp-r2-ablation/docs/r1_quality_finetune.md",
+        "/home/luyd/workspace/smp-r2-ceiling/docs/r1_quality_finetune.md",
+        "/home/luyd/workspace/smp-r2-v33-path/docs/r1_quality_finetune.md"
+      ]
+    },
+    {
+      "sha256": "be333c1945a317458964c9639535bc61ae115c82822d9ea4a784e0a9227acd91",
+      "title": "R2 起点：固定顶板与自由板消融（2026-09-21）",
+      "filenames": [
+        "r2_fixed_ceiling_ablation_20260921_zh.md"
+      ],
+      "paths": [
+        "/home/luyd/workspace/smp-a6-egress/docs/r2_fixed_ceiling_ablation_20260921_zh.md",
+        "/home/luyd/workspace/smp-r2-ceiling/docs/r2_fixed_ceiling_ablation_20260921_zh.md"
+      ]
+    },
+    {
+      "sha256": "7aa0adafda8e0a0e4de5b5919a58a9555759549eb3dd72b4914398b2f30554c2",
+      "title": "R2真机基线续训：平地收敛与无斜坡四场景消融",
+      "filenames": [
+        "r2_flat_plate_ablation_zh.md"
+      ],
+      "paths": [
+        "/home/luyd/workspace/smp-a6-egress/docs/r2_flat_plate_ablation_zh.md",
+        "/home/luyd/workspace/smp-r2-ablation/docs/r2_flat_plate_ablation_zh.md",
+        "/home/luyd/workspace/smp-r2-ceiling/docs/r2_flat_plate_ablation_zh.md",
+        "/home/luyd/workspace/smp-r2-v33-path/docs/r2_flat_plate_ablation_zh.md"
+      ]
+    },
+    {
+      "sha256": "d11782e1572c531e184c54062caa738d4241f02d952d4d777d1422cd1c8dfe7d",
+      "title": "R2 → 三场景 V33 路径奖励消融（2026-09-20）",
+      "filenames": [
+        "r2_v33_path_ablation_zh.md"
+      ],
+      "paths": [
+        "/home/luyd/workspace/smp-a6-egress/docs/r2_v33_path_ablation_zh.md",
+        "/home/luyd/workspace/smp-r2-ceiling/docs/r2_v33_path_ablation_zh.md",
+        "/home/luyd/workspace/smp-r2-v33-path/docs/r2_v33_path_ablation_zh.md"
+      ]
+    },
+    {
+      "sha256": "a28daced1c1075b2056f728ddfabadc25f2713642973f0324a82be4dd8ffd656",
+      "title": "Recovery 10k → 12k continuation and quality ablations",
+      "filenames": [
+        "recovery_quality_continuation.md"
+      ],
+      "paths": [
+        "/home/luyd/workspace/smp-a6-egress/docs/recovery_quality_continuation.md",
+        "/home/luyd/workspace/smp-b-series/docs/recovery_quality_continuation.md",
+        "/home/luyd/workspace/smp-d-series/docs/recovery_quality_continuation.md",
+        "/home/luyd/workspace/smp-escape-ft/docs/recovery_quality_continuation.md",
+        "/home/luyd/workspace/smp-ft-speed/docs/recovery_quality_continuation.md",
+        "/home/luyd/workspace/smp-master-repro/docs/recovery_quality_continuation.md",
+        "/home/luyd/workspace/smp-oscillation-ft/docs/recovery_quality_continuation.md",
+        "/home/luyd/workspace/smp-p5-balanced/docs/recovery_quality_continuation.md",
+        "/home/luyd/workspace/smp-p5-terrain/docs/recovery_quality_continuation.md",
+        "/home/luyd/workspace/smp-prior-replay-ft/docs/recovery_quality_continuation.md",
+        "/home/luyd/workspace/smp-r2-ablation/docs/recovery_quality_continuation.md",
+        "/home/luyd/workspace/smp-r2-ceiling/docs/recovery_quality_continuation.md",
+        "/home/luyd/workspace/smp-r2-v33-path/docs/recovery_quality_continuation.md"
+      ]
+    },
+    {
+      "sha256": "fda6c7f1b28070b54a58c865bf37815f1d849453a71e3ba2dfdbd28b4adbc656",
+      "title": "Recovery 项目统一入口",
+      "filenames": [
+        "START_HERE.md"
+      ],
+      "paths": [
+        "/home/luyd/workspace/smp-a6-egress/docs/recovery_study/START_HERE.md"
+      ]
+    },
+    {
+      "sha256": "d506e62c99c7f58d71e5c91555873529b749a6626b02861d10355079be2f02c3",
+      "title": "从零训练 recovery：B0–B5 终止条件消融",
+      "filenames": [
+        "scratch93_termination_ablation.md"
+      ],
+      "paths": [
+        "/home/luyd/workspace/smp-a6-egress/docs/scratch93_termination_ablation.md",
+        "/home/luyd/workspace/smp-b-series/docs/scratch93_termination_ablation.md",
+        "/home/luyd/workspace/smp-d-series/docs/scratch93_termination_ablation.md",
+        "/home/luyd/workspace/smp-escape-ft/docs/scratch93_termination_ablation.md",
+        "/home/luyd/workspace/smp-ft-speed/docs/scratch93_termination_ablation.md",
+        "/home/luyd/workspace/smp-master-repro/docs/scratch93_termination_ablation.md",
+        "/home/luyd/workspace/smp-oscillation-ft/docs/scratch93_termination_ablation.md",
+        "/home/luyd/workspace/smp-p5-balanced/docs/scratch93_termination_ablation.md",
+        "/home/luyd/workspace/smp-p5-terrain/docs/scratch93_termination_ablation.md",
+        "/home/luyd/workspace/smp-prior-replay-ft/docs/scratch93_termination_ablation.md",
+        "/home/luyd/workspace/smp-r2-ablation/docs/scratch93_termination_ablation.md",
+        "/home/luyd/workspace/smp-r2-ceiling/docs/scratch93_termination_ablation.md",
+        "/home/luyd/workspace/smp-r2-v33-path/docs/scratch93_termination_ablation.md"
+      ]
+    },
+    {
+      "sha256": "11b2570b6ea03746dda6318e66428deb8c9331c94fb9c0dcb5b86c6200acb764",
+      "title": "V33 起身奖励迁移：早期 L4 微调与从零训练",
+      "filenames": [
+        "v33_reward_transfer.md"
+      ],
+      "paths": [
+        "/home/luyd/workspace/smp-a6-egress/docs/v33_reward_transfer.md",
+        "/home/luyd/workspace/smp-b-series/docs/v33_reward_transfer.md",
+        "/home/luyd/workspace/smp-d-series/docs/v33_reward_transfer.md",
+        "/home/luyd/workspace/smp-escape-ft/docs/v33_reward_transfer.md",
+        "/home/luyd/workspace/smp-ft-speed/docs/v33_reward_transfer.md",
+        "/home/luyd/workspace/smp-oscillation-ft/docs/v33_reward_transfer.md",
+        "/home/luyd/workspace/smp-p5-balanced/docs/v33_reward_transfer.md",
+        "/home/luyd/workspace/smp-p5-terrain/docs/v33_reward_transfer.md",
+        "/home/luyd/workspace/smp-prior-replay-ft/docs/v33_reward_transfer.md",
+        "/home/luyd/workspace/smp-r2-ablation/docs/v33_reward_transfer.md",
+        "/home/luyd/workspace/smp-r2-ceiling/docs/v33_reward_transfer.md",
+        "/home/luyd/workspace/smp-r2-v33-path/docs/v33_reward_transfer.md"
+      ]
+    },
+    {
+      "sha256": "ac14e268d700c15cb4c681dec2d2d7edbe753cee0b30f23b1f82d8b30bfdfcd5",
+      "title": "D系列四地形奖励与reset消融设计",
+      "filenames": [
+        "d_multiterrain_design_zh.md"
+      ],
+      "paths": [
+        "/home/luyd/workspace/smp-b-series/docs/d_multiterrain_design_zh.md"
+      ]
+    },
+    {
+      "sha256": "3d1e34c716e00e7ca31bee7f7c53889895bc075e45a3d005c1b44922e3abced0",
+      "title": "FT12k 压板下一轮消融计划",
+      "filenames": [
+        "ft12k_plate_next_ablations_zh.md"
+      ],
+      "paths": [
+        "/home/luyd/workspace/smp-escape-ft/docs/ft12k_plate_next_ablations_zh.md"
+      ]
+    },
+    {
+      "sha256": "18e592117dfc04123ce8e18ec40bed0c3f0b53c74443b897b9a59ebb564d36a5",
+      "title": "E/F and the original master get-up baseline",
+      "filenames": [
+        "flat93_ef_vs_master.md"
+      ],
+      "paths": [
+        "/home/luyd/workspace/smp-flat93/docs/flat93_ef_vs_master.md"
+      ]
+    },
+    {
+      "sha256": "f8f47472cd94a5b211eba6767ac096be6eec4695a6bf5f56c23ab7b27a666937",
+      "title": "Prior checkpoint provenance",
+      "filenames": [
+        "flat93_prior_comparison.md"
+      ],
+      "paths": [
+        "/home/luyd/workspace/smp-flat93/docs/flat93_prior_comparison.md"
+      ]
+    },
+    {
+      "sha256": "e3df9422c9296b0205be01d3932d7257eaf616c1f464d936b16b81396ae1006d",
+      "title": "Flat recovery 93D, scratch baseline",
+      "filenames": [
+        "flat93_recovery.md"
+      ],
+      "paths": [
+        "/home/luyd/workspace/smp-flat93/docs/flat93_recovery.md"
+      ]
+    },
+    {
+      "sha256": "2dbb28255cb790ddfca4c68ef9a47b56b6496682b16bfe78cd893b8993d9d3b1",
+      "title": "93D reset-source comparison: 10,000 PPO updates",
+      "filenames": [
+        "flat93_reset_comparison.md"
+      ],
+      "paths": [
+        "/home/luyd/workspace/smp-flat93/docs/flat93_reset_comparison.md"
+      ]
+    },
+    {
+      "sha256": "6766e80e90596af8da1c2cd728a39a2389e84dac2818c59973b262ffc779dfd9",
+      "title": "V33 起身奖励迁移：早期 L4 微调与从零训练",
+      "filenames": [
+        "v33_reward_transfer.md"
+      ],
+      "paths": [
+        "/home/luyd/workspace/smp-master-repro/docs/v33_reward_transfer.md"
+      ]
+    },
+    {
+      "sha256": "c63642dff4f1cb91d94f2ddea30901438e57198f789d71cee4e7648388b5df03",
+      "title": "FT12k 并行消融：压板作用与起身振荡分开验证",
+      "filenames": [
+        "ft12k_parallel_ablations_zh.md"
+      ],
+      "paths": [
+        "/home/luyd/workspace/smp-oscillation-ft/docs/ft12k_parallel_ablations_zh.md"
+      ]
+    },
+    {
+      "sha256": "dc10263625064e9580f26be12c7deae334325185224210bb3466a6a5eb3324e0",
+      "title": "L4 → V33 reward FT → 受限场景 recovery：训练与验证流程",
+      "filenames": [
+        "l4_v33_plate_pipeline_zh.md"
+      ],
+      "paths": [
+        "/home/luyd/workspace/smp-oscillation-ft/docs/l4_v33_plate_pipeline_zh.md"
+      ]
+    },
+    {
+      "sha256": "eabbd56d6265b42616b0b7b77ee3d194e0ad743b1085ed54d4a572655a917bfd",
+      "title": "A6 脱困后收敛实验计划：EC0–EC7",
+      "filenames": [
+        "a6_egress_convergence_plan_zh.md"
+      ],
+      "paths": [
+        "/home/luyd/workspace/smp-r2-ceiling/docs/a6_egress_convergence_plan_zh.md"
+      ]
+    },
+    {
+      "sha256": "fc097ea3b3c3a18b94f1819a8de54614c5fea06d2952681d9132e85e0c7ba6c3",
+      "title": "C 系列 4000 updates 中期评估",
+      "filenames": [
+        "c_series_4000_review_zh.md"
+      ],
+      "paths": [
+        "/home/luyd/workspace/smp-r2-ceiling/docs/c_series_4000_review_zh.md"
+      ]
+    }
+  ]
+}

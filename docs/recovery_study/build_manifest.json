@@ -1,0 +1,13 @@
+{
+  "status": "geometry/reset fixtures only; no policy training or rollout",
+  "files": {
+    "configs/recovery_study/scenes.json": "91097a52c2cb7993c80f34b7ea2847b33cee1b505437ec7acae29d838d4dafc3",
+    "src/smp/recovery/scenes.py": "1bc341fe9dfa3066a1dfdd7f3361f972ad0f6213146081c8f236819179fbb404",
+    "scripts/recovery.py": "1fb5c38033afad0c71653cbc0a131e96a0592b0397ce2d8641c3a5ff69d25b27",
+    "scripts/recovery_study/check_scenes.py": "163c891753f8d1d697bf2ea764f113804a1ef41a66f388e9db05e0af3a06d3d9"
+  },
+  "bank_sha256": "452de62968af8ed6371b1ed344df5fd09e77f0a61d7d213b96667cf1b1ebd13d",
+  "initial_pose_cases": 64,
+  "export_reload_render_cases": 10,
+  "artifact": "docs/recovery_study/assets/scene_overview.png"
+}

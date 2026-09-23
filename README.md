@@ -1,3 +1,7 @@
+# 当前恢复研究入口
+
+请先看 [START_HERE](docs/recovery_study/START_HERE.md)。当前分支 `codex/recovery-study` 集中维护场景与实验索引；以下保留原项目README。
+
 # SMP — Score-Matching Motion Priors (reproduction)
 
 A reproduction of **SMP: Reusable Score-Matching Motion Priors for Physics-Based

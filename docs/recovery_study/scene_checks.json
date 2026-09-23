@@ -1,0 +1,453 @@
+{
+  "scope": "initial collision, object DOF/mass/inertia, role separation, 20ms finite passive physics; not policy performance",
+  "cases": [
+    {
+      "scene": "flat",
+      "direction": "supine",
+      "site": "center",
+      "bank_index": 3,
+      "initial_min_contact_distance": 0.0
+    },
+    {
+      "scene": "flat",
+      "direction": "prone",
+      "site": "center",
+      "bank_index": 61,
+      "initial_min_contact_distance": 0.0
+    },
+    {
+      "scene": "flat",
+      "direction": "left_side_down",
+      "site": "center",
+      "bank_index": 70,
+      "initial_min_contact_distance": 0.0
+    },
+    {
+      "scene": "flat",
+      "direction": "right_side_down",
+      "site": "center",
+      "bank_index": 126,
+      "initial_min_contact_distance": 0.0
+    },
+    {
+      "scene": "fixed_ceiling",
+      "direction": "supine",
+      "site": "center",
+      "bank_index": 3,
+      "initial_min_contact_distance": 0.0
+    },
+    {
+      "scene": "fixed_ceiling",
+      "direction": "prone",
+      "site": "center",
+      "bank_index": 61,
+      "initial_min_contact_distance": 0.0
+    },
+    {
+      "scene": "fixed_ceiling",
+      "direction": "left_side_down",
+      "site": "center",
+      "bank_index": 70,
+      "initial_min_contact_distance": 0.0
+    },
+    {
+      "scene": "fixed_ceiling",
+      "direction": "right_side_down",
+      "site": "center",
+      "bank_index": 126,
+      "initial_min_contact_distance": 0.0
+    },
+    {
+      "scene": "table",
+      "direction": "supine",
+      "site": "center",
+      "bank_index": 3,
+      "initial_min_contact_distance": 0.0
+    },
+    {
+      "scene": "table",
+      "direction": "prone",
+      "site": "center",
+      "bank_index": 61,
+      "initial_min_contact_distance": 0.0
+    },
+    {
+      "scene": "table",
+      "direction": "left_side_down",
+      "site": "center",
+      "bank_index": 70,
+      "initial_min_contact_distance": 0.0
+    },
+    {
+      "scene": "table",
+      "direction": "right_side_down",
+      "site": "center",
+      "bank_index": 126,
+      "initial_min_contact_distance": 0.0
+    },
+    {
+      "scene": "guided_plate",
+      "direction": "supine",
+      "site": "center",
+      "bank_index": 3,
+      "initial_min_contact_distance": 0.0
+    },
+    {
+      "scene": "guided_plate",
+      "direction": "prone",
+      "site": "center",
+      "bank_index": 61,
+      "initial_min_contact_distance": 0.0
+    },
+    {
+      "scene": "guided_plate",
+      "direction": "left_side_down",
+      "site": "center",
+      "bank_index": 70,
+      "initial_min_contact_distance": 0.0
+    },
+    {
+      "scene": "guided_plate",
+      "direction": "right_side_down",
+      "site": "center",
+      "bank_index": 126,
+      "initial_min_contact_distance": 0.0
+    },
+    {
+      "scene": "free_plate",
+      "direction": "supine",
+      "site": "center",
+      "bank_index": 3,
+      "initial_min_contact_distance": 0.0
+    },
+    {
+      "scene": "free_plate",
+      "direction": "prone",
+      "site": "center",
+      "bank_index": 61,
+      "initial_min_contact_distance": 0.0
+    },
+    {
+      "scene": "free_plate",
+      "direction": "left_side_down",
+      "site": "center",
+      "bank_index": 70,
+      "initial_min_contact_distance": 0.0
+    },
+    {
+      "scene": "free_plate",
+      "direction": "right_side_down",
+      "site": "center",
+      "bank_index": 126,
+      "initial_min_contact_distance": 0.0
+    },
+    {
+      "scene": "pyramid_stairs",
+      "direction": "supine",
+      "site": "center",
+      "bank_index": 3,
+      "initial_min_contact_distance": 0.0
+    },
+    {
+      "scene": "pyramid_stairs",
+      "direction": "prone",
+      "site": "center",
+      "bank_index": 61,
+      "initial_min_contact_distance": 0.0
+    },
+    {
+      "scene": "pyramid_stairs",
+      "direction": "left_side_down",
+      "site": "center",
+      "bank_index": 70,
+      "initial_min_contact_distance": 0.0
+    },
+    {
+      "scene": "pyramid_stairs",
+      "direction": "right_side_down",
+      "site": "center",
+      "bank_index": 126,
+      "initial_min_contact_distance": 0.0
+    },
+    {
+      "scene": "pyramid_stairs",
+      "direction": "supine",
+      "site": "tread",
+      "bank_index": 3,
+      "initial_min_contact_distance": 0.0
+    },
+    {
+      "scene": "pyramid_stairs",
+      "direction": "prone",
+      "site": "tread",
+      "bank_index": 61,
+      "initial_min_contact_distance": 0.0
+    },
+    {
+      "scene": "pyramid_stairs",
+      "direction": "left_side_down",
+      "site": "tread",
+      "bank_index": 70,
+      "initial_min_contact_distance": 0.0
+    },
+    {
+      "scene": "pyramid_stairs",
+      "direction": "right_side_down",
+      "site": "tread",
+      "bank_index": 126,
+      "initial_min_contact_distance": 0.0
+    },
+    {
+      "scene": "pyramid_stairs",
+      "direction": "supine",
+      "site": "edge",
+      "bank_index": 3,
+      "initial_min_contact_distance": 0.0
+    },
+    {
+      "scene": "pyramid_stairs",
+      "direction": "prone",
+      "site": "edge",
+      "bank_index": 61,
+      "initial_min_contact_distance": 0.0
+    },
+    {
+      "scene": "pyramid_stairs",
+      "direction": "left_side_down",
+      "site": "edge",
+      "bank_index": 70,
+      "initial_min_contact_distance": 0.0
+    },
+    {
+      "scene": "pyramid_stairs",
+      "direction": "right_side_down",
+      "site": "edge",
+      "bank_index": 126,
+      "initial_min_contact_distance": 0.0
+    },
+    {
+      "scene": "pyramid_stairs",
+      "direction": "supine",
+      "site": "corner",
+      "bank_index": 3,
+      "initial_min_contact_distance": 0.0
+    },
+    {
+      "scene": "pyramid_stairs",
+      "direction": "prone",
+      "site": "corner",
+      "bank_index": 61,
+      "initial_min_contact_distance": 0.0
+    },
+    {
+      "scene": "pyramid_stairs",
+      "direction": "left_side_down",
+      "site": "corner",
+      "bank_index": 70,
+      "initial_min_contact_distance": 0.0
+    },
+    {
+      "scene": "pyramid_stairs",
+      "direction": "right_side_down",
+      "site": "corner",
+      "bank_index": 126,
+      "initial_min_contact_distance": 0.0
+    },
+    {
+      "scene": "box_terrain",
+      "direction": "supine",
+      "site": "center",
+      "bank_index": 3,
+      "initial_min_contact_distance": 0.0
+    },
+    {
+      "scene": "box_terrain",
+      "direction": "prone",
+      "site": "center",
+      "bank_index": 61,
+      "initial_min_contact_distance": 0.0
+    },
+    {
+      "scene": "box_terrain",
+      "direction": "left_side_down",
+      "site": "center",
+      "bank_index": 70,
+      "initial_min_contact_distance": 0.0
+    },
+    {
+      "scene": "box_terrain",
+      "direction": "right_side_down",
+      "site": "center",
+      "bank_index": 126,
+      "initial_min_contact_distance": 0.0
+    },
+    {
+      "scene": "box_terrain",
+      "direction": "supine",
+      "site": "edge",
+      "bank_index": 3,
+      "initial_min_contact_distance": 0.0
+    },
+    {
+      "scene": "box_terrain",
+      "direction": "prone",
+      "site": "edge",
+      "bank_index": 61,
+      "initial_min_contact_distance": 0.0
+    },
+    {
+      "scene": "box_terrain",
+      "direction": "left_side_down",
+      "site": "edge",
+      "bank_index": 70,
+      "initial_min_contact_distance": 0.0
+    },
+    {
+      "scene": "box_terrain",
+      "direction": "right_side_down",
+      "site": "edge",
+      "bank_index": 126,
+      "initial_min_contact_distance": 0.0
+    },
+    {
+      "scene": "box_terrain",
+      "direction": "supine",
+      "site": "corner",
+      "bank_index": 3,
+      "initial_min_contact_distance": 0.0
+    },
+    {
+      "scene": "box_terrain",
+      "direction": "prone",
+      "site": "corner",
+      "bank_index": 61,
+      "initial_min_contact_distance": 0.0
+    },
+    {
+      "scene": "box_terrain",
+      "direction": "left_side_down",
+      "site": "corner",
+      "bank_index": 70,
+      "initial_min_contact_distance": 0.0
+    },
+    {
+      "scene": "box_terrain",
+      "direction": "right_side_down",
+      "site": "corner",
+      "bank_index": 126,
+      "initial_min_contact_distance": 0.0
+    },
+    {
+      "scene": "free_box",
+      "direction": "supine",
+      "site": "center",
+      "bank_index": 3,
+      "initial_min_contact_distance": 0.0
+    },
+    {
+      "scene": "free_box",
+      "direction": "prone",
+      "site": "center",
+      "bank_index": 61,
+      "initial_min_contact_distance": 0.0
+    },
+    {
+      "scene": "free_box",
+      "direction": "left_side_down",
+      "site": "center",
+      "bank_index": 70,
+      "initial_min_contact_distance": 0.0
+    },
+    {
+      "scene": "free_box",
+      "direction": "right_side_down",
+      "site": "center",
+      "bank_index": 126,
+      "initial_min_contact_distance": 0.0
+    },
+    {
+      "scene": "double_plate",
+      "direction": "supine",
+      "site": "center",
+      "bank_index": 3,
+      "initial_min_contact_distance": 0.0
+    },
+    {
+      "scene": "double_plate",
+      "direction": "prone",
+      "site": "center",
+      "bank_index": 61,
+      "initial_min_contact_distance": 0.0
+    },
+    {
+      "scene": "double_plate",
+      "direction": "left_side_down",
+      "site": "center",
+      "bank_index": 70,
+      "initial_min_contact_distance": 0.0
+    },
+    {
+      "scene": "double_plate",
+      "direction": "right_side_down",
+      "site": "center",
+      "bank_index": 126,
+      "initial_min_contact_distance": 0.0
+    },
+    {
+      "scene": "mixed_clutter",
+      "direction": "supine",
+      "site": "center",
+      "bank_index": 3,
+      "initial_min_contact_distance": 0.0
+    },
+    {
+      "scene": "mixed_clutter",
+      "direction": "prone",
+      "site": "center",
+      "bank_index": 61,
+      "initial_min_contact_distance": 0.0
+    },
+    {
+      "scene": "mixed_clutter",
+      "direction": "left_side_down",
+      "site": "center",
+      "bank_index": 70,
+      "initial_min_contact_distance": 0.0
+    },
+    {
+      "scene": "mixed_clutter",
+      "direction": "right_side_down",
+      "site": "center",
+      "bank_index": 126,
+      "initial_min_contact_distance": 0.0
+    },
+    {
+      "scene": "mixed_clutter",
+      "direction": "supine",
+      "site": "edge",
+      "bank_index": 3,
+      "initial_min_contact_distance": 0.0
+    },
+    {
+      "scene": "mixed_clutter",
+      "direction": "prone",
+      "site": "edge",
+      "bank_index": 61,
+      "initial_min_contact_distance": 0.0
+    },
+    {
+      "scene": "mixed_clutter",
+      "direction": "left_side_down",
+      "site": "edge",
+      "bank_index": 70,
+      "initial_min_contact_distance": 0.0
+    },
+    {
+      "scene": "mixed_clutter",
+      "direction": "right_side_down",
+      "site": "edge",
+      "bank_index": 126,
+      "initial_min_contact_distance": 0.0
+    }
+  ]
+}

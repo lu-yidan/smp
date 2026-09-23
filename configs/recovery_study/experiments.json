@@ -1,0 +1,263 @@
+{
+  "schema_version": 1,
+  "current_workspace": "/home/luyd/workspace/smp-a6-egress",
+  "current_branch": "codex/recovery-study",
+  "paper_workspace": "/home/luyd/workspace/G1_Recovery_Below_Block",
+  "paper_branch": "codex/paper-recovery-scope-audit",
+  "actor_lineage": [
+    "L4-9999",
+    "FT_R2-9000",
+    "V33PATH-A6-9999"
+  ],
+  "note": "Use qualified IDs. Old R2, A6, B1 and F2 labels are reused across unrelated series. Source manifests override prose; branch names do not prove a checkpoint was trained from current working files.",
+  "experiments": [
+    {
+      "id": "L4-9999",
+      "role": "mainline discovery",
+      "workspace": "/home/luyd/workspace/smp-master-repro",
+      "branch": "codex/fixed-low-smp-ablation",
+      "documentation": "/home/luyd/workspace/smp-a6-egress/docs/fixed_low_smp_ablation.md",
+      "scenes": [
+        "flat"
+      ],
+      "authoritative_manifest": "/home/luyd/workspace/G1_Recovery_Below_Block/evidence/lineage/l4_launch.json",
+      "actor_parent": null,
+      "checkpoint_sha256": "7e98c06aa72f4ced7ab1f5bcfc67c011096fb5b3b4cdc453e43f7aac97409813",
+      "index_status": "documentation exists; use source manifest for immutable run settings",
+      "note": "Historical L4 training branch; current workspace is a later checkout. Reproduce from frozen manifest/config, not current checkout."
+    },
+    {
+      "id": "FT_R2-9000",
+      "role": "mainline refinement",
+      "workspace": "/home/luyd/workspace/smp-ft-speed",
+      "branch": "codex/l4-ft-prone-speed",
+      "documentation": "/home/luyd/workspace/smp-ft-speed/docs/l4_ft_prone_speed_zh.md",
+      "scenes": [
+        "flat"
+      ],
+      "authoritative_manifest": "/home/luyd/workspace/G1_Recovery_Below_Block/evidence/lineage/r2_launch.json",
+      "actor_parent": "L4-9999",
+      "checkpoint_sha256": "8b4889f80c6b7cc675f6e9b1e98f2d4a1886a15e372f86070f63c329ba9ca5d1",
+      "server_checkpoint": "/root/workplace/smp-ft-speed/logs/rsl_rl/ft_prone_speed/formal_20260918_ft_speed_v1/FT_R2/model_9000.pt",
+      "index_status": "documentation exists; performance status is not inferred"
+    },
+    {
+      "id": "V33PATH-A6-9999",
+      "role": "main candidate",
+      "workspace": "/home/luyd/workspace/smp-r2-v33-path",
+      "branch": "codex/r2-v33-path-ablation",
+      "documentation": "/home/luyd/workspace/smp-r2-v33-path/docs/r2_v33_path_ablation_zh.md",
+      "scenes": [
+        "flat",
+        "guided_plate",
+        "free_plate"
+      ],
+      "authoritative_manifest": "/home/luyd/workspace/G1_Recovery_Below_Block/evidence/lineage/a6_launch.json",
+      "actor_parent": "FT_R2-9000",
+      "checkpoint_sha256": "4a2d4c8f0e710f760b0996237002824b4fd05872482ee96fb94f7330d09c8fd8",
+      "server_checkpoint": "/root/workplace/smp-r2-v33-path/logs/rsl_rl/v33_path_ablation/formal_20260920_r2_v33path_v1/A6/model_9999.pt",
+      "index_status": "documentation exists; performance status is not inferred",
+      "aliases": [
+        "V33Path-A0",
+        "V33Path-A1",
+        "V33Path-A2",
+        "V33Path-A3",
+        "V33Path-A4",
+        "V33Path-A5",
+        "V33Path-A6",
+        "V33Path-A7",
+        "A0",
+        "A1",
+        "A2",
+        "A3",
+        "A4",
+        "A5",
+        "A6",
+        "A7"
+      ]
+    },
+    {
+      "id": "EC0-EC7",
+      "role": "post-egress screening",
+      "workspace": "/home/luyd/workspace/smp-a6-egress",
+      "branch": "codex/a6-egress-convergence",
+      "documentation": "/home/luyd/workspace/smp-a6-egress/docs/a6_egress_convergence_plan_zh.md",
+      "scenes": [
+        "flat",
+        "fixed_ceiling",
+        "free_plate"
+      ],
+      "actor_parent": "V33PATH-A6-9999",
+      "server_workspace": "/root/workplace/smp-a6-egress",
+      "run": "logs/rsl_rl/egress_convergence/formal_20260921_a6_egress_v1",
+      "index_status": "documentation exists; performance status is not inferred",
+      "aliases": [
+        "EC0",
+        "EC1",
+        "EC2",
+        "EC3",
+        "EC4",
+        "EC5",
+        "EC6",
+        "EC7"
+      ]
+    },
+    {
+      "id": "ES0-ES3",
+      "role": "motion x anchor screening",
+      "workspace": "/home/luyd/workspace/smp-a6-egress",
+      "branch": "codex/a6-post-egress-motion",
+      "documentation": "/home/luyd/workspace/smp-a6-egress/docs/a6_post_egress_motion_plan_zh.md",
+      "scenes": [
+        "flat",
+        "fixed_ceiling",
+        "free_plate"
+      ],
+      "actor_parent": "V33PATH-A6-9999",
+      "server_workspace": "/root/workplace/smp-a6-post-egress",
+      "run": "logs/rsl_rl/post_egress_motion/formal_20260922_a6_motion_v1",
+      "index_status": "documentation exists; performance status is not inferred",
+      "aliases": [
+        "ES0",
+        "ES1",
+        "ES2",
+        "ES3"
+      ]
+    },
+    {
+      "id": "FT12K",
+      "role": "historical; consult frozen config",
+      "workspace": "/home/luyd/workspace/smp-master-repro",
+      "branch": "codex/v33-reward-recovery",
+      "documentation": "/home/luyd/workspace/smp-master-repro/docs/v33_reward_transfer.md",
+      "scenes": [
+        "flat"
+      ],
+      "index_status": "documentation exists; performance status is not inferred"
+    },
+    {
+      "id": "P-SERIES",
+      "role": "historical; consult frozen config",
+      "workspace": "/home/luyd/workspace/smp-prior-replay-ft",
+      "branch": "codex/ft12k-prior-replay-ablation",
+      "documentation": "/home/luyd/workspace/smp-prior-replay-ft/docs/ft12k_plate_next_ablations_zh.md",
+      "scenes": [
+        "flat",
+        "guided_plate"
+      ],
+      "index_status": "documentation exists; performance status is not inferred"
+    },
+    {
+      "id": "B0-B1",
+      "role": "historical; consult frozen config",
+      "workspace": "/home/luyd/workspace/smp-p5-balanced",
+      "branch": "codex/p5-balanced-dynamics",
+      "documentation": "/home/luyd/workspace/smp-p5-balanced/docs/p5_balanced_dynamics_zh.md",
+      "scenes": [
+        "flat",
+        "guided_plate"
+      ],
+      "index_status": "documentation exists; performance status is not inferred"
+    },
+    {
+      "id": "B2-B7",
+      "role": "historical; consult frozen config",
+      "workspace": "/home/luyd/workspace/smp-b-series",
+      "branch": "codex/b-series-guidance-terrain",
+      "documentation": "/home/luyd/workspace/smp-b-series/docs/b_series_guidance_terrain_zh.md",
+      "scenes": [
+        "historical multi-terrain"
+      ],
+      "index_status": "documentation exists; use source manifest for immutable run settings",
+      "aliases": [
+        "B2",
+        "B3",
+        "B4",
+        "B5",
+        "B6",
+        "B7"
+      ]
+    },
+    {
+      "id": "D-SERIES",
+      "role": "historical; consult frozen config",
+      "workspace": "/home/luyd/workspace/smp-d-series",
+      "branch": "codex/d-multiterrain-recovery",
+      "documentation": "/home/luyd/workspace/smp-d-series/docs/d_multiterrain_design_zh.md",
+      "scenes": [
+        "historical multi-terrain"
+      ],
+      "index_status": "documentation exists; use source manifest for immutable run settings"
+    },
+    {
+      "id": "T-P5-L4-FT",
+      "role": "historical; consult frozen config",
+      "workspace": "/home/luyd/workspace/smp-p5-terrain",
+      "branch": "codex/p5-multiterrain-recovery",
+      "documentation": "/home/luyd/workspace/smp-p5-terrain/docs/p5_multiterrain_v1_zh.md",
+      "scenes": [
+        "flat",
+        "guided_plate",
+        "free_plate",
+        "stairs",
+        "slope"
+      ],
+      "index_status": "documentation exists; use source manifest for immutable run settings"
+    },
+    {
+      "id": "F-T-R2",
+      "role": "historical; consult frozen config",
+      "workspace": "/home/luyd/workspace/smp-r2-ablation",
+      "branch": "codex/r2-flat-plate-ablation",
+      "documentation": "/home/luyd/workspace/smp-r2-ablation/docs/r2_flat_plate_ablation_zh.md",
+      "scenes": [
+        "flat",
+        "guided_plate",
+        "free_plate",
+        "stairs"
+      ],
+      "index_status": "documentation exists; performance status is not inferred"
+    },
+    {
+      "id": "C-CEILING",
+      "role": "historical; consult frozen config",
+      "workspace": "/home/luyd/workspace/smp-r2-ceiling",
+      "branch": "codex/r2-fixed-ceiling-ablation",
+      "documentation": "/home/luyd/workspace/smp-r2-ceiling/docs/r2_fixed_ceiling_ablation_20260921_zh.md",
+      "scenes": [
+        "flat",
+        "fixed_ceiling",
+        "free_plate"
+      ],
+      "index_status": "documentation exists; use source manifest for immutable run settings"
+    },
+    {
+      "id": "V35-TERRAIN-96D",
+      "role": "historical geometry reference; incompatible actor interface",
+      "workspace": "/home/luyd/workspace/smp",
+      "branch": "origin/codex/terrain-recovery-v35",
+      "documentation": "/home/luyd/workspace/G1_Recovery_Below_Block/evidence/terrain_history/terrain_recovery_v35.md",
+      "scenes": [
+        "flat",
+        "slope",
+        "pyramid_stairs",
+        "rough_grid"
+      ],
+      "index_status": "frozen source archived in paper evidence"
+    },
+    {
+      "id": "V36-TERRAIN-96D",
+      "role": "historical geometry reference; incompatible actor interface",
+      "workspace": "/home/luyd/workspace/smp",
+      "branch": "origin/codex/terrain-recovery-v36",
+      "documentation": "/home/luyd/workspace/G1_Recovery_Below_Block/evidence/terrain_history/terrain_recovery_v36.md",
+      "scenes": [
+        "flat",
+        "slope",
+        "pyramid_stairs",
+        "rough_grid"
+      ],
+      "index_status": "frozen source archived in paper evidence"
+    }
+  ]
+}

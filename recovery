@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+set -euo pipefail
+cd "$(dirname "$0")"
+if [[ -n "${SMP_PYTHON:-}" ]]; then
+  recovery_python="$SMP_PYTHON"
+elif [[ -x .venv/bin/python ]]; then
+  recovery_python=.venv/bin/python
+elif [[ -x ../smp/.venv/bin/python ]]; then
+  recovery_python=../smp/.venv/bin/python
+else
+  recovery_python=python3
+fi
+export PYTHONPATH="$(pwd)/src${PYTHONPATH:+:$PYTHONPATH}"
+exec "$recovery_python" scripts/recovery.py "$@"

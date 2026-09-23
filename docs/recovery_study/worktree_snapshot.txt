@@ -1,0 +1,60 @@
+worktree /home/luyd/workspace/smp
+HEAD a3176cd863a69f429a912420f934084c3aa8552c
+branch refs/heads/codex/v33-deploy-aligned
+
+worktree /home/luyd/workspace/smp-a6-egress
+HEAD 1c845d5e7b6c5c7cfe1c09f8dac8bba92b6a0ddd
+branch refs/heads/codex/recovery-study
+
+worktree /home/luyd/workspace/smp-b-series
+HEAD 6ac523b4379a1eecdbd875bfa237f2a6b9023a6d
+branch refs/heads/codex/b-series-guidance-terrain
+
+worktree /home/luyd/workspace/smp-d-series
+HEAD 1873d47729476bebdbf28da2b46f0d7905a136cf
+branch refs/heads/codex/d-multiterrain-recovery
+
+worktree /home/luyd/workspace/smp-escape-ft
+HEAD f937d0745b79f325c303904b7193549a8edcc5d4
+branch refs/heads/codex/ft12k-plate-recovery
+
+worktree /home/luyd/workspace/smp-flat93
+HEAD 1464628f959346105ae40685a90bcd292de45538
+branch refs/heads/codex/flat-recovery-93d-scratch
+
+worktree /home/luyd/workspace/smp-ft-speed
+HEAD ece8dc82c16a912a7e17c5e02232f55ba59a9c18
+branch refs/heads/codex/l4-ft-prone-speed
+
+worktree /home/luyd/workspace/smp-master-repro
+HEAD d04223ace890efb945016b5b995b870ab04ffce7
+branch refs/heads/codex/v33-reward-recovery
+
+worktree /home/luyd/workspace/smp-oscillation-ft
+HEAD 03721d66829c42df5a69bc59e0b9bcccab6a0896
+branch refs/heads/codex/ft12k-oscillation-recovery
+
+worktree /home/luyd/workspace/smp-p5-balanced
+HEAD 28ffe1bf38308e1ea0077e6968da9775452c41c0
+branch refs/heads/codex/p5-balanced-dynamics
+
+worktree /home/luyd/workspace/smp-p5-terrain
+HEAD c694c78c85afa1fc8e030ca3e40f76df5a7353eb
+branch refs/heads/codex/p5-multiterrain-recovery
+
+worktree /home/luyd/workspace/smp-prior-replay-ft
+HEAD bb8ce1377562a5651d9c2cac7f38f07161fa3ab8
+branch refs/heads/codex/ft12k-prior-replay-ablation
+
+worktree /home/luyd/workspace/smp-r2-ablation
+HEAD 76411292a048c5f663c3bcd7d4463167f91af253
+branch refs/heads/codex/r2-flat-plate-ablation
+
+worktree /home/luyd/workspace/smp-r2-ceiling
+HEAD a5cdc7cf485dcc9137ac7a41d85d9b2fd3c6c7fe
+branch refs/heads/codex/r2-fixed-ceiling-ablation
+
+worktree /home/luyd/workspace/smp-r2-v33-path
+HEAD 2b63156899682c53edf932a4b4010301fa5a8988
+branch refs/heads/codex/r2-v33-path-ablation
+
