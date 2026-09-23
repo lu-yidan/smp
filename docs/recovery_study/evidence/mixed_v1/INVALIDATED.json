@@ -1,0 +1,6 @@
+{
+  "status": "INVALID - do not use for policy comparisons",
+  "reason": "Native CPU bank filter used stale compiled BVH after changing geometry; terrain resets could deeply penetrate supports. Earlier frame/depth audits did not bypass this BVH.",
+  "replacement": "mixed_bank_v5 / formal_20260923_v2",
+  "all_files_in_this_directory": "historical diagnostics only"
+}

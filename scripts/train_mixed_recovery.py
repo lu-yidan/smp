@@ -69,6 +69,7 @@ class Wrapper(RslRlVecEnvWrapper):
 def audit(env,out):
  import mujoco
  s=env._mix;m=env.sim.mj_model;d=mujoco.MjData(m)
+ saved_flags=m.opt.disableflags;m.opt.disableflags |= int(mujoco.mjtDisableBit.mjDSBL_MIDPHASE)
  saved={k:getattr(m,k).copy() for k in mix.FIELDS};depth=[];position_error=[];rotation_error=[]
  try:
   for i in range(env.num_envs):
@@ -77,6 +78,7 @@ def audit(env,out):
    d.qpos[:]=env.sim.data.qpos[i].cpu().numpy();d.qvel[:]=0;d.mocap_pos[:]=env.sim.data.mocap_pos[i].cpu().numpy();d.mocap_quat[:]=env.sim.data.mocap_quat[i].cpu().numpy();mujoco.mj_forward(m,d);depth.append(min([c.dist for c in d.contact]+[0.]))
    gids=s.gids.cpu().numpy();position_error.append(float(np.abs(d.geom_xpos[gids]-env.sim.data.geom_xpos[i,s.gids].cpu().numpy()).max()));rotation_error.append(float(np.abs(d.geom_xmat[gids].reshape(-1,3,3)-env.sim.data.geom_xmat[i,s.gids].cpu().numpy()).max()))
  finally:
+  m.opt.disableflags=saved_flags
   for k,value in saved.items():getattr(m,k)[:]=value
  assert min(depth)>=-.0021,min(depth)
  assert max(position_error)<1e-5 and max(rotation_error)<1e-5,(max(position_error),max(rotation_error))
@@ -147,7 +149,7 @@ def main():
  if a.checkpoint is None:a.checkpoint=Path(source)
  if not a.eval:assert hashlib.sha256(a.checkpoint.read_bytes()).hexdigest()==sha
  a.checkpoint=a.checkpoint.resolve();a.out=a.out.resolve();a.out.mkdir(parents=True,exist_ok=a.eval)
- bank=f'outputs/mixed_bank_v4/{"validation" if a.eval else "train"}.npz';manifest=json.loads(Path(bank).with_suffix('.json').read_text());bank_sha=hashlib.sha256(Path(bank).read_bytes()).hexdigest();assert manifest['sha256']==bank_sha
+ bank=f'outputs/mixed_bank_v5/{"validation" if a.eval else "train"}.npz';manifest=json.loads(Path(bank).with_suffix('.json').read_text());bank_sha=hashlib.sha256(Path(bank).read_bytes()).hexdigest();assert manifest['sha256']==bank_sha
  cfg,agent=build_config(a.num_envs,a.arm,bank,a.eval)
  random.seed(cfg.seed);np.random.seed(cfg.seed);torch.manual_seed(cfg.seed)
  agent.logger='tensorboard' if a.eval or a.preflight else 'wandb';agent.upload_model=False;agent.wandb_project='smp';agent.run_name=a.arm;agent.save_interval=500;agent.max_iterations=a.updates

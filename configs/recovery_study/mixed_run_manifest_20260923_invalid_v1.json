@@ -22,5 +22,7 @@
     }
   ],
   "evaluation_render_revision": "fc68e7e",
-  "evaluation_render_note": "Only video presentation changed: terminated first trials become labeled black tiles; reward, optimizer and numeric evaluation are unchanged."
+  "evaluation_render_note": "Only video presentation changed: terminated first trials become labeled black tiles; reward, optimizer and numeric evaluation are unchanged.",
+  "status": "INVALIDATED",
+  "reason": "Stale native BVH in v4 bank builder; see evidence/mixed_v1/INVALIDATED.json"
 }

@@ -1,12 +1,6 @@
 # M 系列混合训练（2026-09-23）
 
-**已启动：** GPU0/1/2，W&B在线同步，正式代码commit `7058342`。
-
-|组|W&B|
-|---|---|
-|M0|[2zqcbitg](https://wandb.ai/tabletennis/smp/runs/2zqcbitg)|
-|M1|[lmfg0vt4](https://wandb.ai/tabletennis/smp/runs/lmfg0vt4)|
-|M2|[g3ub3c4x](https://wandb.ai/tabletennis/smp/runs/g3ub3c4x)|
+**正式版本为v2，使用mixed_bank_v5；v1已终止并作废。** 新run链接在完成重启核对后登记。
 
 代码：`codex/recovery-study`，本地 `/home/luyd/workspace/smp-a6-egress`；服务器 `/root/workplace/smp-recovery-study`。独立工作目录不改写历史run。
 
@@ -33,7 +27,7 @@
 
 总体约80.5/13/6.5%。低位四方向均匀，自然LAFAN/程序化75/25；中后段自然。4096下最大余数取整，精确分配见run `launch.json`，不宣称每次reset计数恰好等于环境份额。标签保留源库的姿态阶段；经过100ms接触settling及穿透筛选，实际reward阶段按当前支撑相对高度计算。
 
-使用冻结随机几何库 `outputs/mixed_bank_v4`，训练6192、验证2064状态；各3难度层。训练库每个场景/阶段/方向/来源/难度单元24个接受状态，验证8个；验证集用于checkpoint选择，不是独立最终测试集。每次reset从相应池抽样，并重新抽取机器人动力学参数。尺寸和质量是库内的多组采样，不是连续无限重采样。完整几何/姿态/源索引保存在NPZ。
+使用冻结随机几何库 `outputs/mixed_bank_v5`，训练6192、验证2064状态；各3难度层。训练库每个场景/阶段/方向/来源/难度单元24个接受状态，验证8个；验证集用于checkpoint选择，不是独立最终测试集。每次reset从相应池抽样，并重新抽取机器人动力学参数。尺寸和质量是库内的多组采样，不是连续无限重采样。完整几何/姿态/源索引保存在NPZ。
 
 单板最终尺寸包络0.60–1.20 × 0.45–0.90 × 0.03–0.08m、质量2–12kg，几何难度在0/1500/3000更新进入1/3、2/3、全范围。固定顶板/桌底面0.55–0.80m、长宽1.0–1.7 × 0.75–1.3m；自由箱、双板和地形有各自范围，准确生成器为 `src/smp/recovery/mixed_geometry.py`。并非所有参数都随难度变化：桌体、自由箱、双板部分参数从一开始即全范围。固定支撑物零自由度；自由物体惯量由实际复合几何与质量计算。
 
@@ -53,22 +47,22 @@ M0/M1唯一设计因子是解除阻挡后的向外进展关闭及相应净空饱
 
 ## 运行与证据
 
-正式目录：`logs/rsl_rl/mixed_recovery/formal_20260923_v1/{M0_R2_mix,M1_R2_mix,M2_A6_mix}`。
+正式目录：`logs/rsl_rl/mixed_recovery/formal_20260923_v2/{M0_R2_mix,M1_R2_mix,M2_A6_mix}`。
 
 - `launch.json`：actor/checkpoint/银行/源代码SHA、精确配额、事件和奖励权重。
 - `env.yaml` / `agent.yaml`：冻结完整配置。
 - `initial.pt`：精确继承的初始actor与fresh critic。
 - `validation/<更新>/summary.json`、`per_trial.npz`、视频：同协议结果。
 - `progress.json`、`completed.json`、`failed.json`：状态。
-- `outputs/initial_mixed/{R2,A6}`：同验证库的续训前冻结基线。
-- `outputs/preflight_mixed/m{0,1,2}_v7_4096`：每组4更新预检、模型参数/控制延迟/局部reset审计。
+- `outputs/initial_mixed_v2/{R2,A6}`：同验证库的续训前冻结基线。
+- `outputs/preflight_mixed/m{0,1,2}_v8_4096`：每组4更新预检、模型参数/控制延迟/局部reset审计。
 
 正式启动脚本 `scripts/recovery_study/launch_mixed_20260923.sh` 会要求三组预检和两个冻结基线完成，并拒绝覆盖已有run。
 
 ## 预检故障记录
 
-早期库v1/v2存在native MuJoCo same-frame优化与GPU几何更新不一致，v3进一步暴露自由箱暂存位置穿透。均在正式训练前被断言阻止，未作为结果；v4修正编译frame及暂存高度。CPU/GPU几何逐环境核对阈值1e−5，初态穿透不深于2mm。初始化零速度、父actor完全一致、fresh critic、实际质量/增益/延迟、局部reset不污染其他环境分别检查。
+早期v1/v2库出现native MuJoCo same-frame优化导致CPU/GPU变换不一致；v3暴露自由箱暂存位置穿透，v4修正了这些问题，但渲染又发现台阶嵌入。原因是native CPU的静态BVH没有随几何参数改变，深穿透未出现在contact列表中。旧正式v1三组仅运行约二十多个更新后主动终止；旧库、冻结基线和预检接触结论全部作废，完整诊断留在 `evidence/mixed_v1/INVALIDATED.json`，不得用于论文对比。
 
-## 评测呈现修订
+v5生成器与CPU接触oracle明确禁用native midphase缓存，枚举允许碰撞的geom对。GPU Warp使用每环境实际AABB，未使用这棵native静态BVH。回归检查故意把机器人放进改尺寸/位置的箱体，确认深穿透可被检测；移开后无误报。几何frame与穿透检查必须同时通过，不能只核对渲染坐标。
 
-`fc68e7e` 仅修改视频呈现：首个trial数值终止后显示黑底说明，不继续展示自动reset后的另一次尝试。数值指标此前已限制为首个trial；训练进程继续使用7058342的奖励与优化代码。后续子进程验证会记录其实际源码SHA。`outputs/initial_mixed/A6_video` 是修订前的渲染诊断，不用作正式成功证据；`render_smoke` 仅25步，不能当20s评测。
+CPU/GPU位置矩阵误差阈值1e−5，初态穿透不深于2mm。父actor完全一致、fresh critic、实际质量/增益/延迟、局部reset不污染其他环境仍分别核查。视频首trial终止后改显示说明，不展示自动reset后的下一次尝试；render_smoke只作渲染诊断，不作为20s评测结果。

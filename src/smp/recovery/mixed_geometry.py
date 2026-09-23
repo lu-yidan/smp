@@ -40,6 +40,9 @@ def cpu_model():
  s=deployment_robot_spec();s.worldbody.add_geom(name='terrain',type=mujoco.mjtGeom.mjGEOM_PLANE,size=(0,0,.1))
  assert tuple(j.name for j in s.joints if j.type!=mujoco.mjtJoint.mjJNT_FREE)==JOINT_NAMES
  add_world(s);m=s.compile();m.opt.timestep=.002
+ # Reset-time shape/frame changes invalidate native MuJoCo static BVHs.
+ # Warp recomputes broadphase from per-world aabb; CPU bank oracle must bypass BVH.
+ m.opt.disableflags |= int(mujoco.mjtDisableBit.mjDSBL_MIDPHASE)
  return m
 
 def inertia(parts,mass):
