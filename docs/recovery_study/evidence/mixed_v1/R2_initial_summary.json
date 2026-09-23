@@ -1,0 +1,102 @@
+{
+  "flat": {
+    "n": 80,
+    "stable_1s": 1.0,
+    "stable_10s": 0.987500011920929,
+    "refall": 0.0,
+    "path_mean": 0.9839909672737122,
+    "tau_peak_p95": 118.49571990966797,
+    "speed_peak_p95": 15.311829566955566,
+    "power_peak_p95": 494.52679443359375
+  },
+  "free_plate": {
+    "n": 64,
+    "stable_1s": 0.296875,
+    "stable_10s": 0.296875,
+    "refall": 0.0,
+    "path_mean": 1.0400630235671997,
+    "tau_peak_p95": 139.0,
+    "speed_peak_p95": 17.777254104614258,
+    "power_peak_p95": 602.4813842773438
+  },
+  "guided_plate": {
+    "n": 48,
+    "stable_1s": 0.0833333358168602,
+    "stable_10s": 0.0625,
+    "refall": 0.0,
+    "path_mean": 0.7594387531280518,
+    "tau_peak_p95": 114.05944061279297,
+    "speed_peak_p95": 25.08352279663086,
+    "power_peak_p95": 663.9754028320312
+  },
+  "fixed_ceiling": {
+    "n": 16,
+    "stable_1s": 0.125,
+    "stable_10s": 0.125,
+    "refall": 0.0,
+    "path_mean": 1.0882458686828613,
+    "tau_peak_p95": 139.0,
+    "speed_peak_p95": 13.421639442443848,
+    "power_peak_p95": 588.7719116210938
+  },
+  "table": {
+    "n": 16,
+    "stable_1s": 0.0625,
+    "stable_10s": 0.0625,
+    "refall": 0.0,
+    "path_mean": 0.8911057710647583,
+    "tau_peak_p95": 139.0,
+    "speed_peak_p95": 14.277657508850098,
+    "power_peak_p95": 637.4838256835938
+  },
+  "pyramid_stairs": {
+    "n": 20,
+    "stable_1s": 0.0,
+    "stable_10s": 0.0,
+    "refall": 0.0,
+    "path_mean": 0.3534731864929199,
+    "tau_peak_p95": 139.0,
+    "speed_peak_p95": 75.31732940673828,
+    "power_peak_p95": 3217.689697265625
+  },
+  "box_terrain": {
+    "n": 28,
+    "stable_1s": 0.4642857313156128,
+    "stable_10s": 0.3214285969734192,
+    "refall": 0.0,
+    "path_mean": 1.188169240951538,
+    "tau_peak_p95": 139.0,
+    "speed_peak_p95": 75.73837280273438,
+    "power_peak_p95": 9192.3740234375
+  },
+  "free_box": {
+    "n": 16,
+    "stable_1s": 0.875,
+    "stable_10s": 0.875,
+    "refall": 0.0,
+    "path_mean": 0.929884135723114,
+    "tau_peak_p95": 139.0,
+    "speed_peak_p95": 15.772601127624512,
+    "power_peak_p95": 553.3372192382812
+  },
+  "double_plate": {
+    "n": 16,
+    "stable_1s": 0.125,
+    "stable_10s": 0.125,
+    "refall": 0.0,
+    "path_mean": 0.9907033443450928,
+    "tau_peak_p95": 137.75741577148438,
+    "speed_peak_p95": 17.77845001220703,
+    "power_peak_p95": 496.6430969238281
+  },
+  "mixed_clutter": {
+    "n": 16,
+    "stable_1s": 0.1875,
+    "stable_10s": 0.125,
+    "refall": 0.0,
+    "path_mean": 1.5148639678955078,
+    "tau_peak_p95": 139.0,
+    "speed_peak_p95": 54.96268844604492,
+    "power_peak_p95": 3927.2275390625
+  }
+}

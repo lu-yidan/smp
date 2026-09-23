@@ -11,6 +11,9 @@ from smp.rl.tasks.getup.fixed_low_reset import recorded_task_smp_product
 from smp.rl.tasks.getup import v33_reward_transfer as v,egress_convergence as ec
 
 def height(env):
+    if hasattr(env,'_mix'):
+        from smp.recovery.mixed_task import height as mixed_height
+        return mixed_height(env)
     r=env.scene['robot'];pos=r.data.site_pos_w[:,env._r_head]-env.scene.env_origins
     feet=r.data.body_link_pos_w[:,env._r_feet]-env.scene.env_origins[:,None]
     if getattr(env,'_bd_flat_support',False):return pos[:,2]
@@ -191,6 +194,9 @@ def invalid(env):
 
 
 def ground_force(env,name):
+    if hasattr(env,'_mix'):
+        from smp.recovery.mixed_task import force
+        return force(env,name)
     force=env.scene[name].data.force
     if hasattr(env,'_mt_bank'):force=force+env.scene[name+'_terrain'].data.force
     return force

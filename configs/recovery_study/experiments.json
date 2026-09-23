@@ -258,6 +258,42 @@
         "rough_grid"
       ],
       "index_status": "frozen source archived in paper evidence"
+    },
+    {
+      "id": "MIX20260923-M0_R2_mix",
+      "role": "single-seed mixed-scene adaptation pilot",
+      "workspace": "/home/luyd/workspace/smp-a6-egress",
+      "branch": "codex/recovery-study",
+      "actor_parent": "FT_R2-9000",
+      "documentation": "/home/luyd/workspace/smp-a6-egress/docs/recovery_study/mixed_training_20260923_zh.md",
+      "server_workspace": "/root/workplace/smp-recovery-study",
+      "authoritative_manifest": "/root/workplace/smp-recovery-study/logs/rsl_rl/mixed_recovery/formal_20260923_v1/M0_R2_mix/launch.json",
+      "gpu": 0,
+      "index_status": "4096-env preflight passed; inspect live run manifest for status"
+    },
+    {
+      "id": "MIX20260923-M1_R2_mix",
+      "role": "single-seed mixed-scene adaptation pilot",
+      "workspace": "/home/luyd/workspace/smp-a6-egress",
+      "branch": "codex/recovery-study",
+      "actor_parent": "FT_R2-9000",
+      "documentation": "/home/luyd/workspace/smp-a6-egress/docs/recovery_study/mixed_training_20260923_zh.md",
+      "server_workspace": "/root/workplace/smp-recovery-study",
+      "authoritative_manifest": "/root/workplace/smp-recovery-study/logs/rsl_rl/mixed_recovery/formal_20260923_v1/M1_R2_mix/launch.json",
+      "gpu": 1,
+      "index_status": "4096-env preflight passed; inspect live run manifest for status"
+    },
+    {
+      "id": "MIX20260923-M2_A6_mix",
+      "role": "single-seed mixed-scene adaptation pilot",
+      "workspace": "/home/luyd/workspace/smp-a6-egress",
+      "branch": "codex/recovery-study",
+      "actor_parent": "V33PATH-A6-9999",
+      "documentation": "/home/luyd/workspace/smp-a6-egress/docs/recovery_study/mixed_training_20260923_zh.md",
+      "server_workspace": "/root/workplace/smp-recovery-study",
+      "authoritative_manifest": "/root/workplace/smp-recovery-study/logs/rsl_rl/mixed_recovery/formal_20260923_v1/M2_A6_mix/launch.json",
+      "gpu": 2,
+      "index_status": "4096-env preflight passed; inspect live run manifest for status"
     }
   ]
 }

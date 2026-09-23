@@ -17,7 +17,7 @@ MUJOCO_GL=egl ./recovery build table --direction prone --out outputs/my_table --
 MUJOCO_GL=egl ./recovery build pyramid_stairs --site edge --direction right_side_down --out outputs/my_stair --render
 ```
 
-输出目录必须不存在，防止覆盖证据。`--seed`固定箱体布局和reset采样；`--overrides file.json`显式设置该场景已支持的尺寸、质量、台阶高度等。`SMP_PYTHON`可指定Python环境，默认复用当前或邻近smp的venv。没有自动启动训练的命令。
+输出目录必须不存在，防止覆盖证据。`--seed`固定箱体布局和reset采样；`--overrides file.json`显式设置该场景已支持的尺寸、质量、台阶高度等。`SMP_PYTHON`可指定Python环境，默认复用当前或邻近smp的venv。场景build本身不启动训练；正式混合训练入口见下方运行记录。
 
 场景预览：[10类几何初态](assets/scene_overview.png)。已验证导出文件保存在 `outputs/recovery_study/scenes_v1/<scene>/`。
 
@@ -31,7 +31,7 @@ MUJOCO_GL=egl ./recovery build pyramid_stairs --site edge --direction right_side
 |64项几何/自由度审计|[检查脚本](../../scripts/recovery_study/check_scenes.py)，输出`outputs/recovery_study/scene_checks.json`|
 |历史各工作树/分支位置|[worktree快照](worktree_snapshot.txt)、[分支快照](branch_snapshot.txt)|
 |本文主线和待做实验|[论文研究路线](/home/luyd/workspace/G1_Recovery_Below_Block/docs/research_scope_20260923_zh.md)|
-|三阶段reward总表及细表|[LaTeX总表](/home/luyd/workspace/G1_Recovery_Below_Block/sections/reward_stage_table.tex)、[公式细表](/home/luyd/workspace/G1_Recovery_Below_Block/sections/method.tex)|
+|三阶段reward总表及细表|[LaTeX总表](/home/luyd/workspace/G1_Recovery_Below_Block/sections/reward_stage_table.tex)、[公式细表](/home/luyd/workspace/G1_Recovery_Below_Block/sections/appendix_implementation.tex)|
 |最近ES结果|[最终分析](../es_final_review_20260923_zh.md)|
 
 ## 不再使用裸标签定位策略
@@ -44,7 +44,7 @@ MUJOCO_GL=egl ./recovery build pyramid_stairs --site edge --direction right_side
 
 ## 下一轮混合训练设计
 
-见[混合场景方案与FT_R2依赖澄清](mixed_scene_plan_20260923_zh.md)：允许踩箱/跨级支撑，建议所有任务族混合训练；计划尚未启动。
+[M系列运行记录](mixed_training_20260923_zh.md) 是当前训练入口，包含4096环境预检、冻结基线、场景/reset份额、随机化和run路径。原[设计稿](mixed_scene_plan_20260923_zh.md)保留为决策历史。
 
 ## 新场景已实现的范围
 
@@ -71,7 +71,7 @@ manifest保存输入配置、随机种子、reset bank索引/SHA、机器人XML 
 
 64项场景/位置/方向组合通过：初始穿透不低于−2mm、质量与惯量为正、固定/竖直滑动/自由刚体自由度正确、角色分离、20ms被动仿真有限。10个展示场景的XML/keyframe重载也检查了姿态和初始接触。
 
-这不等于恢复成功、长时间稳定reset、出口可达或真机安全。reset先几何贴合有效支撑，并未执行policy或settling训练。双板是叠置实例，不代表任意堆叠。多物体当前只有逐物体投影诊断，没有接到PPO reward、统一成功定义或旧93D policy的完整评测适配。
+这不等于恢复成功、长时间稳定reset、出口可达或真机安全。reset先几何贴合有效支撑，并未执行policy或settling训练。双板是叠置实例，不代表任意堆叠。以上是旧CPU fixture的验收边界。新GPU统一拓扑、逐物体reward、93D推理与PPO已另接入 `mixed_geometry.py` / `mixed_task.py`，详情见M系列运行记录，不把新旧fixture的参数混写。
 
 板下奖励不能直接套到支撑箱体：正常踩箱不应被算作受困。将来的统一评测必须先明确台阶上恢复/允许撤离、物体角色、真正阻挡与全局完成条件。
 

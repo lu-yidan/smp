@@ -105,6 +105,9 @@ def safety_cost(env,index):
 
 
 def ground_force(env,name):
+    if hasattr(env,'_mix'):
+        from smp.recovery.mixed_task import force
+        return force(env,name)
     force=env.scene[name].data.force
     if hasattr(env,'_mt_bank'):force=force+env.scene[name+'_terrain'].data.force
     return force
