@@ -1,0 +1,49 @@
+{
+  "policies": {
+    "R2_9000": {
+      "checkpoint": "/home/luyd/workspace/smp-a6-egress/outputs/clutter_eval_v1/checkpoints/R2_9000.pt",
+      "sha256": "8b4889f80c6b7cc675f6e9b1e98f2d4a1886a15e372f86070f63c329ba9ca5d1",
+      "checkpoint_sha256": "8b4889f80c6b7cc675f6e9b1e98f2d4a1886a15e372f86070f63c329ba9ca5d1",
+      "iteration": 9000,
+      "native_actor_parity_max_error": 0.0,
+      "observation_dim": 93
+    },
+    "A6_9999": {
+      "checkpoint": "/home/luyd/workspace/smp-a6-egress/outputs/clutter_eval_v1/checkpoints/A6_9999.pt",
+      "sha256": "4a2d4c8f0e710f760b0996237002824b4fd05872482ee96fb94f7330d09c8fd8",
+      "checkpoint_sha256": "4a2d4c8f0e710f760b0996237002824b4fd05872482ee96fb94f7330d09c8fd8",
+      "iteration": 9999,
+      "native_actor_parity_max_error": 0.0,
+      "observation_dim": 93
+    },
+    "M2_2500": {
+      "checkpoint": "/home/luyd/workspace/smp-a6-egress/outputs/clutter_eval_v1/checkpoints/M2_2500.pt",
+      "sha256": "9340b57ee868f14c6b2ee0f5bbf12661dd7c1ab66648c0af7a47726546e6d8b6",
+      "checkpoint_sha256": "9340b57ee868f14c6b2ee0f5bbf12661dd7c1ab66648c0af7a47726546e6d8b6",
+      "iteration": 2500,
+      "native_actor_parity_max_error": 0.0,
+      "observation_dim": 93
+    }
+  },
+  "development_index_sha256": "bba3fcf753b06ea2194e6101cc01585237fc3ad41ae693123ee78818f0e31280",
+  "seconds": 20,
+  "physics_dt": 0.002,
+  "control_dt": 0.02,
+  "warmup_steps": 10,
+  "entry_hold_s": 0.02,
+  "controller": "93D native checkpoint, deployment target limiting at 50Hz, saturated PD at 500Hz",
+  "robot_dynamics": "nominal",
+  "push": false,
+  "observation_noise": false,
+  "training_changed": false,
+  "success": "continuous stable stand AND direct rigid-lift clearance; prototype geometric diagnostic, not reachability",
+  "lift_probe_hz": 10,
+  "lift_probe_dz_m": 0.01,
+  "clear_hold_s": 0.3,
+  "head_height_reference": "mean loaded foot contact support height",
+  "load_metrics": "actual actuator torque and joint velocity at 2ms; mechanical abs(tau*dq); p95 over trial maxima incl failures",
+  "code_sha256": "55edab1e634fe9e758f3bceff13f93072d04627b280204d608483606e0e67595",
+  "rollout_code_sha256": "b17e2eb349dd1b5ef93cc1afe10e526e991ff98a96f759221129ca15adbe9a57",
+  "cases_per_policy": 52,
+  "scope": "development, not heldout or hardware evaluation"
+}

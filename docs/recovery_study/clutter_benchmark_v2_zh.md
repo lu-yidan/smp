@@ -77,7 +77,11 @@ MUJOCO_GL=egl "$CLUTTER_PY" scripts/recovery_study/build_clutter_benchmark.py \
 
 索引与验收证据保存在 `evidence/clutter_v2/`，完整模型包留在outputs，避免把约95MB的重复模型加入Git。索引的 `commit_at_build` 是构建时父提交；本轮未提交的生成器内容另外由 `builder_sha256` 和 `geometry_sha256` 固定，可对照提交后的源码。
 
-## 下一步如何评策略
+## 策略评测进展
+
+后续已完成R2/A6/M2@2500的48开发案例及4平地校准案例回放，见[首轮评测与视频](clutter_eval_v1_zh.md)。480留出案例仍未运行。下文保留构建时的接入计划。
+
+## 构建时的策略评测计划
 
 先在开发集接入R2、A6@9999和固定选择的M checkpoint，核对93D观测、归一化、动作顺序、50Hz及PD/warmup。当前新包不直接兼容原M评测脚本的固定GPU拓扑，不把旧脚本指向新目录就称完成评测。
 

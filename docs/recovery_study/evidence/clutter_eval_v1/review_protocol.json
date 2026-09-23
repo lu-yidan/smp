@@ -1,0 +1,16 @@
+{
+  "purpose": "separate quiet standing from rigid-lift-clear standing; development diagnostic refinement",
+  "source_protocol_sha256": "09058a7a19ec37a2f95ed57df4c64e41ab47c877670ffbcba62bfeb163981ffe",
+  "reviewer_sha256": "4e064dd88892b6daf305cc0f77bddcdfa3b589d1f7ecd2b813e7c249a5389228",
+  "geometry_metric_code_sha256": "b17e2eb349dd1b5ef93cc1afe10e526e991ff98a96f759221129ca15adbe9a57",
+  "physics_rerun": false,
+  "strict_hold_match_tolerance_s": 0.04,
+  "metrics_added": [
+    "quiet_stable_1s",
+    "quiet_stable_10s",
+    "quiet_refall_after_1s",
+    "post_quiet_path_m",
+    "post_quiet_max_drift_m"
+  ],
+  "renderer_sha256": "69e4b12df23cfd0a485ffe440dcfef737bccd1aa3d2d6bd2448ab1bc44d87934"
+}

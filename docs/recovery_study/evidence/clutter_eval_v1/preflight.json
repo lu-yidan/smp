@@ -1,0 +1,49 @@
+{
+  "R2_9000": {
+    "checkpoint_sha256": "8b4889f80c6b7cc675f6e9b1e98f2d4a1886a15e372f86070f63c329ba9ca5d1",
+    "iteration": 9000,
+    "native_actor_parity_max_error": 0.0,
+    "observation_dim": 93,
+    "deployment_fixture_max_error": 0.0
+  },
+  "A6_9999": {
+    "checkpoint_sha256": "4a2d4c8f0e710f760b0996237002824b4fd05872482ee96fb94f7330d09c8fd8",
+    "iteration": 9999,
+    "native_actor_parity_max_error": 0.0,
+    "observation_dim": 93,
+    "deployment_fixture_max_error": 4.76837158203125e-06
+  },
+  "M2_2500": {
+    "checkpoint_sha256": "9340b57ee868f14c6b2ee0f5bbf12661dd7c1ab66648c0af7a47726546e6d8b6",
+    "iteration": 2500,
+    "native_actor_parity_max_error": 0.0,
+    "observation_dim": 93
+  },
+  "control_yaml_numeric_parity": true,
+  "geometry_probes": [
+    {
+      "family": "crossed_timber",
+      "blocked_then_clear": true,
+      "probe_preserves_live_state": true
+    },
+    {
+      "family": "ladder_boards",
+      "blocked_then_clear": true,
+      "probe_preserves_live_state": true
+    },
+    {
+      "family": "fixed_c_space",
+      "blocked_then_clear": true,
+      "probe_preserves_live_state": true
+    },
+    {
+      "family": "hollow_container",
+      "blocked_then_clear": true,
+      "probe_preserves_live_state": true
+    }
+  ],
+  "imu_parity": {
+    "angular_max_error": 1.0001954775518129e-07,
+    "gravity_max_error": 2.974055823834476e-08
+  }
+}

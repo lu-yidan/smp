@@ -33,8 +33,9 @@ MUJOCO_GL=egl ./recovery build pyramid_stairs --site edge --direction right_side
 |本文主线和待做实验|[论文研究路线](/home/luyd/workspace/G1_Recovery_Below_Block/docs/research_scope_20260923_zh.md)|
 |三阶段reward总表及细表|[LaTeX总表](/home/luyd/workspace/G1_Recovery_Below_Block/sections/reward_stage_table.tex)、[公式细表](/home/luyd/workspace/G1_Recovery_Below_Block/sections/appendix_implementation.tex)|
 |最近ES结果|[最终分析](../es_final_review_20260923_zh.md)|
+|上方杂物R2/A6/M2开发集结果|[首轮评测与视频](clutter_eval_v1_zh.md)|
 |上方杂物冻结场景与评测初态（新）|[v2 使用与验收](clutter_benchmark_v2_zh.md)，`./recovery clutter-list`|
-|上方木条、梯架、空箱的评估与道具候选|[场景与采购计划](overhead_clutter_evaluation_plan_20260923_zh.md)（设计稿，未实现）|
+|上方木条、梯架、空箱的评估与道具候选|[场景与采购计划](overhead_clutter_evaluation_plan_20260923_zh.md)（采购设计稿；场景已实现）|
 
 ## 不再使用裸标签定位策略
 

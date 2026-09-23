@@ -1,0 +1,27 @@
+{
+  "paired_all_three_clear_n": 17,
+  "case_ids": [
+    "crossed_timber__prone__l1__v00",
+    "crossed_timber__prone__l2__v00",
+    "crossed_timber__right_side_down__l0__v00",
+    "crossed_timber__right_side_down__l2__v00",
+    "crossed_timber__supine__l1__v00",
+    "fixed_c_space__prone__l0__v00",
+    "fixed_c_space__supine__l1__v00",
+    "fixed_c_space__supine__l2__v00",
+    "hollow_container__right_side_down__l0__v00",
+    "hollow_container__right_side_down__l2__v00",
+    "hollow_container__supine__l1__v00",
+    "ladder_boards__left_side_down__l0__v00",
+    "ladder_boards__prone__l0__v00",
+    "ladder_boards__prone__l1__v00",
+    "ladder_boards__right_side_down__l0__v00",
+    "ladder_boards__supine__l0__v00",
+    "ladder_boards__supine__l2__v00"
+  ],
+  "mean_post_clear_path_m": {
+    "R2_9000": 0.18992049368513098,
+    "A6_9999": 0.608021011798932,
+    "M2_2500": 0.9757417040348526
+  }
+}
