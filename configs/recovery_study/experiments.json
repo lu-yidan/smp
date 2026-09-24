@@ -269,7 +269,9 @@
       "server_workspace": "/root/workplace/smp-recovery-study",
       "authoritative_manifest": "/root/workplace/smp-recovery-study/logs/rsl_rl/mixed_recovery/formal_20260923_v2/M0_R2_mix/launch.json",
       "gpu": 0,
-      "index_status": "formal v2 running; 4096-env preflight and frozen baselines verified; v1 invalidated"
+      "index_status": "formal v2 completed at 9999; final and preselected checkpoint development evaluation 2026-09-24; v1 invalidated",
+      "completed_iteration": 9999,
+      "evaluation_documentation": "/home/luyd/workspace/smp-a6-egress/docs/recovery_study/clutter_final_review_20260924_zh.md"
     },
     {
       "id": "MIX20260923-M1_R2_mix",
@@ -281,7 +283,9 @@
       "server_workspace": "/root/workplace/smp-recovery-study",
       "authoritative_manifest": "/root/workplace/smp-recovery-study/logs/rsl_rl/mixed_recovery/formal_20260923_v2/M1_R2_mix/launch.json",
       "gpu": 1,
-      "index_status": "formal v2 running; 4096-env preflight and frozen baselines verified; v1 invalidated"
+      "index_status": "formal v2 completed at 9999; final and preselected checkpoint development evaluation 2026-09-24; v1 invalidated",
+      "completed_iteration": 9999,
+      "evaluation_documentation": "/home/luyd/workspace/smp-a6-egress/docs/recovery_study/clutter_final_review_20260924_zh.md"
     },
     {
       "id": "MIX20260923-M2_A6_mix",
@@ -293,7 +297,9 @@
       "server_workspace": "/root/workplace/smp-recovery-study",
       "authoritative_manifest": "/root/workplace/smp-recovery-study/logs/rsl_rl/mixed_recovery/formal_20260923_v2/M2_A6_mix/launch.json",
       "gpu": 2,
-      "index_status": "formal v2 running; 4096-env preflight and frozen baselines verified; v1 invalidated"
+      "index_status": "formal v2 completed at 9999; final and preselected checkpoint development evaluation 2026-09-24; v1 invalidated",
+      "completed_iteration": 9999,
+      "evaluation_documentation": "/home/luyd/workspace/smp-a6-egress/docs/recovery_study/clutter_final_review_20260924_zh.md"
     }
   ]
 }

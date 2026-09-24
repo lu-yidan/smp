@@ -1,0 +1,7 @@
+{
+  "source_protocol_sha256": "1d5b7971a0317fa5737065d2d1b988f1d936b22ae105d01d7cf6da3de0f98056",
+  "reviewer_sha256": "4e064dd88892b6daf305cc0f77bddcdfa3b589d1f7ecd2b813e7c249a5389228",
+  "summarizer_sha256": "3d78ffe2e61807d4881ce967c970a7df68ce2f5bf5eccb4582f3208f6977098b",
+  "physics_rerun": false,
+  "strict_hold_match_tolerance_s": 0.04
+}

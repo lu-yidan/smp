@@ -1,0 +1,5686 @@
+{
+  "scope": "50Hz saved states, external robot contacts; not continuous 500Hz penetration certification; no success-score changes",
+  "summary": {
+    "R2_9000": {
+      "n": 52,
+      "trials_with_sampled_penetration_gt20mm": 0,
+      "worst_depth_m": -0.01608138443060278
+    },
+    "A6_9999": {
+      "n": 52,
+      "trials_with_sampled_penetration_gt20mm": 2,
+      "worst_depth_m": -0.027023891089259396
+    },
+    "M2_2500": {
+      "n": 52,
+      "trials_with_sampled_penetration_gt20mm": 0,
+      "worst_depth_m": -0.017825438032136265
+    },
+    "M0_9000": {
+      "n": 52,
+      "trials_with_sampled_penetration_gt20mm": 1,
+      "worst_depth_m": -0.02308861086830579
+    },
+    "M0_9999": {
+      "n": 52,
+      "trials_with_sampled_penetration_gt20mm": 0,
+      "worst_depth_m": -0.017042294363923273
+    },
+    "M1_9000": {
+      "n": 52,
+      "trials_with_sampled_penetration_gt20mm": 0,
+      "worst_depth_m": -0.019176454990622642
+    },
+    "M1_9999": {
+      "n": 52,
+      "trials_with_sampled_penetration_gt20mm": 0,
+      "worst_depth_m": -0.019095636476154584
+    },
+    "M2_8000": {
+      "n": 52,
+      "trials_with_sampled_penetration_gt20mm": 2,
+      "worst_depth_m": -0.024849876327281646
+    },
+    "M2_9999": {
+      "n": 52,
+      "trials_with_sampled_penetration_gt20mm": 1,
+      "worst_depth_m": -0.020433234221818797
+    }
+  },
+  "per_trial": {
+    "R2_9000": [
+      {
+        "case_id": "fixed_c_space__supine__l1__v00",
+        "family": "fixed_c_space",
+        "minimum_external_robot_contact_distance_m": -0.0030816386221890896,
+        "worst_pair": [
+          "left_shin",
+          "c_frame_2"
+        ],
+        "worst_time_s": 0.8200000000000001,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "crossed_timber__prone__l2__v00",
+        "family": "crossed_timber",
+        "minimum_external_robot_contact_distance_m": -0.006405688250177968,
+        "worst_pair": [
+          "pelvis_collision",
+          "timber_0_0"
+        ],
+        "worst_time_s": 0.14,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "fixed_c_space__right_side_down__l2__v00",
+        "family": "fixed_c_space",
+        "minimum_external_robot_contact_distance_m": -0.0058432000584182145,
+        "worst_pair": [
+          "left_hand_collision",
+          "c_frame_1"
+        ],
+        "worst_time_s": 0.74,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "flat_calibration__right_side_down",
+        "family": "flat_calibration",
+        "minimum_external_robot_contact_distance_m": -0.008213238494217116,
+        "worst_pair": [
+          "floor",
+          "left_hand_collision"
+        ],
+        "worst_time_s": 0.5,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "ladder_boards__supine__l0__v00",
+        "family": "ladder_boards",
+        "minimum_external_robot_contact_distance_m": -0.008286475146765906,
+        "worst_pair": [
+          "right_hand_collision",
+          "ladder_1"
+        ],
+        "worst_time_s": 1.32,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "crossed_timber__left_side_down__l2__v00",
+        "family": "crossed_timber",
+        "minimum_external_robot_contact_distance_m": -0.014478168832186725,
+        "worst_pair": [
+          "right_shin",
+          "timber_1_0"
+        ],
+        "worst_time_s": 0.18,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "fixed_c_space__prone__l2__v00",
+        "family": "fixed_c_space",
+        "minimum_external_robot_contact_distance_m": -0.012010598475825515,
+        "worst_pair": [
+          "left_elbow_yaw_collision",
+          "c_frame_2"
+        ],
+        "worst_time_s": 18.88,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "flat_calibration__prone",
+        "family": "flat_calibration",
+        "minimum_external_robot_contact_distance_m": -0.004338224735473101,
+        "worst_pair": [
+          "floor",
+          "head_collision"
+        ],
+        "worst_time_s": 0.1,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "hollow_container__prone__l0__v00",
+        "family": "hollow_container",
+        "minimum_external_robot_contact_distance_m": -0.005330487509145932,
+        "worst_pair": [
+          "left_elbow_yaw_collision",
+          "container_2"
+        ],
+        "worst_time_s": 0.7000000000000001,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "hollow_container__right_side_down__l2__v00",
+        "family": "hollow_container",
+        "minimum_external_robot_contact_distance_m": -0.0091989764381996,
+        "worst_pair": [
+          "left_thigh",
+          "container_2"
+        ],
+        "worst_time_s": 0.2,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "ladder_boards__supine__l2__v00",
+        "family": "ladder_boards",
+        "minimum_external_robot_contact_distance_m": -0.008197025765021931,
+        "worst_pair": [
+          "left_hand_collision",
+          "ladder_2"
+        ],
+        "worst_time_s": 0.9400000000000001,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "ladder_boards__right_side_down__l1__v00",
+        "family": "ladder_boards",
+        "minimum_external_robot_contact_distance_m": -0.008798911209437849,
+        "worst_pair": [
+          "left_hand_collision",
+          "ladder_4"
+        ],
+        "worst_time_s": 0.14,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "fixed_c_space__supine__l2__v00",
+        "family": "fixed_c_space",
+        "minimum_external_robot_contact_distance_m": -0.0031066226282910406,
+        "worst_pair": [
+          "left_shin",
+          "c_frame_2"
+        ],
+        "worst_time_s": 0.8,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "hollow_container__right_side_down__l1__v00",
+        "family": "hollow_container",
+        "minimum_external_robot_contact_distance_m": -0.01150837962617507,
+        "worst_pair": [
+          "left_hand_collision",
+          "container_0"
+        ],
+        "worst_time_s": 0.24,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "hollow_container__left_side_down__l1__v00",
+        "family": "hollow_container",
+        "minimum_external_robot_contact_distance_m": -0.009052454375738109,
+        "worst_pair": [
+          "right_hand_collision",
+          "container_4"
+        ],
+        "worst_time_s": 0.2,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "crossed_timber__supine__l0__v00",
+        "family": "crossed_timber",
+        "minimum_external_robot_contact_distance_m": -0.009986661207429637,
+        "worst_pair": [
+          "right_elbow_yaw_collision",
+          "timber_0_0"
+        ],
+        "worst_time_s": 0.62,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "fixed_c_space__left_side_down__l2__v00",
+        "family": "fixed_c_space",
+        "minimum_external_robot_contact_distance_m": -0.006760101487435909,
+        "worst_pair": [
+          "right_hand_collision",
+          "c_frame_2"
+        ],
+        "worst_time_s": 0.76,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "fixed_c_space__left_side_down__l1__v00",
+        "family": "fixed_c_space",
+        "minimum_external_robot_contact_distance_m": -0.004910715813876851,
+        "worst_pair": [
+          "floor",
+          "right_hand_collision"
+        ],
+        "worst_time_s": 0.86,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "crossed_timber__supine__l2__v00",
+        "family": "crossed_timber",
+        "minimum_external_robot_contact_distance_m": -0.010227276416307406,
+        "worst_pair": [
+          "left_hand_collision",
+          "timber_2_0"
+        ],
+        "worst_time_s": 0.22,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "fixed_c_space__prone__l1__v00",
+        "family": "fixed_c_space",
+        "minimum_external_robot_contact_distance_m": -0.011737600279415969,
+        "worst_pair": [
+          "left_foot6_collision",
+          "c_frame_2"
+        ],
+        "worst_time_s": 0.32,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "hollow_container__supine__l1__v00",
+        "family": "hollow_container",
+        "minimum_external_robot_contact_distance_m": -0.010904568899323262,
+        "worst_pair": [
+          "right_elbow_yaw_collision",
+          "container_3"
+        ],
+        "worst_time_s": 1.44,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "fixed_c_space__right_side_down__l0__v00",
+        "family": "fixed_c_space",
+        "minimum_external_robot_contact_distance_m": -0.005981955797140939,
+        "worst_pair": [
+          "left_foot4_collision",
+          "c_frame_2"
+        ],
+        "worst_time_s": 1.58,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "crossed_timber__supine__l1__v00",
+        "family": "crossed_timber",
+        "minimum_external_robot_contact_distance_m": -0.009989421319738689,
+        "worst_pair": [
+          "left_elbow_yaw_collision",
+          "timber_2_0"
+        ],
+        "worst_time_s": 0.96,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "ladder_boards__supine__l1__v00",
+        "family": "ladder_boards",
+        "minimum_external_robot_contact_distance_m": -0.01608138443060278,
+        "worst_pair": [
+          "left_thigh",
+          "ladder_0"
+        ],
+        "worst_time_s": 0.26,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "crossed_timber__right_side_down__l2__v00",
+        "family": "crossed_timber",
+        "minimum_external_robot_contact_distance_m": -0.010940717021154067,
+        "worst_pair": [
+          "right_hand_collision",
+          "timber_3_0"
+        ],
+        "worst_time_s": 2.46,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "ladder_boards__right_side_down__l2__v00",
+        "family": "ladder_boards",
+        "minimum_external_robot_contact_distance_m": -0.007429487065057673,
+        "worst_pair": [
+          "right_hand_collision",
+          "ladder_0"
+        ],
+        "worst_time_s": 2.1,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "flat_calibration__supine",
+        "family": "flat_calibration",
+        "minimum_external_robot_contact_distance_m": -0.0032469507088853985,
+        "worst_pair": [
+          "floor",
+          "right_foot5_collision"
+        ],
+        "worst_time_s": 1.18,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "hollow_container__prone__l1__v00",
+        "family": "hollow_container",
+        "minimum_external_robot_contact_distance_m": -0.006522727752332236,
+        "worst_pair": [
+          "right_foot5_collision",
+          "container_2"
+        ],
+        "worst_time_s": 0.78,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "fixed_c_space__supine__l0__v00",
+        "family": "fixed_c_space",
+        "minimum_external_robot_contact_distance_m": -0.00445291472615289,
+        "worst_pair": [
+          "left_shin",
+          "c_frame_2"
+        ],
+        "worst_time_s": 0.74,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "ladder_boards__prone__l2__v00",
+        "family": "ladder_boards",
+        "minimum_external_robot_contact_distance_m": -0.006593218715327427,
+        "worst_pair": [
+          "right_thigh",
+          "ladder_3"
+        ],
+        "worst_time_s": 0.14,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "hollow_container__left_side_down__l2__v00",
+        "family": "hollow_container",
+        "minimum_external_robot_contact_distance_m": -0.01183781831957171,
+        "worst_pair": [
+          "head_collision",
+          "container_3"
+        ],
+        "worst_time_s": 0.24,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "flat_calibration__left_side_down",
+        "family": "flat_calibration",
+        "minimum_external_robot_contact_distance_m": -0.003981255206017734,
+        "worst_pair": [
+          "floor",
+          "right_hand_collision"
+        ],
+        "worst_time_s": 0.76,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "hollow_container__right_side_down__l0__v00",
+        "family": "hollow_container",
+        "minimum_external_robot_contact_distance_m": -0.005129773561782028,
+        "worst_pair": [
+          "head_collision",
+          "container_4"
+        ],
+        "worst_time_s": 0.22,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "crossed_timber__left_side_down__l0__v00",
+        "family": "crossed_timber",
+        "minimum_external_robot_contact_distance_m": -0.009822348000848302,
+        "worst_pair": [
+          "right_hand_collision",
+          "timber_0_0"
+        ],
+        "worst_time_s": 0.78,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "crossed_timber__left_side_down__l1__v00",
+        "family": "crossed_timber",
+        "minimum_external_robot_contact_distance_m": -0.015027607938983764,
+        "worst_pair": [
+          "right_hand_collision",
+          "timber_1_0"
+        ],
+        "worst_time_s": 1.0,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "ladder_boards__prone__l1__v00",
+        "family": "ladder_boards",
+        "minimum_external_robot_contact_distance_m": -0.004739811970228429,
+        "worst_pair": [
+          "left_shin",
+          "ladder_0"
+        ],
+        "worst_time_s": 1.42,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "ladder_boards__left_side_down__l2__v00",
+        "family": "ladder_boards",
+        "minimum_external_robot_contact_distance_m": -0.013360671930203238,
+        "worst_pair": [
+          "right_elbow_yaw_collision",
+          "ladder_1"
+        ],
+        "worst_time_s": 0.2,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "hollow_container__supine__l0__v00",
+        "family": "hollow_container",
+        "minimum_external_robot_contact_distance_m": -0.012488974792975841,
+        "worst_pair": [
+          "left_elbow_yaw_collision",
+          "container_2"
+        ],
+        "worst_time_s": 0.64,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "crossed_timber__prone__l0__v00",
+        "family": "crossed_timber",
+        "minimum_external_robot_contact_distance_m": -0.0069139927054776935,
+        "worst_pair": [
+          "left_foot3_collision",
+          "timber_0_0"
+        ],
+        "worst_time_s": 2.06,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "fixed_c_space__prone__l0__v00",
+        "family": "fixed_c_space",
+        "minimum_external_robot_contact_distance_m": -0.006540037620866473,
+        "worst_pair": [
+          "floor",
+          "right_foot5_collision"
+        ],
+        "worst_time_s": 1.46,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "crossed_timber__right_side_down__l0__v00",
+        "family": "crossed_timber",
+        "minimum_external_robot_contact_distance_m": -0.008223966318525636,
+        "worst_pair": [
+          "left_hand_collision",
+          "timber_0_0"
+        ],
+        "worst_time_s": 0.98,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "crossed_timber__right_side_down__l1__v00",
+        "family": "crossed_timber",
+        "minimum_external_robot_contact_distance_m": -0.007509475359936169,
+        "worst_pair": [
+          "right_shoulder_yaw_collision",
+          "timber_0_0"
+        ],
+        "worst_time_s": 0.86,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "ladder_boards__left_side_down__l0__v00",
+        "family": "ladder_boards",
+        "minimum_external_robot_contact_distance_m": -0.009459880380905825,
+        "worst_pair": [
+          "right_elbow_yaw_collision",
+          "ladder_4"
+        ],
+        "worst_time_s": 0.14,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "ladder_boards__right_side_down__l0__v00",
+        "family": "ladder_boards",
+        "minimum_external_robot_contact_distance_m": -0.008688419868650522,
+        "worst_pair": [
+          "left_hand_collision",
+          "ladder_1"
+        ],
+        "worst_time_s": 0.14,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "crossed_timber__prone__l1__v00",
+        "family": "crossed_timber",
+        "minimum_external_robot_contact_distance_m": -0.006149190077035139,
+        "worst_pair": [
+          "floor",
+          "left_foot6_collision"
+        ],
+        "worst_time_s": 0.36,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "hollow_container__left_side_down__l0__v00",
+        "family": "hollow_container",
+        "minimum_external_robot_contact_distance_m": -0.008478450481026113,
+        "worst_pair": [
+          "head_collision",
+          "container_1"
+        ],
+        "worst_time_s": 0.16,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "hollow_container__supine__l2__v00",
+        "family": "hollow_container",
+        "minimum_external_robot_contact_distance_m": -0.008033977412866926,
+        "worst_pair": [
+          "pelvis_collision",
+          "container_4"
+        ],
+        "worst_time_s": 1.08,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "fixed_c_space__right_side_down__l1__v00",
+        "family": "fixed_c_space",
+        "minimum_external_robot_contact_distance_m": -0.007860894230461941,
+        "worst_pair": [
+          "left_hand_collision",
+          "c_frame_1"
+        ],
+        "worst_time_s": 0.62,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "hollow_container__prone__l2__v00",
+        "family": "hollow_container",
+        "minimum_external_robot_contact_distance_m": -0.006860239930383358,
+        "worst_pair": [
+          "head_collision",
+          "container_4"
+        ],
+        "worst_time_s": 0.2,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "ladder_boards__left_side_down__l1__v00",
+        "family": "ladder_boards",
+        "minimum_external_robot_contact_distance_m": -0.012704612959470027,
+        "worst_pair": [
+          "left_foot5_collision",
+          "ladder_0"
+        ],
+        "worst_time_s": 0.3,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "fixed_c_space__left_side_down__l0__v00",
+        "family": "fixed_c_space",
+        "minimum_external_robot_contact_distance_m": -0.010340176398484715,
+        "worst_pair": [
+          "left_foot6_collision",
+          "c_frame_2"
+        ],
+        "worst_time_s": 3.02,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "ladder_boards__prone__l0__v00",
+        "family": "ladder_boards",
+        "minimum_external_robot_contact_distance_m": -0.0054616480590051475,
+        "worst_pair": [
+          "floor",
+          "head_collision"
+        ],
+        "worst_time_s": 0.1,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      }
+    ],
+    "A6_9999": [
+      {
+        "case_id": "fixed_c_space__supine__l1__v00",
+        "family": "fixed_c_space",
+        "minimum_external_robot_contact_distance_m": -0.007883977700420486,
+        "worst_pair": [
+          "left_shin",
+          "c_frame_2"
+        ],
+        "worst_time_s": 1.04,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "crossed_timber__left_side_down__l2__v00",
+        "family": "crossed_timber",
+        "minimum_external_robot_contact_distance_m": -0.008331151217091026,
+        "worst_pair": [
+          "left_foot3_collision",
+          "timber_3_0"
+        ],
+        "worst_time_s": 0.46,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "fixed_c_space__right_side_down__l2__v00",
+        "family": "fixed_c_space",
+        "minimum_external_robot_contact_distance_m": -0.018910441719774525,
+        "worst_pair": [
+          "left_hand_collision",
+          "c_frame_1"
+        ],
+        "worst_time_s": 0.46,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "crossed_timber__prone__l2__v00",
+        "family": "crossed_timber",
+        "minimum_external_robot_contact_distance_m": -0.007282799069784816,
+        "worst_pair": [
+          "right_thigh",
+          "timber_3_0"
+        ],
+        "worst_time_s": 0.84,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "flat_calibration__right_side_down",
+        "family": "flat_calibration",
+        "minimum_external_robot_contact_distance_m": -0.006792400218133104,
+        "worst_pair": [
+          "floor",
+          "left_foot6_collision"
+        ],
+        "worst_time_s": 1.0,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "fixed_c_space__prone__l2__v00",
+        "family": "fixed_c_space",
+        "minimum_external_robot_contact_distance_m": -0.007666550292287105,
+        "worst_pair": [
+          "floor",
+          "left_hand_collision"
+        ],
+        "worst_time_s": 1.3800000000000001,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "ladder_boards__supine__l0__v00",
+        "family": "ladder_boards",
+        "minimum_external_robot_contact_distance_m": -0.011761123173274816,
+        "worst_pair": [
+          "right_shin",
+          "ladder_5"
+        ],
+        "worst_time_s": 1.1400000000000001,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "hollow_container__right_side_down__l2__v00",
+        "family": "hollow_container",
+        "minimum_external_robot_contact_distance_m": -0.009259650774402082,
+        "worst_pair": [
+          "left_shin",
+          "container_2"
+        ],
+        "worst_time_s": 0.28,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "flat_calibration__prone",
+        "family": "flat_calibration",
+        "minimum_external_robot_contact_distance_m": -0.006786371665884311,
+        "worst_pair": [
+          "floor",
+          "left_foot6_collision"
+        ],
+        "worst_time_s": 1.52,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "hollow_container__prone__l0__v00",
+        "family": "hollow_container",
+        "minimum_external_robot_contact_distance_m": -0.008042791295581778,
+        "worst_pair": [
+          "left_foot7_collision",
+          "container_3"
+        ],
+        "worst_time_s": 2.3000000000000003,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "ladder_boards__supine__l2__v00",
+        "family": "ladder_boards",
+        "minimum_external_robot_contact_distance_m": -0.010813970180005877,
+        "worst_pair": [
+          "right_shin",
+          "ladder_1"
+        ],
+        "worst_time_s": 1.52,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "ladder_boards__right_side_down__l1__v00",
+        "family": "ladder_boards",
+        "minimum_external_robot_contact_distance_m": -0.005515000189798093,
+        "worst_pair": [
+          "right_hand_collision",
+          "ladder_1"
+        ],
+        "worst_time_s": 1.1,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "hollow_container__left_side_down__l1__v00",
+        "family": "hollow_container",
+        "minimum_external_robot_contact_distance_m": -0.009694440108495586,
+        "worst_pair": [
+          "head_collision",
+          "container_4"
+        ],
+        "worst_time_s": 0.24,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "hollow_container__right_side_down__l1__v00",
+        "family": "hollow_container",
+        "minimum_external_robot_contact_distance_m": -0.006750674962072878,
+        "worst_pair": [
+          "left_hand_collision",
+          "container_0"
+        ],
+        "worst_time_s": 0.54,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "fixed_c_space__supine__l2__v00",
+        "family": "fixed_c_space",
+        "minimum_external_robot_contact_distance_m": -0.013278269596531824,
+        "worst_pair": [
+          "left_foot5_collision",
+          "c_frame_2"
+        ],
+        "worst_time_s": 1.7,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "fixed_c_space__left_side_down__l2__v00",
+        "family": "fixed_c_space",
+        "minimum_external_robot_contact_distance_m": -0.004852518588157181,
+        "worst_pair": [
+          "floor",
+          "right_foot3_collision"
+        ],
+        "worst_time_s": 0.72,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "crossed_timber__supine__l0__v00",
+        "family": "crossed_timber",
+        "minimum_external_robot_contact_distance_m": -0.016433552090297586,
+        "worst_pair": [
+          "right_hand_collision",
+          "timber_0_0"
+        ],
+        "worst_time_s": 0.56,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "fixed_c_space__left_side_down__l1__v00",
+        "family": "fixed_c_space",
+        "minimum_external_robot_contact_distance_m": -0.01098274449406969,
+        "worst_pair": [
+          "left_hand_collision",
+          "c_frame_2"
+        ],
+        "worst_time_s": 1.78,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "crossed_timber__supine__l2__v00",
+        "family": "crossed_timber",
+        "minimum_external_robot_contact_distance_m": -0.010720793023462854,
+        "worst_pair": [
+          "left_foot2_collision",
+          "timber_0_0"
+        ],
+        "worst_time_s": 0.54,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "crossed_timber__supine__l1__v00",
+        "family": "crossed_timber",
+        "minimum_external_robot_contact_distance_m": -0.005391379574593527,
+        "worst_pair": [
+          "left_hand_collision",
+          "timber_0_0"
+        ],
+        "worst_time_s": 0.74,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "fixed_c_space__prone__l1__v00",
+        "family": "fixed_c_space",
+        "minimum_external_robot_contact_distance_m": -0.019408359694436453,
+        "worst_pair": [
+          "left_hand_collision",
+          "c_frame_2"
+        ],
+        "worst_time_s": 4.74,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "fixed_c_space__right_side_down__l0__v00",
+        "family": "fixed_c_space",
+        "minimum_external_robot_contact_distance_m": -0.006713990661672944,
+        "worst_pair": [
+          "left_foot5_collision",
+          "c_frame_2"
+        ],
+        "worst_time_s": 3.06,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "hollow_container__supine__l1__v00",
+        "family": "hollow_container",
+        "minimum_external_robot_contact_distance_m": -0.009220054151404637,
+        "worst_pair": [
+          "right_hand_collision",
+          "container_2"
+        ],
+        "worst_time_s": 0.34,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "ladder_boards__supine__l1__v00",
+        "family": "ladder_boards",
+        "minimum_external_robot_contact_distance_m": -0.016316712938095158,
+        "worst_pair": [
+          "left_elbow_yaw_collision",
+          "ladder_0"
+        ],
+        "worst_time_s": 0.34,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "flat_calibration__supine",
+        "family": "flat_calibration",
+        "minimum_external_robot_contact_distance_m": -0.0037591004738208684,
+        "worst_pair": [
+          "floor",
+          "left_foot4_collision"
+        ],
+        "worst_time_s": 1.5,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "crossed_timber__right_side_down__l2__v00",
+        "family": "crossed_timber",
+        "minimum_external_robot_contact_distance_m": -0.02017999343591446,
+        "worst_pair": [
+          "left_hand_collision",
+          "timber_1_0"
+        ],
+        "worst_time_s": 0.98,
+        "sampled_frames_penetration_gt20mm": 1,
+        "first_gt20mm_s": 0.98
+      },
+      {
+        "case_id": "ladder_boards__right_side_down__l2__v00",
+        "family": "ladder_boards",
+        "minimum_external_robot_contact_distance_m": -0.013053214083121647,
+        "worst_pair": [
+          "left_foot1_collision",
+          "ladder_1"
+        ],
+        "worst_time_s": 0.76,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "fixed_c_space__supine__l0__v00",
+        "family": "fixed_c_space",
+        "minimum_external_robot_contact_distance_m": -0.01743506874681327,
+        "worst_pair": [
+          "left_foot5_collision",
+          "c_frame_2"
+        ],
+        "worst_time_s": 18.86,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "hollow_container__prone__l1__v00",
+        "family": "hollow_container",
+        "minimum_external_robot_contact_distance_m": -0.012947468545941886,
+        "worst_pair": [
+          "left_hand_collision",
+          "container_4"
+        ],
+        "worst_time_s": 2.2,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "hollow_container__left_side_down__l2__v00",
+        "family": "hollow_container",
+        "minimum_external_robot_contact_distance_m": -0.011766169011370745,
+        "worst_pair": [
+          "head_collision",
+          "container_3"
+        ],
+        "worst_time_s": 0.26,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "ladder_boards__prone__l2__v00",
+        "family": "ladder_boards",
+        "minimum_external_robot_contact_distance_m": -0.0145594086545493,
+        "worst_pair": [
+          "left_shin",
+          "ladder_board_0_0"
+        ],
+        "worst_time_s": 0.18,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "flat_calibration__left_side_down",
+        "family": "flat_calibration",
+        "minimum_external_robot_contact_distance_m": -0.004790515539671738,
+        "worst_pair": [
+          "floor",
+          "right_foot3_collision"
+        ],
+        "worst_time_s": 1.08,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "crossed_timber__left_side_down__l0__v00",
+        "family": "crossed_timber",
+        "minimum_external_robot_contact_distance_m": -0.009075762869415659,
+        "worst_pair": [
+          "right_thigh",
+          "timber_1_0"
+        ],
+        "worst_time_s": 0.18,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "ladder_boards__prone__l1__v00",
+        "family": "ladder_boards",
+        "minimum_external_robot_contact_distance_m": -0.027023891089259396,
+        "worst_pair": [
+          "left_hand_collision",
+          "ladder_2"
+        ],
+        "worst_time_s": 1.26,
+        "sampled_frames_penetration_gt20mm": 1,
+        "first_gt20mm_s": 1.26
+      },
+      {
+        "case_id": "hollow_container__right_side_down__l0__v00",
+        "family": "hollow_container",
+        "minimum_external_robot_contact_distance_m": -0.012064700617808219,
+        "worst_pair": [
+          "left_hand_collision",
+          "container_2"
+        ],
+        "worst_time_s": 2.22,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "crossed_timber__left_side_down__l1__v00",
+        "family": "crossed_timber",
+        "minimum_external_robot_contact_distance_m": -0.008758643090668837,
+        "worst_pair": [
+          "right_shoulder_yaw_collision",
+          "timber_1_0"
+        ],
+        "worst_time_s": 0.96,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "hollow_container__supine__l0__v00",
+        "family": "hollow_container",
+        "minimum_external_robot_contact_distance_m": -0.009971255899034054,
+        "worst_pair": [
+          "left_thigh",
+          "container_2"
+        ],
+        "worst_time_s": 0.28,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "crossed_timber__prone__l0__v00",
+        "family": "crossed_timber",
+        "minimum_external_robot_contact_distance_m": -0.007612591834339403,
+        "worst_pair": [
+          "floor",
+          "right_foot5_collision"
+        ],
+        "worst_time_s": 0.36,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "ladder_boards__left_side_down__l2__v00",
+        "family": "ladder_boards",
+        "minimum_external_robot_contact_distance_m": -0.010443938101301752,
+        "worst_pair": [
+          "left_hand_collision",
+          "ladder_4"
+        ],
+        "worst_time_s": 1.24,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "crossed_timber__right_side_down__l1__v00",
+        "family": "crossed_timber",
+        "minimum_external_robot_contact_distance_m": -0.005545265914855879,
+        "worst_pair": [
+          "floor",
+          "left_shin"
+        ],
+        "worst_time_s": 1.36,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "crossed_timber__right_side_down__l0__v00",
+        "family": "crossed_timber",
+        "minimum_external_robot_contact_distance_m": -0.007613701552664753,
+        "worst_pair": [
+          "floor",
+          "right_foot5_collision"
+        ],
+        "worst_time_s": 1.36,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "fixed_c_space__prone__l0__v00",
+        "family": "fixed_c_space",
+        "minimum_external_robot_contact_distance_m": -0.01682829120178625,
+        "worst_pair": [
+          "floor",
+          "left_foot2_collision"
+        ],
+        "worst_time_s": 0.76,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "hollow_container__supine__l2__v00",
+        "family": "hollow_container",
+        "minimum_external_robot_contact_distance_m": -0.0060660366237327845,
+        "worst_pair": [
+          "right_hand_collision",
+          "container_2"
+        ],
+        "worst_time_s": 0.34,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "ladder_boards__left_side_down__l0__v00",
+        "family": "ladder_boards",
+        "minimum_external_robot_contact_distance_m": -0.01325255939716427,
+        "worst_pair": [
+          "left_hand_collision",
+          "ladder_2"
+        ],
+        "worst_time_s": 1.28,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "ladder_boards__right_side_down__l0__v00",
+        "family": "ladder_boards",
+        "minimum_external_robot_contact_distance_m": -0.006466665014119804,
+        "worst_pair": [
+          "floor",
+          "right_foot4_collision"
+        ],
+        "worst_time_s": 1.48,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "crossed_timber__prone__l1__v00",
+        "family": "crossed_timber",
+        "minimum_external_robot_contact_distance_m": -0.009006448111530068,
+        "worst_pair": [
+          "floor",
+          "left_foot6_collision"
+        ],
+        "worst_time_s": 1.6400000000000001,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "fixed_c_space__right_side_down__l1__v00",
+        "family": "fixed_c_space",
+        "minimum_external_robot_contact_distance_m": -0.01926077640254544,
+        "worst_pair": [
+          "left_hand_collision",
+          "c_frame_1"
+        ],
+        "worst_time_s": 0.7000000000000001,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "hollow_container__left_side_down__l0__v00",
+        "family": "hollow_container",
+        "minimum_external_robot_contact_distance_m": -0.008691077974987908,
+        "worst_pair": [
+          "right_thigh",
+          "container_4"
+        ],
+        "worst_time_s": 1.46,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "hollow_container__prone__l2__v00",
+        "family": "hollow_container",
+        "minimum_external_robot_contact_distance_m": -0.00737610450508331,
+        "worst_pair": [
+          "head_collision",
+          "container_4"
+        ],
+        "worst_time_s": 0.22,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "fixed_c_space__left_side_down__l0__v00",
+        "family": "fixed_c_space",
+        "minimum_external_robot_contact_distance_m": -0.009883696826047679,
+        "worst_pair": [
+          "head_collision",
+          "c_frame_0"
+        ],
+        "worst_time_s": 2.52,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "ladder_boards__left_side_down__l1__v00",
+        "family": "ladder_boards",
+        "minimum_external_robot_contact_distance_m": -0.00760308808106272,
+        "worst_pair": [
+          "right_thigh",
+          "ladder_0"
+        ],
+        "worst_time_s": 0.22,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "ladder_boards__prone__l0__v00",
+        "family": "ladder_boards",
+        "minimum_external_robot_contact_distance_m": -0.00800019919169493,
+        "worst_pair": [
+          "left_hand_collision",
+          "ladder_1"
+        ],
+        "worst_time_s": 2.46,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      }
+    ],
+    "M2_2500": [
+      {
+        "case_id": "fixed_c_space__supine__l1__v00",
+        "family": "fixed_c_space",
+        "minimum_external_robot_contact_distance_m": -0.014338606030350302,
+        "worst_pair": [
+          "right_hand_collision",
+          "c_frame_0"
+        ],
+        "worst_time_s": 0.54,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "crossed_timber__left_side_down__l2__v00",
+        "family": "crossed_timber",
+        "minimum_external_robot_contact_distance_m": -0.008350267089134056,
+        "worst_pair": [
+          "right_thigh",
+          "timber_1_0"
+        ],
+        "worst_time_s": 0.16,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "fixed_c_space__right_side_down__l2__v00",
+        "family": "fixed_c_space",
+        "minimum_external_robot_contact_distance_m": -0.011986290778215627,
+        "worst_pair": [
+          "left_hand_collision",
+          "c_frame_1"
+        ],
+        "worst_time_s": 0.48,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "crossed_timber__prone__l2__v00",
+        "family": "crossed_timber",
+        "minimum_external_robot_contact_distance_m": -0.010165677372917464,
+        "worst_pair": [
+          "left_foot7_collision",
+          "timber_0_0"
+        ],
+        "worst_time_s": 2.24,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "flat_calibration__right_side_down",
+        "family": "flat_calibration",
+        "minimum_external_robot_contact_distance_m": -0.008680070722186468,
+        "worst_pair": [
+          "floor",
+          "left_hand_collision"
+        ],
+        "worst_time_s": 0.58,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "hollow_container__right_side_down__l2__v00",
+        "family": "hollow_container",
+        "minimum_external_robot_contact_distance_m": -0.014797680395733988,
+        "worst_pair": [
+          "left_hand_collision",
+          "container_4"
+        ],
+        "worst_time_s": 0.66,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "fixed_c_space__prone__l2__v00",
+        "family": "fixed_c_space",
+        "minimum_external_robot_contact_distance_m": -0.005351366154758223,
+        "worst_pair": [
+          "right_hand_collision",
+          "c_frame_2"
+        ],
+        "worst_time_s": 1.08,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "ladder_boards__supine__l0__v00",
+        "family": "ladder_boards",
+        "minimum_external_robot_contact_distance_m": -0.011275876962100861,
+        "worst_pair": [
+          "right_hand_collision",
+          "ladder_0"
+        ],
+        "worst_time_s": 0.2,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "flat_calibration__prone",
+        "family": "flat_calibration",
+        "minimum_external_robot_contact_distance_m": -0.0075624906348394985,
+        "worst_pair": [
+          "floor",
+          "left_shin"
+        ],
+        "worst_time_s": 0.64,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "ladder_boards__right_side_down__l1__v00",
+        "family": "ladder_boards",
+        "minimum_external_robot_contact_distance_m": -0.008595309452008825,
+        "worst_pair": [
+          "left_elbow_yaw_collision",
+          "ladder_0"
+        ],
+        "worst_time_s": 0.78,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "hollow_container__prone__l0__v00",
+        "family": "hollow_container",
+        "minimum_external_robot_contact_distance_m": -0.007747986322385915,
+        "worst_pair": [
+          "right_shin",
+          "container_1"
+        ],
+        "worst_time_s": 1.48,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "ladder_boards__supine__l2__v00",
+        "family": "ladder_boards",
+        "minimum_external_robot_contact_distance_m": -0.011403350188552139,
+        "worst_pair": [
+          "left_hand_collision",
+          "ladder_1"
+        ],
+        "worst_time_s": 1.0,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "hollow_container__left_side_down__l1__v00",
+        "family": "hollow_container",
+        "minimum_external_robot_contact_distance_m": -0.010682148735599757,
+        "worst_pair": [
+          "head_collision",
+          "container_2"
+        ],
+        "worst_time_s": 2.48,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "hollow_container__right_side_down__l1__v00",
+        "family": "hollow_container",
+        "minimum_external_robot_contact_distance_m": -0.009421645424387011,
+        "worst_pair": [
+          "left_hand_collision",
+          "container_0"
+        ],
+        "worst_time_s": 0.46,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "fixed_c_space__supine__l2__v00",
+        "family": "fixed_c_space",
+        "minimum_external_robot_contact_distance_m": -0.016350853301632766,
+        "worst_pair": [
+          "right_hand_collision",
+          "c_frame_0"
+        ],
+        "worst_time_s": 0.54,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "fixed_c_space__left_side_down__l2__v00",
+        "family": "fixed_c_space",
+        "minimum_external_robot_contact_distance_m": -0.003422028973370952,
+        "worst_pair": [
+          "floor",
+          "right_foot3_collision"
+        ],
+        "worst_time_s": 0.8,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "crossed_timber__supine__l0__v00",
+        "family": "crossed_timber",
+        "minimum_external_robot_contact_distance_m": -0.017825438032136265,
+        "worst_pair": [
+          "right_hand_collision",
+          "timber_0_0"
+        ],
+        "worst_time_s": 0.6,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "fixed_c_space__left_side_down__l1__v00",
+        "family": "fixed_c_space",
+        "minimum_external_robot_contact_distance_m": -0.006146731301736532,
+        "worst_pair": [
+          "floor",
+          "right_foot3_collision"
+        ],
+        "worst_time_s": 0.96,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "crossed_timber__supine__l1__v00",
+        "family": "crossed_timber",
+        "minimum_external_robot_contact_distance_m": -0.0057550536395741675,
+        "worst_pair": [
+          "right_hand_collision",
+          "timber_0_0"
+        ],
+        "worst_time_s": 1.0,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "crossed_timber__supine__l2__v00",
+        "family": "crossed_timber",
+        "minimum_external_robot_contact_distance_m": -0.012315757440505545,
+        "worst_pair": [
+          "right_thigh",
+          "timber_0_0"
+        ],
+        "worst_time_s": 1.24,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "fixed_c_space__prone__l1__v00",
+        "family": "fixed_c_space",
+        "minimum_external_robot_contact_distance_m": -0.013412302742855042,
+        "worst_pair": [
+          "left_hand_collision",
+          "c_frame_1"
+        ],
+        "worst_time_s": 1.58,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "hollow_container__supine__l1__v00",
+        "family": "hollow_container",
+        "minimum_external_robot_contact_distance_m": -0.007139547097778767,
+        "worst_pair": [
+          "floor",
+          "right_hand_collision"
+        ],
+        "worst_time_s": 1.0,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "fixed_c_space__right_side_down__l0__v00",
+        "family": "fixed_c_space",
+        "minimum_external_robot_contact_distance_m": -0.010541557746514022,
+        "worst_pair": [
+          "right_foot3_collision",
+          "c_frame_2"
+        ],
+        "worst_time_s": 1.58,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "ladder_boards__supine__l1__v00",
+        "family": "ladder_boards",
+        "minimum_external_robot_contact_distance_m": -0.015968371166257524,
+        "worst_pair": [
+          "left_shin",
+          "ladder_board_0_0"
+        ],
+        "worst_time_s": 0.24,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "flat_calibration__supine",
+        "family": "flat_calibration",
+        "minimum_external_robot_contact_distance_m": -0.005390460677448658,
+        "worst_pair": [
+          "floor",
+          "left_foot6_collision"
+        ],
+        "worst_time_s": 0.8,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "crossed_timber__right_side_down__l2__v00",
+        "family": "crossed_timber",
+        "minimum_external_robot_contact_distance_m": -0.010440985313865166,
+        "worst_pair": [
+          "right_elbow_yaw_collision",
+          "timber_1_0"
+        ],
+        "worst_time_s": 0.64,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "ladder_boards__right_side_down__l2__v00",
+        "family": "ladder_boards",
+        "minimum_external_robot_contact_distance_m": -0.017666326530198815,
+        "worst_pair": [
+          "right_shin",
+          "ladder_1"
+        ],
+        "worst_time_s": 4.46,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "fixed_c_space__supine__l0__v00",
+        "family": "fixed_c_space",
+        "minimum_external_robot_contact_distance_m": -0.005326266572856722,
+        "worst_pair": [
+          "left_foot6_collision",
+          "c_frame_2"
+        ],
+        "worst_time_s": 0.98,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "hollow_container__prone__l1__v00",
+        "family": "hollow_container",
+        "minimum_external_robot_contact_distance_m": -0.00739430711475049,
+        "worst_pair": [
+          "right_shin",
+          "container_2"
+        ],
+        "worst_time_s": 1.4000000000000001,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "ladder_boards__prone__l2__v00",
+        "family": "ladder_boards",
+        "minimum_external_robot_contact_distance_m": -0.011126375642609813,
+        "worst_pair": [
+          "left_shin",
+          "ladder_1"
+        ],
+        "worst_time_s": 1.8,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "hollow_container__left_side_down__l2__v00",
+        "family": "hollow_container",
+        "minimum_external_robot_contact_distance_m": -0.015024657705122214,
+        "worst_pair": [
+          "right_hand_collision",
+          "container_2"
+        ],
+        "worst_time_s": 0.54,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "crossed_timber__left_side_down__l0__v00",
+        "family": "crossed_timber",
+        "minimum_external_robot_contact_distance_m": -0.009473544514106834,
+        "worst_pair": [
+          "right_thigh",
+          "timber_1_0"
+        ],
+        "worst_time_s": 0.18,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "flat_calibration__left_side_down",
+        "family": "flat_calibration",
+        "minimum_external_robot_contact_distance_m": -0.008797278237259232,
+        "worst_pair": [
+          "floor",
+          "right_hand_collision"
+        ],
+        "worst_time_s": 0.9,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "hollow_container__right_side_down__l0__v00",
+        "family": "hollow_container",
+        "minimum_external_robot_contact_distance_m": -0.005700004443706004,
+        "worst_pair": [
+          "left_hand_collision",
+          "container_3"
+        ],
+        "worst_time_s": 0.56,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "ladder_boards__prone__l1__v00",
+        "family": "ladder_boards",
+        "minimum_external_robot_contact_distance_m": -0.006210449308524005,
+        "worst_pair": [
+          "left_shin",
+          "ladder_5"
+        ],
+        "worst_time_s": 0.2,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "crossed_timber__left_side_down__l1__v00",
+        "family": "crossed_timber",
+        "minimum_external_robot_contact_distance_m": -0.0071351457358826975,
+        "worst_pair": [
+          "right_shoulder_yaw_collision",
+          "timber_0_0"
+        ],
+        "worst_time_s": 0.2,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "ladder_boards__left_side_down__l2__v00",
+        "family": "ladder_boards",
+        "minimum_external_robot_contact_distance_m": -0.010531661751023377,
+        "worst_pair": [
+          "right_shin",
+          "ladder_0"
+        ],
+        "worst_time_s": 0.16,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "hollow_container__supine__l0__v00",
+        "family": "hollow_container",
+        "minimum_external_robot_contact_distance_m": -0.014567831964454478,
+        "worst_pair": [
+          "right_hand_collision",
+          "container_1"
+        ],
+        "worst_time_s": 0.58,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "crossed_timber__prone__l0__v00",
+        "family": "crossed_timber",
+        "minimum_external_robot_contact_distance_m": -0.008395513742263112,
+        "worst_pair": [
+          "floor",
+          "left_shin"
+        ],
+        "worst_time_s": 0.64,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "crossed_timber__right_side_down__l1__v00",
+        "family": "crossed_timber",
+        "minimum_external_robot_contact_distance_m": -0.009376039058033005,
+        "worst_pair": [
+          "torso_collision3",
+          "timber_1_0"
+        ],
+        "worst_time_s": 0.68,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "crossed_timber__right_side_down__l0__v00",
+        "family": "crossed_timber",
+        "minimum_external_robot_contact_distance_m": -0.009248395047668917,
+        "worst_pair": [
+          "left_hand_collision",
+          "timber_1_0"
+        ],
+        "worst_time_s": 1.4000000000000001,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "fixed_c_space__prone__l0__v00",
+        "family": "fixed_c_space",
+        "minimum_external_robot_contact_distance_m": -0.006787907340728927,
+        "worst_pair": [
+          "floor",
+          "right_hand_collision"
+        ],
+        "worst_time_s": 1.4000000000000001,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "ladder_boards__left_side_down__l0__v00",
+        "family": "ladder_boards",
+        "minimum_external_robot_contact_distance_m": -0.009263392257979224,
+        "worst_pair": [
+          "right_shoulder_yaw_collision",
+          "ladder_0"
+        ],
+        "worst_time_s": 1.02,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "hollow_container__supine__l2__v00",
+        "family": "hollow_container",
+        "minimum_external_robot_contact_distance_m": -0.011897995114980887,
+        "worst_pair": [
+          "right_hand_collision",
+          "container_0"
+        ],
+        "worst_time_s": 0.64,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "ladder_boards__right_side_down__l0__v00",
+        "family": "ladder_boards",
+        "minimum_external_robot_contact_distance_m": -0.010006089849874555,
+        "worst_pair": [
+          "right_hand_collision",
+          "ladder_board_0_0"
+        ],
+        "worst_time_s": 0.64,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "crossed_timber__prone__l1__v00",
+        "family": "crossed_timber",
+        "minimum_external_robot_contact_distance_m": -0.004953134064549662,
+        "worst_pair": [
+          "left_shin",
+          "timber_2_0"
+        ],
+        "worst_time_s": 1.62,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "fixed_c_space__right_side_down__l1__v00",
+        "family": "fixed_c_space",
+        "minimum_external_robot_contact_distance_m": -0.010409728319755611,
+        "worst_pair": [
+          "right_hand_collision",
+          "c_frame_1"
+        ],
+        "worst_time_s": 0.96,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "hollow_container__left_side_down__l0__v00",
+        "family": "hollow_container",
+        "minimum_external_robot_contact_distance_m": -0.010928484235816473,
+        "worst_pair": [
+          "head_collision",
+          "container_1"
+        ],
+        "worst_time_s": 1.94,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "ladder_boards__left_side_down__l1__v00",
+        "family": "ladder_boards",
+        "minimum_external_robot_contact_distance_m": -0.013262450004576567,
+        "worst_pair": [
+          "right_foot6_collision",
+          "ladder_0"
+        ],
+        "worst_time_s": 0.78,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "hollow_container__prone__l2__v00",
+        "family": "hollow_container",
+        "minimum_external_robot_contact_distance_m": -0.014589611612641593,
+        "worst_pair": [
+          "left_hand_collision",
+          "container_2"
+        ],
+        "worst_time_s": 1.58,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "fixed_c_space__left_side_down__l0__v00",
+        "family": "fixed_c_space",
+        "minimum_external_robot_contact_distance_m": -0.008637682194917874,
+        "worst_pair": [
+          "left_hand_collision",
+          "c_frame_1"
+        ],
+        "worst_time_s": 0.46,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "ladder_boards__prone__l0__v00",
+        "family": "ladder_boards",
+        "minimum_external_robot_contact_distance_m": -0.011819809514906708,
+        "worst_pair": [
+          "left_hand_collision",
+          "ladder_2"
+        ],
+        "worst_time_s": 1.6600000000000001,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      }
+    ],
+    "M0_9000": [
+      {
+        "case_id": "fixed_c_space__supine__l1__v00",
+        "family": "fixed_c_space",
+        "minimum_external_robot_contact_distance_m": -0.0032927506258495394,
+        "worst_pair": [
+          "floor",
+          "right_foot3_collision"
+        ],
+        "worst_time_s": 1.6,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "crossed_timber__left_side_down__l2__v00",
+        "family": "crossed_timber",
+        "minimum_external_robot_contact_distance_m": -0.02308861086830579,
+        "worst_pair": [
+          "left_foot4_collision",
+          "timber_2_0"
+        ],
+        "worst_time_s": 1.58,
+        "sampled_frames_penetration_gt20mm": 1,
+        "first_gt20mm_s": 1.58
+      },
+      {
+        "case_id": "fixed_c_space__right_side_down__l2__v00",
+        "family": "fixed_c_space",
+        "minimum_external_robot_contact_distance_m": -0.01802763551589113,
+        "worst_pair": [
+          "left_hand_collision",
+          "c_frame_1"
+        ],
+        "worst_time_s": 0.42,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "crossed_timber__prone__l2__v00",
+        "family": "crossed_timber",
+        "minimum_external_robot_contact_distance_m": -0.009915376425360653,
+        "worst_pair": [
+          "left_thigh",
+          "timber_0_0"
+        ],
+        "worst_time_s": 1.28,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "flat_calibration__right_side_down",
+        "family": "flat_calibration",
+        "minimum_external_robot_contact_distance_m": -0.004887585972610263,
+        "worst_pair": [
+          "floor",
+          "left_hand_collision"
+        ],
+        "worst_time_s": 1.6600000000000001,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "ladder_boards__supine__l0__v00",
+        "family": "ladder_boards",
+        "minimum_external_robot_contact_distance_m": -0.008354428630775262,
+        "worst_pair": [
+          "right_hand_collision",
+          "ladder_0"
+        ],
+        "worst_time_s": 0.2,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "hollow_container__right_side_down__l2__v00",
+        "family": "hollow_container",
+        "minimum_external_robot_contact_distance_m": -0.01257690842758212,
+        "worst_pair": [
+          "left_hand_collision",
+          "container_4"
+        ],
+        "worst_time_s": 0.3,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "flat_calibration__prone",
+        "family": "flat_calibration",
+        "minimum_external_robot_contact_distance_m": -0.004398686048439564,
+        "worst_pair": [
+          "floor",
+          "left_hand_collision"
+        ],
+        "worst_time_s": 1.08,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "fixed_c_space__prone__l2__v00",
+        "family": "fixed_c_space",
+        "minimum_external_robot_contact_distance_m": -0.004916232198435899,
+        "worst_pair": [
+          "left_elbow_yaw_collision",
+          "c_frame_2"
+        ],
+        "worst_time_s": 0.58,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "ladder_boards__right_side_down__l1__v00",
+        "family": "ladder_boards",
+        "minimum_external_robot_contact_distance_m": -0.00892583708669945,
+        "worst_pair": [
+          "floor",
+          "right_foot3_collision"
+        ],
+        "worst_time_s": 1.1400000000000001,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "hollow_container__prone__l0__v00",
+        "family": "hollow_container",
+        "minimum_external_robot_contact_distance_m": -0.007965591961866698,
+        "worst_pair": [
+          "right_hand_collision",
+          "container_1"
+        ],
+        "worst_time_s": 1.76,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "ladder_boards__supine__l2__v00",
+        "family": "ladder_boards",
+        "minimum_external_robot_contact_distance_m": -0.0055652127697876,
+        "worst_pair": [
+          "floor",
+          "right_foot4_collision"
+        ],
+        "worst_time_s": 1.0,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "hollow_container__left_side_down__l1__v00",
+        "family": "hollow_container",
+        "minimum_external_robot_contact_distance_m": -0.012002477592119726,
+        "worst_pair": [
+          "left_hand_collision",
+          "container_4"
+        ],
+        "worst_time_s": 0.38,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "fixed_c_space__supine__l2__v00",
+        "family": "fixed_c_space",
+        "minimum_external_robot_contact_distance_m": -0.003477528137400312,
+        "worst_pair": [
+          "left_foot7_collision",
+          "c_frame_2"
+        ],
+        "worst_time_s": 1.04,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "fixed_c_space__left_side_down__l2__v00",
+        "family": "fixed_c_space",
+        "minimum_external_robot_contact_distance_m": -0.004865630051671753,
+        "worst_pair": [
+          "left_hand_collision",
+          "c_frame_2"
+        ],
+        "worst_time_s": 0.48,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "hollow_container__right_side_down__l1__v00",
+        "family": "hollow_container",
+        "minimum_external_robot_contact_distance_m": -0.008122549516931456,
+        "worst_pair": [
+          "floor",
+          "right_elbow_yaw_collision"
+        ],
+        "worst_time_s": 6.42,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "crossed_timber__supine__l0__v00",
+        "family": "crossed_timber",
+        "minimum_external_robot_contact_distance_m": -0.009089022734176815,
+        "worst_pair": [
+          "left_shin",
+          "timber_1_0"
+        ],
+        "worst_time_s": 0.92,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "fixed_c_space__left_side_down__l1__v00",
+        "family": "fixed_c_space",
+        "minimum_external_robot_contact_distance_m": -0.01625808344368941,
+        "worst_pair": [
+          "left_hand_collision",
+          "c_frame_1"
+        ],
+        "worst_time_s": 1.28,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "crossed_timber__supine__l2__v00",
+        "family": "crossed_timber",
+        "minimum_external_robot_contact_distance_m": -0.01892113778803936,
+        "worst_pair": [
+          "pelvis_collision",
+          "timber_2_0"
+        ],
+        "worst_time_s": 1.28,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "crossed_timber__supine__l1__v00",
+        "family": "crossed_timber",
+        "minimum_external_robot_contact_distance_m": -0.010054556259515422,
+        "worst_pair": [
+          "head_collision",
+          "timber_2_0"
+        ],
+        "worst_time_s": 0.96,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "fixed_c_space__prone__l1__v00",
+        "family": "fixed_c_space",
+        "minimum_external_robot_contact_distance_m": -0.007740451640317551,
+        "worst_pair": [
+          "right_foot6_collision",
+          "c_frame_2"
+        ],
+        "worst_time_s": 9.8,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "hollow_container__supine__l1__v00",
+        "family": "hollow_container",
+        "minimum_external_robot_contact_distance_m": -0.006481073859083468,
+        "worst_pair": [
+          "right_thigh",
+          "container_3"
+        ],
+        "worst_time_s": 0.54,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "fixed_c_space__right_side_down__l0__v00",
+        "family": "fixed_c_space",
+        "minimum_external_robot_contact_distance_m": -0.009516056006881109,
+        "worst_pair": [
+          "right_hand_collision",
+          "c_frame_2"
+        ],
+        "worst_time_s": 0.7000000000000001,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "ladder_boards__supine__l1__v00",
+        "family": "ladder_boards",
+        "minimum_external_robot_contact_distance_m": -0.0166648962357439,
+        "worst_pair": [
+          "left_shin",
+          "ladder_board_0_0"
+        ],
+        "worst_time_s": 0.24,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "fixed_c_space__supine__l0__v00",
+        "family": "fixed_c_space",
+        "minimum_external_robot_contact_distance_m": -0.005291926315854144,
+        "worst_pair": [
+          "left_hand_collision",
+          "c_frame_2"
+        ],
+        "worst_time_s": 0.76,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "ladder_boards__right_side_down__l2__v00",
+        "family": "ladder_boards",
+        "minimum_external_robot_contact_distance_m": -0.00836922124245195,
+        "worst_pair": [
+          "right_shin",
+          "ladder_1"
+        ],
+        "worst_time_s": 0.64,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "crossed_timber__right_side_down__l2__v00",
+        "family": "crossed_timber",
+        "minimum_external_robot_contact_distance_m": -0.00999936501437311,
+        "worst_pair": [
+          "left_thigh",
+          "timber_1_0"
+        ],
+        "worst_time_s": 0.6,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "flat_calibration__supine",
+        "family": "flat_calibration",
+        "minimum_external_robot_contact_distance_m": -0.005556148393672543,
+        "worst_pair": [
+          "floor",
+          "left_hand_collision"
+        ],
+        "worst_time_s": 0.76,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "hollow_container__prone__l1__v00",
+        "family": "hollow_container",
+        "minimum_external_robot_contact_distance_m": -0.01835899388309383,
+        "worst_pair": [
+          "left_hand_collision",
+          "container_3"
+        ],
+        "worst_time_s": 1.62,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "ladder_boards__prone__l2__v00",
+        "family": "ladder_boards",
+        "minimum_external_robot_contact_distance_m": -0.010655504435320755,
+        "worst_pair": [
+          "left_hand_collision",
+          "ladder_4"
+        ],
+        "worst_time_s": 1.46,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "flat_calibration__left_side_down",
+        "family": "flat_calibration",
+        "minimum_external_robot_contact_distance_m": -0.008262259576674466,
+        "worst_pair": [
+          "floor",
+          "right_hand_collision"
+        ],
+        "worst_time_s": 1.4000000000000001,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "hollow_container__left_side_down__l2__v00",
+        "family": "hollow_container",
+        "minimum_external_robot_contact_distance_m": -0.011176113778179134,
+        "worst_pair": [
+          "floor",
+          "right_hand_collision"
+        ],
+        "worst_time_s": 0.44,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "crossed_timber__left_side_down__l0__v00",
+        "family": "crossed_timber",
+        "minimum_external_robot_contact_distance_m": -0.006638728667258224,
+        "worst_pair": [
+          "floor",
+          "right_hand_collision"
+        ],
+        "worst_time_s": 1.34,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "hollow_container__right_side_down__l0__v00",
+        "family": "hollow_container",
+        "minimum_external_robot_contact_distance_m": -0.00807092175813056,
+        "worst_pair": [
+          "floor",
+          "right_hand_collision"
+        ],
+        "worst_time_s": 0.78,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "ladder_boards__prone__l1__v00",
+        "family": "ladder_boards",
+        "minimum_external_robot_contact_distance_m": -0.006301536489901442,
+        "worst_pair": [
+          "head_collision",
+          "ladder_1"
+        ],
+        "worst_time_s": 1.1400000000000001,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "crossed_timber__left_side_down__l1__v00",
+        "family": "crossed_timber",
+        "minimum_external_robot_contact_distance_m": -0.00771270051096154,
+        "worst_pair": [
+          "right_hand_collision",
+          "timber_1_0"
+        ],
+        "worst_time_s": 1.34,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "crossed_timber__prone__l0__v00",
+        "family": "crossed_timber",
+        "minimum_external_robot_contact_distance_m": -0.0103801117331064,
+        "worst_pair": [
+          "left_hand_collision",
+          "timber_1_0"
+        ],
+        "worst_time_s": 1.3800000000000001,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "hollow_container__supine__l0__v00",
+        "family": "hollow_container",
+        "minimum_external_robot_contact_distance_m": -0.015443454362983465,
+        "worst_pair": [
+          "left_hand_collision",
+          "container_2"
+        ],
+        "worst_time_s": 1.42,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "ladder_boards__left_side_down__l2__v00",
+        "family": "ladder_boards",
+        "minimum_external_robot_contact_distance_m": -0.008147731469718726,
+        "worst_pair": [
+          "right_foot4_collision",
+          "ladder_1"
+        ],
+        "worst_time_s": 3.86,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "crossed_timber__right_side_down__l1__v00",
+        "family": "crossed_timber",
+        "minimum_external_robot_contact_distance_m": -0.006905344018981283,
+        "worst_pair": [
+          "floor",
+          "right_foot2_collision"
+        ],
+        "worst_time_s": 0.64,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "crossed_timber__right_side_down__l0__v00",
+        "family": "crossed_timber",
+        "minimum_external_robot_contact_distance_m": -0.014339716788903369,
+        "worst_pair": [
+          "right_hand_collision",
+          "timber_0_0"
+        ],
+        "worst_time_s": 0.4,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "fixed_c_space__prone__l0__v00",
+        "family": "fixed_c_space",
+        "minimum_external_robot_contact_distance_m": -0.005815444691672188,
+        "worst_pair": [
+          "left_shin",
+          "c_frame_2"
+        ],
+        "worst_time_s": 0.8200000000000001,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "ladder_boards__left_side_down__l0__v00",
+        "family": "ladder_boards",
+        "minimum_external_robot_contact_distance_m": -0.012988307850338492,
+        "worst_pair": [
+          "left_hand_collision",
+          "ladder_3"
+        ],
+        "worst_time_s": 1.68,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "hollow_container__supine__l2__v00",
+        "family": "hollow_container",
+        "minimum_external_robot_contact_distance_m": -0.01445675424724064,
+        "worst_pair": [
+          "left_hand_collision",
+          "container_3"
+        ],
+        "worst_time_s": 0.64,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "ladder_boards__right_side_down__l0__v00",
+        "family": "ladder_boards",
+        "minimum_external_robot_contact_distance_m": -0.007994304010642557,
+        "worst_pair": [
+          "left_hand_collision",
+          "ladder_1"
+        ],
+        "worst_time_s": 0.14,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "crossed_timber__prone__l1__v00",
+        "family": "crossed_timber",
+        "minimum_external_robot_contact_distance_m": -0.011887841148778694,
+        "worst_pair": [
+          "left_hand_collision",
+          "timber_0_0"
+        ],
+        "worst_time_s": 1.44,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "fixed_c_space__right_side_down__l1__v00",
+        "family": "fixed_c_space",
+        "minimum_external_robot_contact_distance_m": -0.013768545699219417,
+        "worst_pair": [
+          "left_foot5_collision",
+          "c_frame_2"
+        ],
+        "worst_time_s": 1.6,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "hollow_container__left_side_down__l0__v00",
+        "family": "hollow_container",
+        "minimum_external_robot_contact_distance_m": -0.006698803255316896,
+        "worst_pair": [
+          "floor",
+          "right_hand_collision"
+        ],
+        "worst_time_s": 0.44,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "ladder_boards__left_side_down__l1__v00",
+        "family": "ladder_boards",
+        "minimum_external_robot_contact_distance_m": -0.009890676232968361,
+        "worst_pair": [
+          "right_thigh",
+          "ladder_3"
+        ],
+        "worst_time_s": 0.24,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "fixed_c_space__left_side_down__l0__v00",
+        "family": "fixed_c_space",
+        "minimum_external_robot_contact_distance_m": -0.017935570875686084,
+        "worst_pair": [
+          "right_hand_collision",
+          "c_frame_2"
+        ],
+        "worst_time_s": 0.42,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "hollow_container__prone__l2__v00",
+        "family": "hollow_container",
+        "minimum_external_robot_contact_distance_m": -0.007785155667963332,
+        "worst_pair": [
+          "head_collision",
+          "container_4"
+        ],
+        "worst_time_s": 0.2,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "ladder_boards__prone__l0__v00",
+        "family": "ladder_boards",
+        "minimum_external_robot_contact_distance_m": -0.009290426239916723,
+        "worst_pair": [
+          "right_shin",
+          "ladder_0"
+        ],
+        "worst_time_s": 0.1,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      }
+    ],
+    "M0_9999": [
+      {
+        "case_id": "fixed_c_space__supine__l1__v00",
+        "family": "fixed_c_space",
+        "minimum_external_robot_contact_distance_m": -0.008664642214026427,
+        "worst_pair": [
+          "floor",
+          "right_foot3_collision"
+        ],
+        "worst_time_s": 0.98,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "crossed_timber__left_side_down__l2__v00",
+        "family": "crossed_timber",
+        "minimum_external_robot_contact_distance_m": -0.01320391033458446,
+        "worst_pair": [
+          "right_shin",
+          "timber_1_0"
+        ],
+        "worst_time_s": 0.16,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "fixed_c_space__right_side_down__l2__v00",
+        "family": "fixed_c_space",
+        "minimum_external_robot_contact_distance_m": -0.012312542826681419,
+        "worst_pair": [
+          "left_foot3_collision",
+          "c_frame_2"
+        ],
+        "worst_time_s": 8.14,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "flat_calibration__right_side_down",
+        "family": "flat_calibration",
+        "minimum_external_robot_contact_distance_m": -0.006836312343491885,
+        "worst_pair": [
+          "floor",
+          "left_hand_collision"
+        ],
+        "worst_time_s": 0.9,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "ladder_boards__supine__l0__v00",
+        "family": "ladder_boards",
+        "minimum_external_robot_contact_distance_m": -0.011708039586288875,
+        "worst_pair": [
+          "left_hand_collision",
+          "ladder_1"
+        ],
+        "worst_time_s": 0.38,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "fixed_c_space__prone__l2__v00",
+        "family": "fixed_c_space",
+        "minimum_external_robot_contact_distance_m": -0.007029820655966343,
+        "worst_pair": [
+          "left_elbow_yaw_collision",
+          "c_frame_2"
+        ],
+        "worst_time_s": 0.54,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "hollow_container__right_side_down__l2__v00",
+        "family": "hollow_container",
+        "minimum_external_robot_contact_distance_m": -0.014067419198370304,
+        "worst_pair": [
+          "left_hand_collision",
+          "container_4"
+        ],
+        "worst_time_s": 0.28,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "crossed_timber__prone__l2__v00",
+        "family": "crossed_timber",
+        "minimum_external_robot_contact_distance_m": -0.0073438697953358,
+        "worst_pair": [
+          "pelvis_collision",
+          "timber_0_0"
+        ],
+        "worst_time_s": 0.14,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "flat_calibration__prone",
+        "family": "flat_calibration",
+        "minimum_external_robot_contact_distance_m": -0.0029701500526296623,
+        "worst_pair": [
+          "floor",
+          "right_foot6_collision"
+        ],
+        "worst_time_s": 0.42,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "ladder_boards__right_side_down__l1__v00",
+        "family": "ladder_boards",
+        "minimum_external_robot_contact_distance_m": -0.008591878378242594,
+        "worst_pair": [
+          "left_hand_collision",
+          "ladder_4"
+        ],
+        "worst_time_s": 0.12,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "hollow_container__right_side_down__l1__v00",
+        "family": "hollow_container",
+        "minimum_external_robot_contact_distance_m": -0.006342055193446883,
+        "worst_pair": [
+          "floor",
+          "left_hand_collision"
+        ],
+        "worst_time_s": 17.72,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "hollow_container__prone__l0__v00",
+        "family": "hollow_container",
+        "minimum_external_robot_contact_distance_m": -0.006154040087323322,
+        "worst_pair": [
+          "left_shin",
+          "container_3"
+        ],
+        "worst_time_s": 0.14,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "hollow_container__left_side_down__l1__v00",
+        "family": "hollow_container",
+        "minimum_external_robot_contact_distance_m": -0.013137260356027351,
+        "worst_pair": [
+          "left_hand_collision",
+          "container_2"
+        ],
+        "worst_time_s": 1.44,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "ladder_boards__supine__l2__v00",
+        "family": "ladder_boards",
+        "minimum_external_robot_contact_distance_m": -0.005294056323527092,
+        "worst_pair": [
+          "right_thigh",
+          "ladder_1"
+        ],
+        "worst_time_s": 0.48,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "fixed_c_space__supine__l2__v00",
+        "family": "fixed_c_space",
+        "minimum_external_robot_contact_distance_m": -0.004378463663591679,
+        "worst_pair": [
+          "floor",
+          "right_foot5_collision"
+        ],
+        "worst_time_s": 1.34,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "fixed_c_space__left_side_down__l2__v00",
+        "family": "fixed_c_space",
+        "minimum_external_robot_contact_distance_m": -0.00393204028260845,
+        "worst_pair": [
+          "floor",
+          "left_foot4_collision"
+        ],
+        "worst_time_s": 1.32,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "fixed_c_space__left_side_down__l1__v00",
+        "family": "fixed_c_space",
+        "minimum_external_robot_contact_distance_m": -0.006846925840477268,
+        "worst_pair": [
+          "left_hand_collision",
+          "c_frame_2"
+        ],
+        "worst_time_s": 0.96,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "crossed_timber__supine__l0__v00",
+        "family": "crossed_timber",
+        "minimum_external_robot_contact_distance_m": -0.011087974950023435,
+        "worst_pair": [
+          "right_thigh",
+          "timber_1_0"
+        ],
+        "worst_time_s": 0.96,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "crossed_timber__supine__l2__v00",
+        "family": "crossed_timber",
+        "minimum_external_robot_contact_distance_m": -0.011476406969874939,
+        "worst_pair": [
+          "left_hand_collision",
+          "timber_2_0"
+        ],
+        "worst_time_s": 0.22,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "crossed_timber__supine__l1__v00",
+        "family": "crossed_timber",
+        "minimum_external_robot_contact_distance_m": -0.006954579716761902,
+        "worst_pair": [
+          "right_thigh",
+          "timber_0_0"
+        ],
+        "worst_time_s": 0.48,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "fixed_c_space__prone__l1__v00",
+        "family": "fixed_c_space",
+        "minimum_external_robot_contact_distance_m": -0.017042294363923273,
+        "worst_pair": [
+          "left_hand_collision",
+          "c_frame_1"
+        ],
+        "worst_time_s": 1.6600000000000001,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "hollow_container__supine__l1__v00",
+        "family": "hollow_container",
+        "minimum_external_robot_contact_distance_m": -0.012729899104474418,
+        "worst_pair": [
+          "left_shin",
+          "container_4"
+        ],
+        "worst_time_s": 1.26,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "flat_calibration__supine",
+        "family": "flat_calibration",
+        "minimum_external_robot_contact_distance_m": -0.007936156908089749,
+        "worst_pair": [
+          "floor",
+          "left_hand_collision"
+        ],
+        "worst_time_s": 0.86,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "ladder_boards__supine__l1__v00",
+        "family": "ladder_boards",
+        "minimum_external_robot_contact_distance_m": -0.015728347436507827,
+        "worst_pair": [
+          "left_shin",
+          "ladder_board_0_0"
+        ],
+        "worst_time_s": 0.24,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "fixed_c_space__right_side_down__l0__v00",
+        "family": "fixed_c_space",
+        "minimum_external_robot_contact_distance_m": -0.008431810835914232,
+        "worst_pair": [
+          "right_hand_collision",
+          "c_frame_2"
+        ],
+        "worst_time_s": 0.52,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "crossed_timber__right_side_down__l2__v00",
+        "family": "crossed_timber",
+        "minimum_external_robot_contact_distance_m": -0.013701148115167696,
+        "worst_pair": [
+          "right_foot7_collision",
+          "timber_3_0"
+        ],
+        "worst_time_s": 0.74,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "ladder_boards__right_side_down__l2__v00",
+        "family": "ladder_boards",
+        "minimum_external_robot_contact_distance_m": -0.011393426341703747,
+        "worst_pair": [
+          "right_hand_collision",
+          "ladder_5"
+        ],
+        "worst_time_s": 0.92,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "fixed_c_space__supine__l0__v00",
+        "family": "fixed_c_space",
+        "minimum_external_robot_contact_distance_m": -0.006134756614366625,
+        "worst_pair": [
+          "left_hand_collision",
+          "c_frame_2"
+        ],
+        "worst_time_s": 0.88,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "hollow_container__prone__l1__v00",
+        "family": "hollow_container",
+        "minimum_external_robot_contact_distance_m": -0.009182543850437708,
+        "worst_pair": [
+          "left_thigh",
+          "container_1"
+        ],
+        "worst_time_s": 1.3800000000000001,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "hollow_container__left_side_down__l2__v00",
+        "family": "hollow_container",
+        "minimum_external_robot_contact_distance_m": -0.015428196310746878,
+        "worst_pair": [
+          "right_shoulder_yaw_collision",
+          "container_2"
+        ],
+        "worst_time_s": 0.64,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "crossed_timber__left_side_down__l0__v00",
+        "family": "crossed_timber",
+        "minimum_external_robot_contact_distance_m": -0.009056640866857184,
+        "worst_pair": [
+          "right_shin",
+          "timber_1_0"
+        ],
+        "worst_time_s": 0.16,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "ladder_boards__prone__l2__v00",
+        "family": "ladder_boards",
+        "minimum_external_robot_contact_distance_m": -0.009956430437170635,
+        "worst_pair": [
+          "left_hand_collision",
+          "ladder_1"
+        ],
+        "worst_time_s": 1.92,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "flat_calibration__left_side_down",
+        "family": "flat_calibration",
+        "minimum_external_robot_contact_distance_m": -0.003678198737558362,
+        "worst_pair": [
+          "floor",
+          "left_hand_collision"
+        ],
+        "worst_time_s": 0.08,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "hollow_container__right_side_down__l0__v00",
+        "family": "hollow_container",
+        "minimum_external_robot_contact_distance_m": -0.008578887695101022,
+        "worst_pair": [
+          "right_shoulder_yaw_collision",
+          "container_4"
+        ],
+        "worst_time_s": 5.66,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "ladder_boards__prone__l1__v00",
+        "family": "ladder_boards",
+        "minimum_external_robot_contact_distance_m": -0.0058220881661839585,
+        "worst_pair": [
+          "torso_collision1",
+          "ladder_1"
+        ],
+        "worst_time_s": 1.32,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "crossed_timber__left_side_down__l1__v00",
+        "family": "crossed_timber",
+        "minimum_external_robot_contact_distance_m": -0.008291392337779063,
+        "worst_pair": [
+          "right_thigh",
+          "timber_1_0"
+        ],
+        "worst_time_s": 1.22,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "hollow_container__supine__l0__v00",
+        "family": "hollow_container",
+        "minimum_external_robot_contact_distance_m": -0.010817027520311655,
+        "worst_pair": [
+          "floor",
+          "left_hand_collision"
+        ],
+        "worst_time_s": 0.78,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "ladder_boards__left_side_down__l2__v00",
+        "family": "ladder_boards",
+        "minimum_external_robot_contact_distance_m": -0.009242614242222696,
+        "worst_pair": [
+          "right_hand_collision",
+          "ladder_4"
+        ],
+        "worst_time_s": 0.26,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "crossed_timber__prone__l0__v00",
+        "family": "crossed_timber",
+        "minimum_external_robot_contact_distance_m": -0.01411269788153504,
+        "worst_pair": [
+          "left_hand_collision",
+          "timber_1_0"
+        ],
+        "worst_time_s": 1.6,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "crossed_timber__right_side_down__l1__v00",
+        "family": "crossed_timber",
+        "minimum_external_robot_contact_distance_m": -0.00662863848692119,
+        "worst_pair": [
+          "floor",
+          "left_hand_collision"
+        ],
+        "worst_time_s": 0.86,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "crossed_timber__right_side_down__l0__v00",
+        "family": "crossed_timber",
+        "minimum_external_robot_contact_distance_m": -0.01621381542016237,
+        "worst_pair": [
+          "left_hand_collision",
+          "timber_0_0"
+        ],
+        "worst_time_s": 0.92,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "fixed_c_space__prone__l0__v00",
+        "family": "fixed_c_space",
+        "minimum_external_robot_contact_distance_m": -0.004087307042587425,
+        "worst_pair": [
+          "left_hand_collision",
+          "c_frame_2"
+        ],
+        "worst_time_s": 0.06,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "ladder_boards__right_side_down__l0__v00",
+        "family": "ladder_boards",
+        "minimum_external_robot_contact_distance_m": -0.010333809232150958,
+        "worst_pair": [
+          "left_hand_collision",
+          "ladder_1"
+        ],
+        "worst_time_s": 0.12,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "ladder_boards__left_side_down__l0__v00",
+        "family": "ladder_boards",
+        "minimum_external_robot_contact_distance_m": -0.008114885684377696,
+        "worst_pair": [
+          "right_thigh",
+          "ladder_0"
+        ],
+        "worst_time_s": 0.14,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "hollow_container__supine__l2__v00",
+        "family": "hollow_container",
+        "minimum_external_robot_contact_distance_m": -0.009452789408589714,
+        "worst_pair": [
+          "left_hand_collision",
+          "container_4"
+        ],
+        "worst_time_s": 0.26,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "crossed_timber__prone__l1__v00",
+        "family": "crossed_timber",
+        "minimum_external_robot_contact_distance_m": -0.007353382299016489,
+        "worst_pair": [
+          "left_foot6_collision",
+          "timber_0_0"
+        ],
+        "worst_time_s": 1.82,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "fixed_c_space__right_side_down__l1__v00",
+        "family": "fixed_c_space",
+        "minimum_external_robot_contact_distance_m": -0.009879780343494814,
+        "worst_pair": [
+          "right_hand_collision",
+          "c_frame_2"
+        ],
+        "worst_time_s": 0.5,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "hollow_container__left_side_down__l0__v00",
+        "family": "hollow_container",
+        "minimum_external_robot_contact_distance_m": -0.01528717534298251,
+        "worst_pair": [
+          "floor",
+          "right_hand_collision"
+        ],
+        "worst_time_s": 0.46,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "ladder_boards__left_side_down__l1__v00",
+        "family": "ladder_boards",
+        "minimum_external_robot_contact_distance_m": -0.009724193142024946,
+        "worst_pair": [
+          "right_thigh",
+          "ladder_0"
+        ],
+        "worst_time_s": 0.2,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "hollow_container__prone__l2__v00",
+        "family": "hollow_container",
+        "minimum_external_robot_contact_distance_m": -0.011762715354724076,
+        "worst_pair": [
+          "right_hand_collision",
+          "container_3"
+        ],
+        "worst_time_s": 1.74,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "fixed_c_space__left_side_down__l0__v00",
+        "family": "fixed_c_space",
+        "minimum_external_robot_contact_distance_m": -0.016423093790847117,
+        "worst_pair": [
+          "right_hand_collision",
+          "c_frame_2"
+        ],
+        "worst_time_s": 0.4,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "ladder_boards__prone__l0__v00",
+        "family": "ladder_boards",
+        "minimum_external_robot_contact_distance_m": -0.009170971849464422,
+        "worst_pair": [
+          "floor",
+          "left_thigh"
+        ],
+        "worst_time_s": 2.38,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      }
+    ],
+    "M1_9000": [
+      {
+        "case_id": "fixed_c_space__supine__l1__v00",
+        "family": "fixed_c_space",
+        "minimum_external_robot_contact_distance_m": -0.004077576148948483,
+        "worst_pair": [
+          "left_foot4_collision",
+          "c_frame_2"
+        ],
+        "worst_time_s": 0.9400000000000001,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "fixed_c_space__right_side_down__l2__v00",
+        "family": "fixed_c_space",
+        "minimum_external_robot_contact_distance_m": -0.009015922013604925,
+        "worst_pair": [
+          "left_hand_collision",
+          "c_frame_1"
+        ],
+        "worst_time_s": 0.76,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "crossed_timber__left_side_down__l2__v00",
+        "family": "crossed_timber",
+        "minimum_external_robot_contact_distance_m": -0.008309295144880512,
+        "worst_pair": [
+          "right_shin",
+          "timber_0_0"
+        ],
+        "worst_time_s": 2.12,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "flat_calibration__right_side_down",
+        "family": "flat_calibration",
+        "minimum_external_robot_contact_distance_m": -0.007001909326348935,
+        "worst_pair": [
+          "floor",
+          "right_hand_collision"
+        ],
+        "worst_time_s": 0.42,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "crossed_timber__prone__l2__v00",
+        "family": "crossed_timber",
+        "minimum_external_robot_contact_distance_m": -0.005853362704849277,
+        "worst_pair": [
+          "torso_collision2",
+          "timber_0_0"
+        ],
+        "worst_time_s": 0.1,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "ladder_boards__supine__l0__v00",
+        "family": "ladder_boards",
+        "minimum_external_robot_contact_distance_m": -0.008078722342088715,
+        "worst_pair": [
+          "right_hand_collision",
+          "ladder_0"
+        ],
+        "worst_time_s": 0.2,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "hollow_container__right_side_down__l2__v00",
+        "family": "hollow_container",
+        "minimum_external_robot_contact_distance_m": -0.019176454990622642,
+        "worst_pair": [
+          "left_hand_collision",
+          "container_3"
+        ],
+        "worst_time_s": 0.86,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "fixed_c_space__prone__l2__v00",
+        "family": "fixed_c_space",
+        "minimum_external_robot_contact_distance_m": -0.012599220416884263,
+        "worst_pair": [
+          "right_foot7_collision",
+          "c_frame_2"
+        ],
+        "worst_time_s": 3.06,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "flat_calibration__prone",
+        "family": "flat_calibration",
+        "minimum_external_robot_contact_distance_m": -0.006608334133160519,
+        "worst_pair": [
+          "floor",
+          "right_foot6_collision"
+        ],
+        "worst_time_s": 1.4000000000000001,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "ladder_boards__right_side_down__l1__v00",
+        "family": "ladder_boards",
+        "minimum_external_robot_contact_distance_m": -0.012459430515406052,
+        "worst_pair": [
+          "floor",
+          "left_hand_collision"
+        ],
+        "worst_time_s": 0.92,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "hollow_container__prone__l0__v00",
+        "family": "hollow_container",
+        "minimum_external_robot_contact_distance_m": -0.00872888741375586,
+        "worst_pair": [
+          "left_hand_collision",
+          "container_3"
+        ],
+        "worst_time_s": 2.8000000000000003,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "hollow_container__left_side_down__l1__v00",
+        "family": "hollow_container",
+        "minimum_external_robot_contact_distance_m": -0.007317712286870587,
+        "worst_pair": [
+          "head_collision",
+          "container_4"
+        ],
+        "worst_time_s": 0.24,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "ladder_boards__supine__l2__v00",
+        "family": "ladder_boards",
+        "minimum_external_robot_contact_distance_m": -0.013182687402042845,
+        "worst_pair": [
+          "right_foot2_collision",
+          "ladder_0"
+        ],
+        "worst_time_s": 2.08,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "hollow_container__right_side_down__l1__v00",
+        "family": "hollow_container",
+        "minimum_external_robot_contact_distance_m": -0.010829518397664058,
+        "worst_pair": [
+          "left_hand_collision",
+          "container_3"
+        ],
+        "worst_time_s": 0.38,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "fixed_c_space__supine__l2__v00",
+        "family": "fixed_c_space",
+        "minimum_external_robot_contact_distance_m": -0.010445125313195094,
+        "worst_pair": [
+          "left_hand_collision",
+          "c_frame_2"
+        ],
+        "worst_time_s": 0.58,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "fixed_c_space__left_side_down__l2__v00",
+        "family": "fixed_c_space",
+        "minimum_external_robot_contact_distance_m": -0.012305984814852199,
+        "worst_pair": [
+          "right_foot6_collision",
+          "c_frame_2"
+        ],
+        "worst_time_s": 1.04,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "crossed_timber__supine__l0__v00",
+        "family": "crossed_timber",
+        "minimum_external_robot_contact_distance_m": -0.007902341070007923,
+        "worst_pair": [
+          "right_thigh",
+          "timber_0_0"
+        ],
+        "worst_time_s": 0.34,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "fixed_c_space__left_side_down__l1__v00",
+        "family": "fixed_c_space",
+        "minimum_external_robot_contact_distance_m": -0.013420216010698349,
+        "worst_pair": [
+          "left_foot3_collision",
+          "c_frame_2"
+        ],
+        "worst_time_s": 1.3,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "crossed_timber__supine__l2__v00",
+        "family": "crossed_timber",
+        "minimum_external_robot_contact_distance_m": -0.008201313659213005,
+        "worst_pair": [
+          "left_hand_collision",
+          "timber_0_0"
+        ],
+        "worst_time_s": 1.76,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "fixed_c_space__prone__l1__v00",
+        "family": "fixed_c_space",
+        "minimum_external_robot_contact_distance_m": -0.010887421329977566,
+        "worst_pair": [
+          "left_foot4_collision",
+          "c_frame_2"
+        ],
+        "worst_time_s": 0.88,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "crossed_timber__supine__l1__v00",
+        "family": "crossed_timber",
+        "minimum_external_robot_contact_distance_m": -0.013377821000515322,
+        "worst_pair": [
+          "left_hand_collision",
+          "timber_0_0"
+        ],
+        "worst_time_s": 1.82,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "hollow_container__supine__l1__v00",
+        "family": "hollow_container",
+        "minimum_external_robot_contact_distance_m": -0.004611390327939245,
+        "worst_pair": [
+          "left_shoulder_yaw_collision",
+          "container_4"
+        ],
+        "worst_time_s": 0.3,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "fixed_c_space__right_side_down__l0__v00",
+        "family": "fixed_c_space",
+        "minimum_external_robot_contact_distance_m": -0.010938760094568865,
+        "worst_pair": [
+          "right_hand_collision",
+          "c_frame_2"
+        ],
+        "worst_time_s": 0.54,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "ladder_boards__supine__l1__v00",
+        "family": "ladder_boards",
+        "minimum_external_robot_contact_distance_m": -0.01175770712737221,
+        "worst_pair": [
+          "right_hand_collision",
+          "ladder_2"
+        ],
+        "worst_time_s": 1.6,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "flat_calibration__supine",
+        "family": "flat_calibration",
+        "minimum_external_robot_contact_distance_m": -0.004871121878388369,
+        "worst_pair": [
+          "floor",
+          "left_foot2_collision"
+        ],
+        "worst_time_s": 2.5,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "crossed_timber__right_side_down__l2__v00",
+        "family": "crossed_timber",
+        "minimum_external_robot_contact_distance_m": -0.01043034837674127,
+        "worst_pair": [
+          "floor",
+          "left_hand_collision"
+        ],
+        "worst_time_s": 1.08,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "ladder_boards__right_side_down__l2__v00",
+        "family": "ladder_boards",
+        "minimum_external_robot_contact_distance_m": -0.012728417788095681,
+        "worst_pair": [
+          "left_shin",
+          "ladder_5"
+        ],
+        "worst_time_s": 1.18,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "fixed_c_space__supine__l0__v00",
+        "family": "fixed_c_space",
+        "minimum_external_robot_contact_distance_m": -0.006668498568112637,
+        "worst_pair": [
+          "left_foot4_collision",
+          "c_frame_2"
+        ],
+        "worst_time_s": 1.0,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "hollow_container__prone__l1__v00",
+        "family": "hollow_container",
+        "minimum_external_robot_contact_distance_m": -0.005957382080403247,
+        "worst_pair": [
+          "floor",
+          "right_foot7_collision"
+        ],
+        "worst_time_s": 1.9000000000000001,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "hollow_container__left_side_down__l2__v00",
+        "family": "hollow_container",
+        "minimum_external_robot_contact_distance_m": -0.011065783002176234,
+        "worst_pair": [
+          "floor",
+          "right_hand_collision"
+        ],
+        "worst_time_s": 0.74,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "ladder_boards__prone__l2__v00",
+        "family": "ladder_boards",
+        "minimum_external_robot_contact_distance_m": -0.006630126745105465,
+        "worst_pair": [
+          "floor",
+          "right_foot5_collision"
+        ],
+        "worst_time_s": 1.68,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "crossed_timber__left_side_down__l0__v00",
+        "family": "crossed_timber",
+        "minimum_external_robot_contact_distance_m": -0.012647432618070054,
+        "worst_pair": [
+          "right_shin",
+          "timber_0_0"
+        ],
+        "worst_time_s": 1.74,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "flat_calibration__left_side_down",
+        "family": "flat_calibration",
+        "minimum_external_robot_contact_distance_m": -0.008551883759104763,
+        "worst_pair": [
+          "floor",
+          "right_foot3_collision"
+        ],
+        "worst_time_s": 0.8,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "hollow_container__right_side_down__l0__v00",
+        "family": "hollow_container",
+        "minimum_external_robot_contact_distance_m": -0.00404215468975657,
+        "worst_pair": [
+          "right_foot5_collision",
+          "container_2"
+        ],
+        "worst_time_s": 1.24,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "crossed_timber__left_side_down__l1__v00",
+        "family": "crossed_timber",
+        "minimum_external_robot_contact_distance_m": -0.008080325839192735,
+        "worst_pair": [
+          "right_thigh",
+          "timber_0_0"
+        ],
+        "worst_time_s": 0.2,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "ladder_boards__prone__l1__v00",
+        "family": "ladder_boards",
+        "minimum_external_robot_contact_distance_m": -0.007419581012431493,
+        "worst_pair": [
+          "left_foot3_collision",
+          "ladder_5"
+        ],
+        "worst_time_s": 0.52,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "ladder_boards__left_side_down__l2__v00",
+        "family": "ladder_boards",
+        "minimum_external_robot_contact_distance_m": -0.007465057043924676,
+        "worst_pair": [
+          "floor",
+          "right_foot7_collision"
+        ],
+        "worst_time_s": 1.24,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "hollow_container__supine__l0__v00",
+        "family": "hollow_container",
+        "minimum_external_robot_contact_distance_m": -0.00962902124443183,
+        "worst_pair": [
+          "left_hand_collision",
+          "container_4"
+        ],
+        "worst_time_s": 1.52,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "crossed_timber__prone__l0__v00",
+        "family": "crossed_timber",
+        "minimum_external_robot_contact_distance_m": -0.011800232774822386,
+        "worst_pair": [
+          "right_foot3_collision",
+          "timber_0_0"
+        ],
+        "worst_time_s": 1.5,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "crossed_timber__right_side_down__l0__v00",
+        "family": "crossed_timber",
+        "minimum_external_robot_contact_distance_m": -0.010580625885827026,
+        "worst_pair": [
+          "torso_collision2",
+          "timber_0_0"
+        ],
+        "worst_time_s": 0.62,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "fixed_c_space__prone__l0__v00",
+        "family": "fixed_c_space",
+        "minimum_external_robot_contact_distance_m": -0.009349759878460324,
+        "worst_pair": [
+          "right_foot6_collision",
+          "c_frame_2"
+        ],
+        "worst_time_s": 1.52,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "crossed_timber__right_side_down__l1__v00",
+        "family": "crossed_timber",
+        "minimum_external_robot_contact_distance_m": -0.011977175206284912,
+        "worst_pair": [
+          "left_hand_collision",
+          "timber_1_0"
+        ],
+        "worst_time_s": 0.8200000000000001,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "ladder_boards__left_side_down__l0__v00",
+        "family": "ladder_boards",
+        "minimum_external_robot_contact_distance_m": -0.009665063427151177,
+        "worst_pair": [
+          "right_thigh",
+          "ladder_0"
+        ],
+        "worst_time_s": 0.14,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "ladder_boards__right_side_down__l0__v00",
+        "family": "ladder_boards",
+        "minimum_external_robot_contact_distance_m": -0.009909473983685883,
+        "worst_pair": [
+          "floor",
+          "left_foot6_collision"
+        ],
+        "worst_time_s": 2.74,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "crossed_timber__prone__l1__v00",
+        "family": "crossed_timber",
+        "minimum_external_robot_contact_distance_m": -0.004996252104797885,
+        "worst_pair": [
+          "pelvis_collision",
+          "timber_0_0"
+        ],
+        "worst_time_s": 0.1,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "hollow_container__supine__l2__v00",
+        "family": "hollow_container",
+        "minimum_external_robot_contact_distance_m": -0.009088755635727792,
+        "worst_pair": [
+          "floor",
+          "left_foot3_collision"
+        ],
+        "worst_time_s": 1.86,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "fixed_c_space__right_side_down__l1__v00",
+        "family": "fixed_c_space",
+        "minimum_external_robot_contact_distance_m": -0.01147357260741122,
+        "worst_pair": [
+          "left_hand_collision",
+          "c_frame_2"
+        ],
+        "worst_time_s": 0.9400000000000001,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "hollow_container__left_side_down__l0__v00",
+        "family": "hollow_container",
+        "minimum_external_robot_contact_distance_m": -0.007307164196200179,
+        "worst_pair": [
+          "right_hand_collision",
+          "container_4"
+        ],
+        "worst_time_s": 0.4,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "ladder_boards__left_side_down__l1__v00",
+        "family": "ladder_boards",
+        "minimum_external_robot_contact_distance_m": -0.009355774952811514,
+        "worst_pair": [
+          "right_thigh",
+          "ladder_0"
+        ],
+        "worst_time_s": 0.2,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "hollow_container__prone__l2__v00",
+        "family": "hollow_container",
+        "minimum_external_robot_contact_distance_m": -0.008688106775760193,
+        "worst_pair": [
+          "head_collision",
+          "container_4"
+        ],
+        "worst_time_s": 0.2,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "fixed_c_space__left_side_down__l0__v00",
+        "family": "fixed_c_space",
+        "minimum_external_robot_contact_distance_m": -0.009824625379580697,
+        "worst_pair": [
+          "right_hand_collision",
+          "c_frame_2"
+        ],
+        "worst_time_s": 0.66,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "ladder_boards__prone__l0__v00",
+        "family": "ladder_boards",
+        "minimum_external_robot_contact_distance_m": -0.008946164851519304,
+        "worst_pair": [
+          "floor",
+          "right_foot5_collision"
+        ],
+        "worst_time_s": 1.46,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      }
+    ],
+    "M1_9999": [
+      {
+        "case_id": "fixed_c_space__supine__l1__v00",
+        "family": "fixed_c_space",
+        "minimum_external_robot_contact_distance_m": -0.0045553374678031,
+        "worst_pair": [
+          "floor",
+          "right_foot4_collision"
+        ],
+        "worst_time_s": 0.52,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "crossed_timber__left_side_down__l2__v00",
+        "family": "crossed_timber",
+        "minimum_external_robot_contact_distance_m": -0.008945553712608197,
+        "worst_pair": [
+          "left_shin",
+          "timber_0_0"
+        ],
+        "worst_time_s": 0.36,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "fixed_c_space__right_side_down__l2__v00",
+        "family": "fixed_c_space",
+        "minimum_external_robot_contact_distance_m": -0.008525166079336205,
+        "worst_pair": [
+          "left_shin",
+          "c_frame_1"
+        ],
+        "worst_time_s": 0.38,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "crossed_timber__prone__l2__v00",
+        "family": "crossed_timber",
+        "minimum_external_robot_contact_distance_m": -0.007831099331534455,
+        "worst_pair": [
+          "right_foot5_collision",
+          "timber_1_0"
+        ],
+        "worst_time_s": 0.48,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "flat_calibration__right_side_down",
+        "family": "flat_calibration",
+        "minimum_external_robot_contact_distance_m": -0.007573554663720894,
+        "worst_pair": [
+          "floor",
+          "left_hand_collision"
+        ],
+        "worst_time_s": 0.52,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "hollow_container__right_side_down__l2__v00",
+        "family": "hollow_container",
+        "minimum_external_robot_contact_distance_m": -0.010287875612110586,
+        "worst_pair": [
+          "head_collision",
+          "container_4"
+        ],
+        "worst_time_s": 0.22,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "ladder_boards__supine__l0__v00",
+        "family": "ladder_boards",
+        "minimum_external_robot_contact_distance_m": -0.008440495549915793,
+        "worst_pair": [
+          "right_hand_collision",
+          "ladder_0"
+        ],
+        "worst_time_s": 1.92,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "fixed_c_space__prone__l2__v00",
+        "family": "fixed_c_space",
+        "minimum_external_robot_contact_distance_m": -0.01129551976153397,
+        "worst_pair": [
+          "left_foot1_collision",
+          "c_frame_2"
+        ],
+        "worst_time_s": 1.08,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "flat_calibration__prone",
+        "family": "flat_calibration",
+        "minimum_external_robot_contact_distance_m": -0.006600014149801268,
+        "worst_pair": [
+          "floor",
+          "right_foot7_collision"
+        ],
+        "worst_time_s": 2.4,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "hollow_container__prone__l0__v00",
+        "family": "hollow_container",
+        "minimum_external_robot_contact_distance_m": -0.009732326120513238,
+        "worst_pair": [
+          "right_elbow_yaw_collision",
+          "container_4"
+        ],
+        "worst_time_s": 1.3,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "ladder_boards__right_side_down__l1__v00",
+        "family": "ladder_boards",
+        "minimum_external_robot_contact_distance_m": -0.010149103328870292,
+        "worst_pair": [
+          "left_hand_collision",
+          "ladder_1"
+        ],
+        "worst_time_s": 0.2,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "hollow_container__left_side_down__l1__v00",
+        "family": "hollow_container",
+        "minimum_external_robot_contact_distance_m": -0.011922707434301544,
+        "worst_pair": [
+          "left_hand_collision",
+          "container_4"
+        ],
+        "worst_time_s": 1.44,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "hollow_container__right_side_down__l1__v00",
+        "family": "hollow_container",
+        "minimum_external_robot_contact_distance_m": -0.006518742605318685,
+        "worst_pair": [
+          "left_hand_collision",
+          "container_3"
+        ],
+        "worst_time_s": 0.4,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "ladder_boards__supine__l2__v00",
+        "family": "ladder_boards",
+        "minimum_external_robot_contact_distance_m": -0.008214732696249796,
+        "worst_pair": [
+          "left_shin",
+          "ladder_1"
+        ],
+        "worst_time_s": 0.66,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "fixed_c_space__supine__l2__v00",
+        "family": "fixed_c_space",
+        "minimum_external_robot_contact_distance_m": -0.01618187524615939,
+        "worst_pair": [
+          "right_hand_collision",
+          "c_frame_1"
+        ],
+        "worst_time_s": 1.4000000000000001,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "fixed_c_space__left_side_down__l2__v00",
+        "family": "fixed_c_space",
+        "minimum_external_robot_contact_distance_m": -0.012211597862537565,
+        "worst_pair": [
+          "right_foot5_collision",
+          "c_frame_2"
+        ],
+        "worst_time_s": 0.76,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "crossed_timber__supine__l0__v00",
+        "family": "crossed_timber",
+        "minimum_external_robot_contact_distance_m": -0.006982862064268423,
+        "worst_pair": [
+          "left_hand_collision",
+          "timber_0_0"
+        ],
+        "worst_time_s": 1.84,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "fixed_c_space__left_side_down__l1__v00",
+        "family": "fixed_c_space",
+        "minimum_external_robot_contact_distance_m": -0.009417432864026229,
+        "worst_pair": [
+          "right_hand_collision",
+          "c_frame_2"
+        ],
+        "worst_time_s": 0.8200000000000001,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "crossed_timber__supine__l2__v00",
+        "family": "crossed_timber",
+        "minimum_external_robot_contact_distance_m": -0.009780242205956155,
+        "worst_pair": [
+          "floor",
+          "right_foot3_collision"
+        ],
+        "worst_time_s": 0.8200000000000001,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "crossed_timber__supine__l1__v00",
+        "family": "crossed_timber",
+        "minimum_external_robot_contact_distance_m": -0.010221631763742084,
+        "worst_pair": [
+          "floor",
+          "right_foot4_collision"
+        ],
+        "worst_time_s": 0.56,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "fixed_c_space__prone__l1__v00",
+        "family": "fixed_c_space",
+        "minimum_external_robot_contact_distance_m": -0.00831823933129336,
+        "worst_pair": [
+          "floor",
+          "left_foot4_collision"
+        ],
+        "worst_time_s": 1.22,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "hollow_container__supine__l1__v00",
+        "family": "hollow_container",
+        "minimum_external_robot_contact_distance_m": -0.009981085022883654,
+        "worst_pair": [
+          "right_hand_collision",
+          "container_3"
+        ],
+        "worst_time_s": 1.8800000000000001,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "fixed_c_space__right_side_down__l0__v00",
+        "family": "fixed_c_space",
+        "minimum_external_robot_contact_distance_m": -0.00857906368781707,
+        "worst_pair": [
+          "floor",
+          "left_foot4_collision"
+        ],
+        "worst_time_s": 0.78,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "flat_calibration__supine",
+        "family": "flat_calibration",
+        "minimum_external_robot_contact_distance_m": -0.0026652838038898853,
+        "worst_pair": [
+          "floor",
+          "right_foot7_collision"
+        ],
+        "worst_time_s": 2.3000000000000003,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "ladder_boards__supine__l1__v00",
+        "family": "ladder_boards",
+        "minimum_external_robot_contact_distance_m": -0.011725420178985757,
+        "worst_pair": [
+          "left_thigh",
+          "ladder_0"
+        ],
+        "worst_time_s": 0.26,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "crossed_timber__right_side_down__l2__v00",
+        "family": "crossed_timber",
+        "minimum_external_robot_contact_distance_m": -0.019095636476154584,
+        "worst_pair": [
+          "left_hand_collision",
+          "timber_1_0"
+        ],
+        "worst_time_s": 1.02,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "fixed_c_space__supine__l0__v00",
+        "family": "fixed_c_space",
+        "minimum_external_robot_contact_distance_m": -0.007487727470196753,
+        "worst_pair": [
+          "floor",
+          "right_foot6_collision"
+        ],
+        "worst_time_s": 1.26,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "ladder_boards__right_side_down__l2__v00",
+        "family": "ladder_boards",
+        "minimum_external_robot_contact_distance_m": -0.008012534586804558,
+        "worst_pair": [
+          "left_shin",
+          "ladder_5"
+        ],
+        "worst_time_s": 0.8,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "hollow_container__prone__l1__v00",
+        "family": "hollow_container",
+        "minimum_external_robot_contact_distance_m": -0.008099736219267802,
+        "worst_pair": [
+          "left_foot4_collision",
+          "container_2"
+        ],
+        "worst_time_s": 0.64,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "ladder_boards__prone__l2__v00",
+        "family": "ladder_boards",
+        "minimum_external_robot_contact_distance_m": -0.007488522564848554,
+        "worst_pair": [
+          "right_thigh",
+          "ladder_1"
+        ],
+        "worst_time_s": 0.16,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "hollow_container__left_side_down__l2__v00",
+        "family": "hollow_container",
+        "minimum_external_robot_contact_distance_m": -0.01569903768211202,
+        "worst_pair": [
+          "left_hand_collision",
+          "container_0"
+        ],
+        "worst_time_s": 2.48,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "crossed_timber__left_side_down__l0__v00",
+        "family": "crossed_timber",
+        "minimum_external_robot_contact_distance_m": -0.006653705517214045,
+        "worst_pair": [
+          "left_shin",
+          "timber_0_0"
+        ],
+        "worst_time_s": 1.4000000000000001,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "flat_calibration__left_side_down",
+        "family": "flat_calibration",
+        "minimum_external_robot_contact_distance_m": -0.006769042397677165,
+        "worst_pair": [
+          "floor",
+          "right_hand_collision"
+        ],
+        "worst_time_s": 0.76,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "hollow_container__right_side_down__l0__v00",
+        "family": "hollow_container",
+        "minimum_external_robot_contact_distance_m": -0.004306608079109542,
+        "worst_pair": [
+          "head_collision",
+          "container_4"
+        ],
+        "worst_time_s": 0.52,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "ladder_boards__prone__l1__v00",
+        "family": "ladder_boards",
+        "minimum_external_robot_contact_distance_m": -0.007843568807992045,
+        "worst_pair": [
+          "floor",
+          "left_foot3_collision"
+        ],
+        "worst_time_s": 1.26,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "crossed_timber__left_side_down__l1__v00",
+        "family": "crossed_timber",
+        "minimum_external_robot_contact_distance_m": -0.007291101730455302,
+        "worst_pair": [
+          "right_thigh",
+          "timber_0_0"
+        ],
+        "worst_time_s": 0.22,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "ladder_boards__left_side_down__l2__v00",
+        "family": "ladder_boards",
+        "minimum_external_robot_contact_distance_m": -0.008553618646475428,
+        "worst_pair": [
+          "right_shin",
+          "ladder_1"
+        ],
+        "worst_time_s": 2.12,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "hollow_container__supine__l0__v00",
+        "family": "hollow_container",
+        "minimum_external_robot_contact_distance_m": -0.010933317820293359,
+        "worst_pair": [
+          "left_thigh",
+          "container_2"
+        ],
+        "worst_time_s": 0.3,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "crossed_timber__right_side_down__l1__v00",
+        "family": "crossed_timber",
+        "minimum_external_robot_contact_distance_m": -0.013089196516150814,
+        "worst_pair": [
+          "left_hand_collision",
+          "timber_1_0"
+        ],
+        "worst_time_s": 0.84,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "crossed_timber__prone__l0__v00",
+        "family": "crossed_timber",
+        "minimum_external_robot_contact_distance_m": -0.014264056991019548,
+        "worst_pair": [
+          "right_foot6_collision",
+          "timber_0_0"
+        ],
+        "worst_time_s": 1.8,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "crossed_timber__right_side_down__l0__v00",
+        "family": "crossed_timber",
+        "minimum_external_robot_contact_distance_m": -0.013053931610865172,
+        "worst_pair": [
+          "right_shin",
+          "timber_0_0"
+        ],
+        "worst_time_s": 2.2,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "fixed_c_space__prone__l0__v00",
+        "family": "fixed_c_space",
+        "minimum_external_robot_contact_distance_m": -0.011607727267870563,
+        "worst_pair": [
+          "right_foot7_collision",
+          "c_frame_2"
+        ],
+        "worst_time_s": 1.96,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "ladder_boards__left_side_down__l0__v00",
+        "family": "ladder_boards",
+        "minimum_external_robot_contact_distance_m": -0.008386716665291831,
+        "worst_pair": [
+          "right_shin",
+          "ladder_0"
+        ],
+        "worst_time_s": 0.98,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "crossed_timber__prone__l1__v00",
+        "family": "crossed_timber",
+        "minimum_external_robot_contact_distance_m": -0.0057974604622657785,
+        "worst_pair": [
+          "floor",
+          "right_foot7_collision"
+        ],
+        "worst_time_s": 1.68,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "ladder_boards__right_side_down__l0__v00",
+        "family": "ladder_boards",
+        "minimum_external_robot_contact_distance_m": -0.011209358907257529,
+        "worst_pair": [
+          "floor",
+          "left_hand_collision"
+        ],
+        "worst_time_s": 0.64,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "hollow_container__supine__l2__v00",
+        "family": "hollow_container",
+        "minimum_external_robot_contact_distance_m": -0.005953024574925364,
+        "worst_pair": [
+          "floor",
+          "right_foot3_collision"
+        ],
+        "worst_time_s": 0.52,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "fixed_c_space__right_side_down__l1__v00",
+        "family": "fixed_c_space",
+        "minimum_external_robot_contact_distance_m": -0.008332543948309339,
+        "worst_pair": [
+          "left_hand_collision",
+          "c_frame_2"
+        ],
+        "worst_time_s": 1.04,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "hollow_container__left_side_down__l0__v00",
+        "family": "hollow_container",
+        "minimum_external_robot_contact_distance_m": -0.01391880539257092,
+        "worst_pair": [
+          "right_thigh",
+          "container_3"
+        ],
+        "worst_time_s": 9.14,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "hollow_container__prone__l2__v00",
+        "family": "hollow_container",
+        "minimum_external_robot_contact_distance_m": -0.00994755768851487,
+        "worst_pair": [
+          "left_elbow_yaw_collision",
+          "container_1"
+        ],
+        "worst_time_s": 0.9400000000000001,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "ladder_boards__left_side_down__l1__v00",
+        "family": "ladder_boards",
+        "minimum_external_robot_contact_distance_m": -0.012229084540896228,
+        "worst_pair": [
+          "right_shin",
+          "ladder_0"
+        ],
+        "worst_time_s": 0.22,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "fixed_c_space__left_side_down__l0__v00",
+        "family": "fixed_c_space",
+        "minimum_external_robot_contact_distance_m": -0.008363926261006563,
+        "worst_pair": [
+          "left_foot4_collision",
+          "c_frame_2"
+        ],
+        "worst_time_s": 1.42,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "ladder_boards__prone__l0__v00",
+        "family": "ladder_boards",
+        "minimum_external_robot_contact_distance_m": -0.007841896327979846,
+        "worst_pair": [
+          "right_foot5_collision",
+          "ladder_0"
+        ],
+        "worst_time_s": 1.46,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      }
+    ],
+    "M2_8000": [
+      {
+        "case_id": "fixed_c_space__supine__l1__v00",
+        "family": "fixed_c_space",
+        "minimum_external_robot_contact_distance_m": -0.006148020952956463,
+        "worst_pair": [
+          "left_foot6_collision",
+          "c_frame_2"
+        ],
+        "worst_time_s": 0.66,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "crossed_timber__left_side_down__l2__v00",
+        "family": "crossed_timber",
+        "minimum_external_robot_contact_distance_m": -0.011708952184768546,
+        "worst_pair": [
+          "right_shin",
+          "timber_1_0"
+        ],
+        "worst_time_s": 0.14,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "fixed_c_space__right_side_down__l2__v00",
+        "family": "fixed_c_space",
+        "minimum_external_robot_contact_distance_m": -0.021592988671845385,
+        "worst_pair": [
+          "left_hand_collision",
+          "c_frame_1"
+        ],
+        "worst_time_s": 0.62,
+        "sampled_frames_penetration_gt20mm": 1,
+        "first_gt20mm_s": 0.62
+      },
+      {
+        "case_id": "flat_calibration__right_side_down",
+        "family": "flat_calibration",
+        "minimum_external_robot_contact_distance_m": -0.009936414635498346,
+        "worst_pair": [
+          "floor",
+          "left_hand_collision"
+        ],
+        "worst_time_s": 0.62,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "crossed_timber__prone__l2__v00",
+        "family": "crossed_timber",
+        "minimum_external_robot_contact_distance_m": -0.011582526721071781,
+        "worst_pair": [
+          "left_hand_collision",
+          "timber_0_0"
+        ],
+        "worst_time_s": 1.62,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "ladder_boards__supine__l0__v00",
+        "family": "ladder_boards",
+        "minimum_external_robot_contact_distance_m": -0.006819356118944082,
+        "worst_pair": [
+          "head_collision",
+          "ladder_2"
+        ],
+        "worst_time_s": 0.12,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "hollow_container__right_side_down__l2__v00",
+        "family": "hollow_container",
+        "minimum_external_robot_contact_distance_m": -0.014968959346776563,
+        "worst_pair": [
+          "right_hand_collision",
+          "container_1"
+        ],
+        "worst_time_s": 0.6,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "fixed_c_space__prone__l2__v00",
+        "family": "fixed_c_space",
+        "minimum_external_robot_contact_distance_m": -0.00751117554204001,
+        "worst_pair": [
+          "floor",
+          "right_foot5_collision"
+        ],
+        "worst_time_s": 0.42,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "flat_calibration__prone",
+        "family": "flat_calibration",
+        "minimum_external_robot_contact_distance_m": -0.004491137607388415,
+        "worst_pair": [
+          "floor",
+          "right_foot5_collision"
+        ],
+        "worst_time_s": 0.26,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "ladder_boards__right_side_down__l1__v00",
+        "family": "ladder_boards",
+        "minimum_external_robot_contact_distance_m": -0.008998727643652053,
+        "worst_pair": [
+          "left_shin",
+          "ladder_board_0_0"
+        ],
+        "worst_time_s": 0.7000000000000001,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "hollow_container__left_side_down__l1__v00",
+        "family": "hollow_container",
+        "minimum_external_robot_contact_distance_m": -0.011316373946510562,
+        "worst_pair": [
+          "head_collision",
+          "container_4"
+        ],
+        "worst_time_s": 0.24,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "hollow_container__prone__l0__v00",
+        "family": "hollow_container",
+        "minimum_external_robot_contact_distance_m": -0.005648037023022141,
+        "worst_pair": [
+          "right_elbow_yaw_collision",
+          "container_1"
+        ],
+        "worst_time_s": 0.46,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "hollow_container__right_side_down__l1__v00",
+        "family": "hollow_container",
+        "minimum_external_robot_contact_distance_m": -0.015511852995006646,
+        "worst_pair": [
+          "left_hand_collision",
+          "container_0"
+        ],
+        "worst_time_s": 0.48,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "ladder_boards__supine__l2__v00",
+        "family": "ladder_boards",
+        "minimum_external_robot_contact_distance_m": -0.007640468949625643,
+        "worst_pair": [
+          "left_shoulder_yaw_collision",
+          "ladder_0"
+        ],
+        "worst_time_s": 1.4000000000000001,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "fixed_c_space__supine__l2__v00",
+        "family": "fixed_c_space",
+        "minimum_external_robot_contact_distance_m": -0.013331239237316023,
+        "worst_pair": [
+          "left_hand_collision",
+          "c_frame_2"
+        ],
+        "worst_time_s": 0.86,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "fixed_c_space__left_side_down__l2__v00",
+        "family": "fixed_c_space",
+        "minimum_external_robot_contact_distance_m": -0.0031664013932960573,
+        "worst_pair": [
+          "floor",
+          "left_foot2_collision"
+        ],
+        "worst_time_s": 1.24,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "crossed_timber__supine__l0__v00",
+        "family": "crossed_timber",
+        "minimum_external_robot_contact_distance_m": -0.016229887365182986,
+        "worst_pair": [
+          "right_hand_collision",
+          "timber_0_0"
+        ],
+        "worst_time_s": 0.38,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "fixed_c_space__left_side_down__l1__v00",
+        "family": "fixed_c_space",
+        "minimum_external_robot_contact_distance_m": -0.00952254150869971,
+        "worst_pair": [
+          "left_hand_collision",
+          "c_frame_2"
+        ],
+        "worst_time_s": 0.98,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "crossed_timber__supine__l1__v00",
+        "family": "crossed_timber",
+        "minimum_external_robot_contact_distance_m": -0.005821029165029537,
+        "worst_pair": [
+          "right_hand_collision",
+          "timber_1_0"
+        ],
+        "worst_time_s": 0.16,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "crossed_timber__supine__l2__v00",
+        "family": "crossed_timber",
+        "minimum_external_robot_contact_distance_m": -0.00742605706980564,
+        "worst_pair": [
+          "right_hand_collision",
+          "timber_0_0"
+        ],
+        "worst_time_s": 0.16,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "fixed_c_space__prone__l1__v00",
+        "family": "fixed_c_space",
+        "minimum_external_robot_contact_distance_m": -0.008192829032680397,
+        "worst_pair": [
+          "right_foot5_collision",
+          "c_frame_2"
+        ],
+        "worst_time_s": 0.36,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "hollow_container__supine__l1__v00",
+        "family": "hollow_container",
+        "minimum_external_robot_contact_distance_m": -0.0094261942557032,
+        "worst_pair": [
+          "right_hand_collision",
+          "container_2"
+        ],
+        "worst_time_s": 0.26,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "flat_calibration__supine",
+        "family": "flat_calibration",
+        "minimum_external_robot_contact_distance_m": -0.0033471185372620643,
+        "worst_pair": [
+          "floor",
+          "left_hand_collision"
+        ],
+        "worst_time_s": 0.92,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "fixed_c_space__right_side_down__l0__v00",
+        "family": "fixed_c_space",
+        "minimum_external_robot_contact_distance_m": -0.012080151810250447,
+        "worst_pair": [
+          "right_shin",
+          "c_frame_2"
+        ],
+        "worst_time_s": 0.52,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "ladder_boards__supine__l1__v00",
+        "family": "ladder_boards",
+        "minimum_external_robot_contact_distance_m": -0.019350002749683393,
+        "worst_pair": [
+          "right_hand_collision",
+          "ladder_2"
+        ],
+        "worst_time_s": 0.44,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "crossed_timber__right_side_down__l2__v00",
+        "family": "crossed_timber",
+        "minimum_external_robot_contact_distance_m": -0.012879588442916182,
+        "worst_pair": [
+          "left_foot3_collision",
+          "timber_2_0"
+        ],
+        "worst_time_s": 1.56,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "ladder_boards__right_side_down__l2__v00",
+        "family": "ladder_boards",
+        "minimum_external_robot_contact_distance_m": -0.017840868578688683,
+        "worst_pair": [
+          "right_foot7_collision",
+          "ladder_0"
+        ],
+        "worst_time_s": 2.06,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "fixed_c_space__supine__l0__v00",
+        "family": "fixed_c_space",
+        "minimum_external_robot_contact_distance_m": -0.0066937985309653975,
+        "worst_pair": [
+          "left_hand_collision",
+          "c_frame_2"
+        ],
+        "worst_time_s": 0.9,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "hollow_container__prone__l1__v00",
+        "family": "hollow_container",
+        "minimum_external_robot_contact_distance_m": -0.007989245593166674,
+        "worst_pair": [
+          "right_thigh",
+          "container_2"
+        ],
+        "worst_time_s": 1.96,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "ladder_boards__prone__l2__v00",
+        "family": "ladder_boards",
+        "minimum_external_robot_contact_distance_m": -0.008245636430085163,
+        "worst_pair": [
+          "right_thigh",
+          "ladder_1"
+        ],
+        "worst_time_s": 0.16,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "flat_calibration__left_side_down",
+        "family": "flat_calibration",
+        "minimum_external_robot_contact_distance_m": -0.005134169858298843,
+        "worst_pair": [
+          "floor",
+          "right_hand_collision"
+        ],
+        "worst_time_s": 0.64,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "hollow_container__left_side_down__l2__v00",
+        "family": "hollow_container",
+        "minimum_external_robot_contact_distance_m": -0.006679913749381136,
+        "worst_pair": [
+          "torso_collision3",
+          "container_4"
+        ],
+        "worst_time_s": 1.1,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "crossed_timber__left_side_down__l0__v00",
+        "family": "crossed_timber",
+        "minimum_external_robot_contact_distance_m": -0.008800127261699778,
+        "worst_pair": [
+          "floor",
+          "right_hand_collision"
+        ],
+        "worst_time_s": 0.68,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "hollow_container__right_side_down__l0__v00",
+        "family": "hollow_container",
+        "minimum_external_robot_contact_distance_m": -0.01351505137339868,
+        "worst_pair": [
+          "left_hand_collision",
+          "container_0"
+        ],
+        "worst_time_s": 0.48,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "ladder_boards__prone__l1__v00",
+        "family": "ladder_boards",
+        "minimum_external_robot_contact_distance_m": -0.005679036025098512,
+        "worst_pair": [
+          "head_collision",
+          "ladder_2"
+        ],
+        "worst_time_s": 1.6400000000000001,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "ladder_boards__left_side_down__l2__v00",
+        "family": "ladder_boards",
+        "minimum_external_robot_contact_distance_m": -0.010956185636956411,
+        "worst_pair": [
+          "right_hand_collision",
+          "ladder_4"
+        ],
+        "worst_time_s": 0.28,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "crossed_timber__left_side_down__l1__v00",
+        "family": "crossed_timber",
+        "minimum_external_robot_contact_distance_m": -0.010565813898588633,
+        "worst_pair": [
+          "right_foot7_collision",
+          "timber_0_0"
+        ],
+        "worst_time_s": 1.04,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "hollow_container__supine__l0__v00",
+        "family": "hollow_container",
+        "minimum_external_robot_contact_distance_m": -0.012244348562692308,
+        "worst_pair": [
+          "right_elbow_yaw_collision",
+          "container_2"
+        ],
+        "worst_time_s": 0.38,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "crossed_timber__prone__l0__v00",
+        "family": "crossed_timber",
+        "minimum_external_robot_contact_distance_m": -0.0038311073199028267,
+        "worst_pair": [
+          "torso_collision1",
+          "timber_0_0"
+        ],
+        "worst_time_s": 0.18,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "crossed_timber__right_side_down__l0__v00",
+        "family": "crossed_timber",
+        "minimum_external_robot_contact_distance_m": -0.024849876327281646,
+        "worst_pair": [
+          "left_shin",
+          "timber_0_0"
+        ],
+        "worst_time_s": 0.62,
+        "sampled_frames_penetration_gt20mm": 1,
+        "first_gt20mm_s": 0.62
+      },
+      {
+        "case_id": "crossed_timber__right_side_down__l1__v00",
+        "family": "crossed_timber",
+        "minimum_external_robot_contact_distance_m": -0.011350848998224812,
+        "worst_pair": [
+          "left_hand_collision",
+          "timber_1_0"
+        ],
+        "worst_time_s": 1.52,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "fixed_c_space__prone__l0__v00",
+        "family": "fixed_c_space",
+        "minimum_external_robot_contact_distance_m": -0.006792314195901148,
+        "worst_pair": [
+          "floor",
+          "left_foot3_collision"
+        ],
+        "worst_time_s": 1.8800000000000001,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "ladder_boards__left_side_down__l0__v00",
+        "family": "ladder_boards",
+        "minimum_external_robot_contact_distance_m": -0.0083395118078574,
+        "worst_pair": [
+          "left_hand_collision",
+          "ladder_board_0_0"
+        ],
+        "worst_time_s": 1.16,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "hollow_container__supine__l2__v00",
+        "family": "hollow_container",
+        "minimum_external_robot_contact_distance_m": -0.007801702573780794,
+        "worst_pair": [
+          "right_elbow_yaw_collision",
+          "container_2"
+        ],
+        "worst_time_s": 0.56,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "ladder_boards__right_side_down__l0__v00",
+        "family": "ladder_boards",
+        "minimum_external_robot_contact_distance_m": -0.0065210173810298505,
+        "worst_pair": [
+          "right_shin",
+          "ladder_1"
+        ],
+        "worst_time_s": 0.28,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "crossed_timber__prone__l1__v00",
+        "family": "crossed_timber",
+        "minimum_external_robot_contact_distance_m": -0.008965637704421938,
+        "worst_pair": [
+          "right_foot5_collision",
+          "timber_2_0"
+        ],
+        "worst_time_s": 0.96,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "fixed_c_space__right_side_down__l1__v00",
+        "family": "fixed_c_space",
+        "minimum_external_robot_contact_distance_m": -0.007665821686920572,
+        "worst_pair": [
+          "right_shin",
+          "c_frame_2"
+        ],
+        "worst_time_s": 0.5,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "hollow_container__left_side_down__l0__v00",
+        "family": "hollow_container",
+        "minimum_external_robot_contact_distance_m": -0.008099827716872926,
+        "worst_pair": [
+          "head_collision",
+          "container_1"
+        ],
+        "worst_time_s": 0.16,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "ladder_boards__left_side_down__l1__v00",
+        "family": "ladder_boards",
+        "minimum_external_robot_contact_distance_m": -0.012137333029544686,
+        "worst_pair": [
+          "right_thigh",
+          "ladder_0"
+        ],
+        "worst_time_s": 0.2,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "hollow_container__prone__l2__v00",
+        "family": "hollow_container",
+        "minimum_external_robot_contact_distance_m": -0.010941859381769344,
+        "worst_pair": [
+          "head_collision",
+          "container_4"
+        ],
+        "worst_time_s": 0.2,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "fixed_c_space__left_side_down__l0__v00",
+        "family": "fixed_c_space",
+        "minimum_external_robot_contact_distance_m": -0.012570835236247864,
+        "worst_pair": [
+          "left_hand_collision",
+          "c_frame_2"
+        ],
+        "worst_time_s": 0.98,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "ladder_boards__prone__l0__v00",
+        "family": "ladder_boards",
+        "minimum_external_robot_contact_distance_m": -0.005464297235135002,
+        "worst_pair": [
+          "left_hand_collision",
+          "ladder_0"
+        ],
+        "worst_time_s": 0.2,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      }
+    ],
+    "M2_9999": [
+      {
+        "case_id": "fixed_c_space__supine__l1__v00",
+        "family": "fixed_c_space",
+        "minimum_external_robot_contact_distance_m": -0.00791914309066787,
+        "worst_pair": [
+          "left_foot7_collision",
+          "c_frame_2"
+        ],
+        "worst_time_s": 1.06,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "crossed_timber__left_side_down__l2__v00",
+        "family": "crossed_timber",
+        "minimum_external_robot_contact_distance_m": -0.015305148322825899,
+        "worst_pair": [
+          "right_shin",
+          "timber_1_0"
+        ],
+        "worst_time_s": 0.14,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "fixed_c_space__right_side_down__l2__v00",
+        "family": "fixed_c_space",
+        "minimum_external_robot_contact_distance_m": -0.008698718742358148,
+        "worst_pair": [
+          "left_shin",
+          "c_frame_1"
+        ],
+        "worst_time_s": 0.64,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "crossed_timber__prone__l2__v00",
+        "family": "crossed_timber",
+        "minimum_external_robot_contact_distance_m": -0.008861334825560665,
+        "worst_pair": [
+          "left_foot5_collision",
+          "timber_0_0"
+        ],
+        "worst_time_s": 1.5,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "flat_calibration__right_side_down",
+        "family": "flat_calibration",
+        "minimum_external_robot_contact_distance_m": -0.005012641992834424,
+        "worst_pair": [
+          "floor",
+          "left_elbow_yaw_collision"
+        ],
+        "worst_time_s": 0.5,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "hollow_container__right_side_down__l2__v00",
+        "family": "hollow_container",
+        "minimum_external_robot_contact_distance_m": -0.007769885787028828,
+        "worst_pair": [
+          "left_shin",
+          "container_2"
+        ],
+        "worst_time_s": 0.56,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "fixed_c_space__prone__l2__v00",
+        "family": "fixed_c_space",
+        "minimum_external_robot_contact_distance_m": -0.012494096477433742,
+        "worst_pair": [
+          "left_hand_collision",
+          "c_frame_2"
+        ],
+        "worst_time_s": 1.2,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "ladder_boards__supine__l0__v00",
+        "family": "ladder_boards",
+        "minimum_external_robot_contact_distance_m": -0.011098742200128102,
+        "worst_pair": [
+          "left_foot4_collision",
+          "ladder_board_0_0"
+        ],
+        "worst_time_s": 1.58,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "flat_calibration__prone",
+        "family": "flat_calibration",
+        "minimum_external_robot_contact_distance_m": -0.00564844135807129,
+        "worst_pair": [
+          "floor",
+          "right_foot4_collision"
+        ],
+        "worst_time_s": 0.28,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "hollow_container__prone__l0__v00",
+        "family": "hollow_container",
+        "minimum_external_robot_contact_distance_m": -0.008505147092057718,
+        "worst_pair": [
+          "floor",
+          "right_foot4_collision"
+        ],
+        "worst_time_s": 0.28,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "ladder_boards__right_side_down__l1__v00",
+        "family": "ladder_boards",
+        "minimum_external_robot_contact_distance_m": -0.010479368316158418,
+        "worst_pair": [
+          "floor",
+          "right_shin"
+        ],
+        "worst_time_s": 0.56,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "hollow_container__left_side_down__l1__v00",
+        "family": "hollow_container",
+        "minimum_external_robot_contact_distance_m": -0.01513301487732284,
+        "worst_pair": [
+          "head_collision",
+          "container_4"
+        ],
+        "worst_time_s": 0.22,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "hollow_container__right_side_down__l1__v00",
+        "family": "hollow_container",
+        "minimum_external_robot_contact_distance_m": -0.016837238024640898,
+        "worst_pair": [
+          "left_hand_collision",
+          "container_4"
+        ],
+        "worst_time_s": 1.06,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "ladder_boards__supine__l2__v00",
+        "family": "ladder_boards",
+        "minimum_external_robot_contact_distance_m": -0.010417528695361125,
+        "worst_pair": [
+          "head_collision",
+          "ladder_1"
+        ],
+        "worst_time_s": 0.9,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "fixed_c_space__supine__l2__v00",
+        "family": "fixed_c_space",
+        "minimum_external_robot_contact_distance_m": -0.010528478383804432,
+        "worst_pair": [
+          "right_foot5_collision",
+          "c_frame_2"
+        ],
+        "worst_time_s": 1.62,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "fixed_c_space__left_side_down__l2__v00",
+        "family": "fixed_c_space",
+        "minimum_external_robot_contact_distance_m": -0.006217441394445779,
+        "worst_pair": [
+          "right_shoulder_yaw_collision",
+          "c_frame_0"
+        ],
+        "worst_time_s": 0.8,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "fixed_c_space__left_side_down__l1__v00",
+        "family": "fixed_c_space",
+        "minimum_external_robot_contact_distance_m": -0.00462451552444503,
+        "worst_pair": [
+          "left_foot7_collision",
+          "c_frame_2"
+        ],
+        "worst_time_s": 0.9,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "crossed_timber__supine__l0__v00",
+        "family": "crossed_timber",
+        "minimum_external_robot_contact_distance_m": -0.01807461758919597,
+        "worst_pair": [
+          "right_hand_collision",
+          "timber_0_0"
+        ],
+        "worst_time_s": 0.4,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "crossed_timber__supine__l2__v00",
+        "family": "crossed_timber",
+        "minimum_external_robot_contact_distance_m": -0.01028085439904932,
+        "worst_pair": [
+          "left_hand_collision",
+          "timber_2_0"
+        ],
+        "worst_time_s": 0.68,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "crossed_timber__supine__l1__v00",
+        "family": "crossed_timber",
+        "minimum_external_robot_contact_distance_m": -0.00912864476616388,
+        "worst_pair": [
+          "right_hand_collision",
+          "timber_0_0"
+        ],
+        "worst_time_s": 0.5,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "fixed_c_space__prone__l1__v00",
+        "family": "fixed_c_space",
+        "minimum_external_robot_contact_distance_m": -0.014004209292221166,
+        "worst_pair": [
+          "right_foot5_collision",
+          "c_frame_2"
+        ],
+        "worst_time_s": 0.3,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "hollow_container__supine__l1__v00",
+        "family": "hollow_container",
+        "minimum_external_robot_contact_distance_m": -0.003688507272740893,
+        "worst_pair": [
+          "floor",
+          "left_foot2_collision"
+        ],
+        "worst_time_s": 1.42,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "fixed_c_space__right_side_down__l0__v00",
+        "family": "fixed_c_space",
+        "minimum_external_robot_contact_distance_m": -0.012191016391581377,
+        "worst_pair": [
+          "left_elbow_yaw_collision",
+          "c_frame_0"
+        ],
+        "worst_time_s": 2.0,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "ladder_boards__supine__l1__v00",
+        "family": "ladder_boards",
+        "minimum_external_robot_contact_distance_m": -0.011572090377911279,
+        "worst_pair": [
+          "left_thigh",
+          "ladder_0"
+        ],
+        "worst_time_s": 0.24,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "flat_calibration__supine",
+        "family": "flat_calibration",
+        "minimum_external_robot_contact_distance_m": -0.003935345476934693,
+        "worst_pair": [
+          "floor",
+          "left_hand_collision"
+        ],
+        "worst_time_s": 0.78,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "crossed_timber__right_side_down__l2__v00",
+        "family": "crossed_timber",
+        "minimum_external_robot_contact_distance_m": -0.01006670289214289,
+        "worst_pair": [
+          "right_foot5_collision",
+          "timber_3_0"
+        ],
+        "worst_time_s": 0.9400000000000001,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "ladder_boards__right_side_down__l2__v00",
+        "family": "ladder_boards",
+        "minimum_external_robot_contact_distance_m": -0.009723838373038071,
+        "worst_pair": [
+          "left_hand_collision",
+          "ladder_3"
+        ],
+        "worst_time_s": 0.46,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "hollow_container__prone__l1__v00",
+        "family": "hollow_container",
+        "minimum_external_robot_contact_distance_m": -0.007072454885790946,
+        "worst_pair": [
+          "right_shin",
+          "container_2"
+        ],
+        "worst_time_s": 1.1,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "fixed_c_space__supine__l0__v00",
+        "family": "fixed_c_space",
+        "minimum_external_robot_contact_distance_m": -0.0052125363907398106,
+        "worst_pair": [
+          "left_foot5_collision",
+          "c_frame_2"
+        ],
+        "worst_time_s": 0.76,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "hollow_container__left_side_down__l2__v00",
+        "family": "hollow_container",
+        "minimum_external_robot_contact_distance_m": -0.020433234221818797,
+        "worst_pair": [
+          "left_hand_collision",
+          "container_3"
+        ],
+        "worst_time_s": 1.5,
+        "sampled_frames_penetration_gt20mm": 1,
+        "first_gt20mm_s": 1.5
+      },
+      {
+        "case_id": "ladder_boards__prone__l2__v00",
+        "family": "ladder_boards",
+        "minimum_external_robot_contact_distance_m": -0.008553918049872735,
+        "worst_pair": [
+          "left_elbow_yaw_collision",
+          "ladder_4"
+        ],
+        "worst_time_s": 1.4000000000000001,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "crossed_timber__left_side_down__l0__v00",
+        "family": "crossed_timber",
+        "minimum_external_robot_contact_distance_m": -0.008802506811402967,
+        "worst_pair": [
+          "right_thigh",
+          "timber_1_0"
+        ],
+        "worst_time_s": 0.16,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "flat_calibration__left_side_down",
+        "family": "flat_calibration",
+        "minimum_external_robot_contact_distance_m": -0.006873475134930557,
+        "worst_pair": [
+          "floor",
+          "right_hand_collision"
+        ],
+        "worst_time_s": 0.6,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "hollow_container__right_side_down__l0__v00",
+        "family": "hollow_container",
+        "minimum_external_robot_contact_distance_m": -0.010784119068491277,
+        "worst_pair": [
+          "left_hand_collision",
+          "container_4"
+        ],
+        "worst_time_s": 0.56,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "ladder_boards__prone__l1__v00",
+        "family": "ladder_boards",
+        "minimum_external_robot_contact_distance_m": -0.005017642481255705,
+        "worst_pair": [
+          "floor",
+          "right_hand_collision"
+        ],
+        "worst_time_s": 0.9400000000000001,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "crossed_timber__left_side_down__l1__v00",
+        "family": "crossed_timber",
+        "minimum_external_robot_contact_distance_m": -0.010577307891262894,
+        "worst_pair": [
+          "right_shin",
+          "timber_1_0"
+        ],
+        "worst_time_s": 0.78,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "ladder_boards__left_side_down__l2__v00",
+        "family": "ladder_boards",
+        "minimum_external_robot_contact_distance_m": -0.011365533714142454,
+        "worst_pair": [
+          "right_shin",
+          "ladder_0"
+        ],
+        "worst_time_s": 0.14,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "hollow_container__supine__l0__v00",
+        "family": "hollow_container",
+        "minimum_external_robot_contact_distance_m": -0.016819089248216186,
+        "worst_pair": [
+          "right_elbow_yaw_collision",
+          "container_2"
+        ],
+        "worst_time_s": 0.44,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "crossed_timber__prone__l0__v00",
+        "family": "crossed_timber",
+        "minimum_external_robot_contact_distance_m": -0.006261896322935395,
+        "worst_pair": [
+          "floor",
+          "right_foot4_collision"
+        ],
+        "worst_time_s": 0.28,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "crossed_timber__right_side_down__l1__v00",
+        "family": "crossed_timber",
+        "minimum_external_robot_contact_distance_m": -0.008480965096357419,
+        "worst_pair": [
+          "left_elbow_yaw_collision",
+          "timber_1_0"
+        ],
+        "worst_time_s": 1.52,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "fixed_c_space__prone__l0__v00",
+        "family": "fixed_c_space",
+        "minimum_external_robot_contact_distance_m": -0.006359699094347934,
+        "worst_pair": [
+          "floor",
+          "right_foot5_collision"
+        ],
+        "worst_time_s": 0.3,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "crossed_timber__right_side_down__l0__v00",
+        "family": "crossed_timber",
+        "minimum_external_robot_contact_distance_m": -0.009226017048334492,
+        "worst_pair": [
+          "right_hand_collision",
+          "timber_0_0"
+        ],
+        "worst_time_s": 0.58,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "ladder_boards__left_side_down__l0__v00",
+        "family": "ladder_boards",
+        "minimum_external_robot_contact_distance_m": -0.008811029036592866,
+        "worst_pair": [
+          "right_elbow_yaw_collision",
+          "ladder_0"
+        ],
+        "worst_time_s": 0.68,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "hollow_container__supine__l2__v00",
+        "family": "hollow_container",
+        "minimum_external_robot_contact_distance_m": -0.01142525437188932,
+        "worst_pair": [
+          "torso_collision1",
+          "container_2"
+        ],
+        "worst_time_s": 0.9,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "ladder_boards__right_side_down__l0__v00",
+        "family": "ladder_boards",
+        "minimum_external_robot_contact_distance_m": -0.012002174737933633,
+        "worst_pair": [
+          "right_foot4_collision",
+          "ladder_2"
+        ],
+        "worst_time_s": 2.3000000000000003,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "crossed_timber__prone__l1__v00",
+        "family": "crossed_timber",
+        "minimum_external_robot_contact_distance_m": -0.012536669680539765,
+        "worst_pair": [
+          "left_foot3_collision",
+          "timber_2_0"
+        ],
+        "worst_time_s": 0.66,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "fixed_c_space__right_side_down__l1__v00",
+        "family": "fixed_c_space",
+        "minimum_external_robot_contact_distance_m": -0.008963616212121652,
+        "worst_pair": [
+          "left_foot4_collision",
+          "c_frame_2"
+        ],
+        "worst_time_s": 0.86,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "hollow_container__left_side_down__l0__v00",
+        "family": "hollow_container",
+        "minimum_external_robot_contact_distance_m": -0.01858519541916888,
+        "worst_pair": [
+          "left_hand_collision",
+          "container_1"
+        ],
+        "worst_time_s": 1.52,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "hollow_container__prone__l2__v00",
+        "family": "hollow_container",
+        "minimum_external_robot_contact_distance_m": -0.010213309263185193,
+        "worst_pair": [
+          "left_shoulder_yaw_collision",
+          "container_0"
+        ],
+        "worst_time_s": 1.44,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "ladder_boards__left_side_down__l1__v00",
+        "family": "ladder_boards",
+        "minimum_external_robot_contact_distance_m": -0.010894142024843012,
+        "worst_pair": [
+          "right_shin",
+          "ladder_5"
+        ],
+        "worst_time_s": 1.62,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "fixed_c_space__left_side_down__l0__v00",
+        "family": "fixed_c_space",
+        "minimum_external_robot_contact_distance_m": -0.0059615543993005934,
+        "worst_pair": [
+          "left_hand_collision",
+          "c_frame_2"
+        ],
+        "worst_time_s": 0.9,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      },
+      {
+        "case_id": "ladder_boards__prone__l0__v00",
+        "family": "ladder_boards",
+        "minimum_external_robot_contact_distance_m": -0.004286596367585007,
+        "worst_pair": [
+          "floor",
+          "left_foot3_collision"
+        ],
+        "worst_time_s": 1.56,
+        "sampled_frames_penetration_gt20mm": 0,
+        "first_gt20mm_s": null
+      }
+    ]
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "M0_R2_mix": {
+    "selected_iteration": 9000,
+    "selected_macro_pct": 76.89583420753479,
+    "final_macro_pct": 69.424107670784
+  },
+  "M1_R2_mix": {
+    "selected_iteration": 9000,
+    "selected_macro_pct": 71.04017853736877,
+    "final_macro_pct": 68.58631014823914
+  },
+  "M2_A6_mix": {
+    "selected_iteration": 8000,
+    "selected_macro_pct": 92.57738173007965,
+    "final_macro_pct": 87.8705358505249
+  }
+}

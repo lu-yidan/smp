@@ -1,0 +1,6143 @@
+{
+  "M0_R2_mix": {
+    "completed": {
+      "iteration": 9999
+    },
+    "validation": {
+      "8000": {
+        "flat": {
+          "n": 80,
+          "stable_1s": 1.0,
+          "stable_10s": 1.0,
+          "refall": 0.0,
+          "path_mean": 1.785408616065979,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 16.34552574157715,
+          "power_peak_p95": 747.3710327148438
+        },
+        "free_plate": {
+          "n": 64,
+          "stable_1s": 0.65625,
+          "stable_10s": 0.65625,
+          "refall": 0.0,
+          "path_mean": 1.7533721923828125,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 14.466520309448242,
+          "power_peak_p95": 938.990966796875
+        },
+        "guided_plate": {
+          "n": 48,
+          "stable_1s": 0.8958333730697632,
+          "stable_10s": 0.8333333730697632,
+          "refall": 0.0,
+          "path_mean": 3.065670967102051,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 17.245603561401367,
+          "power_peak_p95": 937.6076049804688
+        },
+        "fixed_ceiling": {
+          "n": 16,
+          "stable_1s": 0.875,
+          "stable_10s": 0.8125,
+          "refall": 0.0,
+          "path_mean": 4.417779922485352,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 15.035344123840332,
+          "power_peak_p95": 857.517333984375
+        },
+        "table": {
+          "n": 16,
+          "stable_1s": 1.0,
+          "stable_10s": 0.9375,
+          "refall": 0.0,
+          "path_mean": 3.543708562850952,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 22.18158531188965,
+          "power_peak_p95": 911.7774658203125
+        },
+        "pyramid_stairs": {
+          "n": 20,
+          "stable_1s": 0.800000011920929,
+          "stable_10s": 0.800000011920929,
+          "refall": 0.0,
+          "path_mean": 3.0735039710998535,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 18.845508575439453,
+          "power_peak_p95": 1167.074951171875
+        },
+        "box_terrain": {
+          "n": 28,
+          "stable_1s": 0.6428571939468384,
+          "stable_10s": 0.6071428656578064,
+          "refall": 0.0,
+          "path_mean": 1.5084153413772583,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 15.266534805297852,
+          "power_peak_p95": 1082.5340576171875
+        },
+        "free_box": {
+          "n": 16,
+          "stable_1s": 0.75,
+          "stable_10s": 0.75,
+          "refall": 0.0,
+          "path_mean": 1.745118260383606,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 13.003805160522461,
+          "power_peak_p95": 816.263916015625
+        },
+        "double_plate": {
+          "n": 16,
+          "stable_1s": 0.5625,
+          "stable_10s": 0.5625,
+          "refall": 0.0,
+          "path_mean": 1.9378048181533813,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 15.019538879394531,
+          "power_peak_p95": 1056.6488037109375
+        },
+        "mixed_clutter": {
+          "n": 16,
+          "stable_1s": 0.3125,
+          "stable_10s": 0.3125,
+          "refall": 0.0,
+          "path_mean": 1.3843152523040771,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 15.689319610595703,
+          "power_peak_p95": 996.3204345703125
+        }
+      },
+      "500": {
+        "flat": {
+          "n": 80,
+          "stable_1s": 0.987500011920929,
+          "stable_10s": 0.987500011920929,
+          "refall": 0.0,
+          "path_mean": 1.0135048627853394,
+          "tau_peak_p95": 122.2183609008789,
+          "speed_peak_p95": 13.361040115356445,
+          "power_peak_p95": 591.3844604492188
+        },
+        "free_plate": {
+          "n": 64,
+          "stable_1s": 0.34375,
+          "stable_10s": 0.34375,
+          "refall": 0.0,
+          "path_mean": 1.103227138519287,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 17.954744338989258,
+          "power_peak_p95": 630.1691284179688
+        },
+        "guided_plate": {
+          "n": 48,
+          "stable_1s": 0.2083333432674408,
+          "stable_10s": 0.1666666716337204,
+          "refall": 0.0,
+          "path_mean": 1.2007510662078857,
+          "tau_peak_p95": 125.17301940917969,
+          "speed_peak_p95": 15.333892822265625,
+          "power_peak_p95": 598.8547973632812
+        },
+        "fixed_ceiling": {
+          "n": 16,
+          "stable_1s": 0.6875,
+          "stable_10s": 0.5,
+          "refall": 0.0,
+          "path_mean": 2.2288665771484375,
+          "tau_peak_p95": 136.86492919921875,
+          "speed_peak_p95": 11.45368766784668,
+          "power_peak_p95": 593.0591430664062
+        },
+        "table": {
+          "n": 16,
+          "stable_1s": 0.625,
+          "stable_10s": 0.5,
+          "refall": 0.0,
+          "path_mean": 2.1961188316345215,
+          "tau_peak_p95": 138.28875732421875,
+          "speed_peak_p95": 12.745657920837402,
+          "power_peak_p95": 602.3287963867188
+        },
+        "pyramid_stairs": {
+          "n": 20,
+          "stable_1s": 0.800000011920929,
+          "stable_10s": 0.75,
+          "refall": 0.0,
+          "path_mean": 2.6240639686584473,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 22.596281051635742,
+          "power_peak_p95": 988.6961669921875
+        },
+        "box_terrain": {
+          "n": 28,
+          "stable_1s": 0.8214285969734192,
+          "stable_10s": 0.785714328289032,
+          "refall": 0.0,
+          "path_mean": 1.7668676376342773,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 18.49432373046875,
+          "power_peak_p95": 713.5099487304688
+        },
+        "free_box": {
+          "n": 16,
+          "stable_1s": 0.625,
+          "stable_10s": 0.5,
+          "refall": 0.0,
+          "path_mean": 1.2073345184326172,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 11.541484832763672,
+          "power_peak_p95": 641.9427490234375
+        },
+        "double_plate": {
+          "n": 16,
+          "stable_1s": 0.4375,
+          "stable_10s": 0.4375,
+          "refall": 0.0,
+          "path_mean": 1.1875154972076416,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 12.605657577514648,
+          "power_peak_p95": 643.9298095703125
+        },
+        "mixed_clutter": {
+          "n": 16,
+          "stable_1s": 0.1875,
+          "stable_10s": 0.1875,
+          "refall": 0.0,
+          "path_mean": 1.455582618713379,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 24.007930755615234,
+          "power_peak_p95": 1062.430419921875
+        }
+      },
+      "4000": {
+        "flat": {
+          "n": 80,
+          "stable_1s": 1.0,
+          "stable_10s": 1.0,
+          "refall": 0.0,
+          "path_mean": 1.5546112060546875,
+          "tau_peak_p95": 130.0990753173828,
+          "speed_peak_p95": 18.13457489013672,
+          "power_peak_p95": 709.9037475585938
+        },
+        "free_plate": {
+          "n": 64,
+          "stable_1s": 0.6875,
+          "stable_10s": 0.65625,
+          "refall": 0.0,
+          "path_mean": 1.7429108619689941,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 17.036550521850586,
+          "power_peak_p95": 785.5911254882812
+        },
+        "guided_plate": {
+          "n": 48,
+          "stable_1s": 0.7916666865348816,
+          "stable_10s": 0.7708333730697632,
+          "refall": 0.0,
+          "path_mean": 3.1438589096069336,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 16.759309768676758,
+          "power_peak_p95": 712.9251098632812
+        },
+        "fixed_ceiling": {
+          "n": 16,
+          "stable_1s": 1.0,
+          "stable_10s": 0.9375,
+          "refall": 0.0,
+          "path_mean": 3.721217632293701,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 17.1722354888916,
+          "power_peak_p95": 820.4127807617188
+        },
+        "table": {
+          "n": 16,
+          "stable_1s": 0.625,
+          "stable_10s": 0.5625,
+          "refall": 0.0,
+          "path_mean": 3.3461780548095703,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 17.11052703857422,
+          "power_peak_p95": 957.1581420898438
+        },
+        "pyramid_stairs": {
+          "n": 20,
+          "stable_1s": 0.20000000298023224,
+          "stable_10s": 0.15000000596046448,
+          "refall": 0.0,
+          "path_mean": 1.4637564420700073,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 16.312936782836914,
+          "power_peak_p95": 932.4803466796875
+        },
+        "box_terrain": {
+          "n": 28,
+          "stable_1s": 0.4285714626312256,
+          "stable_10s": 0.392857164144516,
+          "refall": 0.0,
+          "path_mean": 1.746124267578125,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 24.590192794799805,
+          "power_peak_p95": 1160.4072265625
+        },
+        "free_box": {
+          "n": 16,
+          "stable_1s": 0.625,
+          "stable_10s": 0.5625,
+          "refall": 0.0,
+          "path_mean": 1.5949342250823975,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 17.174053192138672,
+          "power_peak_p95": 806.708740234375
+        },
+        "double_plate": {
+          "n": 16,
+          "stable_1s": 0.5625,
+          "stable_10s": 0.5,
+          "refall": 0.0,
+          "path_mean": 1.898605465888977,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 20.679283142089844,
+          "power_peak_p95": 838.5631103515625
+        },
+        "mixed_clutter": {
+          "n": 16,
+          "stable_1s": 0.1875,
+          "stable_10s": 0.125,
+          "refall": 0.0,
+          "path_mean": 1.8013633489608765,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 17.40227699279785,
+          "power_peak_p95": 1126.030029296875
+        }
+      },
+      "1500": {
+        "flat": {
+          "n": 80,
+          "stable_1s": 1.0,
+          "stable_10s": 1.0,
+          "refall": 0.0,
+          "path_mean": 1.5224195718765259,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 17.07776641845703,
+          "power_peak_p95": 894.2777709960938
+        },
+        "free_plate": {
+          "n": 64,
+          "stable_1s": 0.625,
+          "stable_10s": 0.578125,
+          "refall": 0.0,
+          "path_mean": 1.6643898487091064,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 16.305265426635742,
+          "power_peak_p95": 829.1664428710938
+        },
+        "guided_plate": {
+          "n": 48,
+          "stable_1s": 0.4583333432674408,
+          "stable_10s": 0.3958333432674408,
+          "refall": 0.0,
+          "path_mean": 2.2331807613372803,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 18.09767723083496,
+          "power_peak_p95": 742.0530395507812
+        },
+        "fixed_ceiling": {
+          "n": 16,
+          "stable_1s": 0.9375,
+          "stable_10s": 0.8125,
+          "refall": 0.0,
+          "path_mean": 5.402352333068848,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 15.092248916625977,
+          "power_peak_p95": 857.8238525390625
+        },
+        "table": {
+          "n": 16,
+          "stable_1s": 0.75,
+          "stable_10s": 0.625,
+          "refall": 0.0,
+          "path_mean": 2.6456122398376465,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 15.300712585449219,
+          "power_peak_p95": 782.6983032226562
+        },
+        "pyramid_stairs": {
+          "n": 20,
+          "stable_1s": 0.9000000357627869,
+          "stable_10s": 0.800000011920929,
+          "refall": 0.0,
+          "path_mean": 3.5837349891662598,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 24.99199867248535,
+          "power_peak_p95": 1208.766845703125
+        },
+        "box_terrain": {
+          "n": 28,
+          "stable_1s": 0.7500000596046448,
+          "stable_10s": 0.7142857313156128,
+          "refall": 0.0,
+          "path_mean": 1.9382613897323608,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 22.28709602355957,
+          "power_peak_p95": 1041.716064453125
+        },
+        "free_box": {
+          "n": 16,
+          "stable_1s": 0.3125,
+          "stable_10s": 0.3125,
+          "refall": 0.0,
+          "path_mean": 1.1125261783599854,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 12.60718822479248,
+          "power_peak_p95": 785.4237060546875
+        },
+        "double_plate": {
+          "n": 16,
+          "stable_1s": 0.375,
+          "stable_10s": 0.3125,
+          "refall": 0.0,
+          "path_mean": 1.2751387357711792,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 12.373421669006348,
+          "power_peak_p95": 839.4467163085938
+        },
+        "mixed_clutter": {
+          "n": 16,
+          "stable_1s": 0.4375,
+          "stable_10s": 0.3125,
+          "refall": 0.0,
+          "path_mean": 2.3035550117492676,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 22.346803665161133,
+          "power_peak_p95": 1062.101318359375
+        }
+      },
+      "3000": {
+        "flat": {
+          "n": 80,
+          "stable_1s": 1.0,
+          "stable_10s": 1.0,
+          "refall": 0.0,
+          "path_mean": 1.4652867317199707,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 18.014812469482422,
+          "power_peak_p95": 780.6964721679688
+        },
+        "free_plate": {
+          "n": 64,
+          "stable_1s": 0.609375,
+          "stable_10s": 0.5625,
+          "refall": 0.0,
+          "path_mean": 1.5624654293060303,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 15.007471084594727,
+          "power_peak_p95": 715.7606201171875
+        },
+        "guided_plate": {
+          "n": 48,
+          "stable_1s": 0.75,
+          "stable_10s": 0.5833333730697632,
+          "refall": 0.0,
+          "path_mean": 2.8372411727905273,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 16.308258056640625,
+          "power_peak_p95": 681.0025024414062
+        },
+        "fixed_ceiling": {
+          "n": 16,
+          "stable_1s": 0.9375,
+          "stable_10s": 0.9375,
+          "refall": 0.0,
+          "path_mean": 3.222294569015503,
+          "tau_peak_p95": 137.1493377685547,
+          "speed_peak_p95": 16.962936401367188,
+          "power_peak_p95": 732.6407470703125
+        },
+        "table": {
+          "n": 16,
+          "stable_1s": 0.875,
+          "stable_10s": 0.875,
+          "refall": 0.0,
+          "path_mean": 3.0969200134277344,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 17.036300659179688,
+          "power_peak_p95": 699.365234375
+        },
+        "pyramid_stairs": {
+          "n": 20,
+          "stable_1s": 0.800000011920929,
+          "stable_10s": 0.699999988079071,
+          "refall": 0.0,
+          "path_mean": 3.0225658416748047,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 22.134828567504883,
+          "power_peak_p95": 1255.0079345703125
+        },
+        "box_terrain": {
+          "n": 28,
+          "stable_1s": 0.7142857313156128,
+          "stable_10s": 0.535714328289032,
+          "refall": 0.0,
+          "path_mean": 2.1745715141296387,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 22.194400787353516,
+          "power_peak_p95": 1057.8980712890625
+        },
+        "free_box": {
+          "n": 16,
+          "stable_1s": 0.75,
+          "stable_10s": 0.75,
+          "refall": 0.0,
+          "path_mean": 1.50197172164917,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 13.052590370178223,
+          "power_peak_p95": 722.3069458007812
+        },
+        "double_plate": {
+          "n": 16,
+          "stable_1s": 0.5,
+          "stable_10s": 0.5,
+          "refall": 0.0,
+          "path_mean": 1.5008703470230103,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 12.601438522338867,
+          "power_peak_p95": 781.7872314453125
+        },
+        "mixed_clutter": {
+          "n": 16,
+          "stable_1s": 0.6875,
+          "stable_10s": 0.5625,
+          "refall": 0.0,
+          "path_mean": 2.1372973918914795,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 21.122434616088867,
+          "power_peak_p95": 939.0814819335938
+        }
+      },
+      "2000": {
+        "flat": {
+          "n": 80,
+          "stable_1s": 1.0,
+          "stable_10s": 1.0,
+          "refall": 0.0,
+          "path_mean": 1.6104917526245117,
+          "tau_peak_p95": 137.74502563476562,
+          "speed_peak_p95": 17.11574363708496,
+          "power_peak_p95": 719.8140869140625
+        },
+        "free_plate": {
+          "n": 64,
+          "stable_1s": 0.625,
+          "stable_10s": 0.625,
+          "refall": 0.0,
+          "path_mean": 1.6922473907470703,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 15.816388130187988,
+          "power_peak_p95": 749.3771362304688
+        },
+        "guided_plate": {
+          "n": 48,
+          "stable_1s": 0.6875,
+          "stable_10s": 0.5625,
+          "refall": 0.0,
+          "path_mean": 2.609661102294922,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 19.078765869140625,
+          "power_peak_p95": 715.4274291992188
+        },
+        "fixed_ceiling": {
+          "n": 16,
+          "stable_1s": 1.0,
+          "stable_10s": 1.0,
+          "refall": 0.0,
+          "path_mean": 3.209881544113159,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 14.922382354736328,
+          "power_peak_p95": 677.5474243164062
+        },
+        "table": {
+          "n": 16,
+          "stable_1s": 0.6875,
+          "stable_10s": 0.625,
+          "refall": 0.0,
+          "path_mean": 2.6048150062561035,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 16.435144424438477,
+          "power_peak_p95": 718.7753295898438
+        },
+        "pyramid_stairs": {
+          "n": 20,
+          "stable_1s": 0.800000011920929,
+          "stable_10s": 0.800000011920929,
+          "refall": 0.0,
+          "path_mean": 2.792572021484375,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 23.014034271240234,
+          "power_peak_p95": 1122.054443359375
+        },
+        "box_terrain": {
+          "n": 28,
+          "stable_1s": 0.7500000596046448,
+          "stable_10s": 0.7142857313156128,
+          "refall": 0.0,
+          "path_mean": 2.522582530975342,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 23.348600387573242,
+          "power_peak_p95": 1146.01025390625
+        },
+        "free_box": {
+          "n": 16,
+          "stable_1s": 0.4375,
+          "stable_10s": 0.375,
+          "refall": 0.0,
+          "path_mean": 1.3144145011901855,
+          "tau_peak_p95": 136.701904296875,
+          "speed_peak_p95": 14.711416244506836,
+          "power_peak_p95": 719.8868408203125
+        },
+        "double_plate": {
+          "n": 16,
+          "stable_1s": 0.375,
+          "stable_10s": 0.375,
+          "refall": 0.0,
+          "path_mean": 1.42423415184021,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 12.392739295959473,
+          "power_peak_p95": 748.6522216796875
+        },
+        "mixed_clutter": {
+          "n": 16,
+          "stable_1s": 0.5625,
+          "stable_10s": 0.4375,
+          "refall": 0.0,
+          "path_mean": 2.453794479370117,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 22.361255645751953,
+          "power_peak_p95": 963.015380859375
+        }
+      },
+      "6500": {
+        "flat": {
+          "n": 80,
+          "stable_1s": 1.0,
+          "stable_10s": 1.0,
+          "refall": 0.0,
+          "path_mean": 1.7405035495758057,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 13.275522232055664,
+          "power_peak_p95": 820.6390991210938
+        },
+        "free_plate": {
+          "n": 64,
+          "stable_1s": 0.734375,
+          "stable_10s": 0.71875,
+          "refall": 0.0,
+          "path_mean": 1.8190133571624756,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 14.973894119262695,
+          "power_peak_p95": 968.87646484375
+        },
+        "guided_plate": {
+          "n": 48,
+          "stable_1s": 0.8958333730697632,
+          "stable_10s": 0.8958333730697632,
+          "refall": 0.0,
+          "path_mean": 3.001615524291992,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 16.476612091064453,
+          "power_peak_p95": 863.3104248046875
+        },
+        "fixed_ceiling": {
+          "n": 16,
+          "stable_1s": 1.0,
+          "stable_10s": 1.0,
+          "refall": 0.0,
+          "path_mean": 3.2560415267944336,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 13.68183708190918,
+          "power_peak_p95": 907.6185302734375
+        },
+        "table": {
+          "n": 16,
+          "stable_1s": 0.5,
+          "stable_10s": 0.4375,
+          "refall": 0.0,
+          "path_mean": 2.795553684234619,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 20.604202270507812,
+          "power_peak_p95": 906.3901977539062
+        },
+        "pyramid_stairs": {
+          "n": 20,
+          "stable_1s": 0.6000000238418579,
+          "stable_10s": 0.6000000238418579,
+          "refall": 0.0,
+          "path_mean": 2.5883090496063232,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 21.886171340942383,
+          "power_peak_p95": 1081.4346923828125
+        },
+        "box_terrain": {
+          "n": 28,
+          "stable_1s": 0.5714285969734192,
+          "stable_10s": 0.5714285969734192,
+          "refall": 0.0,
+          "path_mean": 1.662909984588623,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 18.866567611694336,
+          "power_peak_p95": 1005.7454223632812
+        },
+        "free_box": {
+          "n": 16,
+          "stable_1s": 0.75,
+          "stable_10s": 0.75,
+          "refall": 0.0,
+          "path_mean": 1.7620223760604858,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 13.21906852722168,
+          "power_peak_p95": 931.2044067382812
+        },
+        "double_plate": {
+          "n": 16,
+          "stable_1s": 0.375,
+          "stable_10s": 0.375,
+          "refall": 0.0,
+          "path_mean": 1.704811692237854,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 14.387847900390625,
+          "power_peak_p95": 891.6715698242188
+        },
+        "mixed_clutter": {
+          "n": 16,
+          "stable_1s": 0.3125,
+          "stable_10s": 0.3125,
+          "refall": 0.0,
+          "path_mean": 1.930972933769226,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 17.5948429107666,
+          "power_peak_p95": 948.1449584960938
+        }
+      },
+      "8500": {
+        "flat": {
+          "n": 80,
+          "stable_1s": 1.0,
+          "stable_10s": 1.0,
+          "refall": 0.0,
+          "path_mean": 2.043064832687378,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 15.799520492553711,
+          "power_peak_p95": 866.1964111328125
+        },
+        "free_plate": {
+          "n": 64,
+          "stable_1s": 0.765625,
+          "stable_10s": 0.765625,
+          "refall": 0.0,
+          "path_mean": 1.9762513637542725,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 17.41264533996582,
+          "power_peak_p95": 919.5596923828125
+        },
+        "guided_plate": {
+          "n": 48,
+          "stable_1s": 0.7708333730697632,
+          "stable_10s": 0.7083333730697632,
+          "refall": 0.0,
+          "path_mean": 2.716710090637207,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 14.711841583251953,
+          "power_peak_p95": 847.63525390625
+        },
+        "fixed_ceiling": {
+          "n": 16,
+          "stable_1s": 0.9375,
+          "stable_10s": 0.9375,
+          "refall": 0.0,
+          "path_mean": 3.251932144165039,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 15.52748966217041,
+          "power_peak_p95": 816.6395263671875
+        },
+        "table": {
+          "n": 16,
+          "stable_1s": 0.625,
+          "stable_10s": 0.625,
+          "refall": 0.0,
+          "path_mean": 3.185211181640625,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 16.400718688964844,
+          "power_peak_p95": 1001.1097412109375
+        },
+        "pyramid_stairs": {
+          "n": 20,
+          "stable_1s": 0.949999988079071,
+          "stable_10s": 0.9000000357627869,
+          "refall": 0.0,
+          "path_mean": 3.0873031616210938,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 21.80379295349121,
+          "power_peak_p95": 884.58349609375
+        },
+        "box_terrain": {
+          "n": 28,
+          "stable_1s": 0.6071428656578064,
+          "stable_10s": 0.6071428656578064,
+          "refall": 0.0,
+          "path_mean": 1.624803900718689,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 17.475387573242188,
+          "power_peak_p95": 907.1521606445312
+        },
+        "free_box": {
+          "n": 16,
+          "stable_1s": 0.8125,
+          "stable_10s": 0.8125,
+          "refall": 0.0,
+          "path_mean": 2.137167453765869,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 17.449953079223633,
+          "power_peak_p95": 894.0703125
+        },
+        "double_plate": {
+          "n": 16,
+          "stable_1s": 0.625,
+          "stable_10s": 0.5625,
+          "refall": 0.0,
+          "path_mean": 1.8780337572097778,
+          "tau_peak_p95": 120.6024169921875,
+          "speed_peak_p95": 13.935578346252441,
+          "power_peak_p95": 803.5047607421875
+        },
+        "mixed_clutter": {
+          "n": 16,
+          "stable_1s": 0.5,
+          "stable_10s": 0.5,
+          "refall": 0.0,
+          "path_mean": 1.5365512371063232,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 18.10699462890625,
+          "power_peak_p95": 884.369873046875
+        }
+      },
+      "7500": {
+        "flat": {
+          "n": 80,
+          "stable_1s": 1.0,
+          "stable_10s": 1.0,
+          "refall": 0.0,
+          "path_mean": 1.7858227491378784,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 14.675710678100586,
+          "power_peak_p95": 812.8074340820312
+        },
+        "free_plate": {
+          "n": 64,
+          "stable_1s": 0.640625,
+          "stable_10s": 0.625,
+          "refall": 0.0,
+          "path_mean": 1.8388205766677856,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 15.565448760986328,
+          "power_peak_p95": 1031.580810546875
+        },
+        "guided_plate": {
+          "n": 48,
+          "stable_1s": 0.75,
+          "stable_10s": 0.7083333730697632,
+          "refall": 0.0,
+          "path_mean": 2.721830368041992,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 16.454957962036133,
+          "power_peak_p95": 931.2073974609375
+        },
+        "fixed_ceiling": {
+          "n": 16,
+          "stable_1s": 1.0,
+          "stable_10s": 1.0,
+          "refall": 0.0,
+          "path_mean": 3.6696484088897705,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 15.202570915222168,
+          "power_peak_p95": 853.58203125
+        },
+        "table": {
+          "n": 16,
+          "stable_1s": 1.0,
+          "stable_10s": 0.9375,
+          "refall": 0.0,
+          "path_mean": 3.491497039794922,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 18.145050048828125,
+          "power_peak_p95": 807.8831176757812
+        },
+        "pyramid_stairs": {
+          "n": 20,
+          "stable_1s": 0.699999988079071,
+          "stable_10s": 0.6500000357627869,
+          "refall": 0.0,
+          "path_mean": 3.2917251586914062,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 20.332508087158203,
+          "power_peak_p95": 946.259033203125
+        },
+        "box_terrain": {
+          "n": 28,
+          "stable_1s": 0.6785714626312256,
+          "stable_10s": 0.6785714626312256,
+          "refall": 0.0,
+          "path_mean": 1.7044354677200317,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 17.791400909423828,
+          "power_peak_p95": 811.116943359375
+        },
+        "free_box": {
+          "n": 16,
+          "stable_1s": 0.875,
+          "stable_10s": 0.8125,
+          "refall": 0.0,
+          "path_mean": 1.8636311292648315,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 17.68113899230957,
+          "power_peak_p95": 886.0503540039062
+        },
+        "double_plate": {
+          "n": 16,
+          "stable_1s": 0.625,
+          "stable_10s": 0.5625,
+          "refall": 0.0,
+          "path_mean": 1.7434613704681396,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 14.63831615447998,
+          "power_peak_p95": 984.6602783203125
+        },
+        "mixed_clutter": {
+          "n": 16,
+          "stable_1s": 0.5625,
+          "stable_10s": 0.5625,
+          "refall": 0.0,
+          "path_mean": 1.8753876686096191,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 18.94234275817871,
+          "power_peak_p95": 1020.9940185546875
+        }
+      },
+      "3500": {
+        "flat": {
+          "n": 80,
+          "stable_1s": 1.0,
+          "stable_10s": 1.0,
+          "refall": 0.0,
+          "path_mean": 1.3292291164398193,
+          "tau_peak_p95": 132.65975952148438,
+          "speed_peak_p95": 16.76852798461914,
+          "power_peak_p95": 768.395263671875
+        },
+        "free_plate": {
+          "n": 64,
+          "stable_1s": 0.546875,
+          "stable_10s": 0.546875,
+          "refall": 0.0,
+          "path_mean": 1.4625951051712036,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 13.870052337646484,
+          "power_peak_p95": 838.4088134765625
+        },
+        "guided_plate": {
+          "n": 48,
+          "stable_1s": 0.7291666865348816,
+          "stable_10s": 0.6875,
+          "refall": 0.0,
+          "path_mean": 3.8360066413879395,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 20.618555068969727,
+          "power_peak_p95": 708.9132690429688
+        },
+        "fixed_ceiling": {
+          "n": 16,
+          "stable_1s": 1.0,
+          "stable_10s": 0.9375,
+          "refall": 0.0,
+          "path_mean": 3.7372946739196777,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 16.367168426513672,
+          "power_peak_p95": 764.79150390625
+        },
+        "table": {
+          "n": 16,
+          "stable_1s": 0.8125,
+          "stable_10s": 0.75,
+          "refall": 0.0,
+          "path_mean": 3.661215305328369,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 18.42411231994629,
+          "power_peak_p95": 763.307861328125
+        },
+        "pyramid_stairs": {
+          "n": 20,
+          "stable_1s": 0.6500000357627869,
+          "stable_10s": 0.6500000357627869,
+          "refall": 0.0,
+          "path_mean": 2.612645149230957,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 25.612285614013672,
+          "power_peak_p95": 1190.5157470703125
+        },
+        "box_terrain": {
+          "n": 28,
+          "stable_1s": 0.6785714626312256,
+          "stable_10s": 0.535714328289032,
+          "refall": 0.0,
+          "path_mean": 2.3484749794006348,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 22.88322639465332,
+          "power_peak_p95": 1112.0631103515625
+        },
+        "free_box": {
+          "n": 16,
+          "stable_1s": 0.5,
+          "stable_10s": 0.5,
+          "refall": 0.0,
+          "path_mean": 1.3323938846588135,
+          "tau_peak_p95": 137.28445434570312,
+          "speed_peak_p95": 13.834259033203125,
+          "power_peak_p95": 841.750732421875
+        },
+        "double_plate": {
+          "n": 16,
+          "stable_1s": 0.375,
+          "stable_10s": 0.3125,
+          "refall": 0.0,
+          "path_mean": 1.4627559185028076,
+          "tau_peak_p95": 137.12557983398438,
+          "speed_peak_p95": 13.950679779052734,
+          "power_peak_p95": 819.732421875
+        },
+        "mixed_clutter": {
+          "n": 16,
+          "stable_1s": 0.5625,
+          "stable_10s": 0.5625,
+          "refall": 0.0,
+          "path_mean": 2.0934154987335205,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 19.014404296875,
+          "power_peak_p95": 1267.59765625
+        }
+      },
+      "9500": {
+        "flat": {
+          "n": 80,
+          "stable_1s": 1.0,
+          "stable_10s": 1.0,
+          "refall": 0.0,
+          "path_mean": 2.1068642139434814,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 13.68620491027832,
+          "power_peak_p95": 967.259521484375
+        },
+        "free_plate": {
+          "n": 64,
+          "stable_1s": 0.625,
+          "stable_10s": 0.609375,
+          "refall": 0.0,
+          "path_mean": 2.0144805908203125,
+          "tau_peak_p95": 136.42710876464844,
+          "speed_peak_p95": 15.823906898498535,
+          "power_peak_p95": 770.237548828125
+        },
+        "guided_plate": {
+          "n": 48,
+          "stable_1s": 0.7291666865348816,
+          "stable_10s": 0.6666666865348816,
+          "refall": 0.0,
+          "path_mean": 1.9660223722457886,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 17.302574157714844,
+          "power_peak_p95": 790.5690307617188
+        },
+        "fixed_ceiling": {
+          "n": 16,
+          "stable_1s": 1.0,
+          "stable_10s": 1.0,
+          "refall": 0.0,
+          "path_mean": 2.172849655151367,
+          "tau_peak_p95": 131.586181640625,
+          "speed_peak_p95": 14.52553653717041,
+          "power_peak_p95": 822.9168701171875
+        },
+        "table": {
+          "n": 16,
+          "stable_1s": 0.625,
+          "stable_10s": 0.5,
+          "refall": 0.0,
+          "path_mean": 2.4372620582580566,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 20.318344116210938,
+          "power_peak_p95": 918.984375
+        },
+        "pyramid_stairs": {
+          "n": 20,
+          "stable_1s": 0.9000000357627869,
+          "stable_10s": 0.8500000238418579,
+          "refall": 0.0,
+          "path_mean": 2.7204911708831787,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 21.069664001464844,
+          "power_peak_p95": 1025.350341796875
+        },
+        "box_terrain": {
+          "n": 28,
+          "stable_1s": 0.6071428656578064,
+          "stable_10s": 0.6071428656578064,
+          "refall": 0.0,
+          "path_mean": 1.8902342319488525,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 19.131942749023438,
+          "power_peak_p95": 853.5321655273438
+        },
+        "free_box": {
+          "n": 16,
+          "stable_1s": 0.875,
+          "stable_10s": 0.875,
+          "refall": 0.0,
+          "path_mean": 2.0835301876068115,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 14.833769798278809,
+          "power_peak_p95": 890.3829956054688
+        },
+        "double_plate": {
+          "n": 16,
+          "stable_1s": 0.625,
+          "stable_10s": 0.625,
+          "refall": 0.0,
+          "path_mean": 1.9845010042190552,
+          "tau_peak_p95": 130.2172088623047,
+          "speed_peak_p95": 19.547588348388672,
+          "power_peak_p95": 838.527587890625
+        },
+        "mixed_clutter": {
+          "n": 16,
+          "stable_1s": 0.75,
+          "stable_10s": 0.6875,
+          "refall": 0.0,
+          "path_mean": 2.6239657402038574,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 24.50149917602539,
+          "power_peak_p95": 1001.37890625
+        }
+      },
+      "7000": {
+        "flat": {
+          "n": 80,
+          "stable_1s": 1.0,
+          "stable_10s": 1.0,
+          "refall": 0.0,
+          "path_mean": 1.7871601581573486,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 14.431090354919434,
+          "power_peak_p95": 899.4521484375
+        },
+        "free_plate": {
+          "n": 64,
+          "stable_1s": 0.671875,
+          "stable_10s": 0.671875,
+          "refall": 0.0,
+          "path_mean": 1.7898423671722412,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 14.123218536376953,
+          "power_peak_p95": 1021.5372924804688
+        },
+        "guided_plate": {
+          "n": 48,
+          "stable_1s": 0.9583333730697632,
+          "stable_10s": 0.8958333730697632,
+          "refall": 0.0,
+          "path_mean": 3.2519755363464355,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 16.275806427001953,
+          "power_peak_p95": 991.1615600585938
+        },
+        "fixed_ceiling": {
+          "n": 16,
+          "stable_1s": 1.0,
+          "stable_10s": 1.0,
+          "refall": 0.0,
+          "path_mean": 3.738119602203369,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 14.502728462219238,
+          "power_peak_p95": 877.9338989257812
+        },
+        "table": {
+          "n": 16,
+          "stable_1s": 0.6875,
+          "stable_10s": 0.625,
+          "refall": 0.0,
+          "path_mean": 3.1851892471313477,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 14.371448516845703,
+          "power_peak_p95": 819.7261962890625
+        },
+        "pyramid_stairs": {
+          "n": 20,
+          "stable_1s": 0.800000011920929,
+          "stable_10s": 0.800000011920929,
+          "refall": 0.0,
+          "path_mean": 2.928196430206299,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 23.245891571044922,
+          "power_peak_p95": 1228.474365234375
+        },
+        "box_terrain": {
+          "n": 28,
+          "stable_1s": 0.5714285969734192,
+          "stable_10s": 0.5,
+          "refall": 0.0,
+          "path_mean": 2.1203413009643555,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 20.150516510009766,
+          "power_peak_p95": 1215.3916015625
+        },
+        "free_box": {
+          "n": 16,
+          "stable_1s": 0.6875,
+          "stable_10s": 0.6875,
+          "refall": 0.0,
+          "path_mean": 1.862905502319336,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 15.186426162719727,
+          "power_peak_p95": 924.73583984375
+        },
+        "double_plate": {
+          "n": 16,
+          "stable_1s": 0.5625,
+          "stable_10s": 0.5625,
+          "refall": 0.0,
+          "path_mean": 1.7845017910003662,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 13.825601577758789,
+          "power_peak_p95": 908.3113403320312
+        },
+        "mixed_clutter": {
+          "n": 16,
+          "stable_1s": 0.25,
+          "stable_10s": 0.25,
+          "refall": 0.0,
+          "path_mean": 1.7147457599639893,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 18.37563705444336,
+          "power_peak_p95": 1055.4229736328125
+        }
+      },
+      "1000": {
+        "flat": {
+          "n": 80,
+          "stable_1s": 1.0,
+          "stable_10s": 0.987500011920929,
+          "refall": 0.0,
+          "path_mean": 1.1587644815444946,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 14.252890586853027,
+          "power_peak_p95": 814.60009765625
+        },
+        "free_plate": {
+          "n": 64,
+          "stable_1s": 0.40625,
+          "stable_10s": 0.359375,
+          "refall": 0.0,
+          "path_mean": 1.575573444366455,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 17.44919204711914,
+          "power_peak_p95": 766.4341430664062
+        },
+        "guided_plate": {
+          "n": 48,
+          "stable_1s": 0.4583333432674408,
+          "stable_10s": 0.3958333432674408,
+          "refall": 0.0,
+          "path_mean": 2.039477825164795,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 17.450645446777344,
+          "power_peak_p95": 723.0935668945312
+        },
+        "fixed_ceiling": {
+          "n": 16,
+          "stable_1s": 0.875,
+          "stable_10s": 0.8125,
+          "refall": 0.0,
+          "path_mean": 3.4260594844818115,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 17.967254638671875,
+          "power_peak_p95": 733.5638427734375
+        },
+        "table": {
+          "n": 16,
+          "stable_1s": 0.4375,
+          "stable_10s": 0.4375,
+          "refall": 0.0,
+          "path_mean": 2.630742073059082,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 14.876134872436523,
+          "power_peak_p95": 725.4471435546875
+        },
+        "pyramid_stairs": {
+          "n": 20,
+          "stable_1s": 0.9000000357627869,
+          "stable_10s": 0.8500000238418579,
+          "refall": 0.0,
+          "path_mean": 2.9976859092712402,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 22.88691520690918,
+          "power_peak_p95": 984.9947509765625
+        },
+        "box_terrain": {
+          "n": 28,
+          "stable_1s": 0.8928571939468384,
+          "stable_10s": 0.785714328289032,
+          "refall": 0.0,
+          "path_mean": 2.1850829124450684,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 15.834511756896973,
+          "power_peak_p95": 937.3917846679688
+        },
+        "free_box": {
+          "n": 16,
+          "stable_1s": 0.375,
+          "stable_10s": 0.375,
+          "refall": 0.0,
+          "path_mean": 1.1857327222824097,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 13.051595687866211,
+          "power_peak_p95": 767.586181640625
+        },
+        "double_plate": {
+          "n": 16,
+          "stable_1s": 0.25,
+          "stable_10s": 0.25,
+          "refall": 0.0,
+          "path_mean": 1.082761526107788,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 12.361515045166016,
+          "power_peak_p95": 779.3922119140625
+        },
+        "mixed_clutter": {
+          "n": 16,
+          "stable_1s": 0.375,
+          "stable_10s": 0.3125,
+          "refall": 0.0,
+          "path_mean": 2.122177839279175,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 26.09616470336914,
+          "power_peak_p95": 949.1949462890625
+        }
+      },
+      "4500": {
+        "flat": {
+          "n": 80,
+          "stable_1s": 1.0,
+          "stable_10s": 0.737500011920929,
+          "refall": 0.0,
+          "path_mean": 1.7538632154464722,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 14.618189811706543,
+          "power_peak_p95": 741.0402221679688
+        },
+        "free_plate": {
+          "n": 64,
+          "stable_1s": 0.65625,
+          "stable_10s": 0.328125,
+          "refall": 0.0,
+          "path_mean": 1.8064086437225342,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 14.831290245056152,
+          "power_peak_p95": 827.5169067382812
+        },
+        "guided_plate": {
+          "n": 48,
+          "stable_1s": 0.8125,
+          "stable_10s": 0.3125,
+          "refall": 0.0,
+          "path_mean": 3.322244167327881,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 16.362220764160156,
+          "power_peak_p95": 789.9226684570312
+        },
+        "fixed_ceiling": {
+          "n": 16,
+          "stable_1s": 1.0,
+          "stable_10s": 0.4375,
+          "refall": 0.0,
+          "path_mean": 3.666534662246704,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 15.227395057678223,
+          "power_peak_p95": 877.4016723632812
+        },
+        "table": {
+          "n": 16,
+          "stable_1s": 0.75,
+          "stable_10s": 0.375,
+          "refall": 0.0,
+          "path_mean": 3.327331304550171,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 16.119537353515625,
+          "power_peak_p95": 795.9337768554688
+        },
+        "pyramid_stairs": {
+          "n": 20,
+          "stable_1s": 0.550000011920929,
+          "stable_10s": 0.45000001788139343,
+          "refall": 0.0,
+          "path_mean": 2.2200052738189697,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 20.304893493652344,
+          "power_peak_p95": 995.3746337890625
+        },
+        "box_terrain": {
+          "n": 28,
+          "stable_1s": 0.4285714626312256,
+          "stable_10s": 0.1428571492433548,
+          "refall": 0.0,
+          "path_mean": 1.674845814704895,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 19.43849754333496,
+          "power_peak_p95": 902.1978149414062
+        },
+        "free_box": {
+          "n": 16,
+          "stable_1s": 0.625,
+          "stable_10s": 0.625,
+          "refall": 0.0,
+          "path_mean": 1.7360467910766602,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 13.633281707763672,
+          "power_peak_p95": 889.560791015625
+        },
+        "double_plate": {
+          "n": 16,
+          "stable_1s": 0.625,
+          "stable_10s": 0.5,
+          "refall": 0.0,
+          "path_mean": 1.6252319812774658,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 12.435271263122559,
+          "power_peak_p95": 812.430419921875
+        },
+        "mixed_clutter": {
+          "n": 16,
+          "stable_1s": 0.25,
+          "stable_10s": 0.1875,
+          "refall": 0.0,
+          "path_mean": 1.2610864639282227,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 17.2360897064209,
+          "power_peak_p95": 859.1282958984375
+        }
+      },
+      "5000": {
+        "flat": {
+          "n": 80,
+          "stable_1s": 0.987500011920929,
+          "stable_10s": 0.987500011920929,
+          "refall": 0.0,
+          "path_mean": 2.019172430038452,
+          "tau_peak_p95": 134.4479217529297,
+          "speed_peak_p95": 14.868125915527344,
+          "power_peak_p95": 650.582763671875
+        },
+        "free_plate": {
+          "n": 64,
+          "stable_1s": 0.8125,
+          "stable_10s": 0.75,
+          "refall": 0.0,
+          "path_mean": 2.1756579875946045,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 15.428467750549316,
+          "power_peak_p95": 752.3169555664062
+        },
+        "guided_plate": {
+          "n": 48,
+          "stable_1s": 0.75,
+          "stable_10s": 0.7083333730697632,
+          "refall": 0.0,
+          "path_mean": 3.332857847213745,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 19.304283142089844,
+          "power_peak_p95": 846.4859619140625
+        },
+        "fixed_ceiling": {
+          "n": 16,
+          "stable_1s": 1.0,
+          "stable_10s": 0.875,
+          "refall": 0.0,
+          "path_mean": 4.582823753356934,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 18.455760955810547,
+          "power_peak_p95": 816.6258544921875
+        },
+        "table": {
+          "n": 16,
+          "stable_1s": 0.75,
+          "stable_10s": 0.5625,
+          "refall": 0.0,
+          "path_mean": 3.4977035522460938,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 21.630624771118164,
+          "power_peak_p95": 713.7376708984375
+        },
+        "pyramid_stairs": {
+          "n": 20,
+          "stable_1s": 0.699999988079071,
+          "stable_10s": 0.6500000357627869,
+          "refall": 0.0,
+          "path_mean": 2.8042399883270264,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 22.193283081054688,
+          "power_peak_p95": 962.7264404296875
+        },
+        "box_terrain": {
+          "n": 28,
+          "stable_1s": 0.6071428656578064,
+          "stable_10s": 0.5714285969734192,
+          "refall": 0.0,
+          "path_mean": 2.498610496520996,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 21.082393646240234,
+          "power_peak_p95": 977.4948120117188
+        },
+        "free_box": {
+          "n": 16,
+          "stable_1s": 0.6875,
+          "stable_10s": 0.5625,
+          "refall": 0.0,
+          "path_mean": 2.0953266620635986,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 13.38832950592041,
+          "power_peak_p95": 817.744384765625
+        },
+        "double_plate": {
+          "n": 16,
+          "stable_1s": 0.5625,
+          "stable_10s": 0.5625,
+          "refall": 0.0,
+          "path_mean": 1.967308521270752,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 15.876646995544434,
+          "power_peak_p95": 747.2086791992188
+        },
+        "mixed_clutter": {
+          "n": 16,
+          "stable_1s": 0.5,
+          "stable_10s": 0.375,
+          "refall": 0.0,
+          "path_mean": 1.6517367362976074,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 19.58537483215332,
+          "power_peak_p95": 933.1048583984375
+        }
+      },
+      "9000": {
+        "flat": {
+          "n": 80,
+          "stable_1s": 1.0,
+          "stable_10s": 1.0,
+          "refall": 0.0,
+          "path_mean": 2.1252756118774414,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 16.670909881591797,
+          "power_peak_p95": 976.0851440429688
+        },
+        "free_plate": {
+          "n": 64,
+          "stable_1s": 0.65625,
+          "stable_10s": 0.65625,
+          "refall": 0.0,
+          "path_mean": 2.0056800842285156,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 15.7319917678833,
+          "power_peak_p95": 836.8831176757812
+        },
+        "guided_plate": {
+          "n": 48,
+          "stable_1s": 0.7916666865348816,
+          "stable_10s": 0.7708333730697632,
+          "refall": 0.0,
+          "path_mean": 2.3079512119293213,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 16.523292541503906,
+          "power_peak_p95": 932.4512939453125
+        },
+        "fixed_ceiling": {
+          "n": 16,
+          "stable_1s": 0.9375,
+          "stable_10s": 0.9375,
+          "refall": 0.0,
+          "path_mean": 2.556163787841797,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 17.865947723388672,
+          "power_peak_p95": 794.1860961914062
+        },
+        "table": {
+          "n": 16,
+          "stable_1s": 0.5,
+          "stable_10s": 0.5,
+          "refall": 0.0,
+          "path_mean": 2.799037456512451,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 18.510494232177734,
+          "power_peak_p95": 918.74169921875
+        },
+        "pyramid_stairs": {
+          "n": 20,
+          "stable_1s": 0.949999988079071,
+          "stable_10s": 0.949999988079071,
+          "refall": 0.0,
+          "path_mean": 3.083627939224243,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 21.93768882751465,
+          "power_peak_p95": 1032.455322265625
+        },
+        "box_terrain": {
+          "n": 28,
+          "stable_1s": 0.785714328289032,
+          "stable_10s": 0.7500000596046448,
+          "refall": 0.0,
+          "path_mean": 1.867875099182129,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 18.48890495300293,
+          "power_peak_p95": 933.7587280273438
+        },
+        "free_box": {
+          "n": 16,
+          "stable_1s": 0.9375,
+          "stable_10s": 0.875,
+          "refall": 0.0,
+          "path_mean": 2.144075870513916,
+          "tau_peak_p95": 125.11325073242188,
+          "speed_peak_p95": 14.988364219665527,
+          "power_peak_p95": 836.0811157226562
+        },
+        "double_plate": {
+          "n": 16,
+          "stable_1s": 0.625,
+          "stable_10s": 0.625,
+          "refall": 0.0,
+          "path_mean": 2.2105159759521484,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 14.91199016571045,
+          "power_peak_p95": 830.158203125
+        },
+        "mixed_clutter": {
+          "n": 16,
+          "stable_1s": 0.625,
+          "stable_10s": 0.625,
+          "refall": 0.0,
+          "path_mean": 2.0774970054626465,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 23.059871673583984,
+          "power_peak_p95": 985.3110961914062
+        }
+      },
+      "5500": {
+        "flat": {
+          "n": 80,
+          "stable_1s": 1.0,
+          "stable_10s": 1.0,
+          "refall": 0.0,
+          "path_mean": 1.8843075037002563,
+          "tau_peak_p95": 133.48165893554688,
+          "speed_peak_p95": 14.058485984802246,
+          "power_peak_p95": 726.0260009765625
+        },
+        "free_plate": {
+          "n": 64,
+          "stable_1s": 0.6875,
+          "stable_10s": 0.640625,
+          "refall": 0.0,
+          "path_mean": 1.8339124917984009,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 14.16320514678955,
+          "power_peak_p95": 808.17529296875
+        },
+        "guided_plate": {
+          "n": 48,
+          "stable_1s": 0.8125,
+          "stable_10s": 0.7291666865348816,
+          "refall": 0.0,
+          "path_mean": 2.767764091491699,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 18.70966339111328,
+          "power_peak_p95": 719.2814331054688
+        },
+        "fixed_ceiling": {
+          "n": 16,
+          "stable_1s": 1.0,
+          "stable_10s": 1.0,
+          "refall": 0.0,
+          "path_mean": 3.5225982666015625,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 14.95896053314209,
+          "power_peak_p95": 817.8389892578125
+        },
+        "table": {
+          "n": 16,
+          "stable_1s": 0.5,
+          "stable_10s": 0.5,
+          "refall": 0.0,
+          "path_mean": 2.912353515625,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 18.57240104675293,
+          "power_peak_p95": 733.8563232421875
+        },
+        "pyramid_stairs": {
+          "n": 20,
+          "stable_1s": 0.6000000238418579,
+          "stable_10s": 0.6000000238418579,
+          "refall": 0.0,
+          "path_mean": 2.5014026165008545,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 22.296829223632812,
+          "power_peak_p95": 963.6980590820312
+        },
+        "box_terrain": {
+          "n": 28,
+          "stable_1s": 0.535714328289032,
+          "stable_10s": 0.535714328289032,
+          "refall": 0.0,
+          "path_mean": 1.6886906623840332,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 18.582536697387695,
+          "power_peak_p95": 952.2637939453125
+        },
+        "free_box": {
+          "n": 16,
+          "stable_1s": 0.75,
+          "stable_10s": 0.75,
+          "refall": 0.0,
+          "path_mean": 1.8632304668426514,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 14.52600383758545,
+          "power_peak_p95": 818.0904541015625
+        },
+        "double_plate": {
+          "n": 16,
+          "stable_1s": 0.4375,
+          "stable_10s": 0.4375,
+          "refall": 0.0,
+          "path_mean": 1.789064884185791,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 14.535966873168945,
+          "power_peak_p95": 790.508544921875
+        },
+        "mixed_clutter": {
+          "n": 16,
+          "stable_1s": 0.4375,
+          "stable_10s": 0.375,
+          "refall": 0.0,
+          "path_mean": 1.8678405284881592,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 18.128711700439453,
+          "power_peak_p95": 1083.0009765625
+        }
+      },
+      "2500": {
+        "flat": {
+          "n": 80,
+          "stable_1s": 1.0,
+          "stable_10s": 0.987500011920929,
+          "refall": 0.0,
+          "path_mean": 1.6409826278686523,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 15.667421340942383,
+          "power_peak_p95": 842.8126831054688
+        },
+        "free_plate": {
+          "n": 64,
+          "stable_1s": 0.71875,
+          "stable_10s": 0.6875,
+          "refall": 0.0,
+          "path_mean": 1.8740954399108887,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 17.345319747924805,
+          "power_peak_p95": 856.5574340820312
+        },
+        "guided_plate": {
+          "n": 48,
+          "stable_1s": 0.8541666865348816,
+          "stable_10s": 0.7708333730697632,
+          "refall": 0.0,
+          "path_mean": 2.962916851043701,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 16.980253219604492,
+          "power_peak_p95": 694.7383422851562
+        },
+        "fixed_ceiling": {
+          "n": 16,
+          "stable_1s": 1.0,
+          "stable_10s": 1.0,
+          "refall": 0.0,
+          "path_mean": 3.4369559288024902,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 15.388647079467773,
+          "power_peak_p95": 723.7315063476562
+        },
+        "table": {
+          "n": 16,
+          "stable_1s": 0.75,
+          "stable_10s": 0.5,
+          "refall": 0.0,
+          "path_mean": 3.3345584869384766,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 15.200908660888672,
+          "power_peak_p95": 765.893310546875
+        },
+        "pyramid_stairs": {
+          "n": 20,
+          "stable_1s": 0.9000000357627869,
+          "stable_10s": 0.800000011920929,
+          "refall": 0.0,
+          "path_mean": 3.536547899246216,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 22.23784828186035,
+          "power_peak_p95": 1549.439208984375
+        },
+        "box_terrain": {
+          "n": 28,
+          "stable_1s": 0.6785714626312256,
+          "stable_10s": 0.5714285969734192,
+          "refall": 0.0,
+          "path_mean": 1.9792699813842773,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 22.383085250854492,
+          "power_peak_p95": 988.3419799804688
+        },
+        "free_box": {
+          "n": 16,
+          "stable_1s": 0.8125,
+          "stable_10s": 0.8125,
+          "refall": 0.0,
+          "path_mean": 1.6548516750335693,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 18.48984718322754,
+          "power_peak_p95": 729.461181640625
+        },
+        "double_plate": {
+          "n": 16,
+          "stable_1s": 0.625,
+          "stable_10s": 0.625,
+          "refall": 0.0,
+          "path_mean": 1.6826320886611938,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 12.91785717010498,
+          "power_peak_p95": 712.1964721679688
+        },
+        "mixed_clutter": {
+          "n": 16,
+          "stable_1s": 0.5,
+          "stable_10s": 0.3125,
+          "refall": 0.0,
+          "path_mean": 2.7677295207977295,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 19.852493286132812,
+          "power_peak_p95": 1119.608642578125
+        }
+      },
+      "9999": {
+        "flat": {
+          "n": 80,
+          "stable_1s": 1.0,
+          "stable_10s": 1.0,
+          "refall": 0.0,
+          "path_mean": 1.9493824243545532,
+          "tau_peak_p95": 120.64324951171875,
+          "speed_peak_p95": 13.18964672088623,
+          "power_peak_p95": 753.9552001953125
+        },
+        "free_plate": {
+          "n": 64,
+          "stable_1s": 0.546875,
+          "stable_10s": 0.515625,
+          "refall": 0.0,
+          "path_mean": 1.9050898551940918,
+          "tau_peak_p95": 129.6284942626953,
+          "speed_peak_p95": 16.931934356689453,
+          "power_peak_p95": 764.03271484375
+        },
+        "guided_plate": {
+          "n": 48,
+          "stable_1s": 0.75,
+          "stable_10s": 0.75,
+          "refall": 0.0,
+          "path_mean": 1.739678144454956,
+          "tau_peak_p95": 132.8433380126953,
+          "speed_peak_p95": 16.76487159729004,
+          "power_peak_p95": 702.8456420898438
+        },
+        "fixed_ceiling": {
+          "n": 16,
+          "stable_1s": 1.0,
+          "stable_10s": 1.0,
+          "refall": 0.0,
+          "path_mean": 1.903982162475586,
+          "tau_peak_p95": 107.41844940185547,
+          "speed_peak_p95": 13.872627258300781,
+          "power_peak_p95": 583.578369140625
+        },
+        "table": {
+          "n": 16,
+          "stable_1s": 0.8125,
+          "stable_10s": 0.625,
+          "refall": 0.0,
+          "path_mean": 2.8819093704223633,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 19.35226058959961,
+          "power_peak_p95": 925.8975219726562
+        },
+        "pyramid_stairs": {
+          "n": 20,
+          "stable_1s": 0.9000000357627869,
+          "stable_10s": 0.9000000357627869,
+          "refall": 0.0,
+          "path_mean": 2.6472103595733643,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 19.30556297302246,
+          "power_peak_p95": 1018.8565673828125
+        },
+        "box_terrain": {
+          "n": 28,
+          "stable_1s": 0.6071428656578064,
+          "stable_10s": 0.4642857313156128,
+          "refall": 0.0,
+          "path_mean": 2.0722954273223877,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 16.194183349609375,
+          "power_peak_p95": 702.5241088867188
+        },
+        "free_box": {
+          "n": 16,
+          "stable_1s": 0.875,
+          "stable_10s": 0.875,
+          "refall": 0.0,
+          "path_mean": 1.9217047691345215,
+          "tau_peak_p95": 115.35004425048828,
+          "speed_peak_p95": 13.508478164672852,
+          "power_peak_p95": 659.9508056640625
+        },
+        "double_plate": {
+          "n": 16,
+          "stable_1s": 0.375,
+          "stable_10s": 0.3125,
+          "refall": 0.0,
+          "path_mean": 1.8929798603057861,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 14.041170120239258,
+          "power_peak_p95": 848.1537475585938
+        },
+        "mixed_clutter": {
+          "n": 16,
+          "stable_1s": 0.625,
+          "stable_10s": 0.5,
+          "refall": 0.0,
+          "path_mean": 1.5159146785736084,
+          "tau_peak_p95": 131.697265625,
+          "speed_peak_p95": 15.781922340393066,
+          "power_peak_p95": 749.6388549804688
+        }
+      },
+      "6000": {
+        "flat": {
+          "n": 80,
+          "stable_1s": 1.0,
+          "stable_10s": 1.0,
+          "refall": 0.0,
+          "path_mean": 1.7821063995361328,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 15.12066650390625,
+          "power_peak_p95": 819.7882080078125
+        },
+        "free_plate": {
+          "n": 64,
+          "stable_1s": 0.734375,
+          "stable_10s": 0.671875,
+          "refall": 0.0,
+          "path_mean": 1.7138597965240479,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 14.442583084106445,
+          "power_peak_p95": 814.0682983398438
+        },
+        "guided_plate": {
+          "n": 48,
+          "stable_1s": 0.8541666865348816,
+          "stable_10s": 0.8333333730697632,
+          "refall": 0.0,
+          "path_mean": 2.860337734222412,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 14.924713134765625,
+          "power_peak_p95": 861.19677734375
+        },
+        "fixed_ceiling": {
+          "n": 16,
+          "stable_1s": 1.0,
+          "stable_10s": 1.0,
+          "refall": 0.0,
+          "path_mean": 3.2513744831085205,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 16.68403434753418,
+          "power_peak_p95": 816.8602905273438
+        },
+        "table": {
+          "n": 16,
+          "stable_1s": 0.6875,
+          "stable_10s": 0.5,
+          "refall": 0.0,
+          "path_mean": 3.006864070892334,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 19.390705108642578,
+          "power_peak_p95": 823.7513427734375
+        },
+        "pyramid_stairs": {
+          "n": 20,
+          "stable_1s": 0.699999988079071,
+          "stable_10s": 0.699999988079071,
+          "refall": 0.0,
+          "path_mean": 2.4488484859466553,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 19.6219482421875,
+          "power_peak_p95": 961.0701293945312
+        },
+        "box_terrain": {
+          "n": 28,
+          "stable_1s": 0.5,
+          "stable_10s": 0.4642857313156128,
+          "refall": 0.0,
+          "path_mean": 1.5851961374282837,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 17.388622283935547,
+          "power_peak_p95": 922.7601928710938
+        },
+        "free_box": {
+          "n": 16,
+          "stable_1s": 0.875,
+          "stable_10s": 0.875,
+          "refall": 0.0,
+          "path_mean": 1.811537504196167,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 13.706854820251465,
+          "power_peak_p95": 803.666748046875
+        },
+        "double_plate": {
+          "n": 16,
+          "stable_1s": 0.5,
+          "stable_10s": 0.4375,
+          "refall": 0.0,
+          "path_mean": 1.6902796030044556,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 13.18820571899414,
+          "power_peak_p95": 850.0471801757812
+        },
+        "mixed_clutter": {
+          "n": 16,
+          "stable_1s": 0.375,
+          "stable_10s": 0.3125,
+          "refall": 0.0,
+          "path_mean": 1.5938587188720703,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 19.63381576538086,
+          "power_peak_p95": 1175.44189453125
+        }
+      }
+    }
+  },
+  "M1_R2_mix": {
+    "completed": {
+      "iteration": 9999
+    },
+    "validation": {
+      "8000": {
+        "flat": {
+          "n": 80,
+          "stable_1s": 1.0,
+          "stable_10s": 1.0,
+          "refall": 0.0,
+          "path_mean": 2.417239189147949,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 14.319156646728516,
+          "power_peak_p95": 820.7533569335938
+        },
+        "free_plate": {
+          "n": 64,
+          "stable_1s": 0.921875,
+          "stable_10s": 0.90625,
+          "refall": 0.0,
+          "path_mean": 2.683478832244873,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 14.398043632507324,
+          "power_peak_p95": 997.6339721679688
+        },
+        "guided_plate": {
+          "n": 48,
+          "stable_1s": 0.7083333730697632,
+          "stable_10s": 0.625,
+          "refall": 0.0,
+          "path_mean": 2.6575582027435303,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 15.18599796295166,
+          "power_peak_p95": 875.858642578125
+        },
+        "fixed_ceiling": {
+          "n": 16,
+          "stable_1s": 0.6875,
+          "stable_10s": 0.6875,
+          "refall": 0.0,
+          "path_mean": 3.1478312015533447,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 15.831615447998047,
+          "power_peak_p95": 1308.5042724609375
+        },
+        "table": {
+          "n": 16,
+          "stable_1s": 0.625,
+          "stable_10s": 0.5625,
+          "refall": 0.0,
+          "path_mean": 3.4477152824401855,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 15.433777809143066,
+          "power_peak_p95": 878.5220336914062
+        },
+        "pyramid_stairs": {
+          "n": 20,
+          "stable_1s": 0.75,
+          "stable_10s": 0.6500000357627869,
+          "refall": 0.0,
+          "path_mean": 3.6243984699249268,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 22.35761833190918,
+          "power_peak_p95": 1119.2813720703125
+        },
+        "box_terrain": {
+          "n": 28,
+          "stable_1s": 0.535714328289032,
+          "stable_10s": 0.4642857313156128,
+          "refall": 0.0,
+          "path_mean": 2.7243571281433105,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 18.1304874420166,
+          "power_peak_p95": 975.5215454101562
+        },
+        "free_box": {
+          "n": 16,
+          "stable_1s": 0.875,
+          "stable_10s": 0.8125,
+          "refall": 0.0,
+          "path_mean": 2.5033109188079834,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 14.687995910644531,
+          "power_peak_p95": 878.42041015625
+        },
+        "double_plate": {
+          "n": 16,
+          "stable_1s": 0.75,
+          "stable_10s": 0.75,
+          "refall": 0.0,
+          "path_mean": 2.7015838623046875,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 14.851428031921387,
+          "power_peak_p95": 966.9705810546875
+        },
+        "mixed_clutter": {
+          "n": 16,
+          "stable_1s": 0.3125,
+          "stable_10s": 0.3125,
+          "refall": 0.0,
+          "path_mean": 2.2705228328704834,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 19.63823127746582,
+          "power_peak_p95": 990.3377685546875
+        }
+      },
+      "500": {
+        "flat": {
+          "n": 80,
+          "stable_1s": 0.987500011920929,
+          "stable_10s": 0.9625000357627869,
+          "refall": 0.0,
+          "path_mean": 1.0821486711502075,
+          "tau_peak_p95": 117.37971496582031,
+          "speed_peak_p95": 14.273846626281738,
+          "power_peak_p95": 473.65423583984375
+        },
+        "free_plate": {
+          "n": 64,
+          "stable_1s": 0.375,
+          "stable_10s": 0.375,
+          "refall": 0.0,
+          "path_mean": 1.0793509483337402,
+          "tau_peak_p95": 138.98631286621094,
+          "speed_peak_p95": 16.823579788208008,
+          "power_peak_p95": 551.9273681640625
+        },
+        "guided_plate": {
+          "n": 48,
+          "stable_1s": 0.0833333358168602,
+          "stable_10s": 0.0625,
+          "refall": 0.0,
+          "path_mean": 0.82328861951828,
+          "tau_peak_p95": 123.06236267089844,
+          "speed_peak_p95": 17.27029037475586,
+          "power_peak_p95": 491.04449462890625
+        },
+        "fixed_ceiling": {
+          "n": 16,
+          "stable_1s": 0.375,
+          "stable_10s": 0.375,
+          "refall": 0.0,
+          "path_mean": 1.6930277347564697,
+          "tau_peak_p95": 120.90603637695312,
+          "speed_peak_p95": 13.600339889526367,
+          "power_peak_p95": 488.7280578613281
+        },
+        "table": {
+          "n": 16,
+          "stable_1s": 0.1875,
+          "stable_10s": 0.0625,
+          "refall": 0.0,
+          "path_mean": 1.5183849334716797,
+          "tau_peak_p95": 128.3874969482422,
+          "speed_peak_p95": 15.988170623779297,
+          "power_peak_p95": 665.871337890625
+        },
+        "pyramid_stairs": {
+          "n": 20,
+          "stable_1s": 0.800000011920929,
+          "stable_10s": 0.75,
+          "refall": 0.0,
+          "path_mean": 2.507982015609741,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 23.215991973876953,
+          "power_peak_p95": 877.5864868164062
+        },
+        "box_terrain": {
+          "n": 28,
+          "stable_1s": 0.6071428656578064,
+          "stable_10s": 0.5714285969734192,
+          "refall": 0.0,
+          "path_mean": 1.3342721462249756,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 20.332460403442383,
+          "power_peak_p95": 793.264404296875
+        },
+        "free_box": {
+          "n": 16,
+          "stable_1s": 0.625,
+          "stable_10s": 0.625,
+          "refall": 0.0,
+          "path_mean": 1.1132354736328125,
+          "tau_peak_p95": 135.78866577148438,
+          "speed_peak_p95": 13.490837097167969,
+          "power_peak_p95": 571.7642211914062
+        },
+        "double_plate": {
+          "n": 16,
+          "stable_1s": 0.0,
+          "stable_10s": 0.0,
+          "refall": 0.0,
+          "path_mean": 1.0596870183944702,
+          "tau_peak_p95": 136.7281494140625,
+          "speed_peak_p95": 12.435981750488281,
+          "power_peak_p95": 501.6125183105469
+        },
+        "mixed_clutter": {
+          "n": 16,
+          "stable_1s": 0.1875,
+          "stable_10s": 0.1875,
+          "refall": 0.0,
+          "path_mean": 1.9060637950897217,
+          "tau_peak_p95": 135.64974975585938,
+          "speed_peak_p95": 16.350894927978516,
+          "power_peak_p95": 738.1049194335938
+        }
+      },
+      "4000": {
+        "flat": {
+          "n": 80,
+          "stable_1s": 0.887499988079071,
+          "stable_10s": 0.875,
+          "refall": 0.0,
+          "path_mean": 1.309942364692688,
+          "tau_peak_p95": 128.6663360595703,
+          "speed_peak_p95": 13.185101509094238,
+          "power_peak_p95": 617.9505615234375
+        },
+        "free_plate": {
+          "n": 64,
+          "stable_1s": 0.5,
+          "stable_10s": 0.46875,
+          "refall": 0.0,
+          "path_mean": 1.3757339715957642,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 16.181623458862305,
+          "power_peak_p95": 721.9949951171875
+        },
+        "guided_plate": {
+          "n": 48,
+          "stable_1s": 0.3125,
+          "stable_10s": 0.2291666716337204,
+          "refall": 0.0,
+          "path_mean": 1.4984056949615479,
+          "tau_peak_p95": 132.43807983398438,
+          "speed_peak_p95": 15.866813659667969,
+          "power_peak_p95": 628.471923828125
+        },
+        "fixed_ceiling": {
+          "n": 16,
+          "stable_1s": 0.8125,
+          "stable_10s": 0.6875,
+          "refall": 0.0,
+          "path_mean": 2.7257204055786133,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 14.849298477172852,
+          "power_peak_p95": 762.3605346679688
+        },
+        "table": {
+          "n": 16,
+          "stable_1s": 0.5625,
+          "stable_10s": 0.5,
+          "refall": 0.0,
+          "path_mean": 2.6003613471984863,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 17.294002532958984,
+          "power_peak_p95": 725.619873046875
+        },
+        "pyramid_stairs": {
+          "n": 20,
+          "stable_1s": 0.45000001788139343,
+          "stable_10s": 0.4000000059604645,
+          "refall": 0.0,
+          "path_mean": 2.6427552700042725,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 21.947471618652344,
+          "power_peak_p95": 963.820068359375
+        },
+        "box_terrain": {
+          "n": 28,
+          "stable_1s": 0.535714328289032,
+          "stable_10s": 0.5,
+          "refall": 0.0,
+          "path_mean": 1.6228426694869995,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 19.5421199798584,
+          "power_peak_p95": 898.6670532226562
+        },
+        "free_box": {
+          "n": 16,
+          "stable_1s": 0.6875,
+          "stable_10s": 0.625,
+          "refall": 0.0,
+          "path_mean": 1.4192670583724976,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 14.264558792114258,
+          "power_peak_p95": 778.1571655273438
+        },
+        "double_plate": {
+          "n": 16,
+          "stable_1s": 0.1875,
+          "stable_10s": 0.1875,
+          "refall": 0.0,
+          "path_mean": 1.2716013193130493,
+          "tau_peak_p95": 137.745849609375,
+          "speed_peak_p95": 14.246061325073242,
+          "power_peak_p95": 681.952392578125
+        },
+        "mixed_clutter": {
+          "n": 16,
+          "stable_1s": 0.125,
+          "stable_10s": 0.125,
+          "refall": 0.0,
+          "path_mean": 1.4560024738311768,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 23.070858001708984,
+          "power_peak_p95": 955.6226806640625
+        }
+      },
+      "1500": {
+        "flat": {
+          "n": 80,
+          "stable_1s": 1.0,
+          "stable_10s": 1.0,
+          "refall": 0.0,
+          "path_mean": 1.4787076711654663,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 14.33753490447998,
+          "power_peak_p95": 904.2734985351562
+        },
+        "free_plate": {
+          "n": 64,
+          "stable_1s": 0.546875,
+          "stable_10s": 0.46875,
+          "refall": 0.0,
+          "path_mean": 1.5529611110687256,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 16.258071899414062,
+          "power_peak_p95": 909.15283203125
+        },
+        "guided_plate": {
+          "n": 48,
+          "stable_1s": 0.5625,
+          "stable_10s": 0.5,
+          "refall": 0.0,
+          "path_mean": 1.9067637920379639,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 16.5682430267334,
+          "power_peak_p95": 776.588134765625
+        },
+        "fixed_ceiling": {
+          "n": 16,
+          "stable_1s": 1.0,
+          "stable_10s": 1.0,
+          "refall": 0.0,
+          "path_mean": 3.152615785598755,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 14.952885627746582,
+          "power_peak_p95": 886.300537109375
+        },
+        "table": {
+          "n": 16,
+          "stable_1s": 0.6875,
+          "stable_10s": 0.6875,
+          "refall": 0.0,
+          "path_mean": 2.453895092010498,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 13.192723274230957,
+          "power_peak_p95": 882.881591796875
+        },
+        "pyramid_stairs": {
+          "n": 20,
+          "stable_1s": 0.699999988079071,
+          "stable_10s": 0.699999988079071,
+          "refall": 0.0,
+          "path_mean": 2.8073346614837646,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 27.98722267150879,
+          "power_peak_p95": 885.4397583007812
+        },
+        "box_terrain": {
+          "n": 28,
+          "stable_1s": 0.5,
+          "stable_10s": 0.4285714626312256,
+          "refall": 0.0,
+          "path_mean": 1.9731132984161377,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 22.613405227661133,
+          "power_peak_p95": 1008.1168823242188
+        },
+        "free_box": {
+          "n": 16,
+          "stable_1s": 0.5,
+          "stable_10s": 0.5,
+          "refall": 0.0,
+          "path_mean": 1.5884450674057007,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 12.721298217773438,
+          "power_peak_p95": 865.0713500976562
+        },
+        "double_plate": {
+          "n": 16,
+          "stable_1s": 0.375,
+          "stable_10s": 0.375,
+          "refall": 0.0,
+          "path_mean": 1.685178279876709,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 16.733793258666992,
+          "power_peak_p95": 868.3958740234375
+        },
+        "mixed_clutter": {
+          "n": 16,
+          "stable_1s": 0.25,
+          "stable_10s": 0.1875,
+          "refall": 0.0,
+          "path_mean": 2.580721855163574,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 20.634540557861328,
+          "power_peak_p95": 1096.9130859375
+        }
+      },
+      "3000": {
+        "flat": {
+          "n": 80,
+          "stable_1s": 0.925000011920929,
+          "stable_10s": 0.925000011920929,
+          "refall": 0.0,
+          "path_mean": 1.3162438869476318,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 15.994583129882812,
+          "power_peak_p95": 787.0813598632812
+        },
+        "free_plate": {
+          "n": 64,
+          "stable_1s": 0.390625,
+          "stable_10s": 0.390625,
+          "refall": 0.0,
+          "path_mean": 1.3090271949768066,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 17.381303787231445,
+          "power_peak_p95": 838.0419921875
+        },
+        "guided_plate": {
+          "n": 48,
+          "stable_1s": 0.4791666865348816,
+          "stable_10s": 0.3958333432674408,
+          "refall": 0.0,
+          "path_mean": 1.681206464767456,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 17.778751373291016,
+          "power_peak_p95": 748.5308837890625
+        },
+        "fixed_ceiling": {
+          "n": 16,
+          "stable_1s": 0.9375,
+          "stable_10s": 0.875,
+          "refall": 0.0,
+          "path_mean": 3.165938377380371,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 16.425678253173828,
+          "power_peak_p95": 788.1914672851562
+        },
+        "table": {
+          "n": 16,
+          "stable_1s": 0.8125,
+          "stable_10s": 0.6875,
+          "refall": 0.0,
+          "path_mean": 3.4846272468566895,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 21.002717971801758,
+          "power_peak_p95": 766.7833251953125
+        },
+        "pyramid_stairs": {
+          "n": 20,
+          "stable_1s": 0.75,
+          "stable_10s": 0.699999988079071,
+          "refall": 0.0,
+          "path_mean": 2.6825881004333496,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 25.284086227416992,
+          "power_peak_p95": 874.9808349609375
+        },
+        "box_terrain": {
+          "n": 28,
+          "stable_1s": 0.6785714626312256,
+          "stable_10s": 0.5714285969734192,
+          "refall": 0.0,
+          "path_mean": 1.7143498659133911,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 18.359752655029297,
+          "power_peak_p95": 874.8134155273438
+        },
+        "free_box": {
+          "n": 16,
+          "stable_1s": 0.5625,
+          "stable_10s": 0.5625,
+          "refall": 0.0,
+          "path_mean": 1.2902908325195312,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 12.477367401123047,
+          "power_peak_p95": 740.618408203125
+        },
+        "double_plate": {
+          "n": 16,
+          "stable_1s": 0.25,
+          "stable_10s": 0.25,
+          "refall": 0.0,
+          "path_mean": 1.4953739643096924,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 16.929174423217773,
+          "power_peak_p95": 864.1392211914062
+        },
+        "mixed_clutter": {
+          "n": 16,
+          "stable_1s": 0.1875,
+          "stable_10s": 0.1875,
+          "refall": 0.0,
+          "path_mean": 1.1356185674667358,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 15.074287414550781,
+          "power_peak_p95": 893.0439453125
+        }
+      },
+      "2000": {
+        "flat": {
+          "n": 80,
+          "stable_1s": 1.0,
+          "stable_10s": 1.0,
+          "refall": 0.0,
+          "path_mean": 1.2317816019058228,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 13.229992866516113,
+          "power_peak_p95": 944.5631103515625
+        },
+        "free_plate": {
+          "n": 64,
+          "stable_1s": 0.578125,
+          "stable_10s": 0.578125,
+          "refall": 0.0,
+          "path_mean": 1.3051190376281738,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 16.818069458007812,
+          "power_peak_p95": 906.0452270507812
+        },
+        "guided_plate": {
+          "n": 48,
+          "stable_1s": 0.4791666865348816,
+          "stable_10s": 0.375,
+          "refall": 0.0,
+          "path_mean": 1.6160945892333984,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 18.013137817382812,
+          "power_peak_p95": 792.4519653320312
+        },
+        "fixed_ceiling": {
+          "n": 16,
+          "stable_1s": 0.875,
+          "stable_10s": 0.875,
+          "refall": 0.0,
+          "path_mean": 2.2117466926574707,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 19.227306365966797,
+          "power_peak_p95": 858.269775390625
+        },
+        "table": {
+          "n": 16,
+          "stable_1s": 0.5,
+          "stable_10s": 0.375,
+          "refall": 0.0,
+          "path_mean": 2.88826584815979,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 20.4860897064209,
+          "power_peak_p95": 950.545654296875
+        },
+        "pyramid_stairs": {
+          "n": 20,
+          "stable_1s": 0.75,
+          "stable_10s": 0.699999988079071,
+          "refall": 0.0,
+          "path_mean": 2.8595032691955566,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 22.001346588134766,
+          "power_peak_p95": 869.635498046875
+        },
+        "box_terrain": {
+          "n": 28,
+          "stable_1s": 0.7142857313156128,
+          "stable_10s": 0.5714285969734192,
+          "refall": 0.0,
+          "path_mean": 2.1078028678894043,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 20.383426666259766,
+          "power_peak_p95": 894.9786376953125
+        },
+        "free_box": {
+          "n": 16,
+          "stable_1s": 0.4375,
+          "stable_10s": 0.4375,
+          "refall": 0.0,
+          "path_mean": 1.1661425828933716,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 18.602848052978516,
+          "power_peak_p95": 882.41796875
+        },
+        "double_plate": {
+          "n": 16,
+          "stable_1s": 0.375,
+          "stable_10s": 0.375,
+          "refall": 0.0,
+          "path_mean": 1.0651181936264038,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 12.247390747070312,
+          "power_peak_p95": 899.9938354492188
+        },
+        "mixed_clutter": {
+          "n": 16,
+          "stable_1s": 0.3125,
+          "stable_10s": 0.1875,
+          "refall": 0.0,
+          "path_mean": 1.7766096591949463,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 19.365306854248047,
+          "power_peak_p95": 969.1212158203125
+        }
+      },
+      "6500": {
+        "flat": {
+          "n": 80,
+          "stable_1s": 0.9125000238418579,
+          "stable_10s": 0.9000000357627869,
+          "refall": 0.0,
+          "path_mean": 2.439135789871216,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 13.227938652038574,
+          "power_peak_p95": 674.77490234375
+        },
+        "free_plate": {
+          "n": 64,
+          "stable_1s": 0.75,
+          "stable_10s": 0.703125,
+          "refall": 0.0,
+          "path_mean": 2.5878257751464844,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 14.887345314025879,
+          "power_peak_p95": 721.7515258789062
+        },
+        "guided_plate": {
+          "n": 48,
+          "stable_1s": 0.5416666865348816,
+          "stable_10s": 0.5208333730697632,
+          "refall": 0.0,
+          "path_mean": 2.3077478408813477,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 14.774974822998047,
+          "power_peak_p95": 836.1446533203125
+        },
+        "fixed_ceiling": {
+          "n": 16,
+          "stable_1s": 0.6875,
+          "stable_10s": 0.6875,
+          "refall": 0.0,
+          "path_mean": 4.927878379821777,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 13.177220344543457,
+          "power_peak_p95": 774.5370483398438
+        },
+        "table": {
+          "n": 16,
+          "stable_1s": 0.6875,
+          "stable_10s": 0.5,
+          "refall": 0.0,
+          "path_mean": 4.024913787841797,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 16.79187774658203,
+          "power_peak_p95": 770.3349609375
+        },
+        "pyramid_stairs": {
+          "n": 20,
+          "stable_1s": 0.5,
+          "stable_10s": 0.45000001788139343,
+          "refall": 0.0,
+          "path_mean": 3.2134625911712646,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 22.202903747558594,
+          "power_peak_p95": 853.4152221679688
+        },
+        "box_terrain": {
+          "n": 28,
+          "stable_1s": 0.4285714626312256,
+          "stable_10s": 0.3214285969734192,
+          "refall": 0.0,
+          "path_mean": 2.9985952377319336,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 21.73342514038086,
+          "power_peak_p95": 900.0457153320312
+        },
+        "free_box": {
+          "n": 16,
+          "stable_1s": 0.625,
+          "stable_10s": 0.5,
+          "refall": 0.0,
+          "path_mean": 2.1625800132751465,
+          "tau_peak_p95": 131.2077178955078,
+          "speed_peak_p95": 13.077241897583008,
+          "power_peak_p95": 728.023193359375
+        },
+        "double_plate": {
+          "n": 16,
+          "stable_1s": 0.5,
+          "stable_10s": 0.5,
+          "refall": 0.0,
+          "path_mean": 2.362882614135742,
+          "tau_peak_p95": 135.078125,
+          "speed_peak_p95": 14.24781322479248,
+          "power_peak_p95": 657.093994140625
+        },
+        "mixed_clutter": {
+          "n": 16,
+          "stable_1s": 0.25,
+          "stable_10s": 0.125,
+          "refall": 0.0,
+          "path_mean": 2.021422863006592,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 18.58308219909668,
+          "power_peak_p95": 684.8668212890625
+        }
+      },
+      "8500": {
+        "flat": {
+          "n": 80,
+          "stable_1s": 1.0,
+          "stable_10s": 1.0,
+          "refall": 0.0,
+          "path_mean": 2.173402786254883,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 13.724534034729004,
+          "power_peak_p95": 732.2313842773438
+        },
+        "free_plate": {
+          "n": 64,
+          "stable_1s": 0.8125,
+          "stable_10s": 0.8125,
+          "refall": 0.0,
+          "path_mean": 2.4690725803375244,
+          "tau_peak_p95": 138.38079833984375,
+          "speed_peak_p95": 15.106913566589355,
+          "power_peak_p95": 795.25
+        },
+        "guided_plate": {
+          "n": 48,
+          "stable_1s": 0.7708333730697632,
+          "stable_10s": 0.6666666865348816,
+          "refall": 0.0,
+          "path_mean": 2.9413204193115234,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 15.248983383178711,
+          "power_peak_p95": 771.6459350585938
+        },
+        "fixed_ceiling": {
+          "n": 16,
+          "stable_1s": 0.75,
+          "stable_10s": 0.75,
+          "refall": 0.0,
+          "path_mean": 2.9312195777893066,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 15.240035057067871,
+          "power_peak_p95": 734.6152954101562
+        },
+        "table": {
+          "n": 16,
+          "stable_1s": 0.9375,
+          "stable_10s": 0.9375,
+          "refall": 0.0,
+          "path_mean": 3.593980312347412,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 14.587922096252441,
+          "power_peak_p95": 825.3511962890625
+        },
+        "pyramid_stairs": {
+          "n": 20,
+          "stable_1s": 0.8500000238418579,
+          "stable_10s": 0.699999988079071,
+          "refall": 0.0,
+          "path_mean": 3.802873373031616,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 17.228906631469727,
+          "power_peak_p95": 1022.3853759765625
+        },
+        "box_terrain": {
+          "n": 28,
+          "stable_1s": 0.4642857313156128,
+          "stable_10s": 0.392857164144516,
+          "refall": 0.0,
+          "path_mean": 2.421431541442871,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 19.349275588989258,
+          "power_peak_p95": 925.9619140625
+        },
+        "free_box": {
+          "n": 16,
+          "stable_1s": 0.8125,
+          "stable_10s": 0.75,
+          "refall": 0.0,
+          "path_mean": 2.3368194103240967,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 15.487654685974121,
+          "power_peak_p95": 710.8106079101562
+        },
+        "double_plate": {
+          "n": 16,
+          "stable_1s": 0.625,
+          "stable_10s": 0.625,
+          "refall": 0.0,
+          "path_mean": 2.1691691875457764,
+          "tau_peak_p95": 136.0156707763672,
+          "speed_peak_p95": 13.335907936096191,
+          "power_peak_p95": 770.81689453125
+        },
+        "mixed_clutter": {
+          "n": 16,
+          "stable_1s": 0.375,
+          "stable_10s": 0.375,
+          "refall": 0.0,
+          "path_mean": 2.238308906555176,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 14.907443046569824,
+          "power_peak_p95": 805.64794921875
+        }
+      },
+      "7500": {
+        "flat": {
+          "n": 80,
+          "stable_1s": 0.9750000238418579,
+          "stable_10s": 0.9750000238418579,
+          "refall": 0.0,
+          "path_mean": 2.399158000946045,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 13.663097381591797,
+          "power_peak_p95": 903.2776489257812
+        },
+        "free_plate": {
+          "n": 64,
+          "stable_1s": 0.890625,
+          "stable_10s": 0.890625,
+          "refall": 0.0,
+          "path_mean": 2.654942750930786,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 15.363465309143066,
+          "power_peak_p95": 782.5487670898438
+        },
+        "guided_plate": {
+          "n": 48,
+          "stable_1s": 0.6666666865348816,
+          "stable_10s": 0.5416666865348816,
+          "refall": 0.0,
+          "path_mean": 2.5439798831939697,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 17.2734317779541,
+          "power_peak_p95": 838.0443725585938
+        },
+        "fixed_ceiling": {
+          "n": 16,
+          "stable_1s": 0.875,
+          "stable_10s": 0.875,
+          "refall": 0.0,
+          "path_mean": 3.9116082191467285,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 15.836524963378906,
+          "power_peak_p95": 751.4863891601562
+        },
+        "table": {
+          "n": 16,
+          "stable_1s": 0.75,
+          "stable_10s": 0.625,
+          "refall": 0.0,
+          "path_mean": 4.3484344482421875,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 15.05483627319336,
+          "power_peak_p95": 804.595458984375
+        },
+        "pyramid_stairs": {
+          "n": 20,
+          "stable_1s": 0.6500000357627869,
+          "stable_10s": 0.6000000238418579,
+          "refall": 0.0,
+          "path_mean": 3.3705976009368896,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 27.235355377197266,
+          "power_peak_p95": 1118.5531005859375
+        },
+        "box_terrain": {
+          "n": 28,
+          "stable_1s": 0.5714285969734192,
+          "stable_10s": 0.5,
+          "refall": 0.0,
+          "path_mean": 3.025578260421753,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 22.782976150512695,
+          "power_peak_p95": 1043.8070068359375
+        },
+        "free_box": {
+          "n": 16,
+          "stable_1s": 0.625,
+          "stable_10s": 0.625,
+          "refall": 0.0,
+          "path_mean": 2.279453992843628,
+          "tau_peak_p95": 133.44235229492188,
+          "speed_peak_p95": 14.666963577270508,
+          "power_peak_p95": 724.4447021484375
+        },
+        "double_plate": {
+          "n": 16,
+          "stable_1s": 0.875,
+          "stable_10s": 0.875,
+          "refall": 0.0,
+          "path_mean": 2.4721271991729736,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 14.489208221435547,
+          "power_peak_p95": 769.552490234375
+        },
+        "mixed_clutter": {
+          "n": 16,
+          "stable_1s": 0.3125,
+          "stable_10s": 0.25,
+          "refall": 0.0,
+          "path_mean": 2.5545167922973633,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 20.605377197265625,
+          "power_peak_p95": 1028.785888671875
+        }
+      },
+      "3500": {
+        "flat": {
+          "n": 80,
+          "stable_1s": 0.987500011920929,
+          "stable_10s": 0.9000000357627869,
+          "refall": 0.0,
+          "path_mean": 1.3973511457443237,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 13.904534339904785,
+          "power_peak_p95": 731.0996704101562
+        },
+        "free_plate": {
+          "n": 64,
+          "stable_1s": 0.53125,
+          "stable_10s": 0.40625,
+          "refall": 0.0,
+          "path_mean": 1.5310382843017578,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 16.44754981994629,
+          "power_peak_p95": 742.0585327148438
+        },
+        "guided_plate": {
+          "n": 48,
+          "stable_1s": 0.2916666865348816,
+          "stable_10s": 0.1458333432674408,
+          "refall": 0.0,
+          "path_mean": 1.4680531024932861,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 15.74956226348877,
+          "power_peak_p95": 653.59912109375
+        },
+        "fixed_ceiling": {
+          "n": 16,
+          "stable_1s": 0.875,
+          "stable_10s": 0.4375,
+          "refall": 0.0,
+          "path_mean": 3.3859050273895264,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 16.220252990722656,
+          "power_peak_p95": 730.1602783203125
+        },
+        "table": {
+          "n": 16,
+          "stable_1s": 0.625,
+          "stable_10s": 0.5,
+          "refall": 0.0,
+          "path_mean": 3.298776149749756,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 15.588626861572266,
+          "power_peak_p95": 950.1875
+        },
+        "pyramid_stairs": {
+          "n": 20,
+          "stable_1s": 0.699999988079071,
+          "stable_10s": 0.6000000238418579,
+          "refall": 0.0,
+          "path_mean": 2.9120635986328125,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 24.676597595214844,
+          "power_peak_p95": 1324.0904541015625
+        },
+        "box_terrain": {
+          "n": 28,
+          "stable_1s": 0.5714285969734192,
+          "stable_10s": 0.535714328289032,
+          "refall": 0.0,
+          "path_mean": 1.727171540260315,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 19.64520835876465,
+          "power_peak_p95": 993.2592163085938
+        },
+        "free_box": {
+          "n": 16,
+          "stable_1s": 0.625,
+          "stable_10s": 0.5,
+          "refall": 0.0,
+          "path_mean": 1.396006464958191,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 14.76508617401123,
+          "power_peak_p95": 704.2698974609375
+        },
+        "double_plate": {
+          "n": 16,
+          "stable_1s": 0.5,
+          "stable_10s": 0.5,
+          "refall": 0.0,
+          "path_mean": 1.4083123207092285,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 16.76033592224121,
+          "power_peak_p95": 783.4911499023438
+        },
+        "mixed_clutter": {
+          "n": 16,
+          "stable_1s": 0.125,
+          "stable_10s": 0.0625,
+          "refall": 0.0,
+          "path_mean": 1.2942050695419312,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 18.29615592956543,
+          "power_peak_p95": 1686.963623046875
+        }
+      },
+      "9500": {
+        "flat": {
+          "n": 80,
+          "stable_1s": 1.0,
+          "stable_10s": 1.0,
+          "refall": 0.0,
+          "path_mean": 2.1458752155303955,
+          "tau_peak_p95": 135.01983642578125,
+          "speed_peak_p95": 15.439228057861328,
+          "power_peak_p95": 767.2623901367188
+        },
+        "free_plate": {
+          "n": 64,
+          "stable_1s": 0.84375,
+          "stable_10s": 0.84375,
+          "refall": 0.0,
+          "path_mean": 2.3110809326171875,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 15.199896812438965,
+          "power_peak_p95": 870.0474243164062
+        },
+        "guided_plate": {
+          "n": 48,
+          "stable_1s": 0.6041666865348816,
+          "stable_10s": 0.6041666865348816,
+          "refall": 0.0,
+          "path_mean": 2.328251361846924,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 16.1622371673584,
+          "power_peak_p95": 943.2051391601562
+        },
+        "fixed_ceiling": {
+          "n": 16,
+          "stable_1s": 0.6875,
+          "stable_10s": 0.6875,
+          "refall": 0.0,
+          "path_mean": 3.124821662902832,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 17.414592742919922,
+          "power_peak_p95": 866.2042236328125
+        },
+        "table": {
+          "n": 16,
+          "stable_1s": 0.625,
+          "stable_10s": 0.5625,
+          "refall": 0.0,
+          "path_mean": 3.7156660556793213,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 18.311986923217773,
+          "power_peak_p95": 857.2945556640625
+        },
+        "pyramid_stairs": {
+          "n": 20,
+          "stable_1s": 0.800000011920929,
+          "stable_10s": 0.800000011920929,
+          "refall": 0.0,
+          "path_mean": 3.436002492904663,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 21.758527755737305,
+          "power_peak_p95": 1344.7633056640625
+        },
+        "box_terrain": {
+          "n": 28,
+          "stable_1s": 0.7142857313156128,
+          "stable_10s": 0.7142857313156128,
+          "refall": 0.0,
+          "path_mean": 2.25409197807312,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 21.816268920898438,
+          "power_peak_p95": 1110.602294921875
+        },
+        "free_box": {
+          "n": 16,
+          "stable_1s": 0.8125,
+          "stable_10s": 0.8125,
+          "refall": 0.0,
+          "path_mean": 1.9914214611053467,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 15.343517303466797,
+          "power_peak_p95": 758.3160400390625
+        },
+        "double_plate": {
+          "n": 16,
+          "stable_1s": 0.6875,
+          "stable_10s": 0.5,
+          "refall": 0.0,
+          "path_mean": 2.3254294395446777,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 14.448771476745605,
+          "power_peak_p95": 753.2986450195312
+        },
+        "mixed_clutter": {
+          "n": 16,
+          "stable_1s": 0.4375,
+          "stable_10s": 0.375,
+          "refall": 0.0,
+          "path_mean": 2.4661903381347656,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 19.172069549560547,
+          "power_peak_p95": 926.5121459960938
+        }
+      },
+      "7000": {
+        "flat": {
+          "n": 80,
+          "stable_1s": 0.9375,
+          "stable_10s": 0.9375,
+          "refall": 0.0,
+          "path_mean": 2.5974767208099365,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 14.965738296508789,
+          "power_peak_p95": 746.3546752929688
+        },
+        "free_plate": {
+          "n": 64,
+          "stable_1s": 0.765625,
+          "stable_10s": 0.71875,
+          "refall": 0.0,
+          "path_mean": 2.6794614791870117,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 14.104156494140625,
+          "power_peak_p95": 838.8446044921875
+        },
+        "guided_plate": {
+          "n": 48,
+          "stable_1s": 0.5625,
+          "stable_10s": 0.4791666865348816,
+          "refall": 0.0,
+          "path_mean": 2.487718105316162,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 14.94916820526123,
+          "power_peak_p95": 759.31591796875
+        },
+        "fixed_ceiling": {
+          "n": 16,
+          "stable_1s": 0.5625,
+          "stable_10s": 0.5,
+          "refall": 0.0,
+          "path_mean": 4.252562522888184,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 15.824037551879883,
+          "power_peak_p95": 881.0357666015625
+        },
+        "table": {
+          "n": 16,
+          "stable_1s": 0.75,
+          "stable_10s": 0.5625,
+          "refall": 0.0,
+          "path_mean": 3.9320340156555176,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 18.512554168701172,
+          "power_peak_p95": 798.6491088867188
+        },
+        "pyramid_stairs": {
+          "n": 20,
+          "stable_1s": 0.550000011920929,
+          "stable_10s": 0.550000011920929,
+          "refall": 0.0,
+          "path_mean": 3.364022970199585,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 21.86613655090332,
+          "power_peak_p95": 1045.15283203125
+        },
+        "box_terrain": {
+          "n": 28,
+          "stable_1s": 0.3571428656578064,
+          "stable_10s": 0.3214285969734192,
+          "refall": 0.0,
+          "path_mean": 2.5745463371276855,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 22.434673309326172,
+          "power_peak_p95": 912.9067993164062
+        },
+        "free_box": {
+          "n": 16,
+          "stable_1s": 0.5625,
+          "stable_10s": 0.5625,
+          "refall": 0.0,
+          "path_mean": 2.277029514312744,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 13.128874778747559,
+          "power_peak_p95": 752.814453125
+        },
+        "double_plate": {
+          "n": 16,
+          "stable_1s": 0.625,
+          "stable_10s": 0.5625,
+          "refall": 0.0,
+          "path_mean": 2.4725584983825684,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 13.381770133972168,
+          "power_peak_p95": 735.2766723632812
+        },
+        "mixed_clutter": {
+          "n": 16,
+          "stable_1s": 0.1875,
+          "stable_10s": 0.125,
+          "refall": 0.0,
+          "path_mean": 1.9337633848190308,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 18.37128257751465,
+          "power_peak_p95": 890.4059448242188
+        }
+      },
+      "1000": {
+        "flat": {
+          "n": 80,
+          "stable_1s": 1.0,
+          "stable_10s": 0.925000011920929,
+          "refall": 0.0,
+          "path_mean": 1.232283353805542,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 15.900674819946289,
+          "power_peak_p95": 637.0390625
+        },
+        "free_plate": {
+          "n": 64,
+          "stable_1s": 0.4375,
+          "stable_10s": 0.375,
+          "refall": 0.0,
+          "path_mean": 1.389716386795044,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 17.04228973388672,
+          "power_peak_p95": 702.022705078125
+        },
+        "guided_plate": {
+          "n": 48,
+          "stable_1s": 0.5,
+          "stable_10s": 0.375,
+          "refall": 0.0,
+          "path_mean": 1.961400032043457,
+          "tau_peak_p95": 136.4364471435547,
+          "speed_peak_p95": 16.349197387695312,
+          "power_peak_p95": 580.63525390625
+        },
+        "fixed_ceiling": {
+          "n": 16,
+          "stable_1s": 0.9375,
+          "stable_10s": 0.8125,
+          "refall": 0.0,
+          "path_mean": 2.5674490928649902,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 16.129213333129883,
+          "power_peak_p95": 695.294189453125
+        },
+        "table": {
+          "n": 16,
+          "stable_1s": 0.5625,
+          "stable_10s": 0.5625,
+          "refall": 0.0,
+          "path_mean": 2.569959878921509,
+          "tau_peak_p95": 134.05105590820312,
+          "speed_peak_p95": 13.518803596496582,
+          "power_peak_p95": 599.528564453125
+        },
+        "pyramid_stairs": {
+          "n": 20,
+          "stable_1s": 0.699999988079071,
+          "stable_10s": 0.6000000238418579,
+          "refall": 0.05000000074505806,
+          "path_mean": 2.921351671218872,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 19.344287872314453,
+          "power_peak_p95": 814.520263671875
+        },
+        "box_terrain": {
+          "n": 28,
+          "stable_1s": 0.535714328289032,
+          "stable_10s": 0.4285714626312256,
+          "refall": 0.0,
+          "path_mean": 2.115478515625,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 21.486492156982422,
+          "power_peak_p95": 810.81982421875
+        },
+        "free_box": {
+          "n": 16,
+          "stable_1s": 0.6875,
+          "stable_10s": 0.6875,
+          "refall": 0.0,
+          "path_mean": 1.5235974788665771,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 13.360715866088867,
+          "power_peak_p95": 729.8169555664062
+        },
+        "double_plate": {
+          "n": 16,
+          "stable_1s": 0.4375,
+          "stable_10s": 0.3125,
+          "refall": 0.0,
+          "path_mean": 1.5474913120269775,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 15.172998428344727,
+          "power_peak_p95": 585.0660400390625
+        },
+        "mixed_clutter": {
+          "n": 16,
+          "stable_1s": 0.375,
+          "stable_10s": 0.125,
+          "refall": 0.0,
+          "path_mean": 2.3746914863586426,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 20.62806510925293,
+          "power_peak_p95": 858.4664916992188
+        }
+      },
+      "4500": {
+        "flat": {
+          "n": 80,
+          "stable_1s": 1.0,
+          "stable_10s": 0.987500011920929,
+          "refall": 0.0,
+          "path_mean": 1.7750517129898071,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 15.117688179016113,
+          "power_peak_p95": 882.774169921875
+        },
+        "free_plate": {
+          "n": 64,
+          "stable_1s": 0.625,
+          "stable_10s": 0.609375,
+          "refall": 0.0,
+          "path_mean": 1.8184983730316162,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 15.169743537902832,
+          "power_peak_p95": 846.9434204101562
+        },
+        "guided_plate": {
+          "n": 48,
+          "stable_1s": 0.5,
+          "stable_10s": 0.4375,
+          "refall": 0.0,
+          "path_mean": 1.8860273361206055,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 17.0378360748291,
+          "power_peak_p95": 798.9427490234375
+        },
+        "fixed_ceiling": {
+          "n": 16,
+          "stable_1s": 0.8125,
+          "stable_10s": 0.75,
+          "refall": 0.0,
+          "path_mean": 3.370028257369995,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 19.980857849121094,
+          "power_peak_p95": 898.97802734375
+        },
+        "table": {
+          "n": 16,
+          "stable_1s": 0.6875,
+          "stable_10s": 0.5625,
+          "refall": 0.0,
+          "path_mean": 2.994607925415039,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 17.08553695678711,
+          "power_peak_p95": 852.8322143554688
+        },
+        "pyramid_stairs": {
+          "n": 20,
+          "stable_1s": 0.699999988079071,
+          "stable_10s": 0.5,
+          "refall": 0.0,
+          "path_mean": 3.319293975830078,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 19.910715103149414,
+          "power_peak_p95": 889.93603515625
+        },
+        "box_terrain": {
+          "n": 28,
+          "stable_1s": 0.3214285969734192,
+          "stable_10s": 0.2142857313156128,
+          "refall": 0.0357142873108387,
+          "path_mean": 1.8142716884613037,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 22.316877365112305,
+          "power_peak_p95": 1135.1845703125
+        },
+        "free_box": {
+          "n": 16,
+          "stable_1s": 0.6875,
+          "stable_10s": 0.6875,
+          "refall": 0.0,
+          "path_mean": 1.762090802192688,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 13.751197814941406,
+          "power_peak_p95": 846.704833984375
+        },
+        "double_plate": {
+          "n": 16,
+          "stable_1s": 0.5625,
+          "stable_10s": 0.5625,
+          "refall": 0.0,
+          "path_mean": 1.6638658046722412,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 15.900287628173828,
+          "power_peak_p95": 808.5984497070312
+        },
+        "mixed_clutter": {
+          "n": 16,
+          "stable_1s": 0.1875,
+          "stable_10s": 0.1875,
+          "refall": 0.0,
+          "path_mean": 2.312911033630371,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 23.039636611938477,
+          "power_peak_p95": 1038.601806640625
+        }
+      },
+      "5000": {
+        "flat": {
+          "n": 80,
+          "stable_1s": 0.0,
+          "stable_10s": 0.0,
+          "refall": 0.0,
+          "path_mean": 1.8741997480392456,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 14.441781044006348,
+          "power_peak_p95": 873.3817138671875
+        },
+        "free_plate": {
+          "n": 64,
+          "stable_1s": 0.0,
+          "stable_10s": 0.0,
+          "refall": 0.0,
+          "path_mean": 2.1448254585266113,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 13.657413482666016,
+          "power_peak_p95": 951.0419311523438
+        },
+        "guided_plate": {
+          "n": 48,
+          "stable_1s": 0.0,
+          "stable_10s": 0.0,
+          "refall": 0.0,
+          "path_mean": 2.266075611114502,
+          "tau_peak_p95": 138.73556518554688,
+          "speed_peak_p95": 15.682677268981934,
+          "power_peak_p95": 671.869140625
+        },
+        "fixed_ceiling": {
+          "n": 16,
+          "stable_1s": 0.0,
+          "stable_10s": 0.0,
+          "refall": 0.0,
+          "path_mean": 4.929141044616699,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 15.020432472229004,
+          "power_peak_p95": 906.8675537109375
+        },
+        "table": {
+          "n": 16,
+          "stable_1s": 0.0,
+          "stable_10s": 0.0,
+          "refall": 0.0,
+          "path_mean": 4.314198970794678,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 15.334771156311035,
+          "power_peak_p95": 887.910400390625
+        },
+        "pyramid_stairs": {
+          "n": 20,
+          "stable_1s": 0.0,
+          "stable_10s": 0.0,
+          "refall": 0.0,
+          "path_mean": 3.4328346252441406,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 27.87154769897461,
+          "power_peak_p95": 1193.197998046875
+        },
+        "box_terrain": {
+          "n": 28,
+          "stable_1s": 0.0357142873108387,
+          "stable_10s": 0.0,
+          "refall": 0.0,
+          "path_mean": 2.3976762294769287,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 21.04161262512207,
+          "power_peak_p95": 885.0942993164062
+        },
+        "free_box": {
+          "n": 16,
+          "stable_1s": 0.0,
+          "stable_10s": 0.0,
+          "refall": 0.0,
+          "path_mean": 1.8516905307769775,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 15.218606948852539,
+          "power_peak_p95": 863.188232421875
+        },
+        "double_plate": {
+          "n": 16,
+          "stable_1s": 0.0,
+          "stable_10s": 0.0,
+          "refall": 0.0,
+          "path_mean": 1.9713283777236938,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 13.439833641052246,
+          "power_peak_p95": 860.5409545898438
+        },
+        "mixed_clutter": {
+          "n": 16,
+          "stable_1s": 0.0,
+          "stable_10s": 0.0,
+          "refall": 0.0,
+          "path_mean": 3.198747158050537,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 19.53392791748047,
+          "power_peak_p95": 908.9400634765625
+        }
+      },
+      "9000": {
+        "flat": {
+          "n": 80,
+          "stable_1s": 1.0,
+          "stable_10s": 1.0,
+          "refall": 0.0,
+          "path_mean": 2.2430005073547363,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 14.002467155456543,
+          "power_peak_p95": 781.3955078125
+        },
+        "free_plate": {
+          "n": 64,
+          "stable_1s": 0.859375,
+          "stable_10s": 0.859375,
+          "refall": 0.0,
+          "path_mean": 2.5104787349700928,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 13.907123565673828,
+          "power_peak_p95": 879.2557373046875
+        },
+        "guided_plate": {
+          "n": 48,
+          "stable_1s": 0.6041666865348816,
+          "stable_10s": 0.5625,
+          "refall": 0.0,
+          "path_mean": 2.1835989952087402,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 15.536873817443848,
+          "power_peak_p95": 995.2417602539062
+        },
+        "fixed_ceiling": {
+          "n": 16,
+          "stable_1s": 0.5625,
+          "stable_10s": 0.5625,
+          "refall": 0.0,
+          "path_mean": 2.8412904739379883,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 12.880844116210938,
+          "power_peak_p95": 756.3219604492188
+        },
+        "table": {
+          "n": 16,
+          "stable_1s": 0.875,
+          "stable_10s": 0.8125,
+          "refall": 0.0,
+          "path_mean": 3.647566556930542,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 18.545568466186523,
+          "power_peak_p95": 852.6023559570312
+        },
+        "pyramid_stairs": {
+          "n": 20,
+          "stable_1s": 0.800000011920929,
+          "stable_10s": 0.699999988079071,
+          "refall": 0.0,
+          "path_mean": 3.7985007762908936,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 28.886445999145508,
+          "power_peak_p95": 1324.0872802734375
+        },
+        "box_terrain": {
+          "n": 28,
+          "stable_1s": 0.6785714626312256,
+          "stable_10s": 0.6071428656578064,
+          "refall": 0.0,
+          "path_mean": 2.5326876640319824,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 19.67515754699707,
+          "power_peak_p95": 897.0855712890625
+        },
+        "free_box": {
+          "n": 16,
+          "stable_1s": 0.8125,
+          "stable_10s": 0.8125,
+          "refall": 0.0,
+          "path_mean": 2.063044548034668,
+          "tau_peak_p95": 136.4913787841797,
+          "speed_peak_p95": 13.180774688720703,
+          "power_peak_p95": 788.1055297851562
+        },
+        "double_plate": {
+          "n": 16,
+          "stable_1s": 0.6875,
+          "stable_10s": 0.6875,
+          "refall": 0.0,
+          "path_mean": 2.2632837295532227,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 14.624826431274414,
+          "power_peak_p95": 793.5338745117188
+        },
+        "mixed_clutter": {
+          "n": 16,
+          "stable_1s": 0.625,
+          "stable_10s": 0.5,
+          "refall": 0.0,
+          "path_mean": 2.2792606353759766,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 20.260496139526367,
+          "power_peak_p95": 1262.458984375
+        }
+      },
+      "5500": {
+        "flat": {
+          "n": 80,
+          "stable_1s": 0.0,
+          "stable_10s": 0.0,
+          "refall": 0.0,
+          "path_mean": 2.531027317047119,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 13.270933151245117,
+          "power_peak_p95": 789.0697631835938
+        },
+        "free_plate": {
+          "n": 64,
+          "stable_1s": 0.0,
+          "stable_10s": 0.0,
+          "refall": 0.0,
+          "path_mean": 2.5453569889068604,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 15.330857276916504,
+          "power_peak_p95": 781.6978759765625
+        },
+        "guided_plate": {
+          "n": 48,
+          "stable_1s": 0.0,
+          "stable_10s": 0.0,
+          "refall": 0.0,
+          "path_mean": 2.652747869491577,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 14.91916275024414,
+          "power_peak_p95": 694.418701171875
+        },
+        "fixed_ceiling": {
+          "n": 16,
+          "stable_1s": 0.0,
+          "stable_10s": 0.0,
+          "refall": 0.0,
+          "path_mean": 6.63460636138916,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 14.66529655456543,
+          "power_peak_p95": 829.4505615234375
+        },
+        "table": {
+          "n": 16,
+          "stable_1s": 0.0,
+          "stable_10s": 0.0,
+          "refall": 0.0,
+          "path_mean": 4.538891315460205,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 20.68358039855957,
+          "power_peak_p95": 850.8070678710938
+        },
+        "pyramid_stairs": {
+          "n": 20,
+          "stable_1s": 0.0,
+          "stable_10s": 0.0,
+          "refall": 0.0,
+          "path_mean": 3.3506672382354736,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 19.111351013183594,
+          "power_peak_p95": 746.8259887695312
+        },
+        "box_terrain": {
+          "n": 28,
+          "stable_1s": 0.0,
+          "stable_10s": 0.0,
+          "refall": 0.0,
+          "path_mean": 2.1739158630371094,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 20.587770462036133,
+          "power_peak_p95": 926.2703857421875
+        },
+        "free_box": {
+          "n": 16,
+          "stable_1s": 0.0,
+          "stable_10s": 0.0,
+          "refall": 0.0,
+          "path_mean": 2.3328263759613037,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 15.09499740600586,
+          "power_peak_p95": 837.354248046875
+        },
+        "double_plate": {
+          "n": 16,
+          "stable_1s": 0.0,
+          "stable_10s": 0.0,
+          "refall": 0.0,
+          "path_mean": 2.1005520820617676,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 13.320892333984375,
+          "power_peak_p95": 740.1317749023438
+        },
+        "mixed_clutter": {
+          "n": 16,
+          "stable_1s": 0.0,
+          "stable_10s": 0.0,
+          "refall": 0.0,
+          "path_mean": 2.1247880458831787,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 20.31532859802246,
+          "power_peak_p95": 769.832763671875
+        }
+      },
+      "2500": {
+        "flat": {
+          "n": 80,
+          "stable_1s": 0.9625000357627869,
+          "stable_10s": 0.9625000357627869,
+          "refall": 0.0,
+          "path_mean": 1.0975122451782227,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 13.50626277923584,
+          "power_peak_p95": 875.6612548828125
+        },
+        "free_plate": {
+          "n": 64,
+          "stable_1s": 0.515625,
+          "stable_10s": 0.5,
+          "refall": 0.0,
+          "path_mean": 1.2364897727966309,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 17.511112213134766,
+          "power_peak_p95": 836.75390625
+        },
+        "guided_plate": {
+          "n": 48,
+          "stable_1s": 0.4791666865348816,
+          "stable_10s": 0.3541666865348816,
+          "refall": 0.0,
+          "path_mean": 2.025386333465576,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 19.160234451293945,
+          "power_peak_p95": 790.1229248046875
+        },
+        "fixed_ceiling": {
+          "n": 16,
+          "stable_1s": 0.875,
+          "stable_10s": 0.875,
+          "refall": 0.0,
+          "path_mean": 2.7395009994506836,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 19.0152530670166,
+          "power_peak_p95": 834.0546875
+        },
+        "table": {
+          "n": 16,
+          "stable_1s": 0.625,
+          "stable_10s": 0.5,
+          "refall": 0.0,
+          "path_mean": 2.8598780632019043,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 18.13735008239746,
+          "power_peak_p95": 849.8876342773438
+        },
+        "pyramid_stairs": {
+          "n": 20,
+          "stable_1s": 0.3499999940395355,
+          "stable_10s": 0.3499999940395355,
+          "refall": 0.0,
+          "path_mean": 2.70072865486145,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 21.943830490112305,
+          "power_peak_p95": 1008.5548095703125
+        },
+        "box_terrain": {
+          "n": 28,
+          "stable_1s": 0.5714285969734192,
+          "stable_10s": 0.5714285969734192,
+          "refall": 0.0,
+          "path_mean": 1.150277018547058,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 20.141345977783203,
+          "power_peak_p95": 1195.7076416015625
+        },
+        "free_box": {
+          "n": 16,
+          "stable_1s": 0.5,
+          "stable_10s": 0.4375,
+          "refall": 0.0,
+          "path_mean": 1.0471113920211792,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 12.815122604370117,
+          "power_peak_p95": 865.672607421875
+        },
+        "double_plate": {
+          "n": 16,
+          "stable_1s": 0.25,
+          "stable_10s": 0.25,
+          "refall": 0.0,
+          "path_mean": 1.167417049407959,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 13.638397216796875,
+          "power_peak_p95": 886.81591796875
+        },
+        "mixed_clutter": {
+          "n": 16,
+          "stable_1s": 0.125,
+          "stable_10s": 0.125,
+          "refall": 0.0,
+          "path_mean": 2.0006797313690186,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 19.193098068237305,
+          "power_peak_p95": 1137.577392578125
+        }
+      },
+      "9999": {
+        "flat": {
+          "n": 80,
+          "stable_1s": 1.0,
+          "stable_10s": 1.0,
+          "refall": 0.0,
+          "path_mean": 1.8761390447616577,
+          "tau_peak_p95": 130.81190490722656,
+          "speed_peak_p95": 14.644943237304688,
+          "power_peak_p95": 627.8807983398438
+        },
+        "free_plate": {
+          "n": 64,
+          "stable_1s": 0.859375,
+          "stable_10s": 0.84375,
+          "refall": 0.0,
+          "path_mean": 2.110469102859497,
+          "tau_peak_p95": 136.90875244140625,
+          "speed_peak_p95": 14.555957794189453,
+          "power_peak_p95": 680.0114135742188
+        },
+        "guided_plate": {
+          "n": 48,
+          "stable_1s": 0.7291666865348816,
+          "stable_10s": 0.6041666865348816,
+          "refall": 0.0,
+          "path_mean": 2.0836310386657715,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 16.85484504699707,
+          "power_peak_p95": 780.0359497070312
+        },
+        "fixed_ceiling": {
+          "n": 16,
+          "stable_1s": 0.8125,
+          "stable_10s": 0.8125,
+          "refall": 0.0,
+          "path_mean": 3.1495871543884277,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 17.05489158630371,
+          "power_peak_p95": 752.7139892578125
+        },
+        "table": {
+          "n": 16,
+          "stable_1s": 0.8125,
+          "stable_10s": 0.8125,
+          "refall": 0.0,
+          "path_mean": 3.088082790374756,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 14.338741302490234,
+          "power_peak_p95": 805.4873046875
+        },
+        "pyramid_stairs": {
+          "n": 20,
+          "stable_1s": 0.8500000238418579,
+          "stable_10s": 0.75,
+          "refall": 0.0,
+          "path_mean": 3.4914262294769287,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 21.244783401489258,
+          "power_peak_p95": 1153.712158203125
+        },
+        "box_terrain": {
+          "n": 28,
+          "stable_1s": 0.6071428656578064,
+          "stable_10s": 0.535714328289032,
+          "refall": 0.0,
+          "path_mean": 2.3012592792510986,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 18.752641677856445,
+          "power_peak_p95": 908.1229858398438
+        },
+        "free_box": {
+          "n": 16,
+          "stable_1s": 0.6875,
+          "stable_10s": 0.6875,
+          "refall": 0.0,
+          "path_mean": 1.639689326286316,
+          "tau_peak_p95": 123.97000122070312,
+          "speed_peak_p95": 11.886711120605469,
+          "power_peak_p95": 605.2921142578125
+        },
+        "double_plate": {
+          "n": 16,
+          "stable_1s": 0.6875,
+          "stable_10s": 0.625,
+          "refall": 0.0,
+          "path_mean": 1.9888792037963867,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 13.14175033569336,
+          "power_peak_p95": 659.7932739257812
+        },
+        "mixed_clutter": {
+          "n": 16,
+          "stable_1s": 0.1875,
+          "stable_10s": 0.1875,
+          "refall": 0.0,
+          "path_mean": 1.5871915817260742,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 16.39484405517578,
+          "power_peak_p95": 829.66259765625
+        }
+      },
+      "6000": {
+        "flat": {
+          "n": 80,
+          "stable_1s": 0.0,
+          "stable_10s": 0.0,
+          "refall": 0.0,
+          "path_mean": 2.618149757385254,
+          "tau_peak_p95": 136.4838409423828,
+          "speed_peak_p95": 12.959736824035645,
+          "power_peak_p95": 642.9381713867188
+        },
+        "free_plate": {
+          "n": 64,
+          "stable_1s": 0.015625,
+          "stable_10s": 0.0,
+          "refall": 0.0,
+          "path_mean": 2.901878833770752,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 14.550321578979492,
+          "power_peak_p95": 718.2074584960938
+        },
+        "guided_plate": {
+          "n": 48,
+          "stable_1s": 0.02083333395421505,
+          "stable_10s": 0.0,
+          "refall": 0.0,
+          "path_mean": 2.587665319442749,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 16.381540298461914,
+          "power_peak_p95": 795.5537109375
+        },
+        "fixed_ceiling": {
+          "n": 16,
+          "stable_1s": 0.0,
+          "stable_10s": 0.0,
+          "refall": 0.0,
+          "path_mean": 4.583862781524658,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 14.678372383117676,
+          "power_peak_p95": 763.4015502929688
+        },
+        "table": {
+          "n": 16,
+          "stable_1s": 0.0,
+          "stable_10s": 0.0,
+          "refall": 0.0,
+          "path_mean": 4.40665340423584,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 15.518203735351562,
+          "power_peak_p95": 1071.615478515625
+        },
+        "pyramid_stairs": {
+          "n": 20,
+          "stable_1s": 0.0,
+          "stable_10s": 0.0,
+          "refall": 0.0,
+          "path_mean": 3.735685110092163,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 20.765850067138672,
+          "power_peak_p95": 855.1036376953125
+        },
+        "box_terrain": {
+          "n": 28,
+          "stable_1s": 0.0357142873108387,
+          "stable_10s": 0.0,
+          "refall": 0.0,
+          "path_mean": 2.248806953430176,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 23.06256866455078,
+          "power_peak_p95": 845.209228515625
+        },
+        "free_box": {
+          "n": 16,
+          "stable_1s": 0.0,
+          "stable_10s": 0.0,
+          "refall": 0.0,
+          "path_mean": 2.2141005992889404,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 14.641273498535156,
+          "power_peak_p95": 727.7214965820312
+        },
+        "double_plate": {
+          "n": 16,
+          "stable_1s": 0.0,
+          "stable_10s": 0.0,
+          "refall": 0.0,
+          "path_mean": 2.2724051475524902,
+          "tau_peak_p95": 135.81336975097656,
+          "speed_peak_p95": 14.68301773071289,
+          "power_peak_p95": 724.95703125
+        },
+        "mixed_clutter": {
+          "n": 16,
+          "stable_1s": 0.0,
+          "stable_10s": 0.0,
+          "refall": 0.0,
+          "path_mean": 2.1903610229492188,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 19.006793975830078,
+          "power_peak_p95": 822.4807739257812
+        }
+      }
+    }
+  },
+  "M2_A6_mix": {
+    "completed": {
+      "iteration": 9999
+    },
+    "validation": {
+      "8000": {
+        "flat": {
+          "n": 80,
+          "stable_1s": 1.0,
+          "stable_10s": 1.0,
+          "refall": 0.0,
+          "path_mean": 1.9431623220443726,
+          "tau_peak_p95": 107.08688354492188,
+          "speed_peak_p95": 14.86556625366211,
+          "power_peak_p95": 850.0839233398438
+        },
+        "free_plate": {
+          "n": 64,
+          "stable_1s": 0.890625,
+          "stable_10s": 0.875,
+          "refall": 0.0,
+          "path_mean": 1.9455252885818481,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 16.0200138092041,
+          "power_peak_p95": 944.0770263671875
+        },
+        "guided_plate": {
+          "n": 48,
+          "stable_1s": 0.9375,
+          "stable_10s": 0.9166666865348816,
+          "refall": 0.0,
+          "path_mean": 1.9363439083099365,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 15.995348930358887,
+          "power_peak_p95": 947.4083251953125
+        },
+        "fixed_ceiling": {
+          "n": 16,
+          "stable_1s": 1.0,
+          "stable_10s": 1.0,
+          "refall": 0.0,
+          "path_mean": 2.0628890991210938,
+          "tau_peak_p95": 137.84683227539062,
+          "speed_peak_p95": 18.55687713623047,
+          "power_peak_p95": 893.380126953125
+        },
+        "table": {
+          "n": 16,
+          "stable_1s": 0.875,
+          "stable_10s": 0.8125,
+          "refall": 0.0,
+          "path_mean": 2.3297410011291504,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 18.77056312561035,
+          "power_peak_p95": 973.47412109375
+        },
+        "pyramid_stairs": {
+          "n": 20,
+          "stable_1s": 0.9000000357627869,
+          "stable_10s": 0.8500000238418579,
+          "refall": 0.0,
+          "path_mean": 2.9900689125061035,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 22.555858612060547,
+          "power_peak_p95": 1142.17138671875
+        },
+        "box_terrain": {
+          "n": 28,
+          "stable_1s": 0.9285714626312256,
+          "stable_10s": 0.9285714626312256,
+          "refall": 0.0,
+          "path_mean": 2.551724433898926,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 18.109390258789062,
+          "power_peak_p95": 1294.017578125
+        },
+        "free_box": {
+          "n": 16,
+          "stable_1s": 1.0,
+          "stable_10s": 1.0,
+          "refall": 0.0,
+          "path_mean": 1.9021711349487305,
+          "tau_peak_p95": 108.14219665527344,
+          "speed_peak_p95": 12.75200080871582,
+          "power_peak_p95": 829.1041870117188
+        },
+        "double_plate": {
+          "n": 16,
+          "stable_1s": 1.0,
+          "stable_10s": 1.0,
+          "refall": 0.0,
+          "path_mean": 1.888183355331421,
+          "tau_peak_p95": 121.05856323242188,
+          "speed_peak_p95": 11.580391883850098,
+          "power_peak_p95": 1004.296142578125
+        },
+        "mixed_clutter": {
+          "n": 16,
+          "stable_1s": 0.9375,
+          "stable_10s": 0.875,
+          "refall": 0.0,
+          "path_mean": 2.1963467597961426,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 21.318614959716797,
+          "power_peak_p95": 1046.566650390625
+        }
+      },
+      "500": {
+        "flat": {
+          "n": 80,
+          "stable_1s": 0.9375,
+          "stable_10s": 0.8500000238418579,
+          "refall": 0.0,
+          "path_mean": 2.372797727584839,
+          "tau_peak_p95": 131.17221069335938,
+          "speed_peak_p95": 13.650684356689453,
+          "power_peak_p95": 697.2242431640625
+        },
+        "free_plate": {
+          "n": 64,
+          "stable_1s": 0.4375,
+          "stable_10s": 0.40625,
+          "refall": 0.0,
+          "path_mean": 3.6105990409851074,
+          "tau_peak_p95": 126.91267395019531,
+          "speed_peak_p95": 14.106924057006836,
+          "power_peak_p95": 735.3812255859375
+        },
+        "guided_plate": {
+          "n": 48,
+          "stable_1s": 0.6875,
+          "stable_10s": 0.625,
+          "refall": 0.0,
+          "path_mean": 3.0992660522460938,
+          "tau_peak_p95": 133.08700561523438,
+          "speed_peak_p95": 18.382783889770508,
+          "power_peak_p95": 706.2045288085938
+        },
+        "fixed_ceiling": {
+          "n": 16,
+          "stable_1s": 0.6875,
+          "stable_10s": 0.375,
+          "refall": 0.0,
+          "path_mean": 3.8008904457092285,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 17.279556274414062,
+          "power_peak_p95": 880.1265869140625
+        },
+        "table": {
+          "n": 16,
+          "stable_1s": 0.3125,
+          "stable_10s": 0.1875,
+          "refall": 0.0,
+          "path_mean": 4.113778591156006,
+          "tau_peak_p95": 134.68275451660156,
+          "speed_peak_p95": 17.582477569580078,
+          "power_peak_p95": 683.48046875
+        },
+        "pyramid_stairs": {
+          "n": 20,
+          "stable_1s": 0.8500000238418579,
+          "stable_10s": 0.800000011920929,
+          "refall": 0.0,
+          "path_mean": 3.7334561347961426,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 22.439672470092773,
+          "power_peak_p95": 1015.6376953125
+        },
+        "box_terrain": {
+          "n": 28,
+          "stable_1s": 0.785714328289032,
+          "stable_10s": 0.6428571939468384,
+          "refall": 0.0357142873108387,
+          "path_mean": 2.5523862838745117,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 23.90902328491211,
+          "power_peak_p95": 1030.00830078125
+        },
+        "free_box": {
+          "n": 16,
+          "stable_1s": 0.625,
+          "stable_10s": 0.5625,
+          "refall": 0.0,
+          "path_mean": 3.121598243713379,
+          "tau_peak_p95": 134.4304962158203,
+          "speed_peak_p95": 15.921364784240723,
+          "power_peak_p95": 860.078857421875
+        },
+        "double_plate": {
+          "n": 16,
+          "stable_1s": 0.4375,
+          "stable_10s": 0.4375,
+          "refall": 0.0,
+          "path_mean": 1.4018580913543701,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 14.596887588500977,
+          "power_peak_p95": 835.2949829101562
+        },
+        "mixed_clutter": {
+          "n": 16,
+          "stable_1s": 0.375,
+          "stable_10s": 0.3125,
+          "refall": 0.0,
+          "path_mean": 3.3406152725219727,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 21.847152709960938,
+          "power_peak_p95": 992.723876953125
+        }
+      },
+      "4000": {
+        "flat": {
+          "n": 80,
+          "stable_1s": 1.0,
+          "stable_10s": 1.0,
+          "refall": 0.0,
+          "path_mean": 2.2470614910125732,
+          "tau_peak_p95": 125.57428741455078,
+          "speed_peak_p95": 13.813838958740234,
+          "power_peak_p95": 1073.46435546875
+        },
+        "free_plate": {
+          "n": 64,
+          "stable_1s": 0.84375,
+          "stable_10s": 0.84375,
+          "refall": 0.0,
+          "path_mean": 2.2926597595214844,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 15.682007789611816,
+          "power_peak_p95": 1098.7655029296875
+        },
+        "guided_plate": {
+          "n": 48,
+          "stable_1s": 0.9791666865348816,
+          "stable_10s": 0.9791666865348816,
+          "refall": 0.0,
+          "path_mean": 2.218219518661499,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 16.248756408691406,
+          "power_peak_p95": 1213.57763671875
+        },
+        "fixed_ceiling": {
+          "n": 16,
+          "stable_1s": 1.0,
+          "stable_10s": 1.0,
+          "refall": 0.0,
+          "path_mean": 2.2077512741088867,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 17.816804885864258,
+          "power_peak_p95": 1022.2108764648438
+        },
+        "table": {
+          "n": 16,
+          "stable_1s": 0.875,
+          "stable_10s": 0.8125,
+          "refall": 0.0,
+          "path_mean": 2.7460203170776367,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 19.462635040283203,
+          "power_peak_p95": 1213.895751953125
+        },
+        "pyramid_stairs": {
+          "n": 20,
+          "stable_1s": 0.949999988079071,
+          "stable_10s": 0.9000000357627869,
+          "refall": 0.0,
+          "path_mean": 3.0607986450195312,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 21.390104293823242,
+          "power_peak_p95": 1063.2542724609375
+        },
+        "box_terrain": {
+          "n": 28,
+          "stable_1s": 0.9285714626312256,
+          "stable_10s": 0.8571429252624512,
+          "refall": 0.0,
+          "path_mean": 2.5081629753112793,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 20.9647216796875,
+          "power_peak_p95": 1098.3897705078125
+        },
+        "free_box": {
+          "n": 16,
+          "stable_1s": 1.0,
+          "stable_10s": 1.0,
+          "refall": 0.0,
+          "path_mean": 2.20503830909729,
+          "tau_peak_p95": 119.7833480834961,
+          "speed_peak_p95": 14.221025466918945,
+          "power_peak_p95": 973.8917846679688
+        },
+        "double_plate": {
+          "n": 16,
+          "stable_1s": 0.6875,
+          "stable_10s": 0.625,
+          "refall": 0.0,
+          "path_mean": 2.471036434173584,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 14.6535005569458,
+          "power_peak_p95": 1099.4903564453125
+        },
+        "mixed_clutter": {
+          "n": 16,
+          "stable_1s": 0.75,
+          "stable_10s": 0.75,
+          "refall": 0.0,
+          "path_mean": 2.2308101654052734,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 15.37040901184082,
+          "power_peak_p95": 1096.0528564453125
+        }
+      },
+      "1500": {
+        "flat": {
+          "n": 80,
+          "stable_1s": 1.0,
+          "stable_10s": 0.987500011920929,
+          "refall": 0.0,
+          "path_mean": 2.103386163711548,
+          "tau_peak_p95": 125.9705581665039,
+          "speed_peak_p95": 13.86655330657959,
+          "power_peak_p95": 673.06494140625
+        },
+        "free_plate": {
+          "n": 64,
+          "stable_1s": 0.765625,
+          "stable_10s": 0.75,
+          "refall": 0.0,
+          "path_mean": 1.8585669994354248,
+          "tau_peak_p95": 128.42935180664062,
+          "speed_peak_p95": 16.086292266845703,
+          "power_peak_p95": 828.033203125
+        },
+        "guided_plate": {
+          "n": 48,
+          "stable_1s": 0.7083333730697632,
+          "stable_10s": 0.6666666865348816,
+          "refall": 0.0,
+          "path_mean": 1.8706130981445312,
+          "tau_peak_p95": 138.29454040527344,
+          "speed_peak_p95": 17.011659622192383,
+          "power_peak_p95": 782.9127807617188
+        },
+        "fixed_ceiling": {
+          "n": 16,
+          "stable_1s": 0.9375,
+          "stable_10s": 0.875,
+          "refall": 0.0,
+          "path_mean": 2.3920392990112305,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 18.607969284057617,
+          "power_peak_p95": 872.95751953125
+        },
+        "table": {
+          "n": 16,
+          "stable_1s": 0.75,
+          "stable_10s": 0.5625,
+          "refall": 0.0,
+          "path_mean": 2.510525703430176,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 18.92683982849121,
+          "power_peak_p95": 883.2634887695312
+        },
+        "pyramid_stairs": {
+          "n": 20,
+          "stable_1s": 0.9000000357627869,
+          "stable_10s": 0.8500000238418579,
+          "refall": 0.0,
+          "path_mean": 3.4257607460021973,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 25.81821632385254,
+          "power_peak_p95": 1138.2872314453125
+        },
+        "box_terrain": {
+          "n": 28,
+          "stable_1s": 0.8928571939468384,
+          "stable_10s": 0.8928571939468384,
+          "refall": 0.0,
+          "path_mean": 2.021914482116699,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 18.467132568359375,
+          "power_peak_p95": 990.5324096679688
+        },
+        "free_box": {
+          "n": 16,
+          "stable_1s": 1.0,
+          "stable_10s": 1.0,
+          "refall": 0.0,
+          "path_mean": 1.8944745063781738,
+          "tau_peak_p95": 115.89933776855469,
+          "speed_peak_p95": 13.623647689819336,
+          "power_peak_p95": 691.3251953125
+        },
+        "double_plate": {
+          "n": 16,
+          "stable_1s": 0.5625,
+          "stable_10s": 0.5625,
+          "refall": 0.0,
+          "path_mean": 1.8079345226287842,
+          "tau_peak_p95": 117.01546478271484,
+          "speed_peak_p95": 15.118020057678223,
+          "power_peak_p95": 780.481689453125
+        },
+        "mixed_clutter": {
+          "n": 16,
+          "stable_1s": 0.6875,
+          "stable_10s": 0.625,
+          "refall": 0.0,
+          "path_mean": 2.3149490356445312,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 22.896793365478516,
+          "power_peak_p95": 1111.9677734375
+        }
+      },
+      "3000": {
+        "flat": {
+          "n": 80,
+          "stable_1s": 1.0,
+          "stable_10s": 1.0,
+          "refall": 0.0,
+          "path_mean": 2.1846961975097656,
+          "tau_peak_p95": 115.33653259277344,
+          "speed_peak_p95": 12.3206148147583,
+          "power_peak_p95": 648.6084594726562
+        },
+        "free_plate": {
+          "n": 64,
+          "stable_1s": 0.8125,
+          "stable_10s": 0.78125,
+          "refall": 0.0,
+          "path_mean": 2.2046234607696533,
+          "tau_peak_p95": 131.28872680664062,
+          "speed_peak_p95": 15.579976081848145,
+          "power_peak_p95": 904.2388305664062
+        },
+        "guided_plate": {
+          "n": 48,
+          "stable_1s": 0.8958333730697632,
+          "stable_10s": 0.7708333730697632,
+          "refall": 0.0,
+          "path_mean": 2.1708507537841797,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 15.982589721679688,
+          "power_peak_p95": 1015.5535278320312
+        },
+        "fixed_ceiling": {
+          "n": 16,
+          "stable_1s": 1.0,
+          "stable_10s": 1.0,
+          "refall": 0.0,
+          "path_mean": 2.21461820602417,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 15.910221099853516,
+          "power_peak_p95": 749.802490234375
+        },
+        "table": {
+          "n": 16,
+          "stable_1s": 0.9375,
+          "stable_10s": 0.9375,
+          "refall": 0.0,
+          "path_mean": 2.3834052085876465,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 16.78211784362793,
+          "power_peak_p95": 1049.048095703125
+        },
+        "pyramid_stairs": {
+          "n": 20,
+          "stable_1s": 0.8500000238418579,
+          "stable_10s": 0.8500000238418579,
+          "refall": 0.0,
+          "path_mean": 2.985135793685913,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 21.019596099853516,
+          "power_peak_p95": 1192.580078125
+        },
+        "box_terrain": {
+          "n": 28,
+          "stable_1s": 0.785714328289032,
+          "stable_10s": 0.7500000596046448,
+          "refall": 0.0,
+          "path_mean": 1.9466733932495117,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 19.85150909423828,
+          "power_peak_p95": 1262.5494384765625
+        },
+        "free_box": {
+          "n": 16,
+          "stable_1s": 1.0,
+          "stable_10s": 0.9375,
+          "refall": 0.0,
+          "path_mean": 2.3012924194335938,
+          "tau_peak_p95": 124.74777221679688,
+          "speed_peak_p95": 12.66988754272461,
+          "power_peak_p95": 804.208740234375
+        },
+        "double_plate": {
+          "n": 16,
+          "stable_1s": 0.8125,
+          "stable_10s": 0.8125,
+          "refall": 0.0,
+          "path_mean": 2.1245784759521484,
+          "tau_peak_p95": 121.52338409423828,
+          "speed_peak_p95": 12.469542503356934,
+          "power_peak_p95": 900.0302124023438
+        },
+        "mixed_clutter": {
+          "n": 16,
+          "stable_1s": 0.75,
+          "stable_10s": 0.75,
+          "refall": 0.0,
+          "path_mean": 2.035684108734131,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 19.40414047241211,
+          "power_peak_p95": 867.6002197265625
+        }
+      },
+      "2000": {
+        "flat": {
+          "n": 80,
+          "stable_1s": 1.0,
+          "stable_10s": 1.0,
+          "refall": 0.0,
+          "path_mean": 2.0766665935516357,
+          "tau_peak_p95": 110.10333251953125,
+          "speed_peak_p95": 13.70439624786377,
+          "power_peak_p95": 740.5123291015625
+        },
+        "free_plate": {
+          "n": 64,
+          "stable_1s": 0.78125,
+          "stable_10s": 0.78125,
+          "refall": 0.0,
+          "path_mean": 2.038250207901001,
+          "tau_peak_p95": 136.1044158935547,
+          "speed_peak_p95": 15.162726402282715,
+          "power_peak_p95": 818.6717529296875
+        },
+        "guided_plate": {
+          "n": 48,
+          "stable_1s": 0.75,
+          "stable_10s": 0.6458333730697632,
+          "refall": 0.0,
+          "path_mean": 1.8214621543884277,
+          "tau_peak_p95": 135.91409301757812,
+          "speed_peak_p95": 14.167778015136719,
+          "power_peak_p95": 799.180419921875
+        },
+        "fixed_ceiling": {
+          "n": 16,
+          "stable_1s": 1.0,
+          "stable_10s": 1.0,
+          "refall": 0.0,
+          "path_mean": 2.245673894882202,
+          "tau_peak_p95": 137.8150634765625,
+          "speed_peak_p95": 14.720815658569336,
+          "power_peak_p95": 768.6570434570312
+        },
+        "table": {
+          "n": 16,
+          "stable_1s": 0.6875,
+          "stable_10s": 0.625,
+          "refall": 0.0,
+          "path_mean": 2.5561907291412354,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 14.916088104248047,
+          "power_peak_p95": 944.67138671875
+        },
+        "pyramid_stairs": {
+          "n": 20,
+          "stable_1s": 0.9000000357627869,
+          "stable_10s": 0.9000000357627869,
+          "refall": 0.0,
+          "path_mean": 3.5680015087127686,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 21.31328010559082,
+          "power_peak_p95": 1449.7603759765625
+        },
+        "box_terrain": {
+          "n": 28,
+          "stable_1s": 0.8928571939468384,
+          "stable_10s": 0.8571429252624512,
+          "refall": 0.0,
+          "path_mean": 2.456028699874878,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 21.767290115356445,
+          "power_peak_p95": 1080.6539306640625
+        },
+        "free_box": {
+          "n": 16,
+          "stable_1s": 0.9375,
+          "stable_10s": 0.9375,
+          "refall": 0.0,
+          "path_mean": 1.9633710384368896,
+          "tau_peak_p95": 119.70712280273438,
+          "speed_peak_p95": 14.841465950012207,
+          "power_peak_p95": 789.1004638671875
+        },
+        "double_plate": {
+          "n": 16,
+          "stable_1s": 0.6875,
+          "stable_10s": 0.6875,
+          "refall": 0.0,
+          "path_mean": 2.116408348083496,
+          "tau_peak_p95": 125.04110717773438,
+          "speed_peak_p95": 15.276090621948242,
+          "power_peak_p95": 866.817138671875
+        },
+        "mixed_clutter": {
+          "n": 16,
+          "stable_1s": 0.9375,
+          "stable_10s": 0.9375,
+          "refall": 0.0,
+          "path_mean": 2.115233898162842,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 16.576385498046875,
+          "power_peak_p95": 1153.396484375
+        }
+      },
+      "6500": {
+        "flat": {
+          "n": 80,
+          "stable_1s": 1.0,
+          "stable_10s": 1.0,
+          "refall": 0.0,
+          "path_mean": 1.952404260635376,
+          "tau_peak_p95": 104.35167694091797,
+          "speed_peak_p95": 12.469657897949219,
+          "power_peak_p95": 741.6759033203125
+        },
+        "free_plate": {
+          "n": 64,
+          "stable_1s": 0.875,
+          "stable_10s": 0.875,
+          "refall": 0.0,
+          "path_mean": 1.9134957790374756,
+          "tau_peak_p95": 122.66587829589844,
+          "speed_peak_p95": 13.213454246520996,
+          "power_peak_p95": 772.1278076171875
+        },
+        "guided_plate": {
+          "n": 48,
+          "stable_1s": 0.9166666865348816,
+          "stable_10s": 0.875,
+          "refall": 0.0,
+          "path_mean": 2.011561870574951,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 15.630989074707031,
+          "power_peak_p95": 968.8571166992188
+        },
+        "fixed_ceiling": {
+          "n": 16,
+          "stable_1s": 1.0,
+          "stable_10s": 1.0,
+          "refall": 0.0,
+          "path_mean": 2.046966791152954,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 14.10598373413086,
+          "power_peak_p95": 954.6366577148438
+        },
+        "table": {
+          "n": 16,
+          "stable_1s": 0.875,
+          "stable_10s": 0.875,
+          "refall": 0.0,
+          "path_mean": 2.4012928009033203,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 18.40251350402832,
+          "power_peak_p95": 986.9857788085938
+        },
+        "pyramid_stairs": {
+          "n": 20,
+          "stable_1s": 0.800000011920929,
+          "stable_10s": 0.800000011920929,
+          "refall": 0.0,
+          "path_mean": 2.7270801067352295,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 22.562808990478516,
+          "power_peak_p95": 1116.7171630859375
+        },
+        "box_terrain": {
+          "n": 28,
+          "stable_1s": 0.8928571939468384,
+          "stable_10s": 0.8571429252624512,
+          "refall": 0.0,
+          "path_mean": 2.5169594287872314,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 22.811227798461914,
+          "power_peak_p95": 1050.779052734375
+        },
+        "free_box": {
+          "n": 16,
+          "stable_1s": 1.0,
+          "stable_10s": 1.0,
+          "refall": 0.0,
+          "path_mean": 2.00370192527771,
+          "tau_peak_p95": 108.08968353271484,
+          "speed_peak_p95": 12.298572540283203,
+          "power_peak_p95": 777.351806640625
+        },
+        "double_plate": {
+          "n": 16,
+          "stable_1s": 0.8125,
+          "stable_10s": 0.8125,
+          "refall": 0.0,
+          "path_mean": 1.9463438987731934,
+          "tau_peak_p95": 113.00978088378906,
+          "speed_peak_p95": 12.357301712036133,
+          "power_peak_p95": 823.6827392578125
+        },
+        "mixed_clutter": {
+          "n": 16,
+          "stable_1s": 0.75,
+          "stable_10s": 0.6875,
+          "refall": 0.0,
+          "path_mean": 1.8435735702514648,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 18.670761108398438,
+          "power_peak_p95": 1035.535400390625
+        }
+      },
+      "8500": {
+        "flat": {
+          "n": 80,
+          "stable_1s": 1.0,
+          "stable_10s": 1.0,
+          "refall": 0.0,
+          "path_mean": 1.782243013381958,
+          "tau_peak_p95": 111.47886657714844,
+          "speed_peak_p95": 13.121360778808594,
+          "power_peak_p95": 676.4948120117188
+        },
+        "free_plate": {
+          "n": 64,
+          "stable_1s": 0.78125,
+          "stable_10s": 0.78125,
+          "refall": 0.0,
+          "path_mean": 1.8649307489395142,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 15.361262321472168,
+          "power_peak_p95": 970.9153442382812
+        },
+        "guided_plate": {
+          "n": 48,
+          "stable_1s": 0.9791666865348816,
+          "stable_10s": 0.9583333730697632,
+          "refall": 0.0,
+          "path_mean": 1.833566427230835,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 16.253332138061523,
+          "power_peak_p95": 1049.495849609375
+        },
+        "fixed_ceiling": {
+          "n": 16,
+          "stable_1s": 1.0,
+          "stable_10s": 1.0,
+          "refall": 0.0,
+          "path_mean": 1.8588935136795044,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 18.556493759155273,
+          "power_peak_p95": 857.6463623046875
+        },
+        "table": {
+          "n": 16,
+          "stable_1s": 0.9375,
+          "stable_10s": 0.9375,
+          "refall": 0.0,
+          "path_mean": 2.0404205322265625,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 18.955543518066406,
+          "power_peak_p95": 1129.933837890625
+        },
+        "pyramid_stairs": {
+          "n": 20,
+          "stable_1s": 0.9000000357627869,
+          "stable_10s": 0.9000000357627869,
+          "refall": 0.0,
+          "path_mean": 2.6798980236053467,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 21.475183486938477,
+          "power_peak_p95": 1001.4276123046875
+        },
+        "box_terrain": {
+          "n": 28,
+          "stable_1s": 0.8928571939468384,
+          "stable_10s": 0.8571429252624512,
+          "refall": 0.0,
+          "path_mean": 2.2066733837127686,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 18.37053680419922,
+          "power_peak_p95": 1046.39501953125
+        },
+        "free_box": {
+          "n": 16,
+          "stable_1s": 0.9375,
+          "stable_10s": 0.9375,
+          "refall": 0.0,
+          "path_mean": 1.8132424354553223,
+          "tau_peak_p95": 109.97039031982422,
+          "speed_peak_p95": 11.494322776794434,
+          "power_peak_p95": 814.5390625
+        },
+        "double_plate": {
+          "n": 16,
+          "stable_1s": 0.8125,
+          "stable_10s": 0.8125,
+          "refall": 0.0,
+          "path_mean": 1.8084789514541626,
+          "tau_peak_p95": 134.07598876953125,
+          "speed_peak_p95": 12.697431564331055,
+          "power_peak_p95": 973.6595458984375
+        },
+        "mixed_clutter": {
+          "n": 16,
+          "stable_1s": 0.6875,
+          "stable_10s": 0.6875,
+          "refall": 0.0,
+          "path_mean": 1.8835304975509644,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 19.457263946533203,
+          "power_peak_p95": 1044.891357421875
+        }
+      },
+      "7500": {
+        "flat": {
+          "n": 80,
+          "stable_1s": 1.0,
+          "stable_10s": 1.0,
+          "refall": 0.0,
+          "path_mean": 1.893754005432129,
+          "tau_peak_p95": 105.65245056152344,
+          "speed_peak_p95": 13.639755249023438,
+          "power_peak_p95": 760.940673828125
+        },
+        "free_plate": {
+          "n": 64,
+          "stable_1s": 0.84375,
+          "stable_10s": 0.828125,
+          "refall": 0.0,
+          "path_mean": 1.8894462585449219,
+          "tau_peak_p95": 136.11146545410156,
+          "speed_peak_p95": 15.079954147338867,
+          "power_peak_p95": 883.1062622070312
+        },
+        "guided_plate": {
+          "n": 48,
+          "stable_1s": 0.9583333730697632,
+          "stable_10s": 0.9375,
+          "refall": 0.0,
+          "path_mean": 2.0131869316101074,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 16.59083366394043,
+          "power_peak_p95": 1007.6835327148438
+        },
+        "fixed_ceiling": {
+          "n": 16,
+          "stable_1s": 1.0,
+          "stable_10s": 1.0,
+          "refall": 0.0,
+          "path_mean": 1.9740830659866333,
+          "tau_peak_p95": 127.80623626708984,
+          "speed_peak_p95": 13.184086799621582,
+          "power_peak_p95": 886.6366577148438
+        },
+        "table": {
+          "n": 16,
+          "stable_1s": 0.9375,
+          "stable_10s": 0.875,
+          "refall": 0.0,
+          "path_mean": 2.370037317276001,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 18.494871139526367,
+          "power_peak_p95": 842.646728515625
+        },
+        "pyramid_stairs": {
+          "n": 20,
+          "stable_1s": 0.9000000357627869,
+          "stable_10s": 0.8500000238418579,
+          "refall": 0.0,
+          "path_mean": 2.972529172897339,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 20.692617416381836,
+          "power_peak_p95": 1258.0166015625
+        },
+        "box_terrain": {
+          "n": 28,
+          "stable_1s": 0.8928571939468384,
+          "stable_10s": 0.8214285969734192,
+          "refall": 0.0,
+          "path_mean": 1.977730393409729,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 19.623077392578125,
+          "power_peak_p95": 1229.466064453125
+        },
+        "free_box": {
+          "n": 16,
+          "stable_1s": 1.0,
+          "stable_10s": 1.0,
+          "refall": 0.0,
+          "path_mean": 1.827178716659546,
+          "tau_peak_p95": 117.81440734863281,
+          "speed_peak_p95": 12.558149337768555,
+          "power_peak_p95": 847.2816162109375
+        },
+        "double_plate": {
+          "n": 16,
+          "stable_1s": 0.8125,
+          "stable_10s": 0.8125,
+          "refall": 0.0,
+          "path_mean": 1.8298835754394531,
+          "tau_peak_p95": 123.1021499633789,
+          "speed_peak_p95": 11.15827465057373,
+          "power_peak_p95": 804.3099365234375
+        },
+        "mixed_clutter": {
+          "n": 16,
+          "stable_1s": 0.5625,
+          "stable_10s": 0.5625,
+          "refall": 0.0,
+          "path_mean": 1.934877872467041,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 16.875205993652344,
+          "power_peak_p95": 1174.879150390625
+        }
+      },
+      "3500": {
+        "flat": {
+          "n": 80,
+          "stable_1s": 1.0,
+          "stable_10s": 1.0,
+          "refall": 0.0,
+          "path_mean": 2.2889068126678467,
+          "tau_peak_p95": 127.85829162597656,
+          "speed_peak_p95": 12.534472465515137,
+          "power_peak_p95": 822.2966918945312
+        },
+        "free_plate": {
+          "n": 64,
+          "stable_1s": 0.9375,
+          "stable_10s": 0.921875,
+          "refall": 0.0,
+          "path_mean": 2.256467580795288,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 17.599702835083008,
+          "power_peak_p95": 1129.3802490234375
+        },
+        "guided_plate": {
+          "n": 48,
+          "stable_1s": 0.9583333730697632,
+          "stable_10s": 0.9583333730697632,
+          "refall": 0.0,
+          "path_mean": 2.3289341926574707,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 14.791415214538574,
+          "power_peak_p95": 1187.0670166015625
+        },
+        "fixed_ceiling": {
+          "n": 16,
+          "stable_1s": 1.0,
+          "stable_10s": 1.0,
+          "refall": 0.0,
+          "path_mean": 2.2989628314971924,
+          "tau_peak_p95": 127.72053527832031,
+          "speed_peak_p95": 14.58851432800293,
+          "power_peak_p95": 946.9962158203125
+        },
+        "table": {
+          "n": 16,
+          "stable_1s": 0.875,
+          "stable_10s": 0.8125,
+          "refall": 0.0,
+          "path_mean": 2.8293819427490234,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 17.482376098632812,
+          "power_peak_p95": 1095.723876953125
+        },
+        "pyramid_stairs": {
+          "n": 20,
+          "stable_1s": 0.8500000238418579,
+          "stable_10s": 0.8500000238418579,
+          "refall": 0.0,
+          "path_mean": 3.734114408493042,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 22.30698013305664,
+          "power_peak_p95": 1721.0635986328125
+        },
+        "box_terrain": {
+          "n": 28,
+          "stable_1s": 0.8571429252624512,
+          "stable_10s": 0.8214285969734192,
+          "refall": 0.0,
+          "path_mean": 2.59002423286438,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 24.319316864013672,
+          "power_peak_p95": 1061.3233642578125
+        },
+        "free_box": {
+          "n": 16,
+          "stable_1s": 1.0,
+          "stable_10s": 1.0,
+          "refall": 0.0,
+          "path_mean": 2.281559944152832,
+          "tau_peak_p95": 117.07208251953125,
+          "speed_peak_p95": 12.305635452270508,
+          "power_peak_p95": 783.8729248046875
+        },
+        "double_plate": {
+          "n": 16,
+          "stable_1s": 0.8125,
+          "stable_10s": 0.8125,
+          "refall": 0.0,
+          "path_mean": 2.270602226257324,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 12.61488151550293,
+          "power_peak_p95": 1169.30078125
+        },
+        "mixed_clutter": {
+          "n": 16,
+          "stable_1s": 0.8125,
+          "stable_10s": 0.75,
+          "refall": 0.0,
+          "path_mean": 2.50585675239563,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 22.099197387695312,
+          "power_peak_p95": 1594.00439453125
+        }
+      },
+      "9500": {
+        "flat": {
+          "n": 80,
+          "stable_1s": 1.0,
+          "stable_10s": 1.0,
+          "refall": 0.0,
+          "path_mean": 1.8677421808242798,
+          "tau_peak_p95": 111.19677734375,
+          "speed_peak_p95": 12.84211540222168,
+          "power_peak_p95": 767.5958862304688
+        },
+        "free_plate": {
+          "n": 64,
+          "stable_1s": 0.78125,
+          "stable_10s": 0.78125,
+          "refall": 0.0,
+          "path_mean": 2.105560302734375,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 16.600997924804688,
+          "power_peak_p95": 984.9288940429688
+        },
+        "guided_plate": {
+          "n": 48,
+          "stable_1s": 0.9791666865348816,
+          "stable_10s": 0.9166666865348816,
+          "refall": 0.0,
+          "path_mean": 2.0158743858337402,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 17.71670913696289,
+          "power_peak_p95": 1099.3543701171875
+        },
+        "fixed_ceiling": {
+          "n": 16,
+          "stable_1s": 0.9375,
+          "stable_10s": 0.9375,
+          "refall": 0.0,
+          "path_mean": 2.0999855995178223,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 15.716377258300781,
+          "power_peak_p95": 1127.150634765625
+        },
+        "table": {
+          "n": 16,
+          "stable_1s": 0.9375,
+          "stable_10s": 0.9375,
+          "refall": 0.0,
+          "path_mean": 2.10599946975708,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 15.89145278930664,
+          "power_peak_p95": 1025.99560546875
+        },
+        "pyramid_stairs": {
+          "n": 20,
+          "stable_1s": 0.949999988079071,
+          "stable_10s": 0.949999988079071,
+          "refall": 0.0,
+          "path_mean": 2.863987922668457,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 24.54421615600586,
+          "power_peak_p95": 959.1253662109375
+        },
+        "box_terrain": {
+          "n": 28,
+          "stable_1s": 0.9285714626312256,
+          "stable_10s": 0.9285714626312256,
+          "refall": 0.0,
+          "path_mean": 1.8646358251571655,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 19.396835327148438,
+          "power_peak_p95": 1030.17822265625
+        },
+        "free_box": {
+          "n": 16,
+          "stable_1s": 1.0,
+          "stable_10s": 1.0,
+          "refall": 0.0,
+          "path_mean": 2.055373191833496,
+          "tau_peak_p95": 126.40055847167969,
+          "speed_peak_p95": 16.451190948486328,
+          "power_peak_p95": 1099.201416015625
+        },
+        "double_plate": {
+          "n": 16,
+          "stable_1s": 0.9375,
+          "stable_10s": 0.9375,
+          "refall": 0.0,
+          "path_mean": 1.9200981855392456,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 11.934856414794922,
+          "power_peak_p95": 942.84033203125
+        },
+        "mixed_clutter": {
+          "n": 16,
+          "stable_1s": 0.875,
+          "stable_10s": 0.8125,
+          "refall": 0.0,
+          "path_mean": 2.504765748977661,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 19.602079391479492,
+          "power_peak_p95": 1140.567626953125
+        }
+      },
+      "7000": {
+        "flat": {
+          "n": 80,
+          "stable_1s": 1.0,
+          "stable_10s": 1.0,
+          "refall": 0.0,
+          "path_mean": 1.876835823059082,
+          "tau_peak_p95": 110.63040161132812,
+          "speed_peak_p95": 12.411646842956543,
+          "power_peak_p95": 851.0860595703125
+        },
+        "free_plate": {
+          "n": 64,
+          "stable_1s": 0.875,
+          "stable_10s": 0.875,
+          "refall": 0.0,
+          "path_mean": 1.929556131362915,
+          "tau_peak_p95": 127.09494018554688,
+          "speed_peak_p95": 17.555160522460938,
+          "power_peak_p95": 922.6893920898438
+        },
+        "guided_plate": {
+          "n": 48,
+          "stable_1s": 0.9375,
+          "stable_10s": 0.8541666865348816,
+          "refall": 0.0,
+          "path_mean": 1.8722928762435913,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 15.792604446411133,
+          "power_peak_p95": 1113.232666015625
+        },
+        "fixed_ceiling": {
+          "n": 16,
+          "stable_1s": 1.0,
+          "stable_10s": 1.0,
+          "refall": 0.0,
+          "path_mean": 1.9320228099822998,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 17.37651252746582,
+          "power_peak_p95": 986.2737426757812
+        },
+        "table": {
+          "n": 16,
+          "stable_1s": 0.875,
+          "stable_10s": 0.875,
+          "refall": 0.0,
+          "path_mean": 2.2603321075439453,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 17.995689392089844,
+          "power_peak_p95": 1177.0233154296875
+        },
+        "pyramid_stairs": {
+          "n": 20,
+          "stable_1s": 0.9000000357627869,
+          "stable_10s": 0.9000000357627869,
+          "refall": 0.0,
+          "path_mean": 3.0581231117248535,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 17.86113739013672,
+          "power_peak_p95": 960.1583862304688
+        },
+        "box_terrain": {
+          "n": 28,
+          "stable_1s": 0.9642857313156128,
+          "stable_10s": 0.9642857313156128,
+          "refall": 0.0,
+          "path_mean": 2.1488595008850098,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 19.64132308959961,
+          "power_peak_p95": 1057.6263427734375
+        },
+        "free_box": {
+          "n": 16,
+          "stable_1s": 1.0,
+          "stable_10s": 1.0,
+          "refall": 0.0,
+          "path_mean": 1.8917219638824463,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 12.18841552734375,
+          "power_peak_p95": 867.2830200195312
+        },
+        "double_plate": {
+          "n": 16,
+          "stable_1s": 0.6875,
+          "stable_10s": 0.6875,
+          "refall": 0.0,
+          "path_mean": 1.9782118797302246,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 16.012235641479492,
+          "power_peak_p95": 1162.0628662109375
+        },
+        "mixed_clutter": {
+          "n": 16,
+          "stable_1s": 0.75,
+          "stable_10s": 0.75,
+          "refall": 0.0,
+          "path_mean": 2.0792243480682373,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 17.145465850830078,
+          "power_peak_p95": 1060.7237548828125
+        }
+      },
+      "1000": {
+        "flat": {
+          "n": 80,
+          "stable_1s": 0.862500011920929,
+          "stable_10s": 0.8500000238418579,
+          "refall": 0.0,
+          "path_mean": 1.812525987625122,
+          "tau_peak_p95": 117.94651794433594,
+          "speed_peak_p95": 13.771036148071289,
+          "power_peak_p95": 722.4449462890625
+        },
+        "free_plate": {
+          "n": 64,
+          "stable_1s": 0.609375,
+          "stable_10s": 0.59375,
+          "refall": 0.0,
+          "path_mean": 1.8138008117675781,
+          "tau_peak_p95": 118.32128143310547,
+          "speed_peak_p95": 13.103759765625,
+          "power_peak_p95": 739.0860595703125
+        },
+        "guided_plate": {
+          "n": 48,
+          "stable_1s": 0.7083333730697632,
+          "stable_10s": 0.625,
+          "refall": 0.0,
+          "path_mean": 2.0313384532928467,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 17.679500579833984,
+          "power_peak_p95": 917.4700317382812
+        },
+        "fixed_ceiling": {
+          "n": 16,
+          "stable_1s": 0.9375,
+          "stable_10s": 0.875,
+          "refall": 0.0,
+          "path_mean": 2.3793675899505615,
+          "tau_peak_p95": 133.0178985595703,
+          "speed_peak_p95": 18.897438049316406,
+          "power_peak_p95": 771.1265869140625
+        },
+        "table": {
+          "n": 16,
+          "stable_1s": 0.4375,
+          "stable_10s": 0.3125,
+          "refall": 0.0,
+          "path_mean": 2.9251275062561035,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 17.836708068847656,
+          "power_peak_p95": 695.317626953125
+        },
+        "pyramid_stairs": {
+          "n": 20,
+          "stable_1s": 0.75,
+          "stable_10s": 0.75,
+          "refall": 0.0,
+          "path_mean": 2.5233495235443115,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 25.170124053955078,
+          "power_peak_p95": 1243.5863037109375
+        },
+        "box_terrain": {
+          "n": 28,
+          "stable_1s": 0.785714328289032,
+          "stable_10s": 0.785714328289032,
+          "refall": 0.0,
+          "path_mean": 2.012326955795288,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 19.174108505249023,
+          "power_peak_p95": 935.5947265625
+        },
+        "free_box": {
+          "n": 16,
+          "stable_1s": 0.75,
+          "stable_10s": 0.75,
+          "refall": 0.0,
+          "path_mean": 1.7278450727462769,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 22.218568801879883,
+          "power_peak_p95": 1170.6148681640625
+        },
+        "double_plate": {
+          "n": 16,
+          "stable_1s": 0.4375,
+          "stable_10s": 0.4375,
+          "refall": 0.0,
+          "path_mean": 1.827218770980835,
+          "tau_peak_p95": 115.26641845703125,
+          "speed_peak_p95": 19.186250686645508,
+          "power_peak_p95": 869.5052490234375
+        },
+        "mixed_clutter": {
+          "n": 16,
+          "stable_1s": 0.3125,
+          "stable_10s": 0.3125,
+          "refall": 0.0,
+          "path_mean": 2.15333890914917,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 24.699064254760742,
+          "power_peak_p95": 1098.053955078125
+        }
+      },
+      "4500": {
+        "flat": {
+          "n": 80,
+          "stable_1s": 1.0,
+          "stable_10s": 1.0,
+          "refall": 0.0,
+          "path_mean": 2.210796356201172,
+          "tau_peak_p95": 106.89945220947266,
+          "speed_peak_p95": 12.764060974121094,
+          "power_peak_p95": 799.6458740234375
+        },
+        "free_plate": {
+          "n": 64,
+          "stable_1s": 0.859375,
+          "stable_10s": 0.859375,
+          "refall": 0.0,
+          "path_mean": 2.152350902557373,
+          "tau_peak_p95": 136.345703125,
+          "speed_peak_p95": 13.725878715515137,
+          "power_peak_p95": 966.533203125
+        },
+        "guided_plate": {
+          "n": 48,
+          "stable_1s": 0.9166666865348816,
+          "stable_10s": 0.8541666865348816,
+          "refall": 0.0,
+          "path_mean": 2.2397515773773193,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 14.570842742919922,
+          "power_peak_p95": 1072.968017578125
+        },
+        "fixed_ceiling": {
+          "n": 16,
+          "stable_1s": 1.0,
+          "stable_10s": 1.0,
+          "refall": 0.0,
+          "path_mean": 2.230360984802246,
+          "tau_peak_p95": 120.08282470703125,
+          "speed_peak_p95": 16.261503219604492,
+          "power_peak_p95": 813.7235107421875
+        },
+        "table": {
+          "n": 16,
+          "stable_1s": 0.9375,
+          "stable_10s": 0.9375,
+          "refall": 0.0,
+          "path_mean": 2.328856945037842,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 17.514846801757812,
+          "power_peak_p95": 1076.9732666015625
+        },
+        "pyramid_stairs": {
+          "n": 20,
+          "stable_1s": 0.949999988079071,
+          "stable_10s": 0.9000000357627869,
+          "refall": 0.0,
+          "path_mean": 2.9940693378448486,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 17.07765769958496,
+          "power_peak_p95": 1251.4818115234375
+        },
+        "box_terrain": {
+          "n": 28,
+          "stable_1s": 0.8571429252624512,
+          "stable_10s": 0.7500000596046448,
+          "refall": 0.0,
+          "path_mean": 1.93854558467865,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 17.031253814697266,
+          "power_peak_p95": 962.9470825195312
+        },
+        "free_box": {
+          "n": 16,
+          "stable_1s": 1.0,
+          "stable_10s": 1.0,
+          "refall": 0.0,
+          "path_mean": 2.1388049125671387,
+          "tau_peak_p95": 121.5973892211914,
+          "speed_peak_p95": 13.029961585998535,
+          "power_peak_p95": 827.662109375
+        },
+        "double_plate": {
+          "n": 16,
+          "stable_1s": 0.6875,
+          "stable_10s": 0.6875,
+          "refall": 0.0,
+          "path_mean": 2.16324520111084,
+          "tau_peak_p95": 133.92840576171875,
+          "speed_peak_p95": 11.576058387756348,
+          "power_peak_p95": 1064.442626953125
+        },
+        "mixed_clutter": {
+          "n": 16,
+          "stable_1s": 0.6875,
+          "stable_10s": 0.6875,
+          "refall": 0.0,
+          "path_mean": 2.1011552810668945,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 18.330053329467773,
+          "power_peak_p95": 1044.9761962890625
+        }
+      },
+      "5000": {
+        "flat": {
+          "n": 80,
+          "stable_1s": 1.0,
+          "stable_10s": 1.0,
+          "refall": 0.0,
+          "path_mean": 2.18452525138855,
+          "tau_peak_p95": 112.27400207519531,
+          "speed_peak_p95": 15.259505271911621,
+          "power_peak_p95": 875.8643798828125
+        },
+        "free_plate": {
+          "n": 64,
+          "stable_1s": 0.75,
+          "stable_10s": 0.734375,
+          "refall": 0.0,
+          "path_mean": 2.148453950881958,
+          "tau_peak_p95": 118.13147735595703,
+          "speed_peak_p95": 13.239921569824219,
+          "power_peak_p95": 841.3181762695312
+        },
+        "guided_plate": {
+          "n": 48,
+          "stable_1s": 0.9583333730697632,
+          "stable_10s": 0.9583333730697632,
+          "refall": 0.0,
+          "path_mean": 2.246640682220459,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 14.665295600891113,
+          "power_peak_p95": 963.1407470703125
+        },
+        "fixed_ceiling": {
+          "n": 16,
+          "stable_1s": 1.0,
+          "stable_10s": 1.0,
+          "refall": 0.0,
+          "path_mean": 2.251565456390381,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 16.112436294555664,
+          "power_peak_p95": 875.191162109375
+        },
+        "table": {
+          "n": 16,
+          "stable_1s": 0.8125,
+          "stable_10s": 0.8125,
+          "refall": 0.0,
+          "path_mean": 2.446195125579834,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 17.36272430419922,
+          "power_peak_p95": 935.6346435546875
+        },
+        "pyramid_stairs": {
+          "n": 20,
+          "stable_1s": 1.0,
+          "stable_10s": 0.949999988079071,
+          "refall": 0.0,
+          "path_mean": 3.6722943782806396,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 20.016860961914062,
+          "power_peak_p95": 1567.813232421875
+        },
+        "box_terrain": {
+          "n": 28,
+          "stable_1s": 0.8928571939468384,
+          "stable_10s": 0.8571429252624512,
+          "refall": 0.0,
+          "path_mean": 2.464911699295044,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 19.57379722595215,
+          "power_peak_p95": 1086.4267578125
+        },
+        "free_box": {
+          "n": 16,
+          "stable_1s": 0.9375,
+          "stable_10s": 0.9375,
+          "refall": 0.0,
+          "path_mean": 2.1804990768432617,
+          "tau_peak_p95": 107.19542694091797,
+          "speed_peak_p95": 12.508563995361328,
+          "power_peak_p95": 738.3114013671875
+        },
+        "double_plate": {
+          "n": 16,
+          "stable_1s": 0.5625,
+          "stable_10s": 0.5625,
+          "refall": 0.0,
+          "path_mean": 2.2163002490997314,
+          "tau_peak_p95": 123.69122314453125,
+          "speed_peak_p95": 15.175238609313965,
+          "power_peak_p95": 931.2008666992188
+        },
+        "mixed_clutter": {
+          "n": 16,
+          "stable_1s": 0.6875,
+          "stable_10s": 0.5,
+          "refall": 0.0,
+          "path_mean": 3.3701539039611816,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 25.209461212158203,
+          "power_peak_p95": 1209.861328125
+        }
+      },
+      "9000": {
+        "flat": {
+          "n": 80,
+          "stable_1s": 1.0,
+          "stable_10s": 0.9375,
+          "refall": 0.0,
+          "path_mean": 1.8621444702148438,
+          "tau_peak_p95": 119.0473861694336,
+          "speed_peak_p95": 13.184914588928223,
+          "power_peak_p95": 971.6690063476562
+        },
+        "free_plate": {
+          "n": 64,
+          "stable_1s": 0.875,
+          "stable_10s": 0.8125,
+          "refall": 0.0,
+          "path_mean": 2.0085248947143555,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 16.850849151611328,
+          "power_peak_p95": 902.5283203125
+        },
+        "guided_plate": {
+          "n": 48,
+          "stable_1s": 0.9791666865348816,
+          "stable_10s": 0.875,
+          "refall": 0.0,
+          "path_mean": 2.08798885345459,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 15.877118110656738,
+          "power_peak_p95": 1207.290771484375
+        },
+        "fixed_ceiling": {
+          "n": 16,
+          "stable_1s": 1.0,
+          "stable_10s": 1.0,
+          "refall": 0.0,
+          "path_mean": 1.8674554824829102,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 15.079147338867188,
+          "power_peak_p95": 892.296142578125
+        },
+        "table": {
+          "n": 16,
+          "stable_1s": 0.9375,
+          "stable_10s": 0.875,
+          "refall": 0.0,
+          "path_mean": 2.1366841793060303,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 16.3663330078125,
+          "power_peak_p95": 978.7479858398438
+        },
+        "pyramid_stairs": {
+          "n": 20,
+          "stable_1s": 0.9000000357627869,
+          "stable_10s": 0.9000000357627869,
+          "refall": 0.0,
+          "path_mean": 2.8268120288848877,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 21.920534133911133,
+          "power_peak_p95": 1086.6644287109375
+        },
+        "box_terrain": {
+          "n": 28,
+          "stable_1s": 0.8928571939468384,
+          "stable_10s": 0.7500000596046448,
+          "refall": 0.0,
+          "path_mean": 2.23058819770813,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 23.063716888427734,
+          "power_peak_p95": 1392.72119140625
+        },
+        "free_box": {
+          "n": 16,
+          "stable_1s": 1.0,
+          "stable_10s": 0.9375,
+          "refall": 0.0,
+          "path_mean": 1.8875359296798706,
+          "tau_peak_p95": 136.82952880859375,
+          "speed_peak_p95": 12.424699783325195,
+          "power_peak_p95": 893.336181640625
+        },
+        "double_plate": {
+          "n": 16,
+          "stable_1s": 0.75,
+          "stable_10s": 0.625,
+          "refall": 0.0,
+          "path_mean": 1.86239755153656,
+          "tau_peak_p95": 128.48214721679688,
+          "speed_peak_p95": 14.226554870605469,
+          "power_peak_p95": 964.8399658203125
+        },
+        "mixed_clutter": {
+          "n": 16,
+          "stable_1s": 0.9375,
+          "stable_10s": 0.875,
+          "refall": 0.0,
+          "path_mean": 2.3514962196350098,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 19.1145076751709,
+          "power_peak_p95": 1215.328369140625
+        }
+      },
+      "5500": {
+        "flat": {
+          "n": 80,
+          "stable_1s": 1.0,
+          "stable_10s": 0.987500011920929,
+          "refall": 0.0,
+          "path_mean": 2.20562744140625,
+          "tau_peak_p95": 113.94851684570312,
+          "speed_peak_p95": 14.513650894165039,
+          "power_peak_p95": 790.86962890625
+        },
+        "free_plate": {
+          "n": 64,
+          "stable_1s": 0.890625,
+          "stable_10s": 0.890625,
+          "refall": 0.0,
+          "path_mean": 2.1841888427734375,
+          "tau_peak_p95": 122.03669738769531,
+          "speed_peak_p95": 14.206384658813477,
+          "power_peak_p95": 793.6006469726562
+        },
+        "guided_plate": {
+          "n": 48,
+          "stable_1s": 0.9375,
+          "stable_10s": 0.875,
+          "refall": 0.0,
+          "path_mean": 2.341622829437256,
+          "tau_peak_p95": 138.0250244140625,
+          "speed_peak_p95": 14.810027122497559,
+          "power_peak_p95": 950.9724731445312
+        },
+        "fixed_ceiling": {
+          "n": 16,
+          "stable_1s": 1.0,
+          "stable_10s": 1.0,
+          "refall": 0.0,
+          "path_mean": 2.2544050216674805,
+          "tau_peak_p95": 129.3466339111328,
+          "speed_peak_p95": 15.524392127990723,
+          "power_peak_p95": 873.56494140625
+        },
+        "table": {
+          "n": 16,
+          "stable_1s": 0.9375,
+          "stable_10s": 0.9375,
+          "refall": 0.0,
+          "path_mean": 2.3779284954071045,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 14.07443618774414,
+          "power_peak_p95": 887.6007080078125
+        },
+        "pyramid_stairs": {
+          "n": 20,
+          "stable_1s": 1.0,
+          "stable_10s": 1.0,
+          "refall": 0.0,
+          "path_mean": 3.184784412384033,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 19.50714683532715,
+          "power_peak_p95": 1235.6854248046875
+        },
+        "box_terrain": {
+          "n": 28,
+          "stable_1s": 0.9285714626312256,
+          "stable_10s": 0.8571429252624512,
+          "refall": 0.0,
+          "path_mean": 2.274186611175537,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 19.24857521057129,
+          "power_peak_p95": 906.4122314453125
+        },
+        "free_box": {
+          "n": 16,
+          "stable_1s": 1.0,
+          "stable_10s": 1.0,
+          "refall": 0.0,
+          "path_mean": 2.192265748977661,
+          "tau_peak_p95": 111.46550750732422,
+          "speed_peak_p95": 13.104243278503418,
+          "power_peak_p95": 883.9551391601562
+        },
+        "double_plate": {
+          "n": 16,
+          "stable_1s": 0.875,
+          "stable_10s": 0.875,
+          "refall": 0.0,
+          "path_mean": 2.1282055377960205,
+          "tau_peak_p95": 123.39556884765625,
+          "speed_peak_p95": 13.764203071594238,
+          "power_peak_p95": 833.7284545898438
+        },
+        "mixed_clutter": {
+          "n": 16,
+          "stable_1s": 0.9375,
+          "stable_10s": 0.8125,
+          "refall": 0.0,
+          "path_mean": 2.5828402042388916,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 17.88902473449707,
+          "power_peak_p95": 1234.7882080078125
+        }
+      },
+      "2500": {
+        "flat": {
+          "n": 80,
+          "stable_1s": 1.0,
+          "stable_10s": 1.0,
+          "refall": 0.0,
+          "path_mean": 2.137373208999634,
+          "tau_peak_p95": 107.92279052734375,
+          "speed_peak_p95": 11.365569114685059,
+          "power_peak_p95": 693.091796875
+        },
+        "free_plate": {
+          "n": 64,
+          "stable_1s": 0.828125,
+          "stable_10s": 0.8125,
+          "refall": 0.0,
+          "path_mean": 2.0558488368988037,
+          "tau_peak_p95": 121.76459503173828,
+          "speed_peak_p95": 16.31073760986328,
+          "power_peak_p95": 769.6637573242188
+        },
+        "guided_plate": {
+          "n": 48,
+          "stable_1s": 0.9375,
+          "stable_10s": 0.8958333730697632,
+          "refall": 0.0,
+          "path_mean": 2.142270565032959,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 16.9022159576416,
+          "power_peak_p95": 1039.6103515625
+        },
+        "fixed_ceiling": {
+          "n": 16,
+          "stable_1s": 1.0,
+          "stable_10s": 1.0,
+          "refall": 0.0,
+          "path_mean": 2.2986950874328613,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 17.932781219482422,
+          "power_peak_p95": 838.74365234375
+        },
+        "table": {
+          "n": 16,
+          "stable_1s": 0.8125,
+          "stable_10s": 0.75,
+          "refall": 0.0,
+          "path_mean": 2.7528042793273926,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 19.45979881286621,
+          "power_peak_p95": 807.3906860351562
+        },
+        "pyramid_stairs": {
+          "n": 20,
+          "stable_1s": 0.949999988079071,
+          "stable_10s": 0.9000000357627869,
+          "refall": 0.0,
+          "path_mean": 3.219817876815796,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 24.004331588745117,
+          "power_peak_p95": 1344.03564453125
+        },
+        "box_terrain": {
+          "n": 28,
+          "stable_1s": 0.8571429252624512,
+          "stable_10s": 0.8571429252624512,
+          "refall": 0.0,
+          "path_mean": 2.2509686946868896,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 19.736724853515625,
+          "power_peak_p95": 916.5466918945312
+        },
+        "free_box": {
+          "n": 16,
+          "stable_1s": 0.9375,
+          "stable_10s": 0.9375,
+          "refall": 0.0,
+          "path_mean": 2.0789289474487305,
+          "tau_peak_p95": 115.19068908691406,
+          "speed_peak_p95": 14.298623085021973,
+          "power_peak_p95": 768.2837524414062
+        },
+        "double_plate": {
+          "n": 16,
+          "stable_1s": 0.6875,
+          "stable_10s": 0.625,
+          "refall": 0.0,
+          "path_mean": 2.047731399536133,
+          "tau_peak_p95": 121.23796844482422,
+          "speed_peak_p95": 13.848548889160156,
+          "power_peak_p95": 900.083740234375
+        },
+        "mixed_clutter": {
+          "n": 16,
+          "stable_1s": 0.875,
+          "stable_10s": 0.8125,
+          "refall": 0.0,
+          "path_mean": 2.2140674591064453,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 17.211591720581055,
+          "power_peak_p95": 881.7081298828125
+        }
+      },
+      "9999": {
+        "flat": {
+          "n": 80,
+          "stable_1s": 1.0,
+          "stable_10s": 1.0,
+          "refall": 0.0,
+          "path_mean": 1.9077354669570923,
+          "tau_peak_p95": 112.61975860595703,
+          "speed_peak_p95": 12.271699905395508,
+          "power_peak_p95": 826.7261962890625
+        },
+        "free_plate": {
+          "n": 64,
+          "stable_1s": 0.828125,
+          "stable_10s": 0.828125,
+          "refall": 0.0,
+          "path_mean": 2.0163540840148926,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 14.44842529296875,
+          "power_peak_p95": 938.2212524414062
+        },
+        "guided_plate": {
+          "n": 48,
+          "stable_1s": 0.9375,
+          "stable_10s": 0.875,
+          "refall": 0.0,
+          "path_mean": 1.8078734874725342,
+          "tau_peak_p95": 135.45022583007812,
+          "speed_peak_p95": 16.247865676879883,
+          "power_peak_p95": 946.9137573242188
+        },
+        "fixed_ceiling": {
+          "n": 16,
+          "stable_1s": 1.0,
+          "stable_10s": 1.0,
+          "refall": 0.0,
+          "path_mean": 2.0060205459594727,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 16.71129035949707,
+          "power_peak_p95": 950.514892578125
+        },
+        "table": {
+          "n": 16,
+          "stable_1s": 0.75,
+          "stable_10s": 0.75,
+          "refall": 0.0,
+          "path_mean": 2.3976645469665527,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 15.720477104187012,
+          "power_peak_p95": 939.029541015625
+        },
+        "pyramid_stairs": {
+          "n": 20,
+          "stable_1s": 1.0,
+          "stable_10s": 0.949999988079071,
+          "refall": 0.0,
+          "path_mean": 3.073702335357666,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 21.427350997924805,
+          "power_peak_p95": 886.4884643554688
+        },
+        "box_terrain": {
+          "n": 28,
+          "stable_1s": 0.8214285969734192,
+          "stable_10s": 0.8214285969734192,
+          "refall": 0.0,
+          "path_mean": 2.2577502727508545,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 15.681985855102539,
+          "power_peak_p95": 982.4200439453125
+        },
+        "free_box": {
+          "n": 16,
+          "stable_1s": 1.0,
+          "stable_10s": 1.0,
+          "refall": 0.0,
+          "path_mean": 1.909525752067566,
+          "tau_peak_p95": 126.52536010742188,
+          "speed_peak_p95": 12.31862735748291,
+          "power_peak_p95": 815.2409057617188
+        },
+        "double_plate": {
+          "n": 16,
+          "stable_1s": 0.9375,
+          "stable_10s": 0.9375,
+          "refall": 0.0,
+          "path_mean": 1.9360880851745605,
+          "tau_peak_p95": 130.2723846435547,
+          "speed_peak_p95": 12.988096237182617,
+          "power_peak_p95": 830.636474609375
+        },
+        "mixed_clutter": {
+          "n": 16,
+          "stable_1s": 0.625,
+          "stable_10s": 0.625,
+          "refall": 0.0,
+          "path_mean": 2.2926747798919678,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 16.176286697387695,
+          "power_peak_p95": 806.7135620117188
+        }
+      },
+      "6000": {
+        "flat": {
+          "n": 80,
+          "stable_1s": 1.0,
+          "stable_10s": 1.0,
+          "refall": 0.0,
+          "path_mean": 2.062032461166382,
+          "tau_peak_p95": 113.61238098144531,
+          "speed_peak_p95": 13.060080528259277,
+          "power_peak_p95": 691.6218872070312
+        },
+        "free_plate": {
+          "n": 64,
+          "stable_1s": 0.859375,
+          "stable_10s": 0.84375,
+          "refall": 0.0,
+          "path_mean": 2.1602768898010254,
+          "tau_peak_p95": 125.72197723388672,
+          "speed_peak_p95": 14.700100898742676,
+          "power_peak_p95": 773.3182983398438
+        },
+        "guided_plate": {
+          "n": 48,
+          "stable_1s": 0.9166666865348816,
+          "stable_10s": 0.875,
+          "refall": 0.0,
+          "path_mean": 2.107882261276245,
+          "tau_peak_p95": 127.05267333984375,
+          "speed_peak_p95": 15.818970680236816,
+          "power_peak_p95": 866.9292602539062
+        },
+        "fixed_ceiling": {
+          "n": 16,
+          "stable_1s": 1.0,
+          "stable_10s": 1.0,
+          "refall": 0.0,
+          "path_mean": 2.1311211585998535,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 20.16681671142578,
+          "power_peak_p95": 886.5185546875
+        },
+        "table": {
+          "n": 16,
+          "stable_1s": 1.0,
+          "stable_10s": 0.9375,
+          "refall": 0.0,
+          "path_mean": 2.3455870151519775,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 19.51846694946289,
+          "power_peak_p95": 858.7781982421875
+        },
+        "pyramid_stairs": {
+          "n": 20,
+          "stable_1s": 1.0,
+          "stable_10s": 1.0,
+          "refall": 0.0,
+          "path_mean": 3.4032959938049316,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 20.551345825195312,
+          "power_peak_p95": 1499.7830810546875
+        },
+        "box_terrain": {
+          "n": 28,
+          "stable_1s": 0.9285714626312256,
+          "stable_10s": 0.9285714626312256,
+          "refall": 0.0,
+          "path_mean": 2.433324098587036,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 17.84235954284668,
+          "power_peak_p95": 1002.3178100585938
+        },
+        "free_box": {
+          "n": 16,
+          "stable_1s": 1.0,
+          "stable_10s": 1.0,
+          "refall": 0.0,
+          "path_mean": 2.0133423805236816,
+          "tau_peak_p95": 112.56865692138672,
+          "speed_peak_p95": 12.818264961242676,
+          "power_peak_p95": 810.1840209960938
+        },
+        "double_plate": {
+          "n": 16,
+          "stable_1s": 0.875,
+          "stable_10s": 0.8125,
+          "refall": 0.0,
+          "path_mean": 2.0470592975616455,
+          "tau_peak_p95": 104.72032928466797,
+          "speed_peak_p95": 14.425190925598145,
+          "power_peak_p95": 676.39208984375
+        },
+        "mixed_clutter": {
+          "n": 16,
+          "stable_1s": 0.625,
+          "stable_10s": 0.625,
+          "refall": 0.0,
+          "path_mean": 1.8418853282928467,
+          "tau_peak_p95": 139.0,
+          "speed_peak_p95": 18.279937744140625,
+          "power_peak_p95": 916.5032348632812
+        }
+      }
+    }
+  }
+}

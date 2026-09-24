@@ -1,0 +1,66 @@
+{
+  "R2_9000": {
+    "n": 48,
+    "flagged_clutter_cases": [],
+    "quiet10_after_flag_as_failure": 29,
+    "strict10_after_flag_as_failure": 20
+  },
+  "A6_9999": {
+    "n": 48,
+    "flagged_clutter_cases": [
+      "crossed_timber__right_side_down__l2__v00",
+      "ladder_boards__prone__l1__v00"
+    ],
+    "quiet10_after_flag_as_failure": 33,
+    "strict10_after_flag_as_failure": 29
+  },
+  "M2_2500": {
+    "n": 48,
+    "flagged_clutter_cases": [],
+    "quiet10_after_flag_as_failure": 43,
+    "strict10_after_flag_as_failure": 39
+  },
+  "M0_9000": {
+    "n": 48,
+    "flagged_clutter_cases": [
+      "crossed_timber__left_side_down__l2__v00"
+    ],
+    "quiet10_after_flag_as_failure": 38,
+    "strict10_after_flag_as_failure": 37
+  },
+  "M0_9999": {
+    "n": 48,
+    "flagged_clutter_cases": [],
+    "quiet10_after_flag_as_failure": 38,
+    "strict10_after_flag_as_failure": 36
+  },
+  "M1_9000": {
+    "n": 48,
+    "flagged_clutter_cases": [],
+    "quiet10_after_flag_as_failure": 40,
+    "strict10_after_flag_as_failure": 33
+  },
+  "M1_9999": {
+    "n": 48,
+    "flagged_clutter_cases": [],
+    "quiet10_after_flag_as_failure": 41,
+    "strict10_after_flag_as_failure": 40
+  },
+  "M2_8000": {
+    "n": 48,
+    "flagged_clutter_cases": [
+      "crossed_timber__right_side_down__l0__v00",
+      "fixed_c_space__right_side_down__l2__v00"
+    ],
+    "quiet10_after_flag_as_failure": 39,
+    "strict10_after_flag_as_failure": 37
+  },
+  "M2_9999": {
+    "n": 48,
+    "flagged_clutter_cases": [
+      "hollow_container__left_side_down__l2__v00"
+    ],
+    "quiet10_after_flag_as_failure": 41,
+    "strict10_after_flag_as_failure": 38
+  }
+}
