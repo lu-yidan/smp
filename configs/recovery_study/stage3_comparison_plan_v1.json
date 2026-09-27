@@ -1,11 +1,11 @@
 {
   "schema_version": 1,
-  "status": "DESIGN_ONLY_NOT_LOADED_BY_CURRENT_CLI",
+  "status": "IMPLEMENTED_PREFLIGHT_PASSED",
   "date": "2026-09-27",
   "code_baseline": {
     "branch": "codex/recovery-study",
     "commit": "3713aec",
-    "entrypoint": "scripts/train_mixed_recovery.py"
+    "entrypoint": "scripts/train_stage3_recovery.py"
   },
   "our_initialization": {
     "label": "FT_R2@9000",
@@ -116,7 +116,7 @@
     "escaped": 1
   },
   "convergence_candidate": {
-    "status": "UNIMPLEMENTED_UNVALIDATED",
+    "status": "IMPLEMENTED_UNVALIDATED",
     "enabled_for_external_comparisons": false,
     "new_term": "latched_post_escape_xy_soft_anchor",
     "weight": -0.05,
@@ -208,10 +208,6 @@
   ],
   "results": "PENDING_NO_SUCCESS_RATES",
   "implementation_gaps": [
-    "configuration-driven new cohorts",
-    "GPU topology and collision-part semantics for timber and ladder",
-    "train-only banks independent of benchmark holdout",
-    "soft-anchor candidate",
     "method-specific trainable adapters and checkpoint manifests"
   ]
 }

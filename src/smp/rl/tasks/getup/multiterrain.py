@@ -11,6 +11,7 @@ from smp.rl.tasks.getup.fixed_low_reset import recorded_task_smp_product
 from smp.rl.tasks.getup import v33_reward_transfer as v,egress_convergence as ec
 
 def height(env):
+    if hasattr(env,"_recovery_height"):return env._recovery_height(env)
     if hasattr(env,'_mix'):
         from smp.recovery.mixed_task import height as mixed_height
         return mixed_height(env)
@@ -194,6 +195,7 @@ def invalid(env):
 
 
 def ground_force(env,name):
+    if hasattr(env,"_recovery_force"):return env._recovery_force(env,name)
     if hasattr(env,'_mix'):
         from smp.recovery.mixed_task import force
         return force(env,name)

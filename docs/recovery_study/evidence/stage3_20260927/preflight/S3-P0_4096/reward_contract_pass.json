@@ -1,0 +1,13 @@
+{
+  "pass": true,
+  "options": {
+    "id": "S3-P0",
+    "scene_set": "expanded",
+    "smp": false,
+    "dense_guidance": true,
+    "new_convergence": false,
+    "initialization": "FT_R2@9000"
+  },
+  "max_error": 0.0,
+  "actor_dim": 93
+}

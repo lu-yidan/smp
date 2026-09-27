@@ -1,0 +1,13 @@
+{
+  "pass": true,
+  "options": {
+    "id": "S3-C1",
+    "scene_set": "three_scene",
+    "smp": true,
+    "dense_guidance": true,
+    "new_convergence": true,
+    "initialization": "FT_R2@9000"
+  },
+  "max_error": 0.0,
+  "actor_dim": 93
+}

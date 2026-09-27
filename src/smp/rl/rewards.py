@@ -51,7 +51,10 @@ def smp_guidance_reward(
   _update_buffer_from_sim(env)
 
   features = buffer.compute_features()
-  if hasattr(env, "_mix"):
+  if hasattr(env, "_recovery_support"):
+    features = features.clone()
+    features[..., 2] -= env._recovery_support(env)[:, None]
+  elif hasattr(env, "_mix"):
     from smp.recovery.mixed_task import support_reference
     features = features.clone()
     features[..., 2] -= support_reference(env)[:, None]

@@ -1,12 +1,12 @@
 # 第三阶段受限恢复：同学接入与对照协议（2026-09-27）
 
-**状态：待实施/待评测，不是已启动的实验。** 本文和 `configs/recovery_study/stage3_comparison_plan_v1.json` 是交接规范，旧训练CLI尚不读取此JSON。不可把下文计划比例当作既有M配置。收敛项、木条/梯架GPU训练适配与外部方法适配器尚未实现。
+**状态更新（2026-09-27）：我方第三阶段实现已接入，7组均已通过4096环境、24更新预检，正式启动状态见运行记录。** 新入口为 `scripts/train_stage3_recovery.py`，读取 `configs/recovery_study/stage3_comparison_plan_v1.json`；木条/梯架GPU拓扑、独立训练bank、软位置代价已实现。旧M入口保持不变。外部方法适配器仍待同学提供训练接口，收敛项的效果仍未验证。实际启动状态与PID见 `stage3_training_20260927_zh.md` 和正式run manifest。
 
 ## 1. 同学从哪里开始
 
 - 仓库：`git@github.com:lu-yidan/smp.git`
 - 分支：`codex/recovery-study`。本文编写时可用训练/评测代码基线为 **3713aec**；后续交接提交只添加本文和计划JSON，不改历史训练。
-- 本地：`/home/luyd/workspace/smp-a6-egress`；服务器对应 `/root/workplace/smp-recovery-study`。
+- 本地：`/home/luyd/workspace/smp-a6-egress`；新训练工作区 `/root/workplace/smp-stage3`，旧M工作区 `/root/workplace/smp-recovery-study` 不覆盖。
 - 论文：`git@github.com:lu-yidan/G1_Recovery_Below_Block.git`，分支 **main**。论文基准方法仍为L4→R2→A6；本计划与历史方法分开。
 
 ```bash
@@ -19,6 +19,9 @@ cat configs/recovery_study/stage3_comparison_plan_v1.json
 
 |入口|用途|
 |---|---|
+|`scripts/train_stage3_recovery.py::build_config`|第三阶段7组的配置与验证入口；JSON选择场景/消融；不直接加载HoST/FIRM|
+|`src/smp/recovery/stage3_task.py` / `stage3_geometry.py`|新分层配额、9个物体槽、分件梯架、软锚点|
+|`scripts/recovery_study/build_stage3_bank.py`|独立训练4176/验证1392初态；不载入clutter留出案例|
 |`scripts/train_mixed_recovery.py::build_config`|M原训练环境、reward装配、actor-only继承与验证入口；只接受M0/M1/M2，不能直接加载HoST/FIRM|
 |`src/smp/recovery/mixed_task.py::quotas/reset/update/task`|分层reset、逐物体遮挡、奖励关闭、任务调制；当前比例仍为旧M|
 |`src/smp/recovery/mixed_geometry.py`|旧10场景统一GPU拓扑与几何范围；当前SHARES不等于本计划|
@@ -28,7 +31,7 @@ cat configs/recovery_study/stage3_comparison_plan_v1.json
 |`scripts/recovery_study/evaluate_clutter.py`|独立CPU场景评测接入起点|
 |`docs/recovery_study/clutter_benchmark_v2_zh.md`|开发/留出状态及接触验收边界|
 
-**不要复制旧launch脚本直接启动**：它会运行旧M分布与A6/R2混合初始化。增加配置读取、新场景与方法适配后才生成新的launch，并冻结代码commit、配置SHA、bank SHA。
+**不要复制旧launch脚本直接启动**：它会运行旧M分布与A6/R2混合初始化。新脚本为 `scripts/recovery_study/launch_stage3_20260927.sh`，要求每组预检完成与初始R2评测完成；固定代码commit、配置SHA、bank SHA。
 
 ## 2. 初始化：哪些统一R2，哪些不应该
 
@@ -133,7 +136,7 @@ HoST/AMP/FIRM用同学各自已能recovery的原生checkpoint。不能加载R2�
 
 |方法|初始化与必须保留的内容|接入边界|
 |---|---|---|
-|SMP ours|R2 actor及obs norm；固定SMP|已有M式代码；新分布/新拓扑仍待接入|
+|SMP ours|R2 actor及obs norm；固定SMP|新入口已实现；实际运行状态见训练记录|
 |no SMP during adaptation|同一个R2；仅本阶段S=1|不是从头无prior，不等于HoST|
 |AMP|同学AMP恢复actor、normalizer、discriminator及算法所需状态|保留AMP判别训练、原生奖励合成、history；不能只把S换成判别分数就声称原生AMP复现|
 |HoST|同学HoST恢复policy、多critic与动作约束实现|接入上方奖励并明确分入哪个critic；不把整套原生负成本乘0.05；零样本评测需无外力辅助；适配时也不以向上拉力帮助爬出顶板|
@@ -141,7 +144,7 @@ HoST/AMP/FIRM用同学各自已能recovery的原生checkpoint。不能加载R2�
 
 所有外部方法保留合理原生结构/历史，不为强行93D而削弱某一个；披露可观测信息。部署actor不能额外读真实障碍geometry。若依赖depth/目标命令等，另列信息条件，不能混称纯本体感知对照。
 
-**reward接入接口是概念合同，不是已存在API**：拆开 `native_positive_recovery_task`、`native_regularization/prior` 与共享障碍项；ON组只门控正向恢复任务，负成本不能随alpha缩小。SMP继续S×T，AMP保留其原生style/task组合，HoST保持原生多critic分组。记录各方法奖励尺度和预算；跨方法是方法级对照，只有组内G−/G+才隔离引导因子。若要只比较AMP与SMP本身，需额外统一网络/数据/奖励组合，不能用本表直接证明prior优劣。
+**外部方法reward接入接口仍是概念合同，不是通用适配API**：拆开 `native_positive_recovery_task`、`native_regularization/prior` 与共享障碍项；ON组只门控正向恢复任务，负成本不能随alpha缩小。SMP继续S×T，AMP保留其原生style/task组合，HoST保持原生多critic分组。记录各方法奖励尺度和预算；跨方法是方法级对照，只有组内G−/G+才隔离引导因子。若要只比较AMP与SMP本身，需额外统一网络/数据/奖励组合，不能用本表直接证明prior优劣。
 
 ## 6. 预算、随机化和评测
 
