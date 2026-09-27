@@ -1,0 +1,217 @@
+{
+  "schema_version": 1,
+  "status": "DESIGN_ONLY_NOT_LOADED_BY_CURRENT_CLI",
+  "date": "2026-09-27",
+  "code_baseline": {
+    "branch": "codex/recovery-study",
+    "commit": "3713aec",
+    "entrypoint": "scripts/train_mixed_recovery.py"
+  },
+  "our_initialization": {
+    "label": "FT_R2@9000",
+    "sha256": "8b4889f80c6b7cc675f6e9b1e98f2d4a1886a15e372f86070f63c329ba9ca5d1",
+    "actor_and_obs_norm": "inherit",
+    "critic_optimizer_iteration": "fresh"
+  },
+  "scene_sets": {
+    "three_scene": {
+      "flat": 0.2,
+      "guided_plate": 0.4,
+      "free_plate": 0.4
+    },
+    "expanded": {
+      "flat": 0.2,
+      "guided_plate": 0.15,
+      "free_plate": 0.2,
+      "fixed_ceiling": 0.15,
+      "crossed_timber": 0.1,
+      "ladder_boards": 0.1,
+      "double_plate": 0.1
+    }
+  },
+  "reset": {
+    "flat_low_middle_near_standing": [
+      0.4,
+      0.4,
+      0.2
+    ],
+    "obstacle_low_middle_near_standing": [
+      1,
+      0,
+      0
+    ],
+    "low_direction_shares": [
+      0.25,
+      0.25,
+      0.25,
+      0.25
+    ],
+    "low_natural_procedural": [
+      0.75,
+      0.25
+    ],
+    "overall_low_middle_near_standing": [
+      0.88,
+      0.08,
+      0.04
+    ],
+    "overall_natural_low_procedural_low_natural_middle_natural_near_standing": [
+      0.66,
+      0.22,
+      0.08,
+      0.04
+    ],
+    "quota_rounding": "largest_remainder_over_scene_stage_direction_source",
+    "gsi_refresh": false,
+    "failure_replay": false,
+    "reset_velocity": 0
+  },
+  "training": {
+    "num_envs": 4096,
+    "updates": 10000,
+    "steps_per_env": 24,
+    "save_validate_every_updates": 500,
+    "episode_s": 10,
+    "control_dt": 0.02,
+    "physics_dt": 0.002,
+    "standing_termination": false,
+    "low_smp_termination": false,
+    "keep_numerical_and_invalid_contact_protection": true,
+    "learning_rate": 0.0001,
+    "schedule": "adaptive",
+    "desired_kl": 0.01,
+    "gamma": 0.99,
+    "gae_lambda": 0.95,
+    "ppo_epochs": 5,
+    "minibatches": 4,
+    "ppo_clip": 0.2,
+    "fixed_action_std": 0.3,
+    "actor_observation_noise": true,
+    "confirmation_training_seeds_min": 3
+  },
+  "prior": {
+    "type": "f2s2",
+    "ws": 6,
+    "reference": "configs/recovery_study/smp_reward_reference_v1.json",
+    "no_smp_ablation": "S=1 during adaptation only; R2 still contains prior-trained behavior"
+  },
+  "shared_reward_weights": {
+    "path": 0.45,
+    "clearance": 0.08,
+    "completion": 0.6,
+    "force": -0.03,
+    "separation": 0.01,
+    "quiet_feet": -0.03,
+    "joint_stall": -0.2
+  },
+  "dense_guidance_off": {
+    "path": 0,
+    "clearance": 0,
+    "separation": 0,
+    "task_alpha": 1,
+    "retain_completion_force_quiet_feet_joint_stall": true
+  },
+  "task_alpha_when_guidance_on": {
+    "blocked": 0.05,
+    "escaped": 1
+  },
+  "convergence_candidate": {
+    "status": "UNIMPLEMENTED_UNVALIDATED",
+    "enabled_for_external_comparisons": false,
+    "new_term": "latched_post_escape_xy_soft_anchor",
+    "weight": -0.05,
+    "deadzone_m": 0.25,
+    "scale_m": 0.25,
+    "cost_cap": 1,
+    "uprightness_gate": [
+      0.7,
+      0.93
+    ],
+    "head_height_gate_m": [
+      0.85,
+      1.15
+    ],
+    "pause_when_reblocked": true,
+    "relatch_on_reentry": false,
+    "reset_anchor_only_on_episode_reset": true,
+    "new_yaw_cost": 0,
+    "new_default_pose_reward": 0,
+    "actor_anchor_observation": false
+  },
+  "experiments": [
+    {
+      "id": "S3-C0",
+      "scene_set": "three_scene",
+      "smp": true,
+      "dense_guidance": true,
+      "new_convergence": false,
+      "initialization": "FT_R2@9000"
+    },
+    {
+      "id": "S3-C1",
+      "scene_set": "three_scene",
+      "smp": true,
+      "dense_guidance": true,
+      "new_convergence": true,
+      "initialization": "FT_R2@9000"
+    },
+    {
+      "id": "S3-C2",
+      "scene_set": "expanded",
+      "smp": true,
+      "dense_guidance": true,
+      "new_convergence": false,
+      "initialization": "FT_R2@9000"
+    },
+    {
+      "id": "S3-C3",
+      "scene_set": "expanded",
+      "smp": true,
+      "dense_guidance": true,
+      "new_convergence": true,
+      "initialization": "FT_R2@9000"
+    },
+    {
+      "id": "S3-G0",
+      "scene_set": "expanded",
+      "smp": true,
+      "dense_guidance": false,
+      "new_convergence": false,
+      "initialization": "FT_R2@9000"
+    },
+    {
+      "id": "S3-P0",
+      "scene_set": "expanded",
+      "smp": false,
+      "dense_guidance": true,
+      "new_convergence": false,
+      "initialization": "FT_R2@9000"
+    },
+    {
+      "id": "S3-PG0",
+      "scene_set": "expanded",
+      "smp": false,
+      "dense_guidance": false,
+      "new_convergence": false,
+      "initialization": "FT_R2@9000"
+    }
+  ],
+  "external_methods": [
+    "AMP",
+    "HoST",
+    "FIRM"
+  ],
+  "external_conditions": [
+    "Z_frozen",
+    "Gminus_native_adaptation",
+    "Gplus_guided_adaptation"
+  ],
+  "results": "PENDING_NO_SUCCESS_RATES",
+  "implementation_gaps": [
+    "configuration-driven new cohorts",
+    "GPU topology and collision-part semantics for timber and ladder",
+    "train-only banks independent of benchmark holdout",
+    "soft-anchor candidate",
+    "method-specific trainable adapters and checkpoint manifests"
+  ]
+}
