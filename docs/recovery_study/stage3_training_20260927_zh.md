@@ -1,6 +1,8 @@
 # R2第三阶段消融启动记录（2026-09-27）
 
-当前为首个配对种子筛选，不是多种子论文最终结果。没有启动AMP/HoST/FIRM。
+**已启动并核验7组均进入正式PPO更新，W&B在线。** 核验时间 2026-09-27T04:55:14.459540+00:00；代码 `10df7e1`。当前为首个配对种子筛选，不是多种子论文最终结果。没有启动AMP/HoST/FIRM。
+
+运行记录：[run_manifest.json](evidence/stage3_20260927/run_manifest.json)。PID与核验时进度是当时快照，不代表未来状态。
 
 ## 运行矩阵
 
@@ -8,13 +10,13 @@
 
 |GPU|实验|场景|本阶段SMP|稠密脱困引导|新增软位置代价|
 |---|---|---|---|---|---|
-|0|S3-C2|扩展|有|有|无|
-|1|S3-C3|扩展|有|有|有|
-|2|S3-G0|扩展|有|无|无|
-|3|S3-P0|扩展|无|有|无|
-|4|S3-C0|三场景|有|有|无|
-|5|S3-C1|三场景|有|有|有|
-|6|S3-PG0|扩展|无|无|无|
+|0|[S3-C2](https://wandb.ai/tabletennis/smp/runs/mvj3vd4w)|扩展|有|有|无|
+|1|[S3-C3](https://wandb.ai/tabletennis/smp/runs/cjqk60kl)|扩展|有|有|有|
+|2|[S3-G0](https://wandb.ai/tabletennis/smp/runs/wowlmdmw)|扩展|有|无|无|
+|3|[S3-P0](https://wandb.ai/tabletennis/smp/runs/8n716o2v)|扩展|无|有|无|
+|4|[S3-C0](https://wandb.ai/tabletennis/smp/runs/7tfgxs6h)|三场景|有|有|无|
+|5|[S3-C1](https://wandb.ai/tabletennis/smp/runs/pnjfpyh2)|三场景|有|有|有|
+|6|[S3-PG0](https://wandb.ai/tabletennis/smp/runs/lkgv77nk)|扩展|无|无|无|
 |7|串行验证 / 初始R2评测|统一七场景|—|—|—|
 
 4096环境×24控制步×10000更新，seed=20260927；每500保存并验证，每2000及最终保存四场景视频。训练10s，验证rollout20s；不站起终止、不低SMP终止，保留数值异常与异常接触保护。部件mass/inertia、Kp/Kd、0–10ms延迟、摩擦、COM、push和actor观测噪声保留。探索std固定0.3。
@@ -37,7 +39,7 @@
 
 ## 实际验收与日志解释
 
-预检检查actor与normalizer精确继承、critic不继承；actor93D、critic960D；所有初态CPU/GPU geometry中心/旋转一致、穿透不超过2.1mm、qvel=0、上方约束真实存在；部分reset不改变其他环境状态/尺寸/质量/位置锚点。奖励实际输出与SMP/引导开关组合做数值核验。4096环境显存约12.7GB，以正式运行实测为准。
+预检检查actor与normalizer精确继承、critic不继承；actor93D、critic960D；所有初态CPU/GPU geometry中心/旋转一致、穿透不超过2.1mm、qvel=0、上方约束真实存在；部分reset不改变其他环境状态/尺寸/质量/位置锚点。奖励实际输出与SMP/引导开关组合做数值核验。7组均完成24更新预检；最深初态接触约−1.905mm，CPU/GPU位置误差≤1.91e−6m，旋转误差≤2.58e−7。4096环境显存约12.7GB。扩展场景5组的初始actor、critic、qpos、bank哈希完全一致；三场景C0/C1也配对一致。
 
 预检修复了固定顶板单geom的MuJoCo same-frame快捷路径：固定体也使用与geom不同的显式惯性坐标，防止reset改变geom位置后CPU仍保留编译位置。此问题在正式训练前通过bank筛查发现并修复。
 

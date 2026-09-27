@@ -1,0 +1,158 @@
+{
+  "checked_at": "2026-09-27T04:55:14.459540+00:00",
+  "status": "RUNNING_VERIFIED_FIRST_PPO_UPDATES",
+  "code_version": {
+    "repository": "git@github.com:lu-yidan/smp.git",
+    "branch": "codex/recovery-study",
+    "commit": "10df7e1dd86655343b4c3e183b70cf51ac16138b"
+  },
+  "server_workspace": "/root/workplace/smp-stage3",
+  "wandb_group": "stage3_R2_20260927_v1",
+  "seed": 20260927,
+  "num_envs_per_run": 4096,
+  "updates_per_run": 10000,
+  "eval_gpu": 7,
+  "launch_plan_sha256": "2038ad3734f60f9fc21ed646255684e9d229717f045dc606405cffa460d488fc",
+  "runs": [
+    {
+      "arm": "S3-C2",
+      "gpu": 0,
+      "pid": 4978,
+      "iteration_at_check": 3,
+      "wandb_url": "https://wandb.ai/tabletennis/smp/runs/mvj3vd4w",
+      "directory": "/root/workplace/smp-stage3/logs/rsl_rl/stage3_recovery/formal_20260927_v1/S3-C2",
+      "launch_sha256": "8cb0563be9c7c7c4df9ff3737ce436759531049aea59369b5162b78e1b68862c",
+      "initial_actor_sha": "7dad6931ee3badde16e14a3a4d6193b230f60b874a0932af53603b18022da98e",
+      "initial_critic_sha": "5c34baa78dcf4644dc8ab8b7b769f4bd21c6b52b81e1f5e3fc070442772dd01e",
+      "initial_qpos_sha": "ad04bb0087b846c0424cb4e447e3f1507eae3cf2b0d55b924b864ed954207bee",
+      "experiment": {
+        "id": "S3-C2",
+        "scene_set": "expanded",
+        "smp": true,
+        "dense_guidance": true,
+        "new_convergence": false,
+        "initialization": "FT_R2@9000"
+      }
+    },
+    {
+      "arm": "S3-C3",
+      "gpu": 1,
+      "pid": 4979,
+      "iteration_at_check": 3,
+      "wandb_url": "https://wandb.ai/tabletennis/smp/runs/cjqk60kl",
+      "directory": "/root/workplace/smp-stage3/logs/rsl_rl/stage3_recovery/formal_20260927_v1/S3-C3",
+      "launch_sha256": "317162024155b401cf16217c8e051ac23e033ed3232245ad8e21690aad9c635a",
+      "initial_actor_sha": "7dad6931ee3badde16e14a3a4d6193b230f60b874a0932af53603b18022da98e",
+      "initial_critic_sha": "5c34baa78dcf4644dc8ab8b7b769f4bd21c6b52b81e1f5e3fc070442772dd01e",
+      "initial_qpos_sha": "ad04bb0087b846c0424cb4e447e3f1507eae3cf2b0d55b924b864ed954207bee",
+      "experiment": {
+        "id": "S3-C3",
+        "scene_set": "expanded",
+        "smp": true,
+        "dense_guidance": true,
+        "new_convergence": true,
+        "initialization": "FT_R2@9000"
+      }
+    },
+    {
+      "arm": "S3-G0",
+      "gpu": 2,
+      "pid": 4980,
+      "iteration_at_check": 3,
+      "wandb_url": "https://wandb.ai/tabletennis/smp/runs/wowlmdmw",
+      "directory": "/root/workplace/smp-stage3/logs/rsl_rl/stage3_recovery/formal_20260927_v1/S3-G0",
+      "launch_sha256": "038310194af630c47b509ad848dab05c74e733b7d918cffea0b3c16b54aec1a9",
+      "initial_actor_sha": "7dad6931ee3badde16e14a3a4d6193b230f60b874a0932af53603b18022da98e",
+      "initial_critic_sha": "5c34baa78dcf4644dc8ab8b7b769f4bd21c6b52b81e1f5e3fc070442772dd01e",
+      "initial_qpos_sha": "ad04bb0087b846c0424cb4e447e3f1507eae3cf2b0d55b924b864ed954207bee",
+      "experiment": {
+        "id": "S3-G0",
+        "scene_set": "expanded",
+        "smp": true,
+        "dense_guidance": false,
+        "new_convergence": false,
+        "initialization": "FT_R2@9000"
+      }
+    },
+    {
+      "arm": "S3-P0",
+      "gpu": 3,
+      "pid": 4981,
+      "iteration_at_check": 3,
+      "wandb_url": "https://wandb.ai/tabletennis/smp/runs/8n716o2v",
+      "directory": "/root/workplace/smp-stage3/logs/rsl_rl/stage3_recovery/formal_20260927_v1/S3-P0",
+      "launch_sha256": "fea10bedcc763b038a0908ceb63dac16d2870290e133a9cdab0811964a7a18f0",
+      "initial_actor_sha": "7dad6931ee3badde16e14a3a4d6193b230f60b874a0932af53603b18022da98e",
+      "initial_critic_sha": "5c34baa78dcf4644dc8ab8b7b769f4bd21c6b52b81e1f5e3fc070442772dd01e",
+      "initial_qpos_sha": "ad04bb0087b846c0424cb4e447e3f1507eae3cf2b0d55b924b864ed954207bee",
+      "experiment": {
+        "id": "S3-P0",
+        "scene_set": "expanded",
+        "smp": false,
+        "dense_guidance": true,
+        "new_convergence": false,
+        "initialization": "FT_R2@9000"
+      }
+    },
+    {
+      "arm": "S3-C0",
+      "gpu": 4,
+      "pid": 4982,
+      "iteration_at_check": 3,
+      "wandb_url": "https://wandb.ai/tabletennis/smp/runs/7tfgxs6h",
+      "directory": "/root/workplace/smp-stage3/logs/rsl_rl/stage3_recovery/formal_20260927_v1/S3-C0",
+      "launch_sha256": "1c142468a33360a42d63241031076e31cfa452e28218f339379b2ef0c58c6d75",
+      "initial_actor_sha": "7dad6931ee3badde16e14a3a4d6193b230f60b874a0932af53603b18022da98e",
+      "initial_critic_sha": "5c34baa78dcf4644dc8ab8b7b769f4bd21c6b52b81e1f5e3fc070442772dd01e",
+      "initial_qpos_sha": "0c756b5c7422412b87c36523d580d17879ca39a888791b0277fe563739445541",
+      "experiment": {
+        "id": "S3-C0",
+        "scene_set": "three_scene",
+        "smp": true,
+        "dense_guidance": true,
+        "new_convergence": false,
+        "initialization": "FT_R2@9000"
+      }
+    },
+    {
+      "arm": "S3-C1",
+      "gpu": 5,
+      "pid": 4983,
+      "iteration_at_check": 3,
+      "wandb_url": "https://wandb.ai/tabletennis/smp/runs/pnjfpyh2",
+      "directory": "/root/workplace/smp-stage3/logs/rsl_rl/stage3_recovery/formal_20260927_v1/S3-C1",
+      "launch_sha256": "3a20822413a4f047c7cf22dcd5cc8d2c538325cc219bdc0292d11deeb04368e2",
+      "initial_actor_sha": "7dad6931ee3badde16e14a3a4d6193b230f60b874a0932af53603b18022da98e",
+      "initial_critic_sha": "5c34baa78dcf4644dc8ab8b7b769f4bd21c6b52b81e1f5e3fc070442772dd01e",
+      "initial_qpos_sha": "0c756b5c7422412b87c36523d580d17879ca39a888791b0277fe563739445541",
+      "experiment": {
+        "id": "S3-C1",
+        "scene_set": "three_scene",
+        "smp": true,
+        "dense_guidance": true,
+        "new_convergence": true,
+        "initialization": "FT_R2@9000"
+      }
+    },
+    {
+      "arm": "S3-PG0",
+      "gpu": 6,
+      "pid": 4984,
+      "iteration_at_check": 3,
+      "wandb_url": "https://wandb.ai/tabletennis/smp/runs/lkgv77nk",
+      "directory": "/root/workplace/smp-stage3/logs/rsl_rl/stage3_recovery/formal_20260927_v1/S3-PG0",
+      "launch_sha256": "da55abc2baa5229c2837f979d4debb2151fdd36892f6ae3d8fe4ff84ad6592fd",
+      "initial_actor_sha": "7dad6931ee3badde16e14a3a4d6193b230f60b874a0932af53603b18022da98e",
+      "initial_critic_sha": "5c34baa78dcf4644dc8ab8b7b769f4bd21c6b52b81e1f5e3fc070442772dd01e",
+      "initial_qpos_sha": "ad04bb0087b846c0424cb4e447e3f1507eae3cf2b0d55b924b864ed954207bee",
+      "experiment": {
+        "id": "S3-PG0",
+        "scene_set": "expanded",
+        "smp": false,
+        "dense_guidance": false,
+        "new_convergence": false,
+        "initialization": "FT_R2@9000"
+      }
+    }
+  ]
+}
