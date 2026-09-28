@@ -1,0 +1,54 @@
+{
+  "checked_at": "2026-09-29T01:07:31.434359+08:00",
+  "preflight_not_completed_at_snapshot": true,
+  "n": 7,
+  "equal_fields": [
+    "actor_sha",
+    "critic_sha",
+    "initial_qpos_sha",
+    "assets",
+    "code_sha256"
+  ],
+  "scene_counts": [
+    2048,
+    1024,
+    1024,
+    0
+  ],
+  "reset_counts": {
+    "scene": [
+      2048,
+      1024,
+      1024,
+      0
+    ],
+    "stratum": [
+      2048,
+      1024,
+      1024,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "kind_low_middle_late": [
+      2868,
+      820,
+      408
+    ],
+    "natural_procedural": [
+      3380,
+      716
+    ],
+    "group": [
+      408,
+      820,
+      717,
+      717,
+      717,
+      717
+    ]
+  },
+  "note": "R2 render check uses A6 environment and original R2 actor; not a trained A6 result."
+}

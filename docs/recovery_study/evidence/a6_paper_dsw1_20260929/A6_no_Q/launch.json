@@ -1,0 +1,99 @@
+{
+  "arm": "A6_no_Q",
+  "historical_base_commit": "1b6d7e61ddbcd2caf9ea17b02160dd1cf0d119d2",
+  "code_sha256": "33c2b04e3da8cf25623fba2e6be03faaadb602d9e355f0951ad45409a56fc9d1",
+  "checkpoint_sha256": "8b4889f80c6b7cc675f6e9b1e98f2d4a1886a15e372f86070f63c329ba9ca5d1",
+  "reference_sha256": "870a1f7110d4cfd58a3d81d45e2ec728abbec7335a781032aedf3e36309e7df8",
+  "assets": {
+    "outputs/multiterrain_bank/train.npz": "287eae8e8840c1b3281e7010a84182b824fefacd34439c4f993e9f130af1027a",
+    "outputs/multiterrain_bank/validation.npz": "d0c4755474df9626a20167843eb453d00e76420771d29f34cd35d5a3a8d29b45",
+    "datasets/reset_banks/natural_curriculum_v1/train.npz": "e9f94540520d7927dee01150a0f0bae39ad2aad5ae008b1c7c71f521650e44b9",
+    "datasets/reset_banks/procedural_low_v1/train.npz": "e289bed8d1c93e87fbdcf969fc5fc741f2d8500a0908ed145d2a4e02e7fe116d"
+  },
+  "actor_exact": true,
+  "fresh_critic": true,
+  "fresh_optimizer": true,
+  "actor_sha": "7dad6931ee3badde16e14a3a4d6193b230f60b874a0932af53603b18022da98e",
+  "critic_sha": "6345f93938783e54384cd718df0737c22c93855f412deef3ad0b5109e95e1d98",
+  "initial_qpos_sha": "c951418cd6275a2a9be4b04770c5c714868bb6493d92a1e3193c55e49a7a8291",
+  "seed": 20261013,
+  "updates": 200,
+  "num_envs": 4096,
+  "episode_s": 10.0,
+  "counts": {
+    "scene": [
+      2048,
+      1024,
+      1024,
+      0
+    ],
+    "stratum": [
+      2048,
+      1024,
+      1024,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "kind_low_middle_late": [
+      2868,
+      820,
+      408
+    ],
+    "natural_procedural": [
+      3380,
+      716
+    ],
+    "group": [
+      408,
+      820,
+      717,
+      717,
+      717,
+      717
+    ]
+  },
+  "events": [
+    "init_smp_state",
+    "gsi_reset",
+    "push_robot",
+    "foot_friction",
+    "encoder_bias",
+    "base_com",
+    "reset_stand_counter",
+    "deployment_pair_friction",
+    "v33_stage_reset",
+    "multiterrain_phase"
+  ],
+  "actor_noise": true,
+  "weights": {
+    "task_smp_product": 1.0,
+    "quiet_stand": 0.0,
+    "effort_top3": 0.0,
+    "speed_top3": 0.0,
+    "target_slew": 0.0,
+    "head_impact": 0.0,
+    "v33_action_rate": -0.0015,
+    "v33_action_acc": -0.0012,
+    "v33_joint_acc": -5e-08,
+    "v33_torque": -1e-06,
+    "v33_joint_speed": -0.02,
+    "v33_joint_power": -2e-06,
+    "v33_head_overspeed": -1.0,
+    "v33_sustained_effort": -0.05,
+    "v33_joint_limits": -0.1,
+    "plate_geometry_progress": 0.45,
+    "plate_clearance": 0.08,
+    "plate_completion": 0.6,
+    "plate_force": -0.03,
+    "plate_separation": 0.01,
+    "path_quiet_feet": 0.0,
+    "path_joint_stall": -0.2
+  },
+  "task_alpha_disabled": false,
+  "hand_gate_disabled": false,
+  "preflight": true,
+  "evaluation": false
+}
