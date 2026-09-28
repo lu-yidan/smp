@@ -1,0 +1,37 @@
+{
+  "checked_at_utc": "2026-09-28T15:29:59.202653+00:00",
+  "server": "root@10.177.36.91:28036",
+  "workspace": "/root/workplace/smp-stage3/",
+  "status": "PREFLIGHT_RUNNING_NOT_FORMAL_TRAINING",
+  "code_commit": "60d7e42de80f08bbbb9a43b54be7c16821902414",
+  "training_code_sha256": "1fcbe926ecf83b4365d3ee5235538c1b97a3169edc494fa1f9a9725d162d71f9",
+  "controller_sha256": "ca17095388cedde80232e4b638f77a774a770fdf77092954cee878081dfa6292",
+  "arms": {
+    "S3-C2": {
+      "gpu": 0,
+      "preflight_pid": 203483,
+      "last_printed_preflight_iteration": 24
+    },
+    "S3-G0": {
+      "gpu": 1,
+      "preflight_pid": 203484,
+      "last_printed_preflight_iteration": 24
+    }
+  },
+  "controller_pid": 203476,
+  "telemetry_pid": 203477,
+  "eval_gpu": 5,
+  "preflight_updates": 200,
+  "formal_updates": 10000,
+  "save_validate_every": 500,
+  "seed": 20260927,
+  "checkpoint_sha256": "8b4889f80c6b7cc675f6e9b1e98f2d4a1886a15e372f86070f63c329ba9ca5d1",
+  "matching_initialization": true,
+  "other_arms": "not started",
+  "preflight_root": "outputs/preflight_stage3_migration_20260928",
+  "formal_root": "logs/rsl_rl/stage3_recovery/formal_20260928_replacement_v1",
+  "wandb_group": "stage3_R2_20260928_replacement_v1",
+  "wandb_entity": "tabletennis",
+  "render_evaluation_passed": true,
+  "render_baseline_is_not_bitwise_identical_to_old_host": true
+}

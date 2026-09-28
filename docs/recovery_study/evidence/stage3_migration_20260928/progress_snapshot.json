@@ -1,0 +1,17 @@
+{
+  "checked_at_utc": "2026-09-28T15:29:59.202653+00:00",
+  "arms": {
+    "S3-C2": {
+      "last_iteration": 24,
+      "failed": false,
+      "completed": false
+    },
+    "S3-G0": {
+      "last_iteration": 24,
+      "failed": false,
+      "completed": false
+    }
+  },
+  "gpu": "0, GPU-8f17fceb-b0a5-8c96-0c4e-9764d5648e46, 12807 MiB, 91 %\n1, GPU-a298c811-a0fe-6253-1220-1b9b2f72b40c, 12807 MiB, 88 %\n2, GPU-15c537ae-c411-e401-0d96-c394681526df, 2012 MiB, 53 %\n3, GPU-49b7428e-199b-f398-02e4-8b7817679ff2, 15 MiB, 0 %\n4, GPU-c5273df5-ae04-6823-d44b-eff540befa4c, 11023 MiB, 52 %\n5, GPU-6e6aab20-02fb-cc00-026f-71b1c0d9f981, 16 MiB, 0 %\n",
+  "controller": "bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)\nPreflight started: C2=203483 GPU0; G0=203484 GPU1\n"
+}

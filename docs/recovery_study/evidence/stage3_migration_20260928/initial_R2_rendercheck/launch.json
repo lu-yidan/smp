@@ -1,0 +1,687 @@
+{
+  "code_version": {
+    "commit": "60d7e42de80f08bbbb9a43b54be7c16821902414",
+    "branch": "codex/recovery-study",
+    "source": "clean git archive; local uncommitted files excluded"
+  },
+  "plan_sha256": "2038ad3734f60f9fc21ed646255684e9d229717f045dc606405cffa460d488fc",
+  "plan": {
+    "schema_version": 1,
+    "status": "IMPLEMENTED_PREFLIGHT_PASSED",
+    "date": "2026-09-27",
+    "code_baseline": {
+      "branch": "codex/recovery-study",
+      "commit": "3713aec",
+      "entrypoint": "scripts/train_stage3_recovery.py"
+    },
+    "our_initialization": {
+      "label": "FT_R2@9000",
+      "sha256": "8b4889f80c6b7cc675f6e9b1e98f2d4a1886a15e372f86070f63c329ba9ca5d1",
+      "actor_and_obs_norm": "inherit",
+      "critic_optimizer_iteration": "fresh"
+    },
+    "scene_sets": {
+      "three_scene": {
+        "flat": 0.2,
+        "guided_plate": 0.4,
+        "free_plate": 0.4
+      },
+      "expanded": {
+        "flat": 0.2,
+        "guided_plate": 0.15,
+        "free_plate": 0.2,
+        "fixed_ceiling": 0.15,
+        "crossed_timber": 0.1,
+        "ladder_boards": 0.1,
+        "double_plate": 0.1
+      }
+    },
+    "reset": {
+      "flat_low_middle_near_standing": [
+        0.4,
+        0.4,
+        0.2
+      ],
+      "obstacle_low_middle_near_standing": [
+        1,
+        0,
+        0
+      ],
+      "low_direction_shares": [
+        0.25,
+        0.25,
+        0.25,
+        0.25
+      ],
+      "low_natural_procedural": [
+        0.75,
+        0.25
+      ],
+      "overall_low_middle_near_standing": [
+        0.88,
+        0.08,
+        0.04
+      ],
+      "overall_natural_low_procedural_low_natural_middle_natural_near_standing": [
+        0.66,
+        0.22,
+        0.08,
+        0.04
+      ],
+      "quota_rounding": "largest_remainder_over_scene_stage_direction_source",
+      "gsi_refresh": false,
+      "failure_replay": false,
+      "reset_velocity": 0
+    },
+    "training": {
+      "num_envs": 4096,
+      "updates": 10000,
+      "steps_per_env": 24,
+      "save_validate_every_updates": 500,
+      "episode_s": 10,
+      "control_dt": 0.02,
+      "physics_dt": 0.002,
+      "standing_termination": false,
+      "low_smp_termination": false,
+      "keep_numerical_and_invalid_contact_protection": true,
+      "learning_rate": 0.0001,
+      "schedule": "adaptive",
+      "desired_kl": 0.01,
+      "gamma": 0.99,
+      "gae_lambda": 0.95,
+      "ppo_epochs": 5,
+      "minibatches": 4,
+      "ppo_clip": 0.2,
+      "fixed_action_std": 0.3,
+      "actor_observation_noise": true,
+      "confirmation_training_seeds_min": 3
+    },
+    "prior": {
+      "type": "f2s2",
+      "ws": 6,
+      "reference": "configs/recovery_study/smp_reward_reference_v1.json",
+      "no_smp_ablation": "S=1 during adaptation only; R2 still contains prior-trained behavior"
+    },
+    "shared_reward_weights": {
+      "path": 0.45,
+      "clearance": 0.08,
+      "completion": 0.6,
+      "force": -0.03,
+      "separation": 0.01,
+      "quiet_feet": -0.03,
+      "joint_stall": -0.2
+    },
+    "dense_guidance_off": {
+      "path": 0,
+      "clearance": 0,
+      "separation": 0,
+      "task_alpha": 1,
+      "retain_completion_force_quiet_feet_joint_stall": true
+    },
+    "task_alpha_when_guidance_on": {
+      "blocked": 0.05,
+      "escaped": 1
+    },
+    "convergence_candidate": {
+      "status": "IMPLEMENTED_UNVALIDATED",
+      "enabled_for_external_comparisons": false,
+      "new_term": "latched_post_escape_xy_soft_anchor",
+      "weight": -0.05,
+      "deadzone_m": 0.25,
+      "scale_m": 0.25,
+      "cost_cap": 1,
+      "uprightness_gate": [
+        0.7,
+        0.93
+      ],
+      "head_height_gate_m": [
+        0.85,
+        1.15
+      ],
+      "pause_when_reblocked": true,
+      "relatch_on_reentry": false,
+      "reset_anchor_only_on_episode_reset": true,
+      "new_yaw_cost": 0,
+      "new_default_pose_reward": 0,
+      "actor_anchor_observation": false
+    },
+    "experiments": [
+      {
+        "id": "S3-C0",
+        "scene_set": "three_scene",
+        "smp": true,
+        "dense_guidance": true,
+        "new_convergence": false,
+        "initialization": "FT_R2@9000"
+      },
+      {
+        "id": "S3-C1",
+        "scene_set": "three_scene",
+        "smp": true,
+        "dense_guidance": true,
+        "new_convergence": true,
+        "initialization": "FT_R2@9000"
+      },
+      {
+        "id": "S3-C2",
+        "scene_set": "expanded",
+        "smp": true,
+        "dense_guidance": true,
+        "new_convergence": false,
+        "initialization": "FT_R2@9000"
+      },
+      {
+        "id": "S3-C3",
+        "scene_set": "expanded",
+        "smp": true,
+        "dense_guidance": true,
+        "new_convergence": true,
+        "initialization": "FT_R2@9000"
+      },
+      {
+        "id": "S3-G0",
+        "scene_set": "expanded",
+        "smp": true,
+        "dense_guidance": false,
+        "new_convergence": false,
+        "initialization": "FT_R2@9000"
+      },
+      {
+        "id": "S3-P0",
+        "scene_set": "expanded",
+        "smp": false,
+        "dense_guidance": true,
+        "new_convergence": false,
+        "initialization": "FT_R2@9000"
+      },
+      {
+        "id": "S3-PG0",
+        "scene_set": "expanded",
+        "smp": false,
+        "dense_guidance": false,
+        "new_convergence": false,
+        "initialization": "FT_R2@9000"
+      }
+    ],
+    "external_methods": [
+      "AMP",
+      "HoST",
+      "FIRM"
+    ],
+    "external_conditions": [
+      "Z_frozen",
+      "Gminus_native_adaptation",
+      "Gplus_guided_adaptation"
+    ],
+    "results": "PENDING_NO_SUCCESS_RATES",
+    "implementation_gaps": [
+      "method-specific trainable adapters and checkpoint manifests"
+    ]
+  },
+  "experiment": {
+    "id": "S3-C2",
+    "scene_set": "expanded",
+    "smp": true,
+    "dense_guidance": true,
+    "new_convergence": false,
+    "initialization": "FT_R2@9000"
+  },
+  "arm": "S3-C2",
+  "checkpoint": "/root/workplace/smp-stage3/outputs/clutter_eval_v1/checkpoints/R2_9000.pt",
+  "checkpoint_sha256": "8b4889f80c6b7cc675f6e9b1e98f2d4a1886a15e372f86070f63c329ba9ca5d1",
+  "actor_exact": true,
+  "actor_sha": "7dad6931ee3badde16e14a3a4d6193b230f60b874a0932af53603b18022da98e",
+  "initial_qpos_sha": "20335e60391882bc015e278e4914e87bf342aa79b581ad14c134aeee054cb93d",
+  "fresh_critic": true,
+  "fresh_optimizer": true,
+  "critic_sha": "5c34baa78dcf4644dc8ab8b7b769f4bd21c6b52b81e1f5e3fc070442772dd01e",
+  "seed": 20260927,
+  "num_envs": 224,
+  "updates": 10000,
+  "bank_sha256": "55add90e3dbb81956509cb8cbfa0ab40adac60c5abc985ad6b6ea4d6fb366f21",
+  "smp_reference_sha256": "870a1f7110d4cfd58a3d81d45e2ec728abbec7335a781032aedf3e36309e7df8",
+  "actor_noise": false,
+  "episode_s": 1000.0,
+  "events": [
+    "init_smp_state",
+    "gsi_reset",
+    "reset_stand_counter",
+    "v33_stage_reset"
+  ],
+  "reward_weights": {
+    "task_smp_product": 1.0,
+    "quiet_stand": 0.0,
+    "effort_top3": 0.0,
+    "speed_top3": 0.0,
+    "target_slew": 0.0,
+    "head_impact": 0.0,
+    "v33_action_rate": -0.0015,
+    "v33_action_acc": -0.0012,
+    "v33_joint_acc": -5e-08,
+    "v33_torque": -1e-06,
+    "v33_joint_speed": -0.02,
+    "v33_joint_power": -2e-06,
+    "v33_head_overspeed": -1.0,
+    "v33_sustained_effort": -0.05,
+    "v33_joint_limits": -0.1,
+    "mixed_path": 0.45,
+    "mixed_clearance": 0.08,
+    "mixed_completion": 0.6,
+    "mixed_force": -0.03,
+    "mixed_separation": 0.01,
+    "mixed_quiet_feet": -0.03,
+    "mixed_joint_stall": -0.2,
+    "mixed_anchor": 0.0
+  },
+  "cohort_keys": [
+    [
+      0,
+      0,
+      0,
+      0
+    ],
+    [
+      0,
+      0,
+      0,
+      1
+    ],
+    [
+      0,
+      0,
+      1,
+      0
+    ],
+    [
+      0,
+      0,
+      1,
+      1
+    ],
+    [
+      0,
+      0,
+      2,
+      0
+    ],
+    [
+      0,
+      0,
+      2,
+      1
+    ],
+    [
+      0,
+      0,
+      3,
+      0
+    ],
+    [
+      0,
+      0,
+      3,
+      1
+    ],
+    [
+      1,
+      0,
+      0,
+      0
+    ],
+    [
+      1,
+      0,
+      0,
+      1
+    ],
+    [
+      1,
+      0,
+      1,
+      0
+    ],
+    [
+      1,
+      0,
+      1,
+      1
+    ],
+    [
+      1,
+      0,
+      2,
+      0
+    ],
+    [
+      1,
+      0,
+      2,
+      1
+    ],
+    [
+      1,
+      0,
+      3,
+      0
+    ],
+    [
+      1,
+      0,
+      3,
+      1
+    ],
+    [
+      2,
+      0,
+      0,
+      0
+    ],
+    [
+      2,
+      0,
+      0,
+      1
+    ],
+    [
+      2,
+      0,
+      1,
+      0
+    ],
+    [
+      2,
+      0,
+      1,
+      1
+    ],
+    [
+      2,
+      0,
+      2,
+      0
+    ],
+    [
+      2,
+      0,
+      2,
+      1
+    ],
+    [
+      2,
+      0,
+      3,
+      0
+    ],
+    [
+      2,
+      0,
+      3,
+      1
+    ],
+    [
+      3,
+      0,
+      0,
+      0
+    ],
+    [
+      3,
+      0,
+      0,
+      1
+    ],
+    [
+      3,
+      0,
+      1,
+      0
+    ],
+    [
+      3,
+      0,
+      1,
+      1
+    ],
+    [
+      3,
+      0,
+      2,
+      0
+    ],
+    [
+      3,
+      0,
+      2,
+      1
+    ],
+    [
+      3,
+      0,
+      3,
+      0
+    ],
+    [
+      3,
+      0,
+      3,
+      1
+    ],
+    [
+      4,
+      0,
+      0,
+      0
+    ],
+    [
+      4,
+      0,
+      0,
+      1
+    ],
+    [
+      4,
+      0,
+      1,
+      0
+    ],
+    [
+      4,
+      0,
+      1,
+      1
+    ],
+    [
+      4,
+      0,
+      2,
+      0
+    ],
+    [
+      4,
+      0,
+      2,
+      1
+    ],
+    [
+      4,
+      0,
+      3,
+      0
+    ],
+    [
+      4,
+      0,
+      3,
+      1
+    ],
+    [
+      5,
+      0,
+      0,
+      0
+    ],
+    [
+      5,
+      0,
+      0,
+      1
+    ],
+    [
+      5,
+      0,
+      1,
+      0
+    ],
+    [
+      5,
+      0,
+      1,
+      1
+    ],
+    [
+      5,
+      0,
+      2,
+      0
+    ],
+    [
+      5,
+      0,
+      2,
+      1
+    ],
+    [
+      5,
+      0,
+      3,
+      0
+    ],
+    [
+      5,
+      0,
+      3,
+      1
+    ],
+    [
+      6,
+      0,
+      0,
+      0
+    ],
+    [
+      6,
+      0,
+      0,
+      1
+    ],
+    [
+      6,
+      0,
+      1,
+      0
+    ],
+    [
+      6,
+      0,
+      1,
+      1
+    ],
+    [
+      6,
+      0,
+      2,
+      0
+    ],
+    [
+      6,
+      0,
+      2,
+      1
+    ],
+    [
+      6,
+      0,
+      3,
+      0
+    ],
+    [
+      6,
+      0,
+      3,
+      1
+    ]
+  ],
+  "cohort_counts": [
+    6,
+    2,
+    6,
+    2,
+    6,
+    2,
+    6,
+    2,
+    6,
+    2,
+    6,
+    2,
+    6,
+    2,
+    6,
+    2,
+    6,
+    2,
+    6,
+    2,
+    6,
+    2,
+    6,
+    2,
+    6,
+    2,
+    6,
+    2,
+    6,
+    2,
+    6,
+    2,
+    6,
+    2,
+    6,
+    2,
+    6,
+    2,
+    6,
+    2,
+    6,
+    2,
+    6,
+    2,
+    6,
+    2,
+    6,
+    2,
+    6,
+    2,
+    6,
+    2,
+    6,
+    2,
+    6,
+    2
+  ],
+  "geometry_curriculum_updates": [
+    0,
+    1500,
+    3000
+  ],
+  "dynamics_width_initial_final": [
+    0.1,
+    0.2
+  ],
+  "delay_ms": [
+    0,
+    10
+  ],
+  "nominal_dynamics_fraction": 0.25,
+  "code_sha256": "1fcbe926ecf83b4365d3ee5235538c1b97a3169edc494fa1f9a9725d162d71f9"
+}
