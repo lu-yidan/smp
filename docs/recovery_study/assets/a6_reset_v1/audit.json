@@ -1,0 +1,153 @@
+{
+  "banks": {
+    "outputs/multiterrain_bank/train.npz": {
+      "n": 4096,
+      "qpos_columns": 36,
+      "direction": {
+        "0": 1024,
+        "1": 1024,
+        "2": 1024,
+        "3": 1024
+      },
+      "stratum": {
+        "0": 512,
+        "1": 512,
+        "2": 512,
+        "3": 512,
+        "4": 512,
+        "5": 512,
+        "6": 512,
+        "7": 512
+      },
+      "source": {
+        "0": 2048,
+        "1": 2048
+      }
+    },
+    "outputs/multiterrain_bank/validation.npz": {
+      "n": 1024,
+      "qpos_columns": 36,
+      "direction": {
+        "0": 256,
+        "1": 256,
+        "2": 256,
+        "3": 256
+      },
+      "stratum": {
+        "0": 128,
+        "1": 128,
+        "2": 128,
+        "3": 128,
+        "4": 128,
+        "5": 128,
+        "6": 128,
+        "7": 128
+      },
+      "source": {
+        "0": 512,
+        "1": 512
+      }
+    },
+    "datasets/reset_banks/natural_curriculum_v1/train.npz": {
+      "n": 3046,
+      "qpos_columns": 36,
+      "labels": {
+        "intermediate": 1170,
+        "left_side_down": 209,
+        "prone": 514,
+        "right_side_down": 209,
+        "supine": 944
+      },
+      "stages": {
+        "late": 295,
+        "low": 1306,
+        "middle": 1445
+      },
+      "clip_groups": 48
+    },
+    "datasets/reset_banks/natural_curriculum_v1/validation.npz": {
+      "n": 804,
+      "qpos_columns": 36,
+      "labels": {
+        "intermediate": 250,
+        "left_side_down": 19,
+        "prone": 166,
+        "right_side_down": 19,
+        "supine": 350
+      },
+      "stages": {
+        "late": 52,
+        "low": 408,
+        "middle": 344
+      },
+      "clip_groups": 11
+    },
+    "datasets/reset_banks/procedural_low_v1/train.npz": {
+      "n": 4096,
+      "qpos_columns": 36,
+      "labels": {
+        "left_side_down": 1024,
+        "prone": 1024,
+        "right_side_down": 1024,
+        "supine": 1024
+      },
+      "stages": {
+        "low": 4096
+      }
+    },
+    "datasets/reset_banks/procedural_low_v1/validation.npz": {
+      "n": 512,
+      "qpos_columns": 36,
+      "labels": {
+        "left_side_down": 128,
+        "prone": 128,
+        "right_side_down": 128,
+        "supine": 128
+      },
+      "stages": {
+        "low": 512
+      }
+    }
+  },
+  "historical_validation_only": true,
+  "natural_train_validation_group_overlap": 0,
+  "multiterrain_lineage_limit": "No per-row clip IDs survive in this bank; no end-to-end independent final-test certification.",
+  "robot_compile": {
+    "mujoco": "3.8.1",
+    "nq": 36,
+    "nv": 35,
+    "nmesh": 35,
+    "joint_names": [
+      "left_hip_pitch_joint",
+      "left_hip_roll_joint",
+      "left_hip_yaw_joint",
+      "left_knee_joint",
+      "left_ankle_pitch_joint",
+      "left_ankle_roll_joint",
+      "right_hip_pitch_joint",
+      "right_hip_roll_joint",
+      "right_hip_yaw_joint",
+      "right_knee_joint",
+      "right_ankle_pitch_joint",
+      "right_ankle_roll_joint",
+      "waist_yaw_joint",
+      "waist_roll_joint",
+      "waist_pitch_joint",
+      "left_shoulder_pitch_joint",
+      "left_shoulder_roll_joint",
+      "left_shoulder_yaw_joint",
+      "left_elbow_joint",
+      "left_wrist_roll_joint",
+      "left_wrist_pitch_joint",
+      "left_wrist_yaw_joint",
+      "right_shoulder_pitch_joint",
+      "right_shoulder_roll_joint",
+      "right_shoulder_yaw_joint",
+      "right_elbow_joint",
+      "right_wrist_roll_joint",
+      "right_wrist_pitch_joint",
+      "right_wrist_yaw_joint"
+    ],
+    "scope": "CPU robot compile/order only, not a dynamics or RL parity test"
+  }
+}

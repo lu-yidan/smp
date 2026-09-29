@@ -92,7 +92,9 @@ git rev-parse HEAD
 
 板尺寸为0.90×0.64×0.07 m；历史 A6 不随机尺寸。板质量范围由4–6 kg逐渐扩大到4–12 kg，历史名义验证使用6 kg。初始底面按覆盖机器人碰撞几何最高点加2 mm放置，不能改成统一世界高度。具体导向范围、接触和惯量实现按冻结代码迁移。
 
-### 必须单独交付的数据
+### 已补齐：训练与历史验证数据（2026-09-29）
+
+直接使用[资产下载、安装与校验说明](a6_asset_delivery_20260929_zh.md)。[bank 压缩包](assets/a6_reset_v1/banks.tar.gz)包含三份训练 bank、三份历史验证 bank 和三份原始 manifest，约 2.36 MB；[校验工具](../../scripts/recovery_study/a6_assets.py)按下列历史路径安装并核验。三份训练文件均已与 A6 运行记录中的 SHA256 对上。
 
 | 资产 | 历史代码路径 | 已归档 SHA256 |
 |---|---|---|
@@ -100,7 +102,7 @@ git rev-parse HEAD
 | 自然课程训练bank | `datasets/reset_banks/natural_curriculum_v1/train.npz` | `e9f94540520d7927dee01150a0f0bae39ad2aad5ae008b1c7c71f521650e44b9` |
 | 程序化低位训练bank | `datasets/reset_banks/procedural_low_v1/train.npz` | `e289bed8d1c93e87fbdcf969fc5fc741f2d8500a0908ed145d2a4e02e7fe116d` |
 
-另需交付机器人XML/mesh、验证bank及其SHA和生成来源。克隆Git不保证这些大文件存在；首次联调前检查并补齐，不用其他bank静默替代。历史验证数据不能自动当成新的独立最终测试集；自然片段及其镜像需按组隔离。
+机器人 XML、control.yaml、64 个 mesh 及模型 manifest 已包含在冻结历史 Git 提交的 `src/smp/assets/deploy_g1/` 中，共 67 个文件；本次均已校验，无需另找模型。验证 bank 的 SHA、生成来源、数据格式和安装命令见上面的交付说明。注意：多地形文件包含 8 类旧 stratum，但 A6 只采样 0/1/2；文件内自然/程序化 50/50 不等于运行时低位采样 75/25。历史验证数据不能自动当成新的独立最终测试集；自然片段及其镜像需按组隔离，多地形数据缺少逐行 clip ID 的限制已在交付说明中披露。
 
 ## 5. 共同任务与代价
 
