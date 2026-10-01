@@ -1,0 +1,23 @@
+{
+  "clutter_index.json": "a54ed9e2066942e0d7535637e847ec6504d3113d90feaa4b23a2e36536c38c86",
+  "clutter_protocol.json": "0b8aa00bf99fd64e2266ea6e864157bf170190b7eae1d94adea7563e2af047e5",
+  "clutter_residual_audit.json": "f1a171829a80fbeba2513fd40fc6c1e343a92460e57cb979b49ade8e860d389a",
+  "clutter_summary.json": "784cfbbe6e65c6056472e2f902deb03bc37e58935f67101781ba2def8d569adf",
+  "clutter_trials.jsonl": "f251a8a0f7d3cf96076c84e4da9532c3519eb22e2e0d63096a14f1a50bd1cd06",
+  "diagnostic_cases.json": "a921bf5c02d18f3af7f146ab51b421a1fd5257d4643ca1bca602a156db615e44",
+  "plate_fixture_audit.json": "e968f2dc53ea959a7278054c4baed9e355c3475c8683c4b0129d1212b9aa8600",
+  "plate_sensitivity_index.json": "1261e3411a3751e00cb2783f83e0869303e3eb43c5d61d02847b36a7cd352a60",
+  "plates_protocol.json": "89296e064000b0223be7238ceaa4bbac219a39902f343b953bd50f949fdc3b24",
+  "plates_summary.json": "ba4d1899166e83b65491f101b66edb2635107869d76527680812a7045f622f73",
+  "plates_trials.jsonl": "c4a2bbc01c0339929bffa8f5d13135429db92a4aba1f77dbb05e9174115944ef",
+  "preflight_protocol.json": "027f0abb3e90563aed1b661884229d6ef7a972952b304dd85e92b1ce2ced0e9b",
+  "scene_generalization_table_candidate.tex": "1194744918c1436ce68813dab9997b688d5076d6bc1de5ecef29d9d82cab0064",
+  "video_qa.json": "d5fa94b478b69c4d3367ad8ef61e28e0d736519678d3ef7c22d658d4a24f252a",
+  "video_selection.json": "6a8d60821aa58a783ee5649fd497d4f2d7b08a3229b8e977e3870abf685fd59b",
+  "videos": {
+    "crossed_timber_four_directions_20s.mp4": "0debb87884ab8c192625ca5ed585882dcf84ce8607e24f0d3df3d87ffa08bcb2",
+    "fixed_c_space_four_directions_20s.mp4": "7c920e6dbd5fd6b3644df7d36f8d78b52e994fb0f8960ab7e2dfdea1898da3b0",
+    "hollow_container_four_directions_20s.mp4": "43a5fbe5dc007a9cb4c28c8cd8ff2b4aaf1b26245916b333cdc3485faae2e5b0",
+    "ladder_boards_four_directions_20s.mp4": "137cacd84074d77c30d7cb2b59ce894ac69b1d1ba4e505f9803fa510e3a6e8cf"
+  }
+}

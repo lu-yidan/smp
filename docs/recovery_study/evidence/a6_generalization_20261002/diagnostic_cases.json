@@ -1,0 +1,164 @@
+[
+  {
+    "case_id": "crossed_timber__left_side_down__l1__v01",
+    "time_s": 15,
+    "quiet_at_sample": true,
+    "probe_blocked": true,
+    "probe_colliding_pairs": [
+      {
+        "geoms": [
+          "left_foot1_collision",
+          "timber_0_0"
+        ],
+        "penetration_m": 0.0018873210243915747
+      },
+      {
+        "geoms": [
+          "left_foot2_collision",
+          "timber_0_0"
+        ],
+        "penetration_m": 0.010126906891037542
+      },
+      {
+        "geoms": [
+          "left_foot3_collision",
+          "timber_0_0"
+        ],
+        "penetration_m": 0.010000063591679422
+      },
+      {
+        "geoms": [
+          "left_foot3_collision",
+          "timber_0_0"
+        ],
+        "penetration_m": 0.00993231709077994
+      },
+      {
+        "geoms": [
+          "left_foot4_collision",
+          "timber_0_0"
+        ],
+        "penetration_m": 0.0097796588368997
+      },
+      {
+        "geoms": [
+          "left_foot4_collision",
+          "timber_0_0"
+        ],
+        "penetration_m": 0.009700481353323962
+      },
+      {
+        "geoms": [
+          "left_foot5_collision",
+          "timber_0_0"
+        ],
+        "penetration_m": 0.009532130976401461
+      },
+      {
+        "geoms": [
+          "left_foot5_collision",
+          "timber_0_0"
+        ],
+        "penetration_m": 0.009474346372300995
+      },
+      {
+        "geoms": [
+          "left_foot6_collision",
+          "timber_0_0"
+        ],
+        "penetration_m": 0.009334108688002858
+      },
+      {
+        "geoms": [
+          "left_foot6_collision",
+          "timber_0_0"
+        ],
+        "penetration_m": 0.009302559597775447
+      }
+    ],
+    "height": 1.2294220496615498
+  },
+  {
+    "case_id": "ladder_boards__left_side_down__l0__v00",
+    "time_s": 15,
+    "quiet_at_sample": true,
+    "probe_blocked": true,
+    "probe_colliding_pairs": [
+      {
+        "geoms": [
+          "right_hand_collision",
+          "ladder_5"
+        ],
+        "penetration_m": 0.005137898780408254
+      }
+    ],
+    "height": 1.229591542105201
+  },
+  {
+    "case_id": "hollow_container__left_side_down__l0__v00",
+    "time_s": 15,
+    "quiet_at_sample": true,
+    "probe_blocked": true,
+    "probe_colliding_pairs": [
+      {
+        "geoms": [
+          "right_foot1_collision",
+          "container_1"
+        ],
+        "penetration_m": 0.01016492198529743
+      },
+      {
+        "geoms": [
+          "right_foot2_collision",
+          "container_1"
+        ],
+        "penetration_m": 0.007916736835051385
+      },
+      {
+        "geoms": [
+          "right_foot2_collision",
+          "container_1"
+        ],
+        "penetration_m": 0.007866652096647584
+      },
+      {
+        "geoms": [
+          "right_foot3_collision",
+          "container_1"
+        ],
+        "penetration_m": 0.0037048357339272498
+      }
+    ],
+    "height": 1.230933829925318
+  },
+  {
+    "case_id": "fixed_c_space__left_side_down__l0__v02",
+    "time_s": 15,
+    "quiet_at_sample": false,
+    "probe_blocked": true,
+    "probe_colliding_pairs": [
+      {
+        "geoms": [
+          "torso_collision1",
+          "c_frame_0"
+        ],
+        "penetration_m": 0.0020468398748400285
+      },
+      {
+        "geoms": [
+          "head_collision",
+          "c_frame_0"
+        ],
+        "penetration_m": 0.010154051248688588
+      },
+      {
+        "geoms": [
+          "head_collision",
+          "c_frame_0"
+        ],
+        "penetration_m": 0.00973110135006746
+      }
+    ],
+    "height": 0.6664517853555326
+  }
+]

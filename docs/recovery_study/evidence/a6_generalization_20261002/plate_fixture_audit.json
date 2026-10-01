@@ -1,0 +1,115 @@
+{
+  "cases": 896,
+  "paired_base_cases": 64,
+  "identical_robot_initial_states_across_all_conditions": true,
+  "contact_friction_checks": [
+    {
+      "family": "guided_plate",
+      "condition": "nominal",
+      "effective_robot_plate_friction": [
+        1.0
+      ]
+    },
+    {
+      "family": "guided_plate",
+      "condition": "size075",
+      "effective_robot_plate_friction": [
+        1.0
+      ]
+    },
+    {
+      "family": "guided_plate",
+      "condition": "size125",
+      "effective_robot_plate_friction": [
+        1.0
+      ]
+    },
+    {
+      "family": "guided_plate",
+      "condition": "mass3",
+      "effective_robot_plate_friction": [
+        1.0
+      ]
+    },
+    {
+      "family": "guided_plate",
+      "condition": "mass9",
+      "effective_robot_plate_friction": [
+        1.0
+      ]
+    },
+    {
+      "family": "guided_plate",
+      "condition": "friction05",
+      "effective_robot_plate_friction": [
+        0.5
+      ]
+    },
+    {
+      "family": "guided_plate",
+      "condition": "friction15",
+      "effective_robot_plate_friction": [
+        1.5
+      ]
+    },
+    {
+      "family": "free_plate",
+      "condition": "nominal",
+      "effective_robot_plate_friction": [
+        1.0
+      ]
+    },
+    {
+      "family": "free_plate",
+      "condition": "size075",
+      "effective_robot_plate_friction": [
+        1.0
+      ]
+    },
+    {
+      "family": "free_plate",
+      "condition": "size125",
+      "effective_robot_plate_friction": [
+        1.0
+      ]
+    },
+    {
+      "family": "free_plate",
+      "condition": "mass3",
+      "effective_robot_plate_friction": [
+        1.0
+      ]
+    },
+    {
+      "family": "free_plate",
+      "condition": "mass9",
+      "effective_robot_plate_friction": [
+        1.0
+      ]
+    },
+    {
+      "family": "free_plate",
+      "condition": "friction05",
+      "effective_robot_plate_friction": [
+        0.5
+      ]
+    },
+    {
+      "family": "free_plate",
+      "condition": "friction15",
+      "effective_robot_plate_friction": [
+        1.5
+      ]
+    }
+  ],
+  "directions": {
+    "supine": 224,
+    "prone": 224,
+    "left_side_down": 224,
+    "right_side_down": 224
+  },
+  "source_counts": {
+    "natural": 672,
+    "procedural": 224
+  }
+}

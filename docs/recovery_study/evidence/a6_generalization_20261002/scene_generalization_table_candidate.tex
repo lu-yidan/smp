@@ -1,0 +1,22 @@
+% Candidate only; not inserted into the current eight-page manuscript.
+% New native-CPU protocol; E10 is a conservative lift diagnostic, not Table III's SR10.
+\begin{table}[t]
+\centering\footnotesize
+\caption{Recovery in novel obstacle arrangements in simulation.}
+\label{tab:scene_generalization}
+\begin{tabular}{lrrr}
+\toprule
+Scene & $N$ & Quiet hold$_{10}$ (\%) & Lift-clear hold$_{10}$ (\%)\\
+\midrule
+Crossed timber & 120 & 86.7 & 77.5\\
+Ladder and boards & 120 & 89.2 & 76.7\\
+Hollow container & 120 & 87.5 & 81.7\\
+\midrule
+Fixed overhead enclosure & 120 & 65.0 & 64.2\\
+\bottomrule
+\end{tabular}
+\par\vspace{2pt}
+\begin{minipage}{.98\columnwidth}\scriptsize
+Each scene includes 30 trials per initial orientation and 75\% natural/25\% procedural low states. Trials last 20\,s; both columns require a continuous 10\,s hold. The latter additionally requires the rigid vertical-lift collision probe to remain clear. This diagnostic may reject standing beside residual objects and is not equivalent to articulated escape feasibility. Source poses recur across layouts; these are single-policy simulation results, not hardware statistics or multi-seed estimates.
+\end{minipage}
+\end{table}

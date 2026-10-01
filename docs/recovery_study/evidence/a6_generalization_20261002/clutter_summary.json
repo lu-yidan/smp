@@ -1,0 +1,4110 @@
+{
+  "families": {
+    "crossed_timber": {
+      "n": 120,
+      "stable_1s": 94,
+      "stable_10s": 93,
+      "numerical_failures": 0,
+      "upright_reached": 120,
+      "direct_lift_clear_reached": 97,
+      "refall_after_stable_1s": 0,
+      "peak_tau_nm_trial_max_p95": 139.0,
+      "peak_tau_nm_max": 139.0,
+      "peak_dq_rad_s_trial_max_p95": 15.148778410941365,
+      "peak_dq_rad_s_max": 24.190778199062294,
+      "peak_power_w_trial_max_p95": 985.9616219039873,
+      "peak_power_w_max": 1089.4725825650944,
+      "above_90pct_torque_s_trial_max_p95": 0.9345000000000002,
+      "above_90pct_torque_s_max": 13.44800000000116,
+      "post_clear_path_m_mean_reached_only": 0.4097766620061576,
+      "post_clear_path_m_denominator": 97,
+      "post_clear_max_drift_m_mean_reached_only": 0.20793896935492873,
+      "post_clear_max_drift_m_denominator": 97,
+      "first_direct_lift_clear_s_mean_reached_only": 2.0872164948453604,
+      "first_direct_lift_clear_s_denominator": 97,
+      "first_upright_s_mean_reached_only": 2.9709999999999996,
+      "first_upright_s_denominator": 120,
+      "quiet_stable_1s": {
+        "count": 107,
+        "n": 120,
+        "rate": 0.8916666666666667,
+        "wilson95_descriptive": [
+          0.8234463978470834,
+          0.9355885884582658
+        ]
+      },
+      "quiet_stable_10s": {
+        "count": 104,
+        "n": 120,
+        "rate": 0.8666666666666667,
+        "wilson95_descriptive": [
+          0.7943520342531574,
+          0.916233910373127
+        ]
+      },
+      "success_1s": {
+        "count": 94,
+        "n": 120,
+        "rate": 0.7833333333333333,
+        "wilson95_descriptive": [
+          0.7014563746709164,
+          0.8476327643584851
+        ]
+      },
+      "success_10s": {
+        "count": 93,
+        "n": 120,
+        "rate": 0.775,
+        "wilson95_descriptive": [
+          0.6924310051535484,
+          0.8405084533161647
+        ]
+      },
+      "quiet_refall_after_1s": {
+        "count": 0,
+        "n": 120,
+        "rate": 0.0,
+        "wilson95_descriptive": [
+          0.0,
+          0.031019166418703486
+        ]
+      },
+      "post_clear_3s_max_displacement_m": {
+        "n": 97,
+        "median": 0.14174149407255213,
+        "p95": 0.6174141330182923
+      },
+      "post_stand_3s_max_displacement_m": {
+        "n": 105,
+        "median": 0.005006576460397271,
+        "p95": 0.011384373941932303
+      }
+    },
+    "fixed_c_space": {
+      "n": 120,
+      "stable_1s": 79,
+      "stable_10s": 77,
+      "numerical_failures": 0,
+      "upright_reached": 84,
+      "direct_lift_clear_reached": 84,
+      "refall_after_stable_1s": 0,
+      "peak_tau_nm_trial_max_p95": 139.0,
+      "peak_tau_nm_max": 139.0,
+      "peak_dq_rad_s_trial_max_p95": 20.42607007492193,
+      "peak_dq_rad_s_max": 23.078713950724893,
+      "peak_power_w_trial_max_p95": 1105.5985744349452,
+      "peak_power_w_max": 2214.5470786851556,
+      "above_90pct_torque_s_trial_max_p95": 13.092700000001038,
+      "above_90pct_torque_s_max": 18.820000000000448,
+      "post_clear_path_m_mean_reached_only": 0.42670759083378906,
+      "post_clear_path_m_denominator": 84,
+      "post_clear_max_drift_m_mean_reached_only": 0.22784294865448695,
+      "post_clear_max_drift_m_denominator": 84,
+      "first_direct_lift_clear_s_mean_reached_only": 3.0180952380952384,
+      "first_direct_lift_clear_s_denominator": 84,
+      "first_upright_s_mean_reached_only": 3.9983333333333326,
+      "first_upright_s_denominator": 84,
+      "quiet_stable_1s": {
+        "count": 81,
+        "n": 120,
+        "rate": 0.675,
+        "wilson95_descriptive": [
+          0.5869018408594733,
+          0.7522414508939805
+        ]
+      },
+      "quiet_stable_10s": {
+        "count": 78,
+        "n": 120,
+        "rate": 0.65,
+        "wilson95_descriptive": [
+          0.561213245977243,
+          0.729481004097146
+        ]
+      },
+      "success_1s": {
+        "count": 79,
+        "n": 120,
+        "rate": 0.6583333333333333,
+        "wilson95_descriptive": [
+          0.5697483143197224,
+          0.7370956163143549
+        ]
+      },
+      "success_10s": {
+        "count": 77,
+        "n": 120,
+        "rate": 0.6416666666666667,
+        "wilson95_descriptive": [
+          0.5527053600179013,
+          0.7218392094967996
+        ]
+      },
+      "quiet_refall_after_1s": {
+        "count": 0,
+        "n": 120,
+        "rate": 0.0,
+        "wilson95_descriptive": [
+          0.0,
+          0.031019166418703486
+        ]
+      },
+      "post_clear_3s_max_displacement_m": {
+        "n": 81,
+        "median": 0.14964317992810172,
+        "p95": 0.7132934668533493
+      },
+      "post_stand_3s_max_displacement_m": {
+        "n": 80,
+        "median": 0.004948103914217438,
+        "p95": 0.011631526971305522
+      }
+    },
+    "flat_calibration": {
+      "n": 4,
+      "stable_1s": 4,
+      "stable_10s": 4,
+      "numerical_failures": 0,
+      "upright_reached": 4,
+      "direct_lift_clear_reached": 4,
+      "refall_after_stable_1s": 0,
+      "peak_tau_nm_trial_max_p95": 138.99999979931522,
+      "peak_tau_nm_max": 139.0,
+      "peak_dq_rad_s_trial_max_p95": 10.41967796306426,
+      "peak_dq_rad_s_max": 10.432786331036176,
+      "peak_power_w_trial_max_p95": 1028.0350113770696,
+      "peak_power_w_max": 1035.8031367052547,
+      "above_90pct_torque_s_trial_max_p95": 0.5214000000000003,
+      "above_90pct_torque_s_max": 0.5280000000000004,
+      "post_clear_path_m_mean_reached_only": 1.236501207207822,
+      "post_clear_path_m_denominator": 4,
+      "post_clear_max_drift_m_mean_reached_only": 0.8603280166749876,
+      "post_clear_max_drift_m_denominator": 4,
+      "first_direct_lift_clear_s_mean_reached_only": 0.38,
+      "first_direct_lift_clear_s_denominator": 4,
+      "first_upright_s_mean_reached_only": 2.545,
+      "first_upright_s_denominator": 4,
+      "quiet_stable_1s": {
+        "count": 4,
+        "n": 4,
+        "rate": 1.0,
+        "wilson95_descriptive": [
+          0.5101091635454027,
+          1.0
+        ]
+      },
+      "quiet_stable_10s": {
+        "count": 4,
+        "n": 4,
+        "rate": 1.0,
+        "wilson95_descriptive": [
+          0.5101091635454027,
+          1.0
+        ]
+      },
+      "success_1s": {
+        "count": 4,
+        "n": 4,
+        "rate": 1.0,
+        "wilson95_descriptive": [
+          0.5101091635454027,
+          1.0
+        ]
+      },
+      "success_10s": {
+        "count": 4,
+        "n": 4,
+        "rate": 1.0,
+        "wilson95_descriptive": [
+          0.5101091635454027,
+          1.0
+        ]
+      },
+      "quiet_refall_after_1s": {
+        "count": 0,
+        "n": 4,
+        "rate": 0.0,
+        "wilson95_descriptive": [
+          0.0,
+          0.4898908364545973
+        ]
+      },
+      "post_clear_3s_max_displacement_m": {
+        "n": 4,
+        "median": 0.9263094195788595,
+        "p95": 1.0080900723962587
+      },
+      "post_stand_3s_max_displacement_m": {
+        "n": 4,
+        "median": 0.005897081159430722,
+        "p95": 0.007211583007432497
+      }
+    },
+    "hollow_container": {
+      "n": 120,
+      "stable_1s": 99,
+      "stable_10s": 98,
+      "numerical_failures": 0,
+      "upright_reached": 119,
+      "direct_lift_clear_reached": 101,
+      "refall_after_stable_1s": 0,
+      "peak_tau_nm_trial_max_p95": 139.0,
+      "peak_tau_nm_max": 139.0,
+      "peak_dq_rad_s_trial_max_p95": 16.33413026923587,
+      "peak_dq_rad_s_max": 18.911656437186906,
+      "peak_power_w_trial_max_p95": 1013.3100574416833,
+      "peak_power_w_max": 1125.6664859160883,
+      "above_90pct_torque_s_trial_max_p95": 1.0344000000000007,
+      "above_90pct_torque_s_max": 3.4419999999998425,
+      "post_clear_path_m_mean_reached_only": 0.4415805401302499,
+      "post_clear_path_m_denominator": 101,
+      "post_clear_max_drift_m_mean_reached_only": 0.25477750496691537,
+      "post_clear_max_drift_m_denominator": 101,
+      "first_direct_lift_clear_s_mean_reached_only": 2.535445544554456,
+      "first_direct_lift_clear_s_denominator": 101,
+      "first_upright_s_mean_reached_only": 3.1717647058823535,
+      "first_upright_s_denominator": 119,
+      "quiet_stable_1s": {
+        "count": 106,
+        "n": 120,
+        "rate": 0.8833333333333333,
+        "wilson95_descriptive": [
+          0.8136664838239611,
+          0.9292188219216995
+        ]
+      },
+      "quiet_stable_10s": {
+        "count": 105,
+        "n": 120,
+        "rate": 0.875,
+        "wilson95_descriptive": [
+          0.8039705979199262,
+          0.9227650272660463
+        ]
+      },
+      "success_1s": {
+        "count": 99,
+        "n": 120,
+        "rate": 0.825,
+        "wilson95_descriptive": [
+          0.7472429012735073,
+          0.8825946405543355
+        ]
+      },
+      "success_10s": {
+        "count": 98,
+        "n": 120,
+        "rate": 0.8166666666666667,
+        "wilson95_descriptive": [
+          0.7379908648282967,
+          0.8756969964398578
+        ]
+      },
+      "quiet_refall_after_1s": {
+        "count": 0,
+        "n": 120,
+        "rate": 0.0,
+        "wilson95_descriptive": [
+          0.0,
+          0.031019166418703486
+        ]
+      },
+      "post_clear_3s_max_displacement_m": {
+        "n": 100,
+        "median": 0.142522964300194,
+        "p95": 0.9435508675088008
+      },
+      "post_stand_3s_max_displacement_m": {
+        "n": 105,
+        "median": 0.004707396398077217,
+        "p95": 0.009212578852938214
+      }
+    },
+    "ladder_boards": {
+      "n": 120,
+      "stable_1s": 95,
+      "stable_10s": 92,
+      "numerical_failures": 0,
+      "upright_reached": 120,
+      "direct_lift_clear_reached": 105,
+      "refall_after_stable_1s": 0,
+      "peak_tau_nm_trial_max_p95": 139.0,
+      "peak_tau_nm_max": 139.0,
+      "peak_dq_rad_s_trial_max_p95": 14.303008511912914,
+      "peak_dq_rad_s_max": 20.98675898002452,
+      "peak_power_w_trial_max_p95": 1022.5797673725007,
+      "peak_power_w_max": 1684.1449178733144,
+      "above_90pct_torque_s_trial_max_p95": 0.8003000000000006,
+      "above_90pct_torque_s_max": 2.0699999999999936,
+      "post_clear_path_m_mean_reached_only": 0.4050647403556844,
+      "post_clear_path_m_denominator": 105,
+      "post_clear_max_drift_m_mean_reached_only": 0.21280522131921503,
+      "post_clear_max_drift_m_denominator": 105,
+      "first_direct_lift_clear_s_mean_reached_only": 2.3066666666666666,
+      "first_direct_lift_clear_s_denominator": 105,
+      "first_upright_s_mean_reached_only": 3.1498333333333335,
+      "first_upright_s_denominator": 120,
+      "quiet_stable_1s": {
+        "count": 113,
+        "n": 120,
+        "rate": 0.9416666666666667,
+        "wilson95_descriptive": [
+          0.8844740796636988,
+          0.9714589899997798
+        ]
+      },
+      "quiet_stable_10s": {
+        "count": 107,
+        "n": 120,
+        "rate": 0.8916666666666667,
+        "wilson95_descriptive": [
+          0.8234463978470834,
+          0.9355885884582658
+        ]
+      },
+      "success_1s": {
+        "count": 95,
+        "n": 120,
+        "rate": 0.7916666666666666,
+        "wilson95_descriptive": [
+          0.7105232156701865,
+          0.8547156039189031
+        ]
+      },
+      "success_10s": {
+        "count": 92,
+        "n": 120,
+        "rate": 0.7666666666666667,
+        "wilson95_descriptive": [
+          0.683445529241854,
+          0.833344248668171
+        ]
+      },
+      "quiet_refall_after_1s": {
+        "count": 0,
+        "n": 120,
+        "rate": 0.0,
+        "wilson95_descriptive": [
+          0.0,
+          0.031019166418703486
+        ]
+      },
+      "post_clear_3s_max_displacement_m": {
+        "n": 105,
+        "median": 0.12339096609728241,
+        "p95": 0.7851334803031834
+      },
+      "post_stand_3s_max_displacement_m": {
+        "n": 112,
+        "median": 0.004960797717577507,
+        "p95": 0.010519162782176404
+      }
+    }
+  },
+  "movable_obstacles": {
+    "n": 360,
+    "stable_1s": 288,
+    "stable_10s": 283,
+    "numerical_failures": 0,
+    "upright_reached": 359,
+    "direct_lift_clear_reached": 303,
+    "refall_after_stable_1s": 0,
+    "peak_tau_nm_trial_max_p95": 139.0,
+    "peak_tau_nm_max": 139.0,
+    "peak_dq_rad_s_trial_max_p95": 15.491767045624751,
+    "peak_dq_rad_s_max": 24.190778199062294,
+    "peak_power_w_trial_max_p95": 1012.5424127046388,
+    "peak_power_w_max": 1684.1449178733144,
+    "above_90pct_torque_s_trial_max_p95": 0.9466000000000009,
+    "above_90pct_torque_s_max": 13.44800000000116,
+    "post_clear_path_m_mean_reached_only": 0.4187451105778857,
+    "post_clear_path_m_denominator": 303,
+    "post_clear_max_drift_m_mean_reached_only": 0.22523813949704327,
+    "post_clear_max_drift_m_denominator": 303,
+    "first_direct_lift_clear_s_mean_reached_only": 2.3126732673267325,
+    "first_direct_lift_clear_s_denominator": 303,
+    "first_upright_s_mean_reached_only": 3.0973259052924793,
+    "first_upright_s_denominator": 359,
+    "quiet_stable_1s": {
+      "count": 326,
+      "n": 360,
+      "rate": 0.9055555555555556,
+      "wilson95_descriptive": [
+        0.8709206039156303,
+        0.9316267499413182
+      ]
+    },
+    "quiet_stable_10s": {
+      "count": 316,
+      "n": 360,
+      "rate": 0.8777777777777778,
+      "wilson95_descriptive": [
+        0.8398978967685656,
+        0.9076804602488658
+      ]
+    },
+    "success_1s": {
+      "count": 288,
+      "n": 360,
+      "rate": 0.8,
+      "wilson95_descriptive": [
+        0.7556097539054759,
+        0.8380554119613081
+      ]
+    },
+    "success_10s": {
+      "count": 283,
+      "n": 360,
+      "rate": 0.7861111111111111,
+      "wilson95_descriptive": [
+        0.7408486322495699,
+        0.8253320351974555
+      ]
+    },
+    "quiet_refall_after_1s": {
+      "count": 0,
+      "n": 360,
+      "rate": 0.0,
+      "wilson95_descriptive": [
+        0.0,
+        0.010558056888693507
+      ]
+    },
+    "post_clear_3s_max_displacement_m": {
+      "n": 302,
+      "median": 0.13218036429088745,
+      "p95": 0.7820376223511406
+    },
+    "post_stand_3s_max_displacement_m": {
+      "n": 322,
+      "median": 0.004914190063170473,
+      "p95": 0.010890638230955057
+    }
+  },
+  "by_condition": {
+    "cross_two": {
+      "n": 44,
+      "stable_1s": 37,
+      "stable_10s": 36,
+      "numerical_failures": 0,
+      "upright_reached": 44,
+      "direct_lift_clear_reached": 37,
+      "refall_after_stable_1s": 0,
+      "peak_tau_nm_trial_max_p95": 139.0,
+      "peak_tau_nm_max": 139.0,
+      "peak_dq_rad_s_trial_max_p95": 15.102238549882038,
+      "peak_dq_rad_s_max": 24.190778199062294,
+      "peak_power_w_trial_max_p95": 1007.7269483114167,
+      "peak_power_w_max": 1089.4725825650944,
+      "above_90pct_torque_s_trial_max_p95": 0.8452000000000007,
+      "above_90pct_torque_s_max": 7.399999999999407,
+      "post_clear_path_m_mean_reached_only": 0.528895741375083,
+      "post_clear_path_m_denominator": 37,
+      "post_clear_max_drift_m_mean_reached_only": 0.29648619290413175,
+      "post_clear_max_drift_m_denominator": 37,
+      "first_direct_lift_clear_s_mean_reached_only": 2.161081081081081,
+      "first_direct_lift_clear_s_denominator": 37,
+      "first_upright_s_mean_reached_only": 2.9913636363636367,
+      "first_upright_s_denominator": 44,
+      "quiet_stable_1s": {
+        "count": 38,
+        "n": 44,
+        "rate": 0.8636363636363636,
+        "wilson95_descriptive": [
+          0.7329054695148456,
+          0.9359704550244412
+        ]
+      },
+      "quiet_stable_10s": {
+        "count": 38,
+        "n": 44,
+        "rate": 0.8636363636363636,
+        "wilson95_descriptive": [
+          0.7329054695148456,
+          0.9359704550244412
+        ]
+      },
+      "success_1s": {
+        "count": 37,
+        "n": 44,
+        "rate": 0.8409090909090909,
+        "wilson95_descriptive": [
+          0.7063379493775939,
+          0.9207332298779876
+        ]
+      },
+      "success_10s": {
+        "count": 36,
+        "n": 44,
+        "rate": 0.8181818181818182,
+        "wilson95_descriptive": [
+          0.6803944911281533,
+          0.9048719428437227
+        ]
+      },
+      "quiet_refall_after_1s": {
+        "count": 0,
+        "n": 44,
+        "rate": 0.0,
+        "wilson95_descriptive": [
+          0.0,
+          0.08029560375848066
+        ]
+      },
+      "post_clear_3s_max_displacement_m": {
+        "n": 37,
+        "median": 0.19675747709873237,
+        "p95": 0.8923628134388142
+      },
+      "post_stand_3s_max_displacement_m": {
+        "n": 38,
+        "median": 0.005072473981466416,
+        "p95": 0.012953265831336143
+      }
+    },
+    "diagonal": {
+      "n": 40,
+      "stable_1s": 30,
+      "stable_10s": 29,
+      "numerical_failures": 0,
+      "upright_reached": 40,
+      "direct_lift_clear_reached": 35,
+      "refall_after_stable_1s": 0,
+      "peak_tau_nm_trial_max_p95": 139.0,
+      "peak_tau_nm_max": 139.0,
+      "peak_dq_rad_s_trial_max_p95": 13.998696143197218,
+      "peak_dq_rad_s_max": 14.299439297531153,
+      "peak_power_w_trial_max_p95": 1023.5680086240419,
+      "peak_power_w_max": 1102.308963265601,
+      "above_90pct_torque_s_trial_max_p95": 0.7796000000000001,
+      "above_90pct_torque_s_max": 2.0699999999999936,
+      "post_clear_path_m_mean_reached_only": 0.3150683574825074,
+      "post_clear_path_m_denominator": 35,
+      "post_clear_max_drift_m_mean_reached_only": 0.16096920341767448,
+      "post_clear_max_drift_m_denominator": 35,
+      "first_direct_lift_clear_s_mean_reached_only": 2.7028571428571433,
+      "first_direct_lift_clear_s_denominator": 35,
+      "first_upright_s_mean_reached_only": 3.397,
+      "first_upright_s_denominator": 40,
+      "quiet_stable_1s": {
+        "count": 36,
+        "n": 40,
+        "rate": 0.9,
+        "wilson95_descriptive": [
+          0.7694822477247771,
+          0.9604204713173936
+        ]
+      },
+      "quiet_stable_10s": {
+        "count": 35,
+        "n": 40,
+        "rate": 0.875,
+        "wilson95_descriptive": [
+          0.738878801611489,
+          0.945404997490546
+        ]
+      },
+      "success_1s": {
+        "count": 30,
+        "n": 40,
+        "rate": 0.75,
+        "wilson95_descriptive": [
+          0.5980603857923197,
+          0.858128813609037
+        ]
+      },
+      "success_10s": {
+        "count": 29,
+        "n": 40,
+        "rate": 0.725,
+        "wilson95_descriptive": [
+          0.5716504419378943,
+          0.8389198375233267
+        ]
+      },
+      "quiet_refall_after_1s": {
+        "count": 0,
+        "n": 40,
+        "rate": 0.0,
+        "wilson95_descriptive": [
+          0.0,
+          0.08762160119728664
+        ]
+      },
+      "post_clear_3s_max_displacement_m": {
+        "n": 35,
+        "median": 0.11484707518928577,
+        "p95": 0.4880922184821632
+      },
+      "post_stand_3s_max_displacement_m": {
+        "n": 35,
+        "median": 0.00505065101535065,
+        "p95": 0.009926634234482703
+      }
+    },
+    "diagonal_shell": {
+      "n": 40,
+      "stable_1s": 34,
+      "stable_10s": 33,
+      "numerical_failures": 0,
+      "upright_reached": 40,
+      "direct_lift_clear_reached": 35,
+      "refall_after_stable_1s": 0,
+      "peak_tau_nm_trial_max_p95": 139.0,
+      "peak_tau_nm_max": 139.0,
+      "peak_dq_rad_s_trial_max_p95": 14.271585028591494,
+      "peak_dq_rad_s_max": 17.318214106906524,
+      "peak_power_w_trial_max_p95": 1014.7161392337019,
+      "peak_power_w_max": 1100.4213314888773,
+      "above_90pct_torque_s_trial_max_p95": 0.7705000000000005,
+      "above_90pct_torque_s_max": 1.0320000000000007,
+      "post_clear_path_m_mean_reached_only": 0.44444695531378,
+      "post_clear_path_m_denominator": 35,
+      "post_clear_max_drift_m_mean_reached_only": 0.25578657617953254,
+      "post_clear_max_drift_m_denominator": 35,
+      "first_direct_lift_clear_s_mean_reached_only": 2.737142857142857,
+      "first_direct_lift_clear_s_denominator": 35,
+      "first_upright_s_mean_reached_only": 3.178,
+      "first_upright_s_denominator": 40,
+      "quiet_stable_1s": {
+        "count": 35,
+        "n": 40,
+        "rate": 0.875,
+        "wilson95_descriptive": [
+          0.738878801611489,
+          0.945404997490546
+        ]
+      },
+      "quiet_stable_10s": {
+        "count": 34,
+        "n": 40,
+        "rate": 0.85,
+        "wilson95_descriptive": [
+          0.709276756335103,
+          0.9293881228267964
+        ]
+      },
+      "success_1s": {
+        "count": 34,
+        "n": 40,
+        "rate": 0.85,
+        "wilson95_descriptive": [
+          0.709276756335103,
+          0.9293881228267964
+        ]
+      },
+      "success_10s": {
+        "count": 33,
+        "n": 40,
+        "rate": 0.825,
+        "wilson95_descriptive": [
+          0.6805000966821229,
+          0.9125458625396408
+        ]
+      },
+      "quiet_refall_after_1s": {
+        "count": 0,
+        "n": 40,
+        "rate": 0.0,
+        "wilson95_descriptive": [
+          0.0,
+          0.08762160119728664
+        ]
+      },
+      "post_clear_3s_max_displacement_m": {
+        "n": 34,
+        "median": 0.14516784052540274,
+        "p95": 0.9767351800960161
+      },
+      "post_stand_3s_max_displacement_m": {
+        "n": 34,
+        "median": 0.005245809931044903,
+        "p95": 0.007461130219369203
+      }
+    },
+    "exit_front": {
+      "n": 40,
+      "stable_1s": 29,
+      "stable_10s": 29,
+      "numerical_failures": 0,
+      "upright_reached": 31,
+      "direct_lift_clear_reached": 31,
+      "refall_after_stable_1s": 0,
+      "peak_tau_nm_trial_max_p95": 139.0,
+      "peak_tau_nm_max": 139.0,
+      "peak_dq_rad_s_trial_max_p95": 20.52638764930219,
+      "peak_dq_rad_s_max": 23.078713950724893,
+      "peak_power_w_trial_max_p95": 1040.9965321308732,
+      "peak_power_w_max": 1104.8182853932014,
+      "above_90pct_torque_s_trial_max_p95": 9.030099999999589,
+      "above_90pct_torque_s_max": 17.636000000001104,
+      "post_clear_path_m_mean_reached_only": 0.4887090083816713,
+      "post_clear_path_m_denominator": 31,
+      "post_clear_max_drift_m_mean_reached_only": 0.24744390374286887,
+      "post_clear_max_drift_m_denominator": 31,
+      "first_direct_lift_clear_s_mean_reached_only": 2.4993548387096776,
+      "first_direct_lift_clear_s_denominator": 31,
+      "first_upright_s_mean_reached_only": 3.64258064516129,
+      "first_upright_s_denominator": 31,
+      "quiet_stable_1s": {
+        "count": 30,
+        "n": 40,
+        "rate": 0.75,
+        "wilson95_descriptive": [
+          0.5980603857923197,
+          0.858128813609037
+        ]
+      },
+      "quiet_stable_10s": {
+        "count": 29,
+        "n": 40,
+        "rate": 0.725,
+        "wilson95_descriptive": [
+          0.5716504419378943,
+          0.8389198375233267
+        ]
+      },
+      "success_1s": {
+        "count": 29,
+        "n": 40,
+        "rate": 0.725,
+        "wilson95_descriptive": [
+          0.5716504419378943,
+          0.8389198375233267
+        ]
+      },
+      "success_10s": {
+        "count": 29,
+        "n": 40,
+        "rate": 0.725,
+        "wilson95_descriptive": [
+          0.5716504419378943,
+          0.8389198375233267
+        ]
+      },
+      "quiet_refall_after_1s": {
+        "count": 0,
+        "n": 40,
+        "rate": 0.0,
+        "wilson95_descriptive": [
+          0.0,
+          0.08762160119728664
+        ]
+      },
+      "post_clear_3s_max_displacement_m": {
+        "n": 31,
+        "median": 0.16685051694037778,
+        "p95": 0.7443071270033468
+      },
+      "post_stand_3s_max_displacement_m": {
+        "n": 30,
+        "median": 0.005476160033355839,
+        "p95": 0.011154490874135453
+      }
+    },
+    "exit_left": {
+      "n": 40,
+      "stable_1s": 24,
+      "stable_10s": 22,
+      "numerical_failures": 0,
+      "upright_reached": 26,
+      "direct_lift_clear_reached": 26,
+      "refall_after_stable_1s": 0,
+      "peak_tau_nm_trial_max_p95": 139.0,
+      "peak_tau_nm_max": 139.0,
+      "peak_dq_rad_s_trial_max_p95": 20.13035290950473,
+      "peak_dq_rad_s_max": 21.73368184480187,
+      "peak_power_w_trial_max_p95": 1235.490413687472,
+      "peak_power_w_max": 2214.5470786851556,
+      "above_90pct_torque_s_trial_max_p95": 11.746800000000588,
+      "above_90pct_torque_s_max": 14.550000000001528,
+      "post_clear_path_m_mean_reached_only": 0.3808799513543377,
+      "post_clear_path_m_denominator": 26,
+      "post_clear_max_drift_m_mean_reached_only": 0.20436928131920257,
+      "post_clear_max_drift_m_denominator": 26,
+      "first_direct_lift_clear_s_mean_reached_only": 3.926153846153846,
+      "first_direct_lift_clear_s_denominator": 26,
+      "first_upright_s_mean_reached_only": 4.8015384615384615,
+      "first_upright_s_denominator": 26,
+      "quiet_stable_1s": {
+        "count": 25,
+        "n": 40,
+        "rate": 0.625,
+        "wilson95_descriptive": [
+          0.47032439137301096,
+          0.7577702083276673
+        ]
+      },
+      "quiet_stable_10s": {
+        "count": 23,
+        "n": 40,
+        "rate": 0.575,
+        "wilson95_descriptive": [
+          0.42195068541991065,
+          0.7149060744004962
+        ]
+      },
+      "success_1s": {
+        "count": 24,
+        "n": 40,
+        "rate": 0.6,
+        "wilson95_descriptive": [
+          0.44595893660346186,
+          0.7365167431570808
+        ]
+      },
+      "success_10s": {
+        "count": 22,
+        "n": 40,
+        "rate": 0.55,
+        "wilson95_descriptive": [
+          0.39829091798932054,
+          0.6929469218909508
+        ]
+      },
+      "quiet_refall_after_1s": {
+        "count": 0,
+        "n": 40,
+        "rate": 0.0,
+        "wilson95_descriptive": [
+          0.0,
+          0.08762160119728664
+        ]
+      },
+      "post_clear_3s_max_displacement_m": {
+        "n": 24,
+        "median": 0.15158380954562564,
+        "p95": 0.45822223867798567
+      },
+      "post_stand_3s_max_displacement_m": {
+        "n": 24,
+        "median": 0.0049015831704937885,
+        "p95": 0.013344034532134693
+      }
+    },
+    "exit_right": {
+      "n": 40,
+      "stable_1s": 26,
+      "stable_10s": 26,
+      "numerical_failures": 0,
+      "upright_reached": 27,
+      "direct_lift_clear_reached": 27,
+      "refall_after_stable_1s": 0,
+      "peak_tau_nm_trial_max_p95": 139.0,
+      "peak_tau_nm_max": 139.0,
+      "peak_dq_rad_s_trial_max_p95": 20.14052469718591,
+      "peak_dq_rad_s_max": 20.867114611312594,
+      "peak_power_w_trial_max_p95": 1120.5104383090618,
+      "peak_power_w_max": 1124.7456922107706,
+      "above_90pct_torque_s_trial_max_p95": 17.21940000000133,
+      "above_90pct_torque_s_max": 18.820000000000448,
+      "post_clear_path_m_mean_reached_only": 0.39965109759235906,
+      "post_clear_path_m_denominator": 27,
+      "post_clear_max_drift_m_mean_reached_only": 0.22794242061661868,
+      "post_clear_max_drift_m_denominator": 27,
+      "first_direct_lift_clear_s_mean_reached_only": 2.7392592592592595,
+      "first_direct_lift_clear_s_denominator": 27,
+      "first_upright_s_mean_reached_only": 3.6333333333333337,
+      "first_upright_s_denominator": 27,
+      "quiet_stable_1s": {
+        "count": 26,
+        "n": 40,
+        "rate": 0.65,
+        "wilson95_descriptive": [
+          0.49505880837257693,
+          0.7786547112682372
+        ]
+      },
+      "quiet_stable_10s": {
+        "count": 26,
+        "n": 40,
+        "rate": 0.65,
+        "wilson95_descriptive": [
+          0.49505880837257693,
+          0.7786547112682372
+        ]
+      },
+      "success_1s": {
+        "count": 26,
+        "n": 40,
+        "rate": 0.65,
+        "wilson95_descriptive": [
+          0.49505880837257693,
+          0.7786547112682372
+        ]
+      },
+      "success_10s": {
+        "count": 26,
+        "n": 40,
+        "rate": 0.65,
+        "wilson95_descriptive": [
+          0.49505880837257693,
+          0.7786547112682372
+        ]
+      },
+      "quiet_refall_after_1s": {
+        "count": 0,
+        "n": 40,
+        "rate": 0.0,
+        "wilson95_descriptive": [
+          0.0,
+          0.08762160119728664
+        ]
+      },
+      "post_clear_3s_max_displacement_m": {
+        "n": 26,
+        "median": 0.1164469216135716,
+        "p95": 0.7009953344876168
+      },
+      "post_stand_3s_max_displacement_m": {
+        "n": 26,
+        "median": 0.004609684385784776,
+        "p95": 0.010920729002790558
+      }
+    },
+    "fan_three": {
+      "n": 40,
+      "stable_1s": 31,
+      "stable_10s": 31,
+      "numerical_failures": 0,
+      "upright_reached": 40,
+      "direct_lift_clear_reached": 32,
+      "refall_after_stable_1s": 0,
+      "peak_tau_nm_trial_max_p95": 139.0,
+      "peak_tau_nm_max": 139.0,
+      "peak_dq_rad_s_trial_max_p95": 13.94138359775139,
+      "peak_dq_rad_s_max": 15.680079786801649,
+      "peak_power_w_trial_max_p95": 982.588894756388,
+      "peak_power_w_max": 1058.208257780065,
+      "above_90pct_torque_s_trial_max_p95": 1.2639999999999996,
+      "above_90pct_torque_s_max": 13.44800000000116,
+      "post_clear_path_m_mean_reached_only": 0.4127085154453296,
+      "post_clear_path_m_denominator": 32,
+      "post_clear_max_drift_m_mean_reached_only": 0.2125259000225136,
+      "post_clear_max_drift_m_denominator": 32,
+      "first_direct_lift_clear_s_mean_reached_only": 1.9487500000000002,
+      "first_direct_lift_clear_s_denominator": 32,
+      "first_upright_s_mean_reached_only": 3.0285,
+      "first_upright_s_denominator": 40,
+      "quiet_stable_1s": {
+        "count": 36,
+        "n": 40,
+        "rate": 0.9,
+        "wilson95_descriptive": [
+          0.7694822477247771,
+          0.9604204713173936
+        ]
+      },
+      "quiet_stable_10s": {
+        "count": 36,
+        "n": 40,
+        "rate": 0.9,
+        "wilson95_descriptive": [
+          0.7694822477247771,
+          0.9604204713173936
+        ]
+      },
+      "success_1s": {
+        "count": 31,
+        "n": 40,
+        "rate": 0.775,
+        "wilson95_descriptive": [
+          0.6249690325768998,
+          0.8768390867645927
+        ]
+      },
+      "success_10s": {
+        "count": 31,
+        "n": 40,
+        "rate": 0.775,
+        "wilson95_descriptive": [
+          0.6249690325768998,
+          0.8768390867645927
+        ]
+      },
+      "quiet_refall_after_1s": {
+        "count": 0,
+        "n": 40,
+        "rate": 0.0,
+        "wilson95_descriptive": [
+          0.0,
+          0.08762160119728664
+        ]
+      },
+      "post_clear_3s_max_displacement_m": {
+        "n": 32,
+        "median": 0.13578070390244168,
+        "p95": 0.5934575319349883
+      },
+      "post_stand_3s_max_displacement_m": {
+        "n": 36,
+        "median": 0.004841768068487087,
+        "p95": 0.009312111030784975
+      }
+    },
+    "lattice_four": {
+      "n": 40,
+      "stable_1s": 30,
+      "stable_10s": 30,
+      "numerical_failures": 0,
+      "upright_reached": 40,
+      "direct_lift_clear_reached": 32,
+      "refall_after_stable_1s": 0,
+      "peak_tau_nm_trial_max_p95": 139.0,
+      "peak_tau_nm_max": 139.0,
+      "peak_dq_rad_s_trial_max_p95": 16.737569064205697,
+      "peak_dq_rad_s_max": 19.574788194653326,
+      "peak_power_w_trial_max_p95": 969.5606715665454,
+      "peak_power_w_max": 1026.6773310506971,
+      "above_90pct_torque_s_trial_max_p95": 0.7698000000000005,
+      "above_90pct_torque_s_max": 1.0960000000000008,
+      "post_clear_path_m_mean_reached_only": 0.3724539411968734,
+      "post_clear_path_m_denominator": 32,
+      "post_clear_max_drift_m_mean_reached_only": 0.18251794237358518,
+      "post_clear_max_drift_m_denominator": 32,
+      "first_direct_lift_clear_s_mean_reached_only": 1.9268750000000003,
+      "first_direct_lift_clear_s_denominator": 32,
+      "first_upright_s_mean_reached_only": 2.8485,
+      "first_upright_s_denominator": 40,
+      "quiet_stable_1s": {
+        "count": 37,
+        "n": 40,
+        "rate": 0.925,
+        "wilson95_descriptive": [
+          0.8013576647568946,
+          0.9741639742254119
+        ]
+      },
+      "quiet_stable_10s": {
+        "count": 34,
+        "n": 40,
+        "rate": 0.85,
+        "wilson95_descriptive": [
+          0.709276756335103,
+          0.9293881228267964
+        ]
+      },
+      "success_1s": {
+        "count": 30,
+        "n": 40,
+        "rate": 0.75,
+        "wilson95_descriptive": [
+          0.5980603857923197,
+          0.858128813609037
+        ]
+      },
+      "success_10s": {
+        "count": 30,
+        "n": 40,
+        "rate": 0.75,
+        "wilson95_descriptive": [
+          0.5980603857923197,
+          0.858128813609037
+        ]
+      },
+      "quiet_refall_after_1s": {
+        "count": 0,
+        "n": 40,
+        "rate": 0.0,
+        "wilson95_descriptive": [
+          0.0,
+          0.08762160119728664
+        ]
+      },
+      "post_clear_3s_max_displacement_m": {
+        "n": 32,
+        "median": 0.12101524703566349,
+        "p95": 0.4827415161295257
+      },
+      "post_stand_3s_max_displacement_m": {
+        "n": 35,
+        "median": 0.005118576407396888,
+        "p95": 0.011091133426855077
+      }
+    },
+    "offset_two_boards": {
+      "n": 40,
+      "stable_1s": 32,
+      "stable_10s": 32,
+      "numerical_failures": 0,
+      "upright_reached": 40,
+      "direct_lift_clear_reached": 35,
+      "refall_after_stable_1s": 0,
+      "peak_tau_nm_trial_max_p95": 139.0,
+      "peak_tau_nm_max": 139.0,
+      "peak_dq_rad_s_trial_max_p95": 14.533190776682012,
+      "peak_dq_rad_s_max": 20.545244397962477,
+      "peak_power_w_trial_max_p95": 1030.5185286852573,
+      "peak_power_w_max": 1684.1449178733144,
+      "above_90pct_torque_s_trial_max_p95": 0.7620000000000005,
+      "above_90pct_torque_s_max": 0.8560000000000006,
+      "post_clear_path_m_mean_reached_only": 0.4154613078615336,
+      "post_clear_path_m_denominator": 35,
+      "post_clear_max_drift_m_mean_reached_only": 0.2049068504527814,
+      "post_clear_max_drift_m_denominator": 35,
+      "first_direct_lift_clear_s_mean_reached_only": 2.06,
+      "first_direct_lift_clear_s_denominator": 35,
+      "first_upright_s_mean_reached_only": 3.0285,
+      "first_upright_s_denominator": 40,
+      "quiet_stable_1s": {
+        "count": 38,
+        "n": 40,
+        "rate": 0.95,
+        "wilson95_descriptive": [
+          0.8349612263085903,
+          0.9861793326138516
+        ]
+      },
+      "quiet_stable_10s": {
+        "count": 36,
+        "n": 40,
+        "rate": 0.9,
+        "wilson95_descriptive": [
+          0.7694822477247771,
+          0.9604204713173936
+        ]
+      },
+      "success_1s": {
+        "count": 32,
+        "n": 40,
+        "rate": 0.8,
+        "wilson95_descriptive": [
+          0.652426936536005,
+          0.895000102745623
+        ]
+      },
+      "success_10s": {
+        "count": 32,
+        "n": 40,
+        "rate": 0.8,
+        "wilson95_descriptive": [
+          0.652426936536005,
+          0.895000102745623
+        ]
+      },
+      "quiet_refall_after_1s": {
+        "count": 0,
+        "n": 40,
+        "rate": 0.0,
+        "wilson95_descriptive": [
+          0.0,
+          0.08762160119728664
+        ]
+      },
+      "post_clear_3s_max_displacement_m": {
+        "n": 35,
+        "median": 0.1274580581456055,
+        "p95": 0.5780455623422294
+      },
+      "post_stand_3s_max_displacement_m": {
+        "n": 38,
+        "median": 0.00483989884529354,
+        "p95": 0.0122741513950992
+      }
+    },
+    "opening_down": {
+      "n": 40,
+      "stable_1s": 31,
+      "stable_10s": 31,
+      "numerical_failures": 0,
+      "upright_reached": 39,
+      "direct_lift_clear_reached": 32,
+      "refall_after_stable_1s": 0,
+      "peak_tau_nm_trial_max_p95": 139.0,
+      "peak_tau_nm_max": 139.0,
+      "peak_dq_rad_s_trial_max_p95": 15.608504834325563,
+      "peak_dq_rad_s_max": 18.273776237241528,
+      "peak_power_w_trial_max_p95": 987.7515212381238,
+      "peak_power_w_max": 1125.6664859160883,
+      "above_90pct_torque_s_trial_max_p95": 1.4932,
+      "above_90pct_torque_s_max": 3.4419999999998425,
+      "post_clear_path_m_mean_reached_only": 0.46103859883870746,
+      "post_clear_path_m_denominator": 32,
+      "post_clear_max_drift_m_mean_reached_only": 0.28405249592154935,
+      "post_clear_max_drift_m_denominator": 32,
+      "first_direct_lift_clear_s_mean_reached_only": 2.1081250000000002,
+      "first_direct_lift_clear_s_denominator": 32,
+      "first_upright_s_mean_reached_only": 3.0333333333333328,
+      "first_upright_s_denominator": 39,
+      "quiet_stable_1s": {
+        "count": 36,
+        "n": 40,
+        "rate": 0.9,
+        "wilson95_descriptive": [
+          0.7694822477247771,
+          0.9604204713173936
+        ]
+      },
+      "quiet_stable_10s": {
+        "count": 36,
+        "n": 40,
+        "rate": 0.9,
+        "wilson95_descriptive": [
+          0.7694822477247771,
+          0.9604204713173936
+        ]
+      },
+      "success_1s": {
+        "count": 31,
+        "n": 40,
+        "rate": 0.775,
+        "wilson95_descriptive": [
+          0.6249690325768998,
+          0.8768390867645927
+        ]
+      },
+      "success_10s": {
+        "count": 31,
+        "n": 40,
+        "rate": 0.775,
+        "wilson95_descriptive": [
+          0.6249690325768998,
+          0.8768390867645927
+        ]
+      },
+      "quiet_refall_after_1s": {
+        "count": 0,
+        "n": 40,
+        "rate": 0.0,
+        "wilson95_descriptive": [
+          0.0,
+          0.08762160119728664
+        ]
+      },
+      "post_clear_3s_max_displacement_m": {
+        "n": 32,
+        "median": 0.18127620939062,
+        "p95": 0.8043871902871578
+      },
+      "post_stand_3s_max_displacement_m": {
+        "n": 36,
+        "median": 0.00451327944085528,
+        "p95": 0.009162318655010241
+      }
+    },
+    "tilted_side": {
+      "n": 40,
+      "stable_1s": 34,
+      "stable_10s": 34,
+      "numerical_failures": 0,
+      "upright_reached": 40,
+      "direct_lift_clear_reached": 34,
+      "refall_after_stable_1s": 0,
+      "peak_tau_nm_trial_max_p95": 139.0,
+      "peak_tau_nm_max": 139.0,
+      "peak_dq_rad_s_trial_max_p95": 16.47721659514195,
+      "peak_dq_rad_s_max": 18.911656437186906,
+      "peak_power_w_trial_max_p95": 1013.3100574416833,
+      "peak_power_w_max": 1080.6487338811608,
+      "above_90pct_torque_s_trial_max_p95": 1.064299999999998,
+      "above_90pct_torque_s_max": 2.419999999999955,
+      "post_clear_path_m_mean_reached_only": 0.4203163515980678,
+      "post_clear_path_m_denominator": 34,
+      "post_clear_max_drift_m_mean_reached_only": 0.22618582252603633,
+      "post_clear_max_drift_m_denominator": 34,
+      "first_direct_lift_clear_s_mean_reached_only": 2.7300000000000004,
+      "first_direct_lift_clear_s_denominator": 34,
+      "first_upright_s_mean_reached_only": 3.3004999999999995,
+      "first_upright_s_denominator": 40,
+      "quiet_stable_1s": {
+        "count": 35,
+        "n": 40,
+        "rate": 0.875,
+        "wilson95_descriptive": [
+          0.738878801611489,
+          0.945404997490546
+        ]
+      },
+      "quiet_stable_10s": {
+        "count": 35,
+        "n": 40,
+        "rate": 0.875,
+        "wilson95_descriptive": [
+          0.738878801611489,
+          0.945404997490546
+        ]
+      },
+      "success_1s": {
+        "count": 34,
+        "n": 40,
+        "rate": 0.85,
+        "wilson95_descriptive": [
+          0.709276756335103,
+          0.9293881228267964
+        ]
+      },
+      "success_10s": {
+        "count": 34,
+        "n": 40,
+        "rate": 0.85,
+        "wilson95_descriptive": [
+          0.709276756335103,
+          0.9293881228267964
+        ]
+      },
+      "quiet_refall_after_1s": {
+        "count": 0,
+        "n": 40,
+        "rate": 0.0,
+        "wilson95_descriptive": [
+          0.0,
+          0.08762160119728664
+        ]
+      },
+      "post_clear_3s_max_displacement_m": {
+        "n": 34,
+        "median": 0.09399545629955616,
+        "p95": 0.8403455934639327
+      },
+      "post_stand_3s_max_displacement_m": {
+        "n": 35,
+        "median": 0.0045838973485327564,
+        "p95": 0.009916357523117035
+      }
+    },
+    "transverse": {
+      "n": 40,
+      "stable_1s": 33,
+      "stable_10s": 31,
+      "numerical_failures": 0,
+      "upright_reached": 40,
+      "direct_lift_clear_reached": 35,
+      "refall_after_stable_1s": 0,
+      "peak_tau_nm_trial_max_p95": 139.0,
+      "peak_tau_nm_max": 139.0,
+      "peak_dq_rad_s_trial_max_p95": 15.691841653854954,
+      "peak_dq_rad_s_max": 20.98675898002452,
+      "peak_power_w_trial_max_p95": 1005.6361486192833,
+      "peak_power_w_max": 1136.194704235528,
+      "above_90pct_torque_s_trial_max_p95": 0.8071000000000006,
+      "above_90pct_torque_s_max": 1.484000000000001,
+      "post_clear_path_m_mean_reached_only": 0.48466455572301226,
+      "post_clear_path_m_denominator": 35,
+      "post_clear_max_drift_m_mean_reached_only": 0.27253961008718924,
+      "post_clear_max_drift_m_denominator": 35,
+      "first_direct_lift_clear_s_mean_reached_only": 2.157142857142857,
+      "first_direct_lift_clear_s_denominator": 35,
+      "first_upright_s_mean_reached_only": 3.024,
+      "first_upright_s_denominator": 40,
+      "quiet_stable_1s": {
+        "count": 39,
+        "n": 40,
+        "rate": 0.975,
+        "wilson95_descriptive": [
+          0.8711863103652591,
+          0.9955731684973186
+        ]
+      },
+      "quiet_stable_10s": {
+        "count": 36,
+        "n": 40,
+        "rate": 0.9,
+        "wilson95_descriptive": [
+          0.7694822477247771,
+          0.9604204713173936
+        ]
+      },
+      "success_1s": {
+        "count": 33,
+        "n": 40,
+        "rate": 0.825,
+        "wilson95_descriptive": [
+          0.6805000966821229,
+          0.9125458625396408
+        ]
+      },
+      "success_10s": {
+        "count": 31,
+        "n": 40,
+        "rate": 0.775,
+        "wilson95_descriptive": [
+          0.6249690325768998,
+          0.8768390867645927
+        ]
+      },
+      "quiet_refall_after_1s": {
+        "count": 0,
+        "n": 40,
+        "rate": 0.0,
+        "wilson95_descriptive": [
+          0.0,
+          0.08762160119728664
+        ]
+      },
+      "post_clear_3s_max_displacement_m": {
+        "n": 35,
+        "median": 0.13082676865843398,
+        "p95": 0.8778539685903047
+      },
+      "post_stand_3s_max_displacement_m": {
+        "n": 39,
+        "median": 0.005119055955079837,
+        "p95": 0.010140321130157798
+      }
+    }
+  },
+  "by_family_condition": {
+    "crossed_timber": {
+      "cross_two": {
+        "n": 40,
+        "stable_1s": 33,
+        "stable_10s": 32,
+        "numerical_failures": 0,
+        "upright_reached": 40,
+        "direct_lift_clear_reached": 33,
+        "refall_after_stable_1s": 0,
+        "peak_tau_nm_trial_max_p95": 139.0,
+        "peak_tau_nm_max": 139.0,
+        "peak_dq_rad_s_trial_max_p95": 15.179317263510148,
+        "peak_dq_rad_s_max": 24.190778199062294,
+        "peak_power_w_trial_max_p95": 987.1215434909525,
+        "peak_power_w_max": 1089.4725825650944,
+        "above_90pct_torque_s_trial_max_p95": 0.9597999999999897,
+        "above_90pct_torque_s_max": 7.399999999999407,
+        "post_clear_path_m_mean_reached_only": 0.4431253818802055,
+        "post_clear_path_m_denominator": 33,
+        "post_clear_max_drift_m_mean_reached_only": 0.22814172941675526,
+        "post_clear_max_drift_m_denominator": 33,
+        "first_direct_lift_clear_s_mean_reached_only": 2.376969696969697,
+        "first_direct_lift_clear_s_denominator": 33,
+        "first_upright_s_mean_reached_only": 3.036,
+        "first_upright_s_denominator": 40,
+        "quiet_stable_1s": {
+          "count": 34,
+          "n": 40,
+          "rate": 0.85,
+          "wilson95_descriptive": [
+            0.709276756335103,
+            0.9293881228267964
+          ]
+        },
+        "quiet_stable_10s": {
+          "count": 34,
+          "n": 40,
+          "rate": 0.85,
+          "wilson95_descriptive": [
+            0.709276756335103,
+            0.9293881228267964
+          ]
+        },
+        "success_1s": {
+          "count": 33,
+          "n": 40,
+          "rate": 0.825,
+          "wilson95_descriptive": [
+            0.6805000966821229,
+            0.9125458625396408
+          ]
+        },
+        "success_10s": {
+          "count": 32,
+          "n": 40,
+          "rate": 0.8,
+          "wilson95_descriptive": [
+            0.652426936536005,
+            0.895000102745623
+          ]
+        },
+        "quiet_refall_after_1s": {
+          "count": 0,
+          "n": 40,
+          "rate": 0.0,
+          "wilson95_descriptive": [
+            0.0,
+            0.08762160119728664
+          ]
+        },
+        "post_clear_3s_max_displacement_m": {
+          "n": 33,
+          "median": 0.1851445333856929,
+          "p95": 0.6222264077351027
+        },
+        "post_stand_3s_max_displacement_m": {
+          "n": 34,
+          "median": 0.005030726599585004,
+          "p95": 0.013289727950370143
+        }
+      },
+      "fan_three": {
+        "n": 40,
+        "stable_1s": 31,
+        "stable_10s": 31,
+        "numerical_failures": 0,
+        "upright_reached": 40,
+        "direct_lift_clear_reached": 32,
+        "refall_after_stable_1s": 0,
+        "peak_tau_nm_trial_max_p95": 139.0,
+        "peak_tau_nm_max": 139.0,
+        "peak_dq_rad_s_trial_max_p95": 13.94138359775139,
+        "peak_dq_rad_s_max": 15.680079786801649,
+        "peak_power_w_trial_max_p95": 982.588894756388,
+        "peak_power_w_max": 1058.208257780065,
+        "above_90pct_torque_s_trial_max_p95": 1.2639999999999996,
+        "above_90pct_torque_s_max": 13.44800000000116,
+        "post_clear_path_m_mean_reached_only": 0.4127085154453296,
+        "post_clear_path_m_denominator": 32,
+        "post_clear_max_drift_m_mean_reached_only": 0.2125259000225136,
+        "post_clear_max_drift_m_denominator": 32,
+        "first_direct_lift_clear_s_mean_reached_only": 1.9487500000000002,
+        "first_direct_lift_clear_s_denominator": 32,
+        "first_upright_s_mean_reached_only": 3.0285,
+        "first_upright_s_denominator": 40,
+        "quiet_stable_1s": {
+          "count": 36,
+          "n": 40,
+          "rate": 0.9,
+          "wilson95_descriptive": [
+            0.7694822477247771,
+            0.9604204713173936
+          ]
+        },
+        "quiet_stable_10s": {
+          "count": 36,
+          "n": 40,
+          "rate": 0.9,
+          "wilson95_descriptive": [
+            0.7694822477247771,
+            0.9604204713173936
+          ]
+        },
+        "success_1s": {
+          "count": 31,
+          "n": 40,
+          "rate": 0.775,
+          "wilson95_descriptive": [
+            0.6249690325768998,
+            0.8768390867645927
+          ]
+        },
+        "success_10s": {
+          "count": 31,
+          "n": 40,
+          "rate": 0.775,
+          "wilson95_descriptive": [
+            0.6249690325768998,
+            0.8768390867645927
+          ]
+        },
+        "quiet_refall_after_1s": {
+          "count": 0,
+          "n": 40,
+          "rate": 0.0,
+          "wilson95_descriptive": [
+            0.0,
+            0.08762160119728664
+          ]
+        },
+        "post_clear_3s_max_displacement_m": {
+          "n": 32,
+          "median": 0.13578070390244168,
+          "p95": 0.5934575319349883
+        },
+        "post_stand_3s_max_displacement_m": {
+          "n": 36,
+          "median": 0.004841768068487087,
+          "p95": 0.009312111030784975
+        }
+      },
+      "lattice_four": {
+        "n": 40,
+        "stable_1s": 30,
+        "stable_10s": 30,
+        "numerical_failures": 0,
+        "upright_reached": 40,
+        "direct_lift_clear_reached": 32,
+        "refall_after_stable_1s": 0,
+        "peak_tau_nm_trial_max_p95": 139.0,
+        "peak_tau_nm_max": 139.0,
+        "peak_dq_rad_s_trial_max_p95": 16.737569064205697,
+        "peak_dq_rad_s_max": 19.574788194653326,
+        "peak_power_w_trial_max_p95": 969.5606715665454,
+        "peak_power_w_max": 1026.6773310506971,
+        "above_90pct_torque_s_trial_max_p95": 0.7698000000000005,
+        "above_90pct_torque_s_max": 1.0960000000000008,
+        "post_clear_path_m_mean_reached_only": 0.3724539411968734,
+        "post_clear_path_m_denominator": 32,
+        "post_clear_max_drift_m_mean_reached_only": 0.18251794237358518,
+        "post_clear_max_drift_m_denominator": 32,
+        "first_direct_lift_clear_s_mean_reached_only": 1.9268750000000003,
+        "first_direct_lift_clear_s_denominator": 32,
+        "first_upright_s_mean_reached_only": 2.8485,
+        "first_upright_s_denominator": 40,
+        "quiet_stable_1s": {
+          "count": 37,
+          "n": 40,
+          "rate": 0.925,
+          "wilson95_descriptive": [
+            0.8013576647568946,
+            0.9741639742254119
+          ]
+        },
+        "quiet_stable_10s": {
+          "count": 34,
+          "n": 40,
+          "rate": 0.85,
+          "wilson95_descriptive": [
+            0.709276756335103,
+            0.9293881228267964
+          ]
+        },
+        "success_1s": {
+          "count": 30,
+          "n": 40,
+          "rate": 0.75,
+          "wilson95_descriptive": [
+            0.5980603857923197,
+            0.858128813609037
+          ]
+        },
+        "success_10s": {
+          "count": 30,
+          "n": 40,
+          "rate": 0.75,
+          "wilson95_descriptive": [
+            0.5980603857923197,
+            0.858128813609037
+          ]
+        },
+        "quiet_refall_after_1s": {
+          "count": 0,
+          "n": 40,
+          "rate": 0.0,
+          "wilson95_descriptive": [
+            0.0,
+            0.08762160119728664
+          ]
+        },
+        "post_clear_3s_max_displacement_m": {
+          "n": 32,
+          "median": 0.12101524703566349,
+          "p95": 0.4827415161295257
+        },
+        "post_stand_3s_max_displacement_m": {
+          "n": 35,
+          "median": 0.005118576407396888,
+          "p95": 0.011091133426855077
+        }
+      }
+    },
+    "fixed_c_space": {
+      "exit_front": {
+        "n": 40,
+        "stable_1s": 29,
+        "stable_10s": 29,
+        "numerical_failures": 0,
+        "upright_reached": 31,
+        "direct_lift_clear_reached": 31,
+        "refall_after_stable_1s": 0,
+        "peak_tau_nm_trial_max_p95": 139.0,
+        "peak_tau_nm_max": 139.0,
+        "peak_dq_rad_s_trial_max_p95": 20.52638764930219,
+        "peak_dq_rad_s_max": 23.078713950724893,
+        "peak_power_w_trial_max_p95": 1040.9965321308732,
+        "peak_power_w_max": 1104.8182853932014,
+        "above_90pct_torque_s_trial_max_p95": 9.030099999999589,
+        "above_90pct_torque_s_max": 17.636000000001104,
+        "post_clear_path_m_mean_reached_only": 0.4887090083816713,
+        "post_clear_path_m_denominator": 31,
+        "post_clear_max_drift_m_mean_reached_only": 0.24744390374286887,
+        "post_clear_max_drift_m_denominator": 31,
+        "first_direct_lift_clear_s_mean_reached_only": 2.4993548387096776,
+        "first_direct_lift_clear_s_denominator": 31,
+        "first_upright_s_mean_reached_only": 3.64258064516129,
+        "first_upright_s_denominator": 31,
+        "quiet_stable_1s": {
+          "count": 30,
+          "n": 40,
+          "rate": 0.75,
+          "wilson95_descriptive": [
+            0.5980603857923197,
+            0.858128813609037
+          ]
+        },
+        "quiet_stable_10s": {
+          "count": 29,
+          "n": 40,
+          "rate": 0.725,
+          "wilson95_descriptive": [
+            0.5716504419378943,
+            0.8389198375233267
+          ]
+        },
+        "success_1s": {
+          "count": 29,
+          "n": 40,
+          "rate": 0.725,
+          "wilson95_descriptive": [
+            0.5716504419378943,
+            0.8389198375233267
+          ]
+        },
+        "success_10s": {
+          "count": 29,
+          "n": 40,
+          "rate": 0.725,
+          "wilson95_descriptive": [
+            0.5716504419378943,
+            0.8389198375233267
+          ]
+        },
+        "quiet_refall_after_1s": {
+          "count": 0,
+          "n": 40,
+          "rate": 0.0,
+          "wilson95_descriptive": [
+            0.0,
+            0.08762160119728664
+          ]
+        },
+        "post_clear_3s_max_displacement_m": {
+          "n": 31,
+          "median": 0.16685051694037778,
+          "p95": 0.7443071270033468
+        },
+        "post_stand_3s_max_displacement_m": {
+          "n": 30,
+          "median": 0.005476160033355839,
+          "p95": 0.011154490874135453
+        }
+      },
+      "exit_left": {
+        "n": 40,
+        "stable_1s": 24,
+        "stable_10s": 22,
+        "numerical_failures": 0,
+        "upright_reached": 26,
+        "direct_lift_clear_reached": 26,
+        "refall_after_stable_1s": 0,
+        "peak_tau_nm_trial_max_p95": 139.0,
+        "peak_tau_nm_max": 139.0,
+        "peak_dq_rad_s_trial_max_p95": 20.13035290950473,
+        "peak_dq_rad_s_max": 21.73368184480187,
+        "peak_power_w_trial_max_p95": 1235.490413687472,
+        "peak_power_w_max": 2214.5470786851556,
+        "above_90pct_torque_s_trial_max_p95": 11.746800000000588,
+        "above_90pct_torque_s_max": 14.550000000001528,
+        "post_clear_path_m_mean_reached_only": 0.3808799513543377,
+        "post_clear_path_m_denominator": 26,
+        "post_clear_max_drift_m_mean_reached_only": 0.20436928131920257,
+        "post_clear_max_drift_m_denominator": 26,
+        "first_direct_lift_clear_s_mean_reached_only": 3.926153846153846,
+        "first_direct_lift_clear_s_denominator": 26,
+        "first_upright_s_mean_reached_only": 4.8015384615384615,
+        "first_upright_s_denominator": 26,
+        "quiet_stable_1s": {
+          "count": 25,
+          "n": 40,
+          "rate": 0.625,
+          "wilson95_descriptive": [
+            0.47032439137301096,
+            0.7577702083276673
+          ]
+        },
+        "quiet_stable_10s": {
+          "count": 23,
+          "n": 40,
+          "rate": 0.575,
+          "wilson95_descriptive": [
+            0.42195068541991065,
+            0.7149060744004962
+          ]
+        },
+        "success_1s": {
+          "count": 24,
+          "n": 40,
+          "rate": 0.6,
+          "wilson95_descriptive": [
+            0.44595893660346186,
+            0.7365167431570808
+          ]
+        },
+        "success_10s": {
+          "count": 22,
+          "n": 40,
+          "rate": 0.55,
+          "wilson95_descriptive": [
+            0.39829091798932054,
+            0.6929469218909508
+          ]
+        },
+        "quiet_refall_after_1s": {
+          "count": 0,
+          "n": 40,
+          "rate": 0.0,
+          "wilson95_descriptive": [
+            0.0,
+            0.08762160119728664
+          ]
+        },
+        "post_clear_3s_max_displacement_m": {
+          "n": 24,
+          "median": 0.15158380954562564,
+          "p95": 0.45822223867798567
+        },
+        "post_stand_3s_max_displacement_m": {
+          "n": 24,
+          "median": 0.0049015831704937885,
+          "p95": 0.013344034532134693
+        }
+      },
+      "exit_right": {
+        "n": 40,
+        "stable_1s": 26,
+        "stable_10s": 26,
+        "numerical_failures": 0,
+        "upright_reached": 27,
+        "direct_lift_clear_reached": 27,
+        "refall_after_stable_1s": 0,
+        "peak_tau_nm_trial_max_p95": 139.0,
+        "peak_tau_nm_max": 139.0,
+        "peak_dq_rad_s_trial_max_p95": 20.14052469718591,
+        "peak_dq_rad_s_max": 20.867114611312594,
+        "peak_power_w_trial_max_p95": 1120.5104383090618,
+        "peak_power_w_max": 1124.7456922107706,
+        "above_90pct_torque_s_trial_max_p95": 17.21940000000133,
+        "above_90pct_torque_s_max": 18.820000000000448,
+        "post_clear_path_m_mean_reached_only": 0.39965109759235906,
+        "post_clear_path_m_denominator": 27,
+        "post_clear_max_drift_m_mean_reached_only": 0.22794242061661868,
+        "post_clear_max_drift_m_denominator": 27,
+        "first_direct_lift_clear_s_mean_reached_only": 2.7392592592592595,
+        "first_direct_lift_clear_s_denominator": 27,
+        "first_upright_s_mean_reached_only": 3.6333333333333337,
+        "first_upright_s_denominator": 27,
+        "quiet_stable_1s": {
+          "count": 26,
+          "n": 40,
+          "rate": 0.65,
+          "wilson95_descriptive": [
+            0.49505880837257693,
+            0.7786547112682372
+          ]
+        },
+        "quiet_stable_10s": {
+          "count": 26,
+          "n": 40,
+          "rate": 0.65,
+          "wilson95_descriptive": [
+            0.49505880837257693,
+            0.7786547112682372
+          ]
+        },
+        "success_1s": {
+          "count": 26,
+          "n": 40,
+          "rate": 0.65,
+          "wilson95_descriptive": [
+            0.49505880837257693,
+            0.7786547112682372
+          ]
+        },
+        "success_10s": {
+          "count": 26,
+          "n": 40,
+          "rate": 0.65,
+          "wilson95_descriptive": [
+            0.49505880837257693,
+            0.7786547112682372
+          ]
+        },
+        "quiet_refall_after_1s": {
+          "count": 0,
+          "n": 40,
+          "rate": 0.0,
+          "wilson95_descriptive": [
+            0.0,
+            0.08762160119728664
+          ]
+        },
+        "post_clear_3s_max_displacement_m": {
+          "n": 26,
+          "median": 0.1164469216135716,
+          "p95": 0.7009953344876168
+        },
+        "post_stand_3s_max_displacement_m": {
+          "n": 26,
+          "median": 0.004609684385784776,
+          "p95": 0.010920729002790558
+        }
+      }
+    },
+    "flat_calibration": {
+      "cross_two": {
+        "n": 4,
+        "stable_1s": 4,
+        "stable_10s": 4,
+        "numerical_failures": 0,
+        "upright_reached": 4,
+        "direct_lift_clear_reached": 4,
+        "refall_after_stable_1s": 0,
+        "peak_tau_nm_trial_max_p95": 138.99999979931522,
+        "peak_tau_nm_max": 139.0,
+        "peak_dq_rad_s_trial_max_p95": 10.41967796306426,
+        "peak_dq_rad_s_max": 10.432786331036176,
+        "peak_power_w_trial_max_p95": 1028.0350113770696,
+        "peak_power_w_max": 1035.8031367052547,
+        "above_90pct_torque_s_trial_max_p95": 0.5214000000000003,
+        "above_90pct_torque_s_max": 0.5280000000000004,
+        "post_clear_path_m_mean_reached_only": 1.236501207207822,
+        "post_clear_path_m_denominator": 4,
+        "post_clear_max_drift_m_mean_reached_only": 0.8603280166749876,
+        "post_clear_max_drift_m_denominator": 4,
+        "first_direct_lift_clear_s_mean_reached_only": 0.38,
+        "first_direct_lift_clear_s_denominator": 4,
+        "first_upright_s_mean_reached_only": 2.545,
+        "first_upright_s_denominator": 4,
+        "quiet_stable_1s": {
+          "count": 4,
+          "n": 4,
+          "rate": 1.0,
+          "wilson95_descriptive": [
+            0.5101091635454027,
+            1.0
+          ]
+        },
+        "quiet_stable_10s": {
+          "count": 4,
+          "n": 4,
+          "rate": 1.0,
+          "wilson95_descriptive": [
+            0.5101091635454027,
+            1.0
+          ]
+        },
+        "success_1s": {
+          "count": 4,
+          "n": 4,
+          "rate": 1.0,
+          "wilson95_descriptive": [
+            0.5101091635454027,
+            1.0
+          ]
+        },
+        "success_10s": {
+          "count": 4,
+          "n": 4,
+          "rate": 1.0,
+          "wilson95_descriptive": [
+            0.5101091635454027,
+            1.0
+          ]
+        },
+        "quiet_refall_after_1s": {
+          "count": 0,
+          "n": 4,
+          "rate": 0.0,
+          "wilson95_descriptive": [
+            0.0,
+            0.4898908364545973
+          ]
+        },
+        "post_clear_3s_max_displacement_m": {
+          "n": 4,
+          "median": 0.9263094195788595,
+          "p95": 1.0080900723962587
+        },
+        "post_stand_3s_max_displacement_m": {
+          "n": 4,
+          "median": 0.005897081159430722,
+          "p95": 0.007211583007432497
+        }
+      }
+    },
+    "hollow_container": {
+      "diagonal_shell": {
+        "n": 40,
+        "stable_1s": 34,
+        "stable_10s": 33,
+        "numerical_failures": 0,
+        "upright_reached": 40,
+        "direct_lift_clear_reached": 35,
+        "refall_after_stable_1s": 0,
+        "peak_tau_nm_trial_max_p95": 139.0,
+        "peak_tau_nm_max": 139.0,
+        "peak_dq_rad_s_trial_max_p95": 14.271585028591494,
+        "peak_dq_rad_s_max": 17.318214106906524,
+        "peak_power_w_trial_max_p95": 1014.7161392337019,
+        "peak_power_w_max": 1100.4213314888773,
+        "above_90pct_torque_s_trial_max_p95": 0.7705000000000005,
+        "above_90pct_torque_s_max": 1.0320000000000007,
+        "post_clear_path_m_mean_reached_only": 0.44444695531378,
+        "post_clear_path_m_denominator": 35,
+        "post_clear_max_drift_m_mean_reached_only": 0.25578657617953254,
+        "post_clear_max_drift_m_denominator": 35,
+        "first_direct_lift_clear_s_mean_reached_only": 2.737142857142857,
+        "first_direct_lift_clear_s_denominator": 35,
+        "first_upright_s_mean_reached_only": 3.178,
+        "first_upright_s_denominator": 40,
+        "quiet_stable_1s": {
+          "count": 35,
+          "n": 40,
+          "rate": 0.875,
+          "wilson95_descriptive": [
+            0.738878801611489,
+            0.945404997490546
+          ]
+        },
+        "quiet_stable_10s": {
+          "count": 34,
+          "n": 40,
+          "rate": 0.85,
+          "wilson95_descriptive": [
+            0.709276756335103,
+            0.9293881228267964
+          ]
+        },
+        "success_1s": {
+          "count": 34,
+          "n": 40,
+          "rate": 0.85,
+          "wilson95_descriptive": [
+            0.709276756335103,
+            0.9293881228267964
+          ]
+        },
+        "success_10s": {
+          "count": 33,
+          "n": 40,
+          "rate": 0.825,
+          "wilson95_descriptive": [
+            0.6805000966821229,
+            0.9125458625396408
+          ]
+        },
+        "quiet_refall_after_1s": {
+          "count": 0,
+          "n": 40,
+          "rate": 0.0,
+          "wilson95_descriptive": [
+            0.0,
+            0.08762160119728664
+          ]
+        },
+        "post_clear_3s_max_displacement_m": {
+          "n": 34,
+          "median": 0.14516784052540274,
+          "p95": 0.9767351800960161
+        },
+        "post_stand_3s_max_displacement_m": {
+          "n": 34,
+          "median": 0.005245809931044903,
+          "p95": 0.007461130219369203
+        }
+      },
+      "opening_down": {
+        "n": 40,
+        "stable_1s": 31,
+        "stable_10s": 31,
+        "numerical_failures": 0,
+        "upright_reached": 39,
+        "direct_lift_clear_reached": 32,
+        "refall_after_stable_1s": 0,
+        "peak_tau_nm_trial_max_p95": 139.0,
+        "peak_tau_nm_max": 139.0,
+        "peak_dq_rad_s_trial_max_p95": 15.608504834325563,
+        "peak_dq_rad_s_max": 18.273776237241528,
+        "peak_power_w_trial_max_p95": 987.7515212381238,
+        "peak_power_w_max": 1125.6664859160883,
+        "above_90pct_torque_s_trial_max_p95": 1.4932,
+        "above_90pct_torque_s_max": 3.4419999999998425,
+        "post_clear_path_m_mean_reached_only": 0.46103859883870746,
+        "post_clear_path_m_denominator": 32,
+        "post_clear_max_drift_m_mean_reached_only": 0.28405249592154935,
+        "post_clear_max_drift_m_denominator": 32,
+        "first_direct_lift_clear_s_mean_reached_only": 2.1081250000000002,
+        "first_direct_lift_clear_s_denominator": 32,
+        "first_upright_s_mean_reached_only": 3.0333333333333328,
+        "first_upright_s_denominator": 39,
+        "quiet_stable_1s": {
+          "count": 36,
+          "n": 40,
+          "rate": 0.9,
+          "wilson95_descriptive": [
+            0.7694822477247771,
+            0.9604204713173936
+          ]
+        },
+        "quiet_stable_10s": {
+          "count": 36,
+          "n": 40,
+          "rate": 0.9,
+          "wilson95_descriptive": [
+            0.7694822477247771,
+            0.9604204713173936
+          ]
+        },
+        "success_1s": {
+          "count": 31,
+          "n": 40,
+          "rate": 0.775,
+          "wilson95_descriptive": [
+            0.6249690325768998,
+            0.8768390867645927
+          ]
+        },
+        "success_10s": {
+          "count": 31,
+          "n": 40,
+          "rate": 0.775,
+          "wilson95_descriptive": [
+            0.6249690325768998,
+            0.8768390867645927
+          ]
+        },
+        "quiet_refall_after_1s": {
+          "count": 0,
+          "n": 40,
+          "rate": 0.0,
+          "wilson95_descriptive": [
+            0.0,
+            0.08762160119728664
+          ]
+        },
+        "post_clear_3s_max_displacement_m": {
+          "n": 32,
+          "median": 0.18127620939062,
+          "p95": 0.8043871902871578
+        },
+        "post_stand_3s_max_displacement_m": {
+          "n": 36,
+          "median": 0.00451327944085528,
+          "p95": 0.009162318655010241
+        }
+      },
+      "tilted_side": {
+        "n": 40,
+        "stable_1s": 34,
+        "stable_10s": 34,
+        "numerical_failures": 0,
+        "upright_reached": 40,
+        "direct_lift_clear_reached": 34,
+        "refall_after_stable_1s": 0,
+        "peak_tau_nm_trial_max_p95": 139.0,
+        "peak_tau_nm_max": 139.0,
+        "peak_dq_rad_s_trial_max_p95": 16.47721659514195,
+        "peak_dq_rad_s_max": 18.911656437186906,
+        "peak_power_w_trial_max_p95": 1013.3100574416833,
+        "peak_power_w_max": 1080.6487338811608,
+        "above_90pct_torque_s_trial_max_p95": 1.064299999999998,
+        "above_90pct_torque_s_max": 2.419999999999955,
+        "post_clear_path_m_mean_reached_only": 0.4203163515980678,
+        "post_clear_path_m_denominator": 34,
+        "post_clear_max_drift_m_mean_reached_only": 0.22618582252603633,
+        "post_clear_max_drift_m_denominator": 34,
+        "first_direct_lift_clear_s_mean_reached_only": 2.7300000000000004,
+        "first_direct_lift_clear_s_denominator": 34,
+        "first_upright_s_mean_reached_only": 3.3004999999999995,
+        "first_upright_s_denominator": 40,
+        "quiet_stable_1s": {
+          "count": 35,
+          "n": 40,
+          "rate": 0.875,
+          "wilson95_descriptive": [
+            0.738878801611489,
+            0.945404997490546
+          ]
+        },
+        "quiet_stable_10s": {
+          "count": 35,
+          "n": 40,
+          "rate": 0.875,
+          "wilson95_descriptive": [
+            0.738878801611489,
+            0.945404997490546
+          ]
+        },
+        "success_1s": {
+          "count": 34,
+          "n": 40,
+          "rate": 0.85,
+          "wilson95_descriptive": [
+            0.709276756335103,
+            0.9293881228267964
+          ]
+        },
+        "success_10s": {
+          "count": 34,
+          "n": 40,
+          "rate": 0.85,
+          "wilson95_descriptive": [
+            0.709276756335103,
+            0.9293881228267964
+          ]
+        },
+        "quiet_refall_after_1s": {
+          "count": 0,
+          "n": 40,
+          "rate": 0.0,
+          "wilson95_descriptive": [
+            0.0,
+            0.08762160119728664
+          ]
+        },
+        "post_clear_3s_max_displacement_m": {
+          "n": 34,
+          "median": 0.09399545629955616,
+          "p95": 0.8403455934639327
+        },
+        "post_stand_3s_max_displacement_m": {
+          "n": 35,
+          "median": 0.0045838973485327564,
+          "p95": 0.009916357523117035
+        }
+      }
+    },
+    "ladder_boards": {
+      "diagonal": {
+        "n": 40,
+        "stable_1s": 30,
+        "stable_10s": 29,
+        "numerical_failures": 0,
+        "upright_reached": 40,
+        "direct_lift_clear_reached": 35,
+        "refall_after_stable_1s": 0,
+        "peak_tau_nm_trial_max_p95": 139.0,
+        "peak_tau_nm_max": 139.0,
+        "peak_dq_rad_s_trial_max_p95": 13.998696143197218,
+        "peak_dq_rad_s_max": 14.299439297531153,
+        "peak_power_w_trial_max_p95": 1023.5680086240419,
+        "peak_power_w_max": 1102.308963265601,
+        "above_90pct_torque_s_trial_max_p95": 0.7796000000000001,
+        "above_90pct_torque_s_max": 2.0699999999999936,
+        "post_clear_path_m_mean_reached_only": 0.3150683574825074,
+        "post_clear_path_m_denominator": 35,
+        "post_clear_max_drift_m_mean_reached_only": 0.16096920341767448,
+        "post_clear_max_drift_m_denominator": 35,
+        "first_direct_lift_clear_s_mean_reached_only": 2.7028571428571433,
+        "first_direct_lift_clear_s_denominator": 35,
+        "first_upright_s_mean_reached_only": 3.397,
+        "first_upright_s_denominator": 40,
+        "quiet_stable_1s": {
+          "count": 36,
+          "n": 40,
+          "rate": 0.9,
+          "wilson95_descriptive": [
+            0.7694822477247771,
+            0.9604204713173936
+          ]
+        },
+        "quiet_stable_10s": {
+          "count": 35,
+          "n": 40,
+          "rate": 0.875,
+          "wilson95_descriptive": [
+            0.738878801611489,
+            0.945404997490546
+          ]
+        },
+        "success_1s": {
+          "count": 30,
+          "n": 40,
+          "rate": 0.75,
+          "wilson95_descriptive": [
+            0.5980603857923197,
+            0.858128813609037
+          ]
+        },
+        "success_10s": {
+          "count": 29,
+          "n": 40,
+          "rate": 0.725,
+          "wilson95_descriptive": [
+            0.5716504419378943,
+            0.8389198375233267
+          ]
+        },
+        "quiet_refall_after_1s": {
+          "count": 0,
+          "n": 40,
+          "rate": 0.0,
+          "wilson95_descriptive": [
+            0.0,
+            0.08762160119728664
+          ]
+        },
+        "post_clear_3s_max_displacement_m": {
+          "n": 35,
+          "median": 0.11484707518928577,
+          "p95": 0.4880922184821632
+        },
+        "post_stand_3s_max_displacement_m": {
+          "n": 35,
+          "median": 0.00505065101535065,
+          "p95": 0.009926634234482703
+        }
+      },
+      "offset_two_boards": {
+        "n": 40,
+        "stable_1s": 32,
+        "stable_10s": 32,
+        "numerical_failures": 0,
+        "upright_reached": 40,
+        "direct_lift_clear_reached": 35,
+        "refall_after_stable_1s": 0,
+        "peak_tau_nm_trial_max_p95": 139.0,
+        "peak_tau_nm_max": 139.0,
+        "peak_dq_rad_s_trial_max_p95": 14.533190776682012,
+        "peak_dq_rad_s_max": 20.545244397962477,
+        "peak_power_w_trial_max_p95": 1030.5185286852573,
+        "peak_power_w_max": 1684.1449178733144,
+        "above_90pct_torque_s_trial_max_p95": 0.7620000000000005,
+        "above_90pct_torque_s_max": 0.8560000000000006,
+        "post_clear_path_m_mean_reached_only": 0.4154613078615336,
+        "post_clear_path_m_denominator": 35,
+        "post_clear_max_drift_m_mean_reached_only": 0.2049068504527814,
+        "post_clear_max_drift_m_denominator": 35,
+        "first_direct_lift_clear_s_mean_reached_only": 2.06,
+        "first_direct_lift_clear_s_denominator": 35,
+        "first_upright_s_mean_reached_only": 3.0285,
+        "first_upright_s_denominator": 40,
+        "quiet_stable_1s": {
+          "count": 38,
+          "n": 40,
+          "rate": 0.95,
+          "wilson95_descriptive": [
+            0.8349612263085903,
+            0.9861793326138516
+          ]
+        },
+        "quiet_stable_10s": {
+          "count": 36,
+          "n": 40,
+          "rate": 0.9,
+          "wilson95_descriptive": [
+            0.7694822477247771,
+            0.9604204713173936
+          ]
+        },
+        "success_1s": {
+          "count": 32,
+          "n": 40,
+          "rate": 0.8,
+          "wilson95_descriptive": [
+            0.652426936536005,
+            0.895000102745623
+          ]
+        },
+        "success_10s": {
+          "count": 32,
+          "n": 40,
+          "rate": 0.8,
+          "wilson95_descriptive": [
+            0.652426936536005,
+            0.895000102745623
+          ]
+        },
+        "quiet_refall_after_1s": {
+          "count": 0,
+          "n": 40,
+          "rate": 0.0,
+          "wilson95_descriptive": [
+            0.0,
+            0.08762160119728664
+          ]
+        },
+        "post_clear_3s_max_displacement_m": {
+          "n": 35,
+          "median": 0.1274580581456055,
+          "p95": 0.5780455623422294
+        },
+        "post_stand_3s_max_displacement_m": {
+          "n": 38,
+          "median": 0.00483989884529354,
+          "p95": 0.0122741513950992
+        }
+      },
+      "transverse": {
+        "n": 40,
+        "stable_1s": 33,
+        "stable_10s": 31,
+        "numerical_failures": 0,
+        "upright_reached": 40,
+        "direct_lift_clear_reached": 35,
+        "refall_after_stable_1s": 0,
+        "peak_tau_nm_trial_max_p95": 139.0,
+        "peak_tau_nm_max": 139.0,
+        "peak_dq_rad_s_trial_max_p95": 15.691841653854954,
+        "peak_dq_rad_s_max": 20.98675898002452,
+        "peak_power_w_trial_max_p95": 1005.6361486192833,
+        "peak_power_w_max": 1136.194704235528,
+        "above_90pct_torque_s_trial_max_p95": 0.8071000000000006,
+        "above_90pct_torque_s_max": 1.484000000000001,
+        "post_clear_path_m_mean_reached_only": 0.48466455572301226,
+        "post_clear_path_m_denominator": 35,
+        "post_clear_max_drift_m_mean_reached_only": 0.27253961008718924,
+        "post_clear_max_drift_m_denominator": 35,
+        "first_direct_lift_clear_s_mean_reached_only": 2.157142857142857,
+        "first_direct_lift_clear_s_denominator": 35,
+        "first_upright_s_mean_reached_only": 3.024,
+        "first_upright_s_denominator": 40,
+        "quiet_stable_1s": {
+          "count": 39,
+          "n": 40,
+          "rate": 0.975,
+          "wilson95_descriptive": [
+            0.8711863103652591,
+            0.9955731684973186
+          ]
+        },
+        "quiet_stable_10s": {
+          "count": 36,
+          "n": 40,
+          "rate": 0.9,
+          "wilson95_descriptive": [
+            0.7694822477247771,
+            0.9604204713173936
+          ]
+        },
+        "success_1s": {
+          "count": 33,
+          "n": 40,
+          "rate": 0.825,
+          "wilson95_descriptive": [
+            0.6805000966821229,
+            0.9125458625396408
+          ]
+        },
+        "success_10s": {
+          "count": 31,
+          "n": 40,
+          "rate": 0.775,
+          "wilson95_descriptive": [
+            0.6249690325768998,
+            0.8768390867645927
+          ]
+        },
+        "quiet_refall_after_1s": {
+          "count": 0,
+          "n": 40,
+          "rate": 0.0,
+          "wilson95_descriptive": [
+            0.0,
+            0.08762160119728664
+          ]
+        },
+        "post_clear_3s_max_displacement_m": {
+          "n": 35,
+          "median": 0.13082676865843398,
+          "p95": 0.8778539685903047
+        },
+        "post_stand_3s_max_displacement_m": {
+          "n": 39,
+          "median": 0.005119055955079837,
+          "p95": 0.010140321130157798
+        }
+      }
+    }
+  },
+  "by_direction": {
+    "crossed_timber": {
+      "left_side_down": {
+        "n": 30,
+        "stable_1s": 26,
+        "stable_10s": 26,
+        "numerical_failures": 0,
+        "upright_reached": 30,
+        "direct_lift_clear_reached": 26,
+        "refall_after_stable_1s": 0,
+        "peak_tau_nm_trial_max_p95": 139.0,
+        "peak_tau_nm_max": 139.0,
+        "peak_dq_rad_s_trial_max_p95": 14.369195536301348,
+        "peak_dq_rad_s_max": 17.568218442867828,
+        "peak_power_w_trial_max_p95": 1044.0193407518493,
+        "peak_power_w_max": 1089.4725825650944,
+        "above_90pct_torque_s_trial_max_p95": 0.5599000000000003,
+        "above_90pct_torque_s_max": 0.6760000000000005,
+        "post_clear_path_m_mean_reached_only": 0.3524178053441409,
+        "post_clear_path_m_denominator": 26,
+        "post_clear_max_drift_m_mean_reached_only": 0.1817826512930834,
+        "post_clear_max_drift_m_denominator": 26,
+        "first_direct_lift_clear_s_mean_reached_only": 1.6107692307692312,
+        "first_direct_lift_clear_s_denominator": 26,
+        "first_upright_s_mean_reached_only": 2.473333333333334,
+        "first_upright_s_denominator": 30,
+        "quiet_stable_1s": {
+          "count": 28,
+          "n": 30,
+          "rate": 0.9333333333333333,
+          "wilson95_descriptive": [
+            0.7867654163738308,
+            0.9815229762087295
+          ]
+        },
+        "quiet_stable_10s": {
+          "count": 27,
+          "n": 30,
+          "rate": 0.9,
+          "wilson95_descriptive": [
+            0.7437891742081593,
+            0.9654001112526658
+          ]
+        },
+        "success_1s": {
+          "count": 26,
+          "n": 30,
+          "rate": 0.8666666666666667,
+          "wilson95_descriptive": [
+            0.703186733179637,
+            0.9469034451594526
+          ]
+        },
+        "success_10s": {
+          "count": 26,
+          "n": 30,
+          "rate": 0.8666666666666667,
+          "wilson95_descriptive": [
+            0.703186733179637,
+            0.9469034451594526
+          ]
+        },
+        "quiet_refall_after_1s": {
+          "count": 0,
+          "n": 30,
+          "rate": 0.0,
+          "wilson95_descriptive": [
+            0.0,
+            0.11351339317396876
+          ]
+        },
+        "post_clear_3s_max_displacement_m": {
+          "n": 26,
+          "median": 0.12103474249537224,
+          "p95": 0.5815824133603857
+        },
+        "post_stand_3s_max_displacement_m": {
+          "n": 28,
+          "median": 0.005001799699866942,
+          "p95": 0.010277639718212358
+        }
+      },
+      "prone": {
+        "n": 30,
+        "stable_1s": 28,
+        "stable_10s": 27,
+        "numerical_failures": 0,
+        "upright_reached": 30,
+        "direct_lift_clear_reached": 29,
+        "refall_after_stable_1s": 0,
+        "peak_tau_nm_trial_max_p95": 139.0,
+        "peak_tau_nm_max": 139.0,
+        "peak_dq_rad_s_trial_max_p95": 15.428410714025723,
+        "peak_dq_rad_s_max": 19.574788194653326,
+        "peak_power_w_trial_max_p95": 919.3038403707804,
+        "peak_power_w_max": 962.3048884692414,
+        "above_90pct_torque_s_trial_max_p95": 0.8945000000000005,
+        "above_90pct_torque_s_max": 1.2400000000000009,
+        "post_clear_path_m_mean_reached_only": 0.3627254328176267,
+        "post_clear_path_m_denominator": 29,
+        "post_clear_max_drift_m_mean_reached_only": 0.17118999527586934,
+        "post_clear_max_drift_m_denominator": 29,
+        "first_direct_lift_clear_s_mean_reached_only": 2.311034482758621,
+        "first_direct_lift_clear_s_denominator": 29,
+        "first_upright_s_mean_reached_only": 2.736,
+        "first_upright_s_denominator": 30,
+        "quiet_stable_1s": {
+          "count": 30,
+          "n": 30,
+          "rate": 1.0,
+          "wilson95_descriptive": [
+            0.8864866068260312,
+            0.9999999999999999
+          ]
+        },
+        "quiet_stable_10s": {
+          "count": 30,
+          "n": 30,
+          "rate": 1.0,
+          "wilson95_descriptive": [
+            0.8864866068260312,
+            0.9999999999999999
+          ]
+        },
+        "success_1s": {
+          "count": 28,
+          "n": 30,
+          "rate": 0.9333333333333333,
+          "wilson95_descriptive": [
+            0.7867654163738308,
+            0.9815229762087295
+          ]
+        },
+        "success_10s": {
+          "count": 27,
+          "n": 30,
+          "rate": 0.9,
+          "wilson95_descriptive": [
+            0.7437891742081593,
+            0.9654001112526658
+          ]
+        },
+        "quiet_refall_after_1s": {
+          "count": 0,
+          "n": 30,
+          "rate": 0.0,
+          "wilson95_descriptive": [
+            0.0,
+            0.11351339317396876
+          ]
+        },
+        "post_clear_3s_max_displacement_m": {
+          "n": 29,
+          "median": 0.11828631752939606,
+          "p95": 0.40403409988996997
+        },
+        "post_stand_3s_max_displacement_m": {
+          "n": 30,
+          "median": 0.005307762338321221,
+          "p95": 0.013991235381521269
+        }
+      },
+      "right_side_down": {
+        "n": 30,
+        "stable_1s": 18,
+        "stable_10s": 18,
+        "numerical_failures": 0,
+        "upright_reached": 30,
+        "direct_lift_clear_reached": 18,
+        "refall_after_stable_1s": 0,
+        "peak_tau_nm_trial_max_p95": 139.0,
+        "peak_tau_nm_max": 139.0,
+        "peak_dq_rad_s_trial_max_p95": 15.7086082000297,
+        "peak_dq_rad_s_max": 16.69385067585506,
+        "peak_power_w_trial_max_p95": 959.7760533828125,
+        "peak_power_w_max": 980.8130655283312,
+        "above_90pct_torque_s_trial_max_p95": 1.4391999999999991,
+        "above_90pct_torque_s_max": 2.9319999999998987,
+        "post_clear_path_m_mean_reached_only": 0.5240545226399895,
+        "post_clear_path_m_denominator": 18,
+        "post_clear_max_drift_m_mean_reached_only": 0.29987736867560005,
+        "post_clear_max_drift_m_denominator": 18,
+        "first_direct_lift_clear_s_mean_reached_only": 2.4577777777777783,
+        "first_direct_lift_clear_s_denominator": 18,
+        "first_upright_s_mean_reached_only": 3.402,
+        "first_upright_s_denominator": 30,
+        "quiet_stable_1s": {
+          "count": 23,
+          "n": 30,
+          "rate": 0.7666666666666667,
+          "wilson95_descriptive": [
+            0.5907167384187784,
+            0.8820761185551049
+          ]
+        },
+        "quiet_stable_10s": {
+          "count": 22,
+          "n": 30,
+          "rate": 0.7333333333333333,
+          "wilson95_descriptive": [
+            0.555520383048111,
+            0.8581733668040368
+          ]
+        },
+        "success_1s": {
+          "count": 18,
+          "n": 30,
+          "rate": 0.6,
+          "wilson95_descriptive": [
+            0.42320360253322475,
+            0.7540937188319815
+          ]
+        },
+        "success_10s": {
+          "count": 18,
+          "n": 30,
+          "rate": 0.6,
+          "wilson95_descriptive": [
+            0.42320360253322475,
+            0.7540937188319815
+          ]
+        },
+        "quiet_refall_after_1s": {
+          "count": 0,
+          "n": 30,
+          "rate": 0.0,
+          "wilson95_descriptive": [
+            0.0,
+            0.11351339317396876
+          ]
+        },
+        "post_clear_3s_max_displacement_m": {
+          "n": 18,
+          "median": 0.22798946740616383,
+          "p95": 0.667792300651076
+        },
+        "post_stand_3s_max_displacement_m": {
+          "n": 22,
+          "median": 0.004629872790123104,
+          "p95": 0.009037757022043881
+        }
+      },
+      "supine": {
+        "n": 30,
+        "stable_1s": 22,
+        "stable_10s": 22,
+        "numerical_failures": 0,
+        "upright_reached": 30,
+        "direct_lift_clear_reached": 24,
+        "refall_after_stable_1s": 0,
+        "peak_tau_nm_trial_max_p95": 139.0,
+        "peak_tau_nm_max": 139.0,
+        "peak_dq_rad_s_trial_max_p95": 13.04135936084884,
+        "peak_dq_rad_s_max": 24.190778199062294,
+        "peak_power_w_trial_max_p95": 987.2407840471243,
+        "peak_power_w_max": 1011.5904617152536,
+        "above_90pct_torque_s_trial_max_p95": 4.327399999999654,
+        "above_90pct_torque_s_max": 13.44800000000116,
+        "post_clear_path_m_mean_reached_only": 0.44306059651744295,
+        "post_clear_path_m_denominator": 24,
+        "post_clear_max_drift_m_mean_reached_only": 0.211726191443621,
+        "post_clear_max_drift_m_denominator": 24,
+        "first_direct_lift_clear_s_mean_reached_only": 2.055,
+        "first_direct_lift_clear_s_denominator": 24,
+        "first_upright_s_mean_reached_only": 3.272666666666667,
+        "first_upright_s_denominator": 30,
+        "quiet_stable_1s": {
+          "count": 26,
+          "n": 30,
+          "rate": 0.8666666666666667,
+          "wilson95_descriptive": [
+            0.703186733179637,
+            0.9469034451594526
+          ]
+        },
+        "quiet_stable_10s": {
+          "count": 25,
+          "n": 30,
+          "rate": 0.8333333333333334,
+          "wilson95_descriptive": [
+            0.6643564949358398,
+            0.9266345762815145
+          ]
+        },
+        "success_1s": {
+          "count": 22,
+          "n": 30,
+          "rate": 0.7333333333333333,
+          "wilson95_descriptive": [
+            0.555520383048111,
+            0.8581733668040368
+          ]
+        },
+        "success_10s": {
+          "count": 22,
+          "n": 30,
+          "rate": 0.7333333333333333,
+          "wilson95_descriptive": [
+            0.555520383048111,
+            0.8581733668040368
+          ]
+        },
+        "quiet_refall_after_1s": {
+          "count": 0,
+          "n": 30,
+          "rate": 0.0,
+          "wilson95_descriptive": [
+            0.0,
+            0.11351339317396876
+          ]
+        },
+        "post_clear_3s_max_displacement_m": {
+          "n": 24,
+          "median": 0.15497563028801967,
+          "p95": 0.5924331543786147
+        },
+        "post_stand_3s_max_displacement_m": {
+          "n": 25,
+          "median": 0.004563359878861962,
+          "p95": 0.009704456523396113
+        }
+      }
+    },
+    "fixed_c_space": {
+      "left_side_down": {
+        "n": 30,
+        "stable_1s": 18,
+        "stable_10s": 16,
+        "numerical_failures": 0,
+        "upright_reached": 20,
+        "direct_lift_clear_reached": 20,
+        "refall_after_stable_1s": 0,
+        "peak_tau_nm_trial_max_p95": 139.0,
+        "peak_tau_nm_max": 139.0,
+        "peak_dq_rad_s_trial_max_p95": 20.986049342568304,
+        "peak_dq_rad_s_max": 22.556531661210958,
+        "peak_power_w_trial_max_p95": 1223.9037512154885,
+        "peak_power_w_max": 2214.5470786851556,
+        "above_90pct_torque_s_trial_max_p95": 16.136700000000726,
+        "above_90pct_torque_s_max": 18.820000000000448,
+        "post_clear_path_m_mean_reached_only": 0.38809430481012963,
+        "post_clear_path_m_denominator": 20,
+        "post_clear_max_drift_m_mean_reached_only": 0.2248270208612438,
+        "post_clear_max_drift_m_denominator": 20,
+        "first_direct_lift_clear_s_mean_reached_only": 3.580000000000001,
+        "first_direct_lift_clear_s_denominator": 20,
+        "first_upright_s_mean_reached_only": 4.413,
+        "first_upright_s_denominator": 20,
+        "quiet_stable_1s": {
+          "count": 19,
+          "n": 30,
+          "rate": 0.6333333333333333,
+          "wilson95_descriptive": [
+            0.4551356365479487,
+            0.7812607919389929
+          ]
+        },
+        "quiet_stable_10s": {
+          "count": 17,
+          "n": 30,
+          "rate": 0.5666666666666667,
+          "wilson95_descriptive": [
+            0.3919730700081361,
+            0.7262251442353347
+          ]
+        },
+        "success_1s": {
+          "count": 18,
+          "n": 30,
+          "rate": 0.6,
+          "wilson95_descriptive": [
+            0.42320360253322475,
+            0.7540937188319815
+          ]
+        },
+        "success_10s": {
+          "count": 16,
+          "n": 30,
+          "rate": 0.5333333333333333,
+          "wilson95_descriptive": [
+            0.36142299619873297,
+            0.6976761109230025
+          ]
+        },
+        "quiet_refall_after_1s": {
+          "count": 0,
+          "n": 30,
+          "rate": 0.0,
+          "wilson95_descriptive": [
+            0.0,
+            0.11351339317396876
+          ]
+        },
+        "post_clear_3s_max_displacement_m": {
+          "n": 18,
+          "median": 0.14233441837902877,
+          "p95": 0.8515750312686791
+        },
+        "post_stand_3s_max_displacement_m": {
+          "n": 18,
+          "median": 0.003856188488741517,
+          "p95": 0.0068554072559377345
+        }
+      },
+      "prone": {
+        "n": 30,
+        "stable_1s": 24,
+        "stable_10s": 24,
+        "numerical_failures": 0,
+        "upright_reached": 24,
+        "direct_lift_clear_reached": 24,
+        "refall_after_stable_1s": 0,
+        "peak_tau_nm_trial_max_p95": 139.0,
+        "peak_tau_nm_max": 139.0,
+        "peak_dq_rad_s_trial_max_p95": 17.235353541893218,
+        "peak_dq_rad_s_max": 20.991595313373274,
+        "peak_power_w_trial_max_p95": 870.5593982492312,
+        "peak_power_w_max": 974.9826435851077,
+        "above_90pct_torque_s_trial_max_p95": 8.401799999999474,
+        "above_90pct_torque_s_max": 8.74399999999959,
+        "post_clear_path_m_mean_reached_only": 0.41140220654160764,
+        "post_clear_path_m_denominator": 24,
+        "post_clear_max_drift_m_mean_reached_only": 0.19577374142866236,
+        "post_clear_max_drift_m_denominator": 24,
+        "first_direct_lift_clear_s_mean_reached_only": 1.8841666666666665,
+        "first_direct_lift_clear_s_denominator": 24,
+        "first_upright_s_mean_reached_only": 2.875,
+        "first_upright_s_denominator": 24,
+        "quiet_stable_1s": {
+          "count": 24,
+          "n": 30,
+          "rate": 0.8,
+          "wilson95_descriptive": [
+            0.6269430358685175,
+            0.9049489282271013
+          ]
+        },
+        "quiet_stable_10s": {
+          "count": 24,
+          "n": 30,
+          "rate": 0.8,
+          "wilson95_descriptive": [
+            0.6269430358685175,
+            0.9049489282271013
+          ]
+        },
+        "success_1s": {
+          "count": 24,
+          "n": 30,
+          "rate": 0.8,
+          "wilson95_descriptive": [
+            0.6269430358685175,
+            0.9049489282271013
+          ]
+        },
+        "success_10s": {
+          "count": 24,
+          "n": 30,
+          "rate": 0.8,
+          "wilson95_descriptive": [
+            0.6269430358685175,
+            0.9049489282271013
+          ]
+        },
+        "quiet_refall_after_1s": {
+          "count": 0,
+          "n": 30,
+          "rate": 0.0,
+          "wilson95_descriptive": [
+            0.0,
+            0.11351339317396876
+          ]
+        },
+        "post_clear_3s_max_displacement_m": {
+          "n": 24,
+          "median": 0.15698493883245737,
+          "p95": 0.41959088892661794
+        },
+        "post_stand_3s_max_displacement_m": {
+          "n": 24,
+          "median": 0.005532374466816587,
+          "p95": 0.015361308684310106
+        }
+      },
+      "right_side_down": {
+        "n": 30,
+        "stable_1s": 19,
+        "stable_10s": 19,
+        "numerical_failures": 0,
+        "upright_reached": 22,
+        "direct_lift_clear_reached": 22,
+        "refall_after_stable_1s": 0,
+        "peak_tau_nm_trial_max_p95": 139.0,
+        "peak_tau_nm_max": 139.0,
+        "peak_dq_rad_s_trial_max_p95": 20.267584787548454,
+        "peak_dq_rad_s_max": 20.550180173605675,
+        "peak_power_w_trial_max_p95": 1094.4486379855855,
+        "peak_power_w_max": 1231.8302737647418,
+        "above_90pct_torque_s_trial_max_p95": 11.87610000000062,
+        "above_90pct_torque_s_max": 17.636000000001104,
+        "post_clear_path_m_mean_reached_only": 0.6112411008273219,
+        "post_clear_path_m_denominator": 22,
+        "post_clear_max_drift_m_mean_reached_only": 0.3559317303305359,
+        "post_clear_max_drift_m_denominator": 22,
+        "first_direct_lift_clear_s_mean_reached_only": 4.330000000000001,
+        "first_direct_lift_clear_s_denominator": 22,
+        "first_upright_s_mean_reached_only": 5.694545454545456,
+        "first_upright_s_denominator": 22,
+        "quiet_stable_1s": {
+          "count": 20,
+          "n": 30,
+          "rate": 0.6666666666666666,
+          "wilson95_descriptive": [
+            0.4878005164454384,
+            0.8076950191632386
+          ]
+        },
+        "quiet_stable_10s": {
+          "count": 19,
+          "n": 30,
+          "rate": 0.6333333333333333,
+          "wilson95_descriptive": [
+            0.4551356365479487,
+            0.7812607919389929
+          ]
+        },
+        "success_1s": {
+          "count": 19,
+          "n": 30,
+          "rate": 0.6333333333333333,
+          "wilson95_descriptive": [
+            0.4551356365479487,
+            0.7812607919389929
+          ]
+        },
+        "success_10s": {
+          "count": 19,
+          "n": 30,
+          "rate": 0.6333333333333333,
+          "wilson95_descriptive": [
+            0.4551356365479487,
+            0.7812607919389929
+          ]
+        },
+        "quiet_refall_after_1s": {
+          "count": 0,
+          "n": 30,
+          "rate": 0.0,
+          "wilson95_descriptive": [
+            0.0,
+            0.11351339317396876
+          ]
+        },
+        "post_clear_3s_max_displacement_m": {
+          "n": 21,
+          "median": 0.28320466719091164,
+          "p95": 0.9350736677113805
+        },
+        "post_stand_3s_max_displacement_m": {
+          "n": 20,
+          "median": 0.004693502880493545,
+          "p95": 0.011308331870280753
+        }
+      },
+      "supine": {
+        "n": 30,
+        "stable_1s": 18,
+        "stable_10s": 18,
+        "numerical_failures": 0,
+        "upright_reached": 18,
+        "direct_lift_clear_reached": 18,
+        "refall_after_stable_1s": 0,
+        "peak_tau_nm_trial_max_p95": 139.0,
+        "peak_tau_nm_max": 139.0,
+        "peak_dq_rad_s_trial_max_p95": 20.5304467834088,
+        "peak_dq_rad_s_max": 23.078713950724893,
+        "peak_power_w_trial_max_p95": 1046.9448455822908,
+        "peak_power_w_max": 1120.4240662280772,
+        "above_90pct_torque_s_trial_max_p95": 11.696100000000573,
+        "above_90pct_torque_s_max": 17.582000000001134,
+        "post_clear_path_m_mean_reached_only": 0.2644774643686682,
+        "post_clear_path_m_denominator": 18,
+        "post_clear_max_drift_m_mean_reached_only": 0.117399967121797,
+        "post_clear_max_drift_m_denominator": 18,
+        "first_direct_lift_clear_s_mean_reached_only": 2.302222222222223,
+        "first_direct_lift_clear_s_denominator": 18,
+        "first_upright_s_mean_reached_only": 2.962222222222222,
+        "first_upright_s_denominator": 18,
+        "quiet_stable_1s": {
+          "count": 18,
+          "n": 30,
+          "rate": 0.6,
+          "wilson95_descriptive": [
+            0.42320360253322475,
+            0.7540937188319815
+          ]
+        },
+        "quiet_stable_10s": {
+          "count": 18,
+          "n": 30,
+          "rate": 0.6,
+          "wilson95_descriptive": [
+            0.42320360253322475,
+            0.7540937188319815
+          ]
+        },
+        "success_1s": {
+          "count": 18,
+          "n": 30,
+          "rate": 0.6,
+          "wilson95_descriptive": [
+            0.42320360253322475,
+            0.7540937188319815
+          ]
+        },
+        "success_10s": {
+          "count": 18,
+          "n": 30,
+          "rate": 0.6,
+          "wilson95_descriptive": [
+            0.42320360253322475,
+            0.7540937188319815
+          ]
+        },
+        "quiet_refall_after_1s": {
+          "count": 0,
+          "n": 30,
+          "rate": 0.0,
+          "wilson95_descriptive": [
+            0.0,
+            0.11351339317396876
+          ]
+        },
+        "post_clear_3s_max_displacement_m": {
+          "n": 18,
+          "median": 0.08126333766156396,
+          "p95": 0.2586932642342398
+        },
+        "post_stand_3s_max_displacement_m": {
+          "n": 18,
+          "median": 0.00565065700614378,
+          "p95": 0.01051750060531353
+        }
+      }
+    },
+    "flat_calibration": {
+      "left_side_down": {
+        "n": 1,
+        "stable_1s": 1,
+        "stable_10s": 1,
+        "numerical_failures": 0,
+        "upright_reached": 1,
+        "direct_lift_clear_reached": 1,
+        "refall_after_stable_1s": 0,
+        "peak_tau_nm_trial_max_p95": 138.99998996261783,
+        "peak_tau_nm_max": 138.99998996261783,
+        "peak_dq_rad_s_trial_max_p95": 10.432786331036176,
+        "peak_dq_rad_s_max": 10.432786331036176,
+        "peak_power_w_trial_max_p95": 1035.8031367052547,
+        "peak_power_w_max": 1035.8031367052547,
+        "above_90pct_torque_s_trial_max_p95": 0.4840000000000004,
+        "above_90pct_torque_s_max": 0.4840000000000004,
+        "post_clear_path_m_mean_reached_only": 1.1640471737581228,
+        "post_clear_path_m_denominator": 1,
+        "post_clear_max_drift_m_mean_reached_only": 0.9828870964789341,
+        "post_clear_max_drift_m_denominator": 1,
+        "first_direct_lift_clear_s_mean_reached_only": 0.38,
+        "first_direct_lift_clear_s_denominator": 1,
+        "first_upright_s_mean_reached_only": 2.2800000000000002,
+        "first_upright_s_denominator": 1,
+        "quiet_stable_1s": {
+          "count": 1,
+          "n": 1,
+          "rate": 1.0,
+          "wilson95_descriptive": [
+            0.20654931437723745,
+            1.0
+          ]
+        },
+        "quiet_stable_10s": {
+          "count": 1,
+          "n": 1,
+          "rate": 1.0,
+          "wilson95_descriptive": [
+            0.20654931437723745,
+            1.0
+          ]
+        },
+        "success_1s": {
+          "count": 1,
+          "n": 1,
+          "rate": 1.0,
+          "wilson95_descriptive": [
+            0.20654931437723745,
+            1.0
+          ]
+        },
+        "success_10s": {
+          "count": 1,
+          "n": 1,
+          "rate": 1.0,
+          "wilson95_descriptive": [
+            0.20654931437723745,
+            1.0
+          ]
+        },
+        "quiet_refall_after_1s": {
+          "count": 0,
+          "n": 1,
+          "rate": 0.0,
+          "wilson95_descriptive": [
+            0.0,
+            0.7934506856227626
+          ]
+        },
+        "post_clear_3s_max_displacement_m": {
+          "n": 1,
+          "median": 0.9828870964789341,
+          "p95": 0.9828870964789341
+        },
+        "post_stand_3s_max_displacement_m": {
+          "n": 1,
+          "median": 0.0048019025644991265,
+          "p95": 0.0048019025644991265
+        }
+      },
+      "prone": {
+        "n": 1,
+        "stable_1s": 1,
+        "stable_10s": 1,
+        "numerical_failures": 0,
+        "upright_reached": 1,
+        "direct_lift_clear_reached": 1,
+        "refall_after_stable_1s": 0,
+        "peak_tau_nm_trial_max_p95": 139.0,
+        "peak_tau_nm_max": 139.0,
+        "peak_dq_rad_s_trial_max_p95": 10.3453972112234,
+        "peak_dq_rad_s_max": 10.3453972112234,
+        "peak_power_w_trial_max_p95": 753.69437434636,
+        "peak_power_w_max": 753.69437434636,
+        "above_90pct_torque_s_trial_max_p95": 0.5280000000000004,
+        "above_90pct_torque_s_max": 0.5280000000000004,
+        "post_clear_path_m_mean_reached_only": 1.4091770214089658,
+        "post_clear_path_m_denominator": 1,
+        "post_clear_max_drift_m_mean_reached_only": 0.869731742678785,
+        "post_clear_max_drift_m_denominator": 1,
+        "first_direct_lift_clear_s_mean_reached_only": 0.38,
+        "first_direct_lift_clear_s_denominator": 1,
+        "first_upright_s_mean_reached_only": 2.58,
+        "first_upright_s_denominator": 1,
+        "quiet_stable_1s": {
+          "count": 1,
+          "n": 1,
+          "rate": 1.0,
+          "wilson95_descriptive": [
+            0.20654931437723745,
+            1.0
+          ]
+        },
+        "quiet_stable_10s": {
+          "count": 1,
+          "n": 1,
+          "rate": 1.0,
+          "wilson95_descriptive": [
+            0.20654931437723745,
+            1.0
+          ]
+        },
+        "success_1s": {
+          "count": 1,
+          "n": 1,
+          "rate": 1.0,
+          "wilson95_descriptive": [
+            0.20654931437723745,
+            1.0
+          ]
+        },
+        "success_10s": {
+          "count": 1,
+          "n": 1,
+          "rate": 1.0,
+          "wilson95_descriptive": [
+            0.20654931437723745,
+            1.0
+          ]
+        },
+        "quiet_refall_after_1s": {
+          "count": 0,
+          "n": 1,
+          "rate": 0.0,
+          "wilson95_descriptive": [
+            0.0,
+            0.7934506856227626
+          ]
+        },
+        "post_clear_3s_max_displacement_m": {
+          "n": 1,
+          "median": 0.8697317426787848,
+          "p95": 0.8697317426787848
+        },
+        "post_stand_3s_max_displacement_m": {
+          "n": 1,
+          "median": 0.0074054851392824465,
+          "p95": 0.0074054851392824465
+        }
+      },
+      "right_side_down": {
+        "n": 1,
+        "stable_1s": 1,
+        "stable_10s": 1,
+        "numerical_failures": 0,
+        "upright_reached": 1,
+        "direct_lift_clear_reached": 1,
+        "refall_after_stable_1s": 0,
+        "peak_tau_nm_trial_max_p95": 138.9999986621014,
+        "peak_tau_nm_max": 138.9999986621014,
+        "peak_dq_rad_s_trial_max_p95": 10.251657729846048,
+        "peak_dq_rad_s_max": 10.251657729846048,
+        "peak_power_w_trial_max_p95": 984.0156345173538,
+        "peak_power_w_max": 984.0156345173538,
+        "above_90pct_torque_s_trial_max_p95": 0.2580000000000002,
+        "above_90pct_torque_s_max": 0.2580000000000002,
+        "post_clear_path_m_mean_reached_only": 1.3573463840817448,
+        "post_clear_path_m_denominator": 1,
+        "post_clear_max_drift_m_mean_reached_only": 1.012537656381669,
+        "post_clear_max_drift_m_denominator": 1,
+        "first_direct_lift_clear_s_mean_reached_only": 0.38,
+        "first_direct_lift_clear_s_denominator": 1,
+        "first_upright_s_mean_reached_only": 2.74,
+        "first_upright_s_denominator": 1,
+        "quiet_stable_1s": {
+          "count": 1,
+          "n": 1,
+          "rate": 1.0,
+          "wilson95_descriptive": [
+            0.20654931437723745,
+            1.0
+          ]
+        },
+        "quiet_stable_10s": {
+          "count": 1,
+          "n": 1,
+          "rate": 1.0,
+          "wilson95_descriptive": [
+            0.20654931437723745,
+            1.0
+          ]
+        },
+        "success_1s": {
+          "count": 1,
+          "n": 1,
+          "rate": 1.0,
+          "wilson95_descriptive": [
+            0.20654931437723745,
+            1.0
+          ]
+        },
+        "success_10s": {
+          "count": 1,
+          "n": 1,
+          "rate": 1.0,
+          "wilson95_descriptive": [
+            0.20654931437723745,
+            1.0
+          ]
+        },
+        "quiet_refall_after_1s": {
+          "count": 0,
+          "n": 1,
+          "rate": 0.0,
+          "wilson95_descriptive": [
+            0.0,
+            0.7934506856227626
+          ]
+        },
+        "post_clear_3s_max_displacement_m": {
+          "n": 1,
+          "median": 1.012537656381669,
+          "p95": 1.012537656381669
+        },
+        "post_stand_3s_max_displacement_m": {
+          "n": 1,
+          "median": 0.0061128042602827835,
+          "p95": 0.0061128042602827835
+        }
+      },
+      "supine": {
+        "n": 1,
+        "stable_1s": 1,
+        "stable_10s": 1,
+        "numerical_failures": 0,
+        "upright_reached": 1,
+        "direct_lift_clear_reached": 1,
+        "refall_after_stable_1s": 0,
+        "peak_tau_nm_trial_max_p95": 138.99999489677128,
+        "peak_tau_nm_max": 138.99999489677128,
+        "peak_dq_rad_s_trial_max_p95": 10.135333357791911,
+        "peak_dq_rad_s_max": 10.135333357791911,
+        "peak_power_w_trial_max_p95": 866.839944679058,
+        "peak_power_w_max": 866.839944679058,
+        "above_90pct_torque_s_trial_max_p95": 0.1480000000000001,
+        "above_90pct_torque_s_max": 0.1480000000000001,
+        "post_clear_path_m_mean_reached_only": 1.0154342495824549,
+        "post_clear_path_m_denominator": 1,
+        "post_clear_max_drift_m_mean_reached_only": 0.5761555711605623,
+        "post_clear_max_drift_m_denominator": 1,
+        "first_direct_lift_clear_s_mean_reached_only": 0.38,
+        "first_direct_lift_clear_s_denominator": 1,
+        "first_upright_s_mean_reached_only": 2.58,
+        "first_upright_s_denominator": 1,
+        "quiet_stable_1s": {
+          "count": 1,
+          "n": 1,
+          "rate": 1.0,
+          "wilson95_descriptive": [
+            0.20654931437723745,
+            1.0
+          ]
+        },
+        "quiet_stable_10s": {
+          "count": 1,
+          "n": 1,
+          "rate": 1.0,
+          "wilson95_descriptive": [
+            0.20654931437723745,
+            1.0
+          ]
+        },
+        "success_1s": {
+          "count": 1,
+          "n": 1,
+          "rate": 1.0,
+          "wilson95_descriptive": [
+            0.20654931437723745,
+            1.0
+          ]
+        },
+        "success_10s": {
+          "count": 1,
+          "n": 1,
+          "rate": 1.0,
+          "wilson95_descriptive": [
+            0.20654931437723745,
+            1.0
+          ]
+        },
+        "quiet_refall_after_1s": {
+          "count": 0,
+          "n": 1,
+          "rate": 0.0,
+          "wilson95_descriptive": [
+            0.0,
+            0.7934506856227626
+          ]
+        },
+        "post_clear_3s_max_displacement_m": {
+          "n": 1,
+          "median": 0.5761555711605623,
+          "p95": 0.5761555711605623
+        },
+        "post_stand_3s_max_displacement_m": {
+          "n": 1,
+          "median": 0.005681358058578662,
+          "p95": 0.005681358058578662
+        }
+      }
+    },
+    "hollow_container": {
+      "left_side_down": {
+        "n": 30,
+        "stable_1s": 21,
+        "stable_10s": 21,
+        "numerical_failures": 0,
+        "upright_reached": 30,
+        "direct_lift_clear_reached": 22,
+        "refall_after_stable_1s": 0,
+        "peak_tau_nm_trial_max_p95": 139.0,
+        "peak_tau_nm_max": 139.0,
+        "peak_dq_rad_s_trial_max_p95": 14.936849567626192,
+        "peak_dq_rad_s_max": 16.486362982175375,
+        "peak_power_w_trial_max_p95": 1074.7069381062831,
+        "peak_power_w_max": 1100.4213314888773,
+        "above_90pct_torque_s_trial_max_p95": 0.6701000000000001,
+        "above_90pct_torque_s_max": 0.8500000000000006,
+        "post_clear_path_m_mean_reached_only": 0.29586191092140496,
+        "post_clear_path_m_denominator": 22,
+        "post_clear_max_drift_m_mean_reached_only": 0.1620724419505428,
+        "post_clear_max_drift_m_denominator": 22,
+        "first_direct_lift_clear_s_mean_reached_only": 2.289090909090909,
+        "first_direct_lift_clear_s_denominator": 22,
+        "first_upright_s_mean_reached_only": 2.9459999999999997,
+        "first_upright_s_denominator": 30,
+        "quiet_stable_1s": {
+          "count": 23,
+          "n": 30,
+          "rate": 0.7666666666666667,
+          "wilson95_descriptive": [
+            0.5907167384187784,
+            0.8820761185551049
+          ]
+        },
+        "quiet_stable_10s": {
+          "count": 23,
+          "n": 30,
+          "rate": 0.7666666666666667,
+          "wilson95_descriptive": [
+            0.5907167384187784,
+            0.8820761185551049
+          ]
+        },
+        "success_1s": {
+          "count": 21,
+          "n": 30,
+          "rate": 0.7,
+          "wilson95_descriptive": [
+            0.5212421254128504,
+            0.8333525173175619
+          ]
+        },
+        "success_10s": {
+          "count": 21,
+          "n": 30,
+          "rate": 0.7,
+          "wilson95_descriptive": [
+            0.5212421254128504,
+            0.8333525173175619
+          ]
+        },
+        "quiet_refall_after_1s": {
+          "count": 0,
+          "n": 30,
+          "rate": 0.0,
+          "wilson95_descriptive": [
+            0.0,
+            0.11351339317396876
+          ]
+        },
+        "post_clear_3s_max_displacement_m": {
+          "n": 22,
+          "median": 0.10364584616375098,
+          "p95": 0.5082432318175113
+        },
+        "post_stand_3s_max_displacement_m": {
+          "n": 23,
+          "median": 0.004941587046440081,
+          "p95": 0.008443784629000146
+        }
+      },
+      "prone": {
+        "n": 30,
+        "stable_1s": 26,
+        "stable_10s": 25,
+        "numerical_failures": 0,
+        "upright_reached": 30,
+        "direct_lift_clear_reached": 26,
+        "refall_after_stable_1s": 0,
+        "peak_tau_nm_trial_max_p95": 138.99999771633037,
+        "peak_tau_nm_max": 139.0,
+        "peak_dq_rad_s_trial_max_p95": 15.373209458438492,
+        "peak_dq_rad_s_max": 18.911656437186906,
+        "peak_power_w_trial_max_p95": 982.2079774283769,
+        "peak_power_w_max": 987.6937679483093,
+        "above_90pct_torque_s_trial_max_p95": 1.2977999999999998,
+        "above_90pct_torque_s_max": 1.9440000000000015,
+        "post_clear_path_m_mean_reached_only": 0.2735335538677038,
+        "post_clear_path_m_denominator": 26,
+        "post_clear_max_drift_m_mean_reached_only": 0.1353658367160726,
+        "post_clear_max_drift_m_denominator": 26,
+        "first_direct_lift_clear_s_mean_reached_only": 2.487692307692308,
+        "first_direct_lift_clear_s_denominator": 26,
+        "first_upright_s_mean_reached_only": 3.038666666666667,
+        "first_upright_s_denominator": 30,
+        "quiet_stable_1s": {
+          "count": 27,
+          "n": 30,
+          "rate": 0.9,
+          "wilson95_descriptive": [
+            0.7437891742081593,
+            0.9654001112526658
+          ]
+        },
+        "quiet_stable_10s": {
+          "count": 27,
+          "n": 30,
+          "rate": 0.9,
+          "wilson95_descriptive": [
+            0.7437891742081593,
+            0.9654001112526658
+          ]
+        },
+        "success_1s": {
+          "count": 26,
+          "n": 30,
+          "rate": 0.8666666666666667,
+          "wilson95_descriptive": [
+            0.703186733179637,
+            0.9469034451594526
+          ]
+        },
+        "success_10s": {
+          "count": 25,
+          "n": 30,
+          "rate": 0.8333333333333334,
+          "wilson95_descriptive": [
+            0.6643564949358398,
+            0.9266345762815145
+          ]
+        },
+        "quiet_refall_after_1s": {
+          "count": 0,
+          "n": 30,
+          "rate": 0.0,
+          "wilson95_descriptive": [
+            0.0,
+            0.11351339317396876
+          ]
+        },
+        "post_clear_3s_max_displacement_m": {
+          "n": 26,
+          "median": 0.0962295248004048,
+          "p95": 0.3874383746599975
+        },
+        "post_stand_3s_max_displacement_m": {
+          "n": 27,
+          "median": 0.004244287487798951,
+          "p95": 0.009481515863851583
+        }
+      },
+      "right_side_down": {
+        "n": 30,
+        "stable_1s": 29,
+        "stable_10s": 29,
+        "numerical_failures": 0,
+        "upright_reached": 29,
+        "direct_lift_clear_reached": 29,
+        "refall_after_stable_1s": 0,
+        "peak_tau_nm_trial_max_p95": 139.0,
+        "peak_tau_nm_max": 139.0,
+        "peak_dq_rad_s_trial_max_p95": 16.33767665000701,
+        "peak_dq_rad_s_max": 18.273776237241528,
+        "peak_power_w_trial_max_p95": 982.3034173621114,
+        "peak_power_w_max": 1125.6664859160883,
+        "above_90pct_torque_s_trial_max_p95": 2.149999999999974,
+        "above_90pct_torque_s_max": 3.4419999999998425,
+        "post_clear_path_m_mean_reached_only": 0.7548621667833482,
+        "post_clear_path_m_denominator": 29,
+        "post_clear_max_drift_m_mean_reached_only": 0.46772538018779164,
+        "post_clear_max_drift_m_denominator": 29,
+        "first_direct_lift_clear_s_mean_reached_only": 2.3696551724137924,
+        "first_direct_lift_clear_s_denominator": 29,
+        "first_upright_s_mean_reached_only": 3.8496551724137933,
+        "first_upright_s_denominator": 29,
+        "quiet_stable_1s": {
+          "count": 29,
+          "n": 30,
+          "rate": 0.9666666666666667,
+          "wilson95_descriptive": [
+            0.8332960900859082,
+            0.9940914096183874
+          ]
+        },
+        "quiet_stable_10s": {
+          "count": 29,
+          "n": 30,
+          "rate": 0.9666666666666667,
+          "wilson95_descriptive": [
+            0.8332960900859082,
+            0.9940914096183874
+          ]
+        },
+        "success_1s": {
+          "count": 29,
+          "n": 30,
+          "rate": 0.9666666666666667,
+          "wilson95_descriptive": [
+            0.8332960900859082,
+            0.9940914096183874
+          ]
+        },
+        "success_10s": {
+          "count": 29,
+          "n": 30,
+          "rate": 0.9666666666666667,
+          "wilson95_descriptive": [
+            0.8332960900859082,
+            0.9940914096183874
+          ]
+        },
+        "quiet_refall_after_1s": {
+          "count": 0,
+          "n": 30,
+          "rate": 0.0,
+          "wilson95_descriptive": [
+            0.0,
+            0.11351339317396876
+          ]
+        },
+        "post_clear_3s_max_displacement_m": {
+          "n": 29,
+          "median": 0.29540458667145375,
+          "p95": 1.3512534925011157
+        },
+        "post_stand_3s_max_displacement_m": {
+          "n": 29,
+          "median": 0.004510581232011152,
+          "p95": 0.009141987136943383
+        }
+      },
+      "supine": {
+        "n": 30,
+        "stable_1s": 23,
+        "stable_10s": 23,
+        "numerical_failures": 0,
+        "upright_reached": 30,
+        "direct_lift_clear_reached": 24,
+        "refall_after_stable_1s": 0,
+        "peak_tau_nm_trial_max_p95": 139.0,
+        "peak_tau_nm_max": 139.0,
+        "peak_dq_rad_s_trial_max_p95": 15.82363559562531,
+        "peak_dq_rad_s_max": 17.318214106906524,
+        "peak_power_w_trial_max_p95": 991.1325138492273,
+        "peak_power_w_max": 993.5609016525311,
+        "above_90pct_torque_s_trial_max_p95": 0.6097999999999995,
+        "above_90pct_torque_s_max": 0.7800000000000006,
+        "post_clear_path_m_mean_reached_only": 0.37865821981695574,
+        "post_clear_path_m_denominator": 24,
+        "post_clear_max_drift_m_mean_reached_only": 0.21180777077844445,
+        "post_clear_max_drift_m_denominator": 24,
+        "first_direct_lift_clear_s_mean_reached_only": 3.013333333333333,
+        "first_direct_lift_clear_s_denominator": 24,
+        "first_upright_s_mean_reached_only": 2.875333333333333,
+        "first_upright_s_denominator": 30,
+        "quiet_stable_1s": {
+          "count": 27,
+          "n": 30,
+          "rate": 0.9,
+          "wilson95_descriptive": [
+            0.7437891742081593,
+            0.9654001112526658
+          ]
+        },
+        "quiet_stable_10s": {
+          "count": 26,
+          "n": 30,
+          "rate": 0.8666666666666667,
+          "wilson95_descriptive": [
+            0.703186733179637,
+            0.9469034451594526
+          ]
+        },
+        "success_1s": {
+          "count": 23,
+          "n": 30,
+          "rate": 0.7666666666666667,
+          "wilson95_descriptive": [
+            0.5907167384187784,
+            0.8820761185551049
+          ]
+        },
+        "success_10s": {
+          "count": 23,
+          "n": 30,
+          "rate": 0.7666666666666667,
+          "wilson95_descriptive": [
+            0.5907167384187784,
+            0.8820761185551049
+          ]
+        },
+        "quiet_refall_after_1s": {
+          "count": 0,
+          "n": 30,
+          "rate": 0.0,
+          "wilson95_descriptive": [
+            0.0,
+            0.11351339317396876
+          ]
+        },
+        "post_clear_3s_max_displacement_m": {
+          "n": 23,
+          "median": 0.15285622076584654,
+          "p95": 0.6318984860995398
+        },
+        "post_stand_3s_max_displacement_m": {
+          "n": 26,
+          "median": 0.005254030475658533,
+          "p95": 0.00738989430768122
+        }
+      }
+    },
+    "ladder_boards": {
+      "left_side_down": {
+        "n": 30,
+        "stable_1s": 22,
+        "stable_10s": 21,
+        "numerical_failures": 0,
+        "upright_reached": 30,
+        "direct_lift_clear_reached": 25,
+        "refall_after_stable_1s": 0,
+        "peak_tau_nm_trial_max_p95": 139.0,
+        "peak_tau_nm_max": 139.0,
+        "peak_dq_rad_s_trial_max_p95": 13.985930335140893,
+        "peak_dq_rad_s_max": 14.370823585166377,
+        "peak_power_w_trial_max_p95": 1065.6529204231022,
+        "peak_power_w_max": 1136.194704235528,
+        "above_90pct_torque_s_trial_max_p95": 0.5611000000000004,
+        "above_90pct_torque_s_max": 0.5960000000000004,
+        "post_clear_path_m_mean_reached_only": 0.3556439161422592,
+        "post_clear_path_m_denominator": 25,
+        "post_clear_max_drift_m_mean_reached_only": 0.19903158499321602,
+        "post_clear_max_drift_m_denominator": 25,
+        "first_direct_lift_clear_s_mean_reached_only": 1.9280000000000002,
+        "first_direct_lift_clear_s_denominator": 25,
+        "first_upright_s_mean_reached_only": 2.666,
+        "first_upright_s_denominator": 30,
+        "quiet_stable_1s": {
+          "count": 28,
+          "n": 30,
+          "rate": 0.9333333333333333,
+          "wilson95_descriptive": [
+            0.7867654163738308,
+            0.9815229762087295
+          ]
+        },
+        "quiet_stable_10s": {
+          "count": 26,
+          "n": 30,
+          "rate": 0.8666666666666667,
+          "wilson95_descriptive": [
+            0.703186733179637,
+            0.9469034451594526
+          ]
+        },
+        "success_1s": {
+          "count": 22,
+          "n": 30,
+          "rate": 0.7333333333333333,
+          "wilson95_descriptive": [
+            0.555520383048111,
+            0.8581733668040368
+          ]
+        },
+        "success_10s": {
+          "count": 21,
+          "n": 30,
+          "rate": 0.7,
+          "wilson95_descriptive": [
+            0.5212421254128504,
+            0.8333525173175619
+          ]
+        },
+        "quiet_refall_after_1s": {
+          "count": 0,
+          "n": 30,
+          "rate": 0.0,
+          "wilson95_descriptive": [
+            0.0,
+            0.11351339317396876
+          ]
+        },
+        "post_clear_3s_max_displacement_m": {
+          "n": 25,
+          "median": 0.11484707518928577,
+          "p95": 0.7931778653443682
+        },
+        "post_stand_3s_max_displacement_m": {
+          "n": 28,
+          "median": 0.004313572690115017,
+          "p95": 0.008128898595089973
+        }
+      },
+      "prone": {
+        "n": 30,
+        "stable_1s": 25,
+        "stable_10s": 25,
+        "numerical_failures": 0,
+        "upright_reached": 30,
+        "direct_lift_clear_reached": 28,
+        "refall_after_stable_1s": 0,
+        "peak_tau_nm_trial_max_p95": 139.0,
+        "peak_tau_nm_max": 139.0,
+        "peak_dq_rad_s_trial_max_p95": 13.290114997160854,
+        "peak_dq_rad_s_max": 20.98675898002452,
+        "peak_power_w_trial_max_p95": 850.7437786291713,
+        "peak_power_w_max": 884.1095933100809,
+        "above_90pct_torque_s_trial_max_p95": 0.8335000000000005,
+        "above_90pct_torque_s_max": 0.9620000000000007,
+        "post_clear_path_m_mean_reached_only": 0.3650937175127084,
+        "post_clear_path_m_denominator": 28,
+        "post_clear_max_drift_m_mean_reached_only": 0.15791075109313354,
+        "post_clear_max_drift_m_denominator": 28,
+        "first_direct_lift_clear_s_mean_reached_only": 2.119285714285714,
+        "first_direct_lift_clear_s_denominator": 28,
+        "first_upright_s_mean_reached_only": 2.7479999999999998,
+        "first_upright_s_denominator": 30,
+        "quiet_stable_1s": {
+          "count": 29,
+          "n": 30,
+          "rate": 0.9666666666666667,
+          "wilson95_descriptive": [
+            0.8332960900859082,
+            0.9940914096183874
+          ]
+        },
+        "quiet_stable_10s": {
+          "count": 28,
+          "n": 30,
+          "rate": 0.9333333333333333,
+          "wilson95_descriptive": [
+            0.7867654163738308,
+            0.9815229762087295
+          ]
+        },
+        "success_1s": {
+          "count": 25,
+          "n": 30,
+          "rate": 0.8333333333333334,
+          "wilson95_descriptive": [
+            0.6643564949358398,
+            0.9266345762815145
+          ]
+        },
+        "success_10s": {
+          "count": 25,
+          "n": 30,
+          "rate": 0.8333333333333334,
+          "wilson95_descriptive": [
+            0.6643564949358398,
+            0.9266345762815145
+          ]
+        },
+        "quiet_refall_after_1s": {
+          "count": 0,
+          "n": 30,
+          "rate": 0.0,
+          "wilson95_descriptive": [
+            0.0,
+            0.11351339317396876
+          ]
+        },
+        "post_clear_3s_max_displacement_m": {
+          "n": 28,
+          "median": 0.10543785961048585,
+          "p95": 0.4205239594005504
+        },
+        "post_stand_3s_max_displacement_m": {
+          "n": 29,
+          "median": 0.005900860346031343,
+          "p95": 0.012323859878110967
+        }
+      },
+      "right_side_down": {
+        "n": 30,
+        "stable_1s": 23,
+        "stable_10s": 23,
+        "numerical_failures": 0,
+        "upright_reached": 30,
+        "direct_lift_clear_reached": 25,
+        "refall_after_stable_1s": 0,
+        "peak_tau_nm_trial_max_p95": 139.0,
+        "peak_tau_nm_max": 139.0,
+        "peak_dq_rad_s_trial_max_p95": 15.337734955818796,
+        "peak_dq_rad_s_max": 20.545244397962477,
+        "peak_power_w_trial_max_p95": 1014.1032207769306,
+        "peak_power_w_max": 1214.1998583420154,
+        "above_90pct_torque_s_trial_max_p95": 1.188799999999999,
+        "above_90pct_torque_s_max": 2.0699999999999936,
+        "post_clear_path_m_mean_reached_only": 0.5506216593643041,
+        "post_clear_path_m_denominator": 25,
+        "post_clear_max_drift_m_mean_reached_only": 0.3177383513708857,
+        "post_clear_max_drift_m_denominator": 25,
+        "first_direct_lift_clear_s_mean_reached_only": 2.18,
+        "first_direct_lift_clear_s_denominator": 25,
+        "first_upright_s_mean_reached_only": 3.4466666666666663,
+        "first_upright_s_denominator": 30,
+        "quiet_stable_1s": {
+          "count": 28,
+          "n": 30,
+          "rate": 0.9333333333333333,
+          "wilson95_descriptive": [
+            0.7867654163738308,
+            0.9815229762087295
+          ]
+        },
+        "quiet_stable_10s": {
+          "count": 27,
+          "n": 30,
+          "rate": 0.9,
+          "wilson95_descriptive": [
+            0.7437891742081593,
+            0.9654001112526658
+          ]
+        },
+        "success_1s": {
+          "count": 23,
+          "n": 30,
+          "rate": 0.7666666666666667,
+          "wilson95_descriptive": [
+            0.5907167384187784,
+            0.8820761185551049
+          ]
+        },
+        "success_10s": {
+          "count": 23,
+          "n": 30,
+          "rate": 0.7666666666666667,
+          "wilson95_descriptive": [
+            0.5907167384187784,
+            0.8820761185551049
+          ]
+        },
+        "quiet_refall_after_1s": {
+          "count": 0,
+          "n": 30,
+          "rate": 0.0,
+          "wilson95_descriptive": [
+            0.0,
+            0.11351339317396876
+          ]
+        },
+        "post_clear_3s_max_displacement_m": {
+          "n": 25,
+          "median": 0.21443377999723828,
+          "p95": 0.7677781484637661
+        },
+        "post_stand_3s_max_displacement_m": {
+          "n": 28,
+          "median": 0.005740247249496592,
+          "p95": 0.011277313368540291
+        }
+      },
+      "supine": {
+        "n": 30,
+        "stable_1s": 25,
+        "stable_10s": 23,
+        "numerical_failures": 0,
+        "upright_reached": 30,
+        "direct_lift_clear_reached": 27,
+        "refall_after_stable_1s": 0,
+        "peak_tau_nm_trial_max_p95": 139.0,
+        "peak_tau_nm_max": 139.0,
+        "peak_dq_rad_s_trial_max_p95": 14.914887370127014,
+        "peak_dq_rad_s_max": 17.618167415479277,
+        "peak_power_w_trial_max_p95": 1034.9184023379373,
+        "peak_power_w_max": 1684.1449178733144,
+        "above_90pct_torque_s_trial_max_p95": 0.4054000000000002,
+        "above_90pct_torque_s_max": 0.7700000000000006,
+        "post_clear_path_m_mean_reached_only": 0.3575012688639609,
+        "post_clear_path_m_denominator": 27,
+        "post_clear_max_drift_m_mean_reached_only": 0.18532588143730735,
+        "post_clear_max_drift_m_denominator": 27,
+        "first_direct_lift_clear_s_mean_reached_only": 2.968888888888889,
+        "first_direct_lift_clear_s_denominator": 27,
+        "first_upright_s_mean_reached_only": 3.738666666666666,
+        "first_upright_s_denominator": 30,
+        "quiet_stable_1s": {
+          "count": 28,
+          "n": 30,
+          "rate": 0.9333333333333333,
+          "wilson95_descriptive": [
+            0.7867654163738308,
+            0.9815229762087295
+          ]
+        },
+        "quiet_stable_10s": {
+          "count": 26,
+          "n": 30,
+          "rate": 0.8666666666666667,
+          "wilson95_descriptive": [
+            0.703186733179637,
+            0.9469034451594526
+          ]
+        },
+        "success_1s": {
+          "count": 25,
+          "n": 30,
+          "rate": 0.8333333333333334,
+          "wilson95_descriptive": [
+            0.6643564949358398,
+            0.9266345762815145
+          ]
+        },
+        "success_10s": {
+          "count": 23,
+          "n": 30,
+          "rate": 0.7666666666666667,
+          "wilson95_descriptive": [
+            0.5907167384187784,
+            0.8820761185551049
+          ]
+        },
+        "quiet_refall_after_1s": {
+          "count": 0,
+          "n": 30,
+          "rate": 0.0,
+          "wilson95_descriptive": [
+            0.0,
+            0.11351339317396876
+          ]
+        },
+        "post_clear_3s_max_displacement_m": {
+          "n": 27,
+          "median": 0.11491490328139622,
+          "p95": 0.6556067049561163
+        },
+        "post_stand_3s_max_displacement_m": {
+          "n": 27,
+          "median": 0.004305775547875574,
+          "p95": 0.008089464905177762
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,59 @@
+{
+  "created_unix_s": 1790873193.2022023,
+  "policy": {
+    "checkpoint_sha256": "24f1a4513cf5cabb9bd0b9ef54e90a3d50e625a87774878379af5da5dcf8fbd1",
+    "iteration": 9999,
+    "native_actor_parity_max_error": 0.0,
+    "observation_dim": 93
+  },
+  "deployment_fixture_max_error": 0.0,
+  "control_contract_equal": true,
+  "mujoco_version": "3.8.1",
+  "split": "heldout",
+  "index_sha256": "a54ed9e2066942e0d7535637e847ec6504d3113d90feaa4b23a2e36536c38c86",
+  "code_sha256": {
+    "evaluate_scene_generalization.py": "e3222fbfeb2a14204b374af8389aecf9b335cca409ab063494eedae30282861d",
+    "clutter_rollout.py": "b17e2eb349dd1b5ef93cc1afe10e526e991ff98a96f759221129ca15adbe9a57",
+    "clutter_benchmark.py": "0144bf920caac8303475ec7536d56f11e8cb191c2e32c3af6ef9d74c9f791bae",
+    "review_clutter_metrics.py": "4e064dd88892b6daf305cc0f77bddcdfa3b589d1f7ecd2b813e7c249a5389228"
+  },
+  "geometry_negative_controls_passed": [
+    "crossed_timber",
+    "fixed_c_space",
+    "hollow_container",
+    "ladder_boards"
+  ],
+  "scene_counts": {
+    "crossed_timber": 120,
+    "ladder_boards": 120,
+    "fixed_c_space": 120,
+    "hollow_container": 120
+  },
+  "source_counts": {
+    "natural": 360,
+    "procedural": 120
+  },
+  "direction_counts": {
+    "supine": 120,
+    "prone": 120,
+    "left_side_down": 120,
+    "right_side_down": 120
+  },
+  "distinct_source_poses": 94,
+  "seconds": 20,
+  "physics_dt": 0.002,
+  "control_dt": 0.02,
+  "entry_hold_s": 0.02,
+  "warmup_steps": 10,
+  "robot_dynamics": "nominal",
+  "obstacle_parameters": "frozen per-case dimensions, mass, friction, placement",
+  "push": false,
+  "observation_noise": false,
+  "training_changed": false,
+  "success": "E10: quiet standing AND direct rigid-lift clearance for 10 continuous seconds; Q10 reports quiet standing alone",
+  "clearance_semantics": "conservative rigid vertical lift diagnostic, not articulated reachability; differs from plate phase evaluation",
+  "source_status": "existing development reset assets; heldout only from this benchmark development split, not prior-training data",
+  "scope": "simulation generalization; no hardware substitution, no checkpoint selection; fixed C reported separately from movable obstacles",
+  "confidence_interval_scope": "descriptive Wilson over trials; repeated source poses/layouts mean these are not independent training seeds",
+  "preflight_only": false
+}

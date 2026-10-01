@@ -1,0 +1,853 @@
+{
+  "selection": "all Q10 true/E10 false; longest quiet-hold frame, no resampling or relabeling",
+  "n": 34,
+  "part_categories": {
+    "foot": 12,
+    "unblocked_at_sample": 2,
+    "foot+other_body": 2,
+    "other_body": 14,
+    "hand": 3,
+    "foot+hand": 1
+  },
+  "families": {
+    "crossed_timber": 11,
+    "fixed_c_space": 1,
+    "hollow_container": 7,
+    "ladder_boards": 15
+  },
+  "rows": [
+    {
+      "case_id": "crossed_timber__left_side_down__l1__v01",
+      "family": "crossed_timber",
+      "sample_t_s": 20.0,
+      "quiet_hold_s": 16.979999999999727,
+      "probe_blocked": true,
+      "parts": [
+        "foot"
+      ],
+      "pairs": [
+        [
+          "left_foot2_collision",
+          "timber_0_0"
+        ],
+        [
+          "left_foot3_collision",
+          "timber_0_0"
+        ],
+        [
+          "left_foot4_collision",
+          "timber_0_0"
+        ],
+        [
+          "left_foot5_collision",
+          "timber_0_0"
+        ],
+        [
+          "left_foot6_collision",
+          "timber_0_0"
+        ]
+      ],
+      "unchanged_E10": false,
+      "Q10": true
+    },
+    {
+      "case_id": "crossed_timber__prone__l0__v06",
+      "family": "crossed_timber",
+      "sample_t_s": 20.0,
+      "quiet_hold_s": 16.919999999999728,
+      "probe_blocked": false,
+      "parts": [],
+      "pairs": [],
+      "unchanged_E10": false,
+      "Q10": true
+    },
+    {
+      "case_id": "crossed_timber__prone__l1__v05",
+      "family": "crossed_timber",
+      "sample_t_s": 20.0,
+      "quiet_hold_s": 16.939999999999728,
+      "probe_blocked": true,
+      "parts": [
+        "foot"
+      ],
+      "pairs": [
+        [
+          "right_foot2_collision",
+          "timber_2_0"
+        ],
+        [
+          "right_foot3_collision",
+          "timber_2_0"
+        ],
+        [
+          "right_foot4_collision",
+          "timber_2_0"
+        ],
+        [
+          "right_foot5_collision",
+          "timber_2_0"
+        ],
+        [
+          "right_foot6_collision",
+          "timber_2_0"
+        ]
+      ],
+      "unchanged_E10": false,
+      "Q10": true
+    },
+    {
+      "case_id": "crossed_timber__prone__l2__v04",
+      "family": "crossed_timber",
+      "sample_t_s": 20.0,
+      "quiet_hold_s": 16.31999999999974,
+      "probe_blocked": true,
+      "parts": [
+        "foot",
+        "other_body"
+      ],
+      "pairs": [
+        [
+          "left_foot2_collision",
+          "timber_3_0"
+        ],
+        [
+          "left_foot3_collision",
+          "timber_3_0"
+        ],
+        [
+          "left_foot4_collision",
+          "timber_3_0"
+        ],
+        [
+          "left_foot5_collision",
+          "timber_3_0"
+        ],
+        [
+          "left_foot6_collision",
+          "timber_3_0"
+        ],
+        [
+          "left_foot7_collision",
+          "timber_3_0"
+        ],
+        [
+          "pelvis_collision",
+          "timber_1_0"
+        ]
+      ],
+      "unchanged_E10": false,
+      "Q10": true
+    },
+    {
+      "case_id": "crossed_timber__right_side_down__l0__v04",
+      "family": "crossed_timber",
+      "sample_t_s": 20.0,
+      "quiet_hold_s": 16.719999999999732,
+      "probe_blocked": true,
+      "parts": [
+        "other_body"
+      ],
+      "pairs": [
+        [
+          "right_thigh",
+          "timber_1_0"
+        ]
+      ],
+      "unchanged_E10": false,
+      "Q10": true
+    },
+    {
+      "case_id": "crossed_timber__right_side_down__l1__v01",
+      "family": "crossed_timber",
+      "sample_t_s": 20.0,
+      "quiet_hold_s": 16.459999999999738,
+      "probe_blocked": true,
+      "parts": [
+        "other_body"
+      ],
+      "pairs": [
+        [
+          "right_thigh",
+          "timber_2_0"
+        ]
+      ],
+      "unchanged_E10": false,
+      "Q10": true
+    },
+    {
+      "case_id": "crossed_timber__right_side_down__l1__v09",
+      "family": "crossed_timber",
+      "sample_t_s": 20.0,
+      "quiet_hold_s": 14.47999999999978,
+      "probe_blocked": true,
+      "parts": [
+        "other_body"
+      ],
+      "pairs": [
+        [
+          "left_thigh",
+          "timber_0_0"
+        ]
+      ],
+      "unchanged_E10": false,
+      "Q10": true
+    },
+    {
+      "case_id": "crossed_timber__right_side_down__l2__v00",
+      "family": "crossed_timber",
+      "sample_t_s": 20.0,
+      "quiet_hold_s": 15.759999999999753,
+      "probe_blocked": true,
+      "parts": [
+        "foot"
+      ],
+      "pairs": [
+        [
+          "right_foot4_collision",
+          "timber_0_0"
+        ],
+        [
+          "right_foot5_collision",
+          "timber_0_0"
+        ],
+        [
+          "right_foot6_collision",
+          "timber_0_0"
+        ]
+      ],
+      "unchanged_E10": false,
+      "Q10": true
+    },
+    {
+      "case_id": "crossed_timber__supine__l1__v00",
+      "family": "crossed_timber",
+      "sample_t_s": 20.0,
+      "quiet_hold_s": 17.039999999999726,
+      "probe_blocked": true,
+      "parts": [
+        "foot"
+      ],
+      "pairs": [
+        [
+          "right_foot5_collision",
+          "timber_0_0"
+        ],
+        [
+          "right_foot6_collision",
+          "timber_0_0"
+        ],
+        [
+          "right_foot7_collision",
+          "timber_0_0"
+        ]
+      ],
+      "unchanged_E10": false,
+      "Q10": true
+    },
+    {
+      "case_id": "crossed_timber__supine__l2__v05",
+      "family": "crossed_timber",
+      "sample_t_s": 20.0,
+      "quiet_hold_s": 17.059999999999725,
+      "probe_blocked": true,
+      "parts": [
+        "foot"
+      ],
+      "pairs": [
+        [
+          "right_foot1_collision",
+          "timber_0_0"
+        ],
+        [
+          "right_foot2_collision",
+          "timber_0_0"
+        ],
+        [
+          "right_foot3_collision",
+          "timber_0_0"
+        ],
+        [
+          "right_foot4_collision",
+          "timber_0_0"
+        ],
+        [
+          "right_foot5_collision",
+          "timber_0_0"
+        ],
+        [
+          "right_foot6_collision",
+          "timber_0_0"
+        ],
+        [
+          "right_foot7_collision",
+          "timber_0_0"
+        ]
+      ],
+      "unchanged_E10": false,
+      "Q10": true
+    },
+    {
+      "case_id": "crossed_timber__supine__l2__v06",
+      "family": "crossed_timber",
+      "sample_t_s": 20.0,
+      "quiet_hold_s": 16.999999999999726,
+      "probe_blocked": true,
+      "parts": [
+        "foot",
+        "other_body"
+      ],
+      "pairs": [
+        [
+          "left_foot2_collision",
+          "timber_0_0"
+        ],
+        [
+          "left_foot3_collision",
+          "timber_0_0"
+        ],
+        [
+          "left_foot4_collision",
+          "timber_0_0"
+        ],
+        [
+          "left_foot5_collision",
+          "timber_0_0"
+        ],
+        [
+          "left_foot6_collision",
+          "timber_0_0"
+        ],
+        [
+          "left_shin",
+          "timber_3_0"
+        ]
+      ],
+      "unchanged_E10": false,
+      "Q10": true
+    },
+    {
+      "case_id": "fixed_c_space__left_side_down__l1__v04",
+      "family": "fixed_c_space",
+      "sample_t_s": 20.0,
+      "quiet_hold_s": 17.29999999999972,
+      "probe_blocked": true,
+      "parts": [
+        "hand"
+      ],
+      "pairs": [
+        [
+          "left_hand_collision",
+          "c_frame_0"
+        ]
+      ],
+      "unchanged_E10": false,
+      "Q10": true
+    },
+    {
+      "case_id": "hollow_container__left_side_down__l0__v00",
+      "family": "hollow_container",
+      "sample_t_s": 20.0,
+      "quiet_hold_s": 16.37999999999974,
+      "probe_blocked": true,
+      "parts": [
+        "foot"
+      ],
+      "pairs": [
+        [
+          "right_foot1_collision",
+          "container_1"
+        ],
+        [
+          "right_foot2_collision",
+          "container_1"
+        ],
+        [
+          "right_foot3_collision",
+          "container_1"
+        ]
+      ],
+      "unchanged_E10": false,
+      "Q10": true
+    },
+    {
+      "case_id": "hollow_container__left_side_down__l0__v03",
+      "family": "hollow_container",
+      "sample_t_s": 20.0,
+      "quiet_hold_s": 17.29999999999972,
+      "probe_blocked": true,
+      "parts": [
+        "foot",
+        "hand"
+      ],
+      "pairs": [
+        [
+          "right_foot1_collision",
+          "container_2"
+        ],
+        [
+          "right_foot2_collision",
+          "container_2"
+        ],
+        [
+          "right_hand_collision",
+          "container_4"
+        ]
+      ],
+      "unchanged_E10": false,
+      "Q10": true
+    },
+    {
+      "case_id": "hollow_container__prone__l1__v02",
+      "family": "hollow_container",
+      "sample_t_s": 20.0,
+      "quiet_hold_s": 14.199999999999786,
+      "probe_blocked": true,
+      "parts": [
+        "other_body"
+      ],
+      "pairs": [
+        [
+          "head_collision",
+          "container_0"
+        ],
+        [
+          "head_collision",
+          "container_4"
+        ],
+        [
+          "left_thigh",
+          "container_2"
+        ],
+        [
+          "right_shin",
+          "container_2"
+        ]
+      ],
+      "unchanged_E10": false,
+      "Q10": true
+    },
+    {
+      "case_id": "hollow_container__prone__l2__v02",
+      "family": "hollow_container",
+      "sample_t_s": 20.0,
+      "quiet_hold_s": 10.319999999999869,
+      "probe_blocked": false,
+      "parts": [],
+      "pairs": [],
+      "unchanged_E10": false,
+      "Q10": true
+    },
+    {
+      "case_id": "hollow_container__supine__l0__v04",
+      "family": "hollow_container",
+      "sample_t_s": 20.0,
+      "quiet_hold_s": 15.219999999999764,
+      "probe_blocked": true,
+      "parts": [
+        "other_body"
+      ],
+      "pairs": [
+        [
+          "head_collision",
+          "container_3"
+        ],
+        [
+          "left_thigh",
+          "container_1"
+        ]
+      ],
+      "unchanged_E10": false,
+      "Q10": true
+    },
+    {
+      "case_id": "hollow_container__supine__l0__v05",
+      "family": "hollow_container",
+      "sample_t_s": 20.0,
+      "quiet_hold_s": 16.559999999999736,
+      "probe_blocked": true,
+      "parts": [
+        "foot"
+      ],
+      "pairs": [
+        [
+          "right_foot1_collision",
+          "container_1"
+        ],
+        [
+          "right_foot2_collision",
+          "container_1"
+        ],
+        [
+          "right_foot3_collision",
+          "container_1"
+        ],
+        [
+          "right_foot4_collision",
+          "container_1"
+        ],
+        [
+          "right_foot5_collision",
+          "container_1"
+        ],
+        [
+          "right_foot6_collision",
+          "container_1"
+        ],
+        [
+          "right_foot7_collision",
+          "container_1"
+        ]
+      ],
+      "unchanged_E10": false,
+      "Q10": true
+    },
+    {
+      "case_id": "hollow_container__supine__l0__v08",
+      "family": "hollow_container",
+      "sample_t_s": 20.0,
+      "quiet_hold_s": 14.579999999999778,
+      "probe_blocked": true,
+      "parts": [
+        "other_body"
+      ],
+      "pairs": [
+        [
+          "head_collision",
+          "container_4"
+        ],
+        [
+          "left_thigh",
+          "container_2"
+        ]
+      ],
+      "unchanged_E10": false,
+      "Q10": true
+    },
+    {
+      "case_id": "ladder_boards__left_side_down__l0__v00",
+      "family": "ladder_boards",
+      "sample_t_s": 20.0,
+      "quiet_hold_s": 16.119999999999745,
+      "probe_blocked": true,
+      "parts": [
+        "hand"
+      ],
+      "pairs": [
+        [
+          "right_hand_collision",
+          "ladder_5"
+        ]
+      ],
+      "unchanged_E10": false,
+      "Q10": true
+    },
+    {
+      "case_id": "ladder_boards__left_side_down__l1__v03",
+      "family": "ladder_boards",
+      "sample_t_s": 20.0,
+      "quiet_hold_s": 17.399999999999718,
+      "probe_blocked": true,
+      "parts": [
+        "foot"
+      ],
+      "pairs": [
+        [
+          "left_foot6_collision",
+          "ladder_0"
+        ]
+      ],
+      "unchanged_E10": false,
+      "Q10": true
+    },
+    {
+      "case_id": "ladder_boards__left_side_down__l1__v09",
+      "family": "ladder_boards",
+      "sample_t_s": 20.0,
+      "quiet_hold_s": 16.999999999999726,
+      "probe_blocked": true,
+      "parts": [
+        "other_body"
+      ],
+      "pairs": [
+        [
+          "right_elbow_yaw_collision",
+          "ladder_5"
+        ],
+        [
+          "right_shoulder_yaw_collision",
+          "ladder_5"
+        ]
+      ],
+      "unchanged_E10": false,
+      "Q10": true
+    },
+    {
+      "case_id": "ladder_boards__left_side_down__l2__v03",
+      "family": "ladder_boards",
+      "sample_t_s": 20.0,
+      "quiet_hold_s": 16.89999999999973,
+      "probe_blocked": true,
+      "parts": [
+        "other_body"
+      ],
+      "pairs": [
+        [
+          "left_shin",
+          "ladder_2"
+        ]
+      ],
+      "unchanged_E10": false,
+      "Q10": true
+    },
+    {
+      "case_id": "ladder_boards__left_side_down__l2__v09",
+      "family": "ladder_boards",
+      "sample_t_s": 20.0,
+      "quiet_hold_s": 17.079999999999725,
+      "probe_blocked": true,
+      "parts": [
+        "other_body"
+      ],
+      "pairs": [
+        [
+          "pelvis_collision",
+          "ladder_board_0_0"
+        ]
+      ],
+      "unchanged_E10": false,
+      "Q10": true
+    },
+    {
+      "case_id": "ladder_boards__prone__l0__v09",
+      "family": "ladder_boards",
+      "sample_t_s": 20.0,
+      "quiet_hold_s": 15.199999999999765,
+      "probe_blocked": true,
+      "parts": [
+        "foot"
+      ],
+      "pairs": [
+        [
+          "right_foot1_collision",
+          "ladder_5"
+        ],
+        [
+          "right_foot2_collision",
+          "ladder_5"
+        ],
+        [
+          "right_foot3_collision",
+          "ladder_5"
+        ],
+        [
+          "right_foot4_collision",
+          "ladder_5"
+        ],
+        [
+          "right_foot5_collision",
+          "ladder_5"
+        ],
+        [
+          "right_foot6_collision",
+          "ladder_5"
+        ],
+        [
+          "right_foot7_collision",
+          "ladder_5"
+        ]
+      ],
+      "unchanged_E10": false,
+      "Q10": true
+    },
+    {
+      "case_id": "ladder_boards__prone__l1__v09",
+      "family": "ladder_boards",
+      "sample_t_s": 20.0,
+      "quiet_hold_s": 16.75999999999973,
+      "probe_blocked": true,
+      "parts": [
+        "foot"
+      ],
+      "pairs": [
+        [
+          "left_foot6_collision",
+          "ladder_0"
+        ],
+        [
+          "left_foot7_collision",
+          "ladder_0"
+        ]
+      ],
+      "unchanged_E10": false,
+      "Q10": true
+    },
+    {
+      "case_id": "ladder_boards__prone__l2__v09",
+      "family": "ladder_boards",
+      "sample_t_s": 20.0,
+      "quiet_hold_s": 10.959999999999855,
+      "probe_blocked": true,
+      "parts": [
+        "foot"
+      ],
+      "pairs": [
+        [
+          "right_foot2_collision",
+          "ladder_0"
+        ],
+        [
+          "right_foot3_collision",
+          "ladder_0"
+        ],
+        [
+          "right_foot4_collision",
+          "ladder_0"
+        ]
+      ],
+      "unchanged_E10": false,
+      "Q10": true
+    },
+    {
+      "case_id": "ladder_boards__right_side_down__l0__v05",
+      "family": "ladder_boards",
+      "sample_t_s": 20.0,
+      "quiet_hold_s": 16.79999999999973,
+      "probe_blocked": true,
+      "parts": [
+        "hand"
+      ],
+      "pairs": [
+        [
+          "right_hand_collision",
+          "ladder_5"
+        ]
+      ],
+      "unchanged_E10": false,
+      "Q10": true
+    },
+    {
+      "case_id": "ladder_boards__right_side_down__l0__v08",
+      "family": "ladder_boards",
+      "sample_t_s": 20.0,
+      "quiet_hold_s": 15.279999999999763,
+      "probe_blocked": true,
+      "parts": [
+        "other_body"
+      ],
+      "pairs": [
+        [
+          "right_shoulder_yaw_collision",
+          "ladder_0"
+        ]
+      ],
+      "unchanged_E10": false,
+      "Q10": true
+    },
+    {
+      "case_id": "ladder_boards__right_side_down__l1__v07",
+      "family": "ladder_boards",
+      "sample_t_s": 20.0,
+      "quiet_hold_s": 13.179999999999808,
+      "probe_blocked": true,
+      "parts": [
+        "other_body"
+      ],
+      "pairs": [
+        [
+          "left_shin",
+          "ladder_1"
+        ]
+      ],
+      "unchanged_E10": false,
+      "Q10": true
+    },
+    {
+      "case_id": "ladder_boards__right_side_down__l2__v00",
+      "family": "ladder_boards",
+      "sample_t_s": 20.0,
+      "quiet_hold_s": 16.83999999999973,
+      "probe_blocked": true,
+      "parts": [
+        "other_body"
+      ],
+      "pairs": [
+        [
+          "left_thigh",
+          "ladder_1"
+        ],
+        [
+          "left_thigh",
+          "ladder_board_1_0"
+        ]
+      ],
+      "unchanged_E10": false,
+      "Q10": true
+    },
+    {
+      "case_id": "ladder_boards__supine__l0__v06",
+      "family": "ladder_boards",
+      "sample_t_s": 17.2,
+      "quiet_hold_s": 14.079999999999789,
+      "probe_blocked": true,
+      "parts": [
+        "other_body"
+      ],
+      "pairs": [
+        [
+          "right_shin",
+          "ladder_0"
+        ]
+      ],
+      "unchanged_E10": false,
+      "Q10": true
+    },
+    {
+      "case_id": "ladder_boards__supine__l1__v04",
+      "family": "ladder_boards",
+      "sample_t_s": 20.0,
+      "quiet_hold_s": 16.79999999999973,
+      "probe_blocked": true,
+      "parts": [
+        "other_body"
+      ],
+      "pairs": [
+        [
+          "right_thigh",
+          "ladder_1"
+        ]
+      ],
+      "unchanged_E10": false,
+      "Q10": true
+    },
+    {
+      "case_id": "ladder_boards__supine__l1__v09",
+      "family": "ladder_boards",
+      "sample_t_s": 20.0,
+      "quiet_hold_s": 10.29999999999987,
+      "probe_blocked": true,
+      "parts": [
+        "foot"
+      ],
+      "pairs": [
+        [
+          "right_foot2_collision",
+          "ladder_0"
+        ],
+        [
+          "right_foot3_collision",
+          "ladder_0"
+        ],
+        [
+          "right_foot4_collision",
+          "ladder_0"
+        ],
+        [
+          "right_foot5_collision",
+          "ladder_0"
+        ]
+      ],
+      "unchanged_E10": false,
+      "Q10": true
+    }
+  ]
+}

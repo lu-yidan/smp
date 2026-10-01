@@ -1,0 +1,25 @@
+{
+  "rule": "layout1 variant0 all directions, fixed before reviewing outcomes",
+  "cases": [
+    "crossed_timber__supine__l1__v00",
+    "crossed_timber__prone__l1__v00",
+    "crossed_timber__left_side_down__l1__v00",
+    "crossed_timber__right_side_down__l1__v00",
+    "ladder_boards__supine__l1__v00",
+    "ladder_boards__prone__l1__v00",
+    "ladder_boards__left_side_down__l1__v00",
+    "ladder_boards__right_side_down__l1__v00",
+    "hollow_container__supine__l1__v00",
+    "hollow_container__prone__l1__v00",
+    "hollow_container__left_side_down__l1__v00",
+    "hollow_container__right_side_down__l1__v00",
+    "fixed_c_space__supine__l1__v00",
+    "fixed_c_space__prone__l1__v00",
+    "fixed_c_space__left_side_down__l1__v00",
+    "fixed_c_space__right_side_down__l1__v00"
+  ],
+  "duration_s": 20,
+  "playback_speed": 1,
+  "policy": "A6_no_alpha_9999",
+  "scope": "simulation; no hardware"
+}

@@ -34,6 +34,7 @@ MUJOCO_GL=egl ./recovery build pyramid_stairs --site edge --direction right_side
 |三阶段reward总表及细表|[LaTeX总表](/home/luyd/workspace/G1_Recovery_Below_Block/sections/reward_stage_table.tex)、[公式细表](/home/luyd/workspace/G1_Recovery_Below_Block/sections/appendix_implementation.tex)|
 |最近ES结果|[最终分析](../es_final_review_20260923_zh.md)|
 |M系列训练完成与新杂物最终评估|[2026-09-24最终评估与视频](clutter_final_review_20260924_zh.md)|
+|冻结策略场景泛化与板参数敏感性（2026-10-02）|[协议、结果与视频](a6_sim_generalization_20261002_zh.md)|
 |上方杂物R2/A6/M2开发集结果|[首轮评测与视频](clutter_eval_v1_zh.md)|
 |上方杂物冻结场景与评测初态（新）|[v2 使用与验收](clutter_benchmark_v2_zh.md)，`./recovery clutter-list`|
 |上方木条、梯架、空箱的评估与道具候选|[场景与采购计划](overhead_clutter_evaluation_plan_20260923_zh.md)（采购设计稿；场景已实现）|

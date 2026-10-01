@@ -1,0 +1,54 @@
+{
+  "crossed_timber_four_directions_20s.mp4": {
+    "programs": [],
+    "streams": [
+      {
+        "width": 1280,
+        "height": 800,
+        "nb_frames": "500"
+      }
+    ],
+    "format": {
+      "duration": "20.000000"
+    }
+  },
+  "fixed_c_space_four_directions_20s.mp4": {
+    "programs": [],
+    "streams": [
+      {
+        "width": 1280,
+        "height": 800,
+        "nb_frames": "500"
+      }
+    ],
+    "format": {
+      "duration": "20.000000"
+    }
+  },
+  "hollow_container_four_directions_20s.mp4": {
+    "programs": [],
+    "streams": [
+      {
+        "width": 1280,
+        "height": 800,
+        "nb_frames": "500"
+      }
+    ],
+    "format": {
+      "duration": "20.000000"
+    }
+  },
+  "ladder_boards_four_directions_20s.mp4": {
+    "programs": [],
+    "streams": [
+      {
+        "width": 1280,
+        "height": 800,
+        "nb_frames": "500"
+      }
+    ],
+    "format": {
+      "duration": "20.000000"
+    }
+  }
+}
