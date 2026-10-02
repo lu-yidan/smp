@@ -1,0 +1,16 @@
+{
+  "file": "outputs/a6_confirmatory_review_20261002_10k/videos/guided_prone_four_arms_10k.mp4",
+  "sha256": "891762c1baf07f8c1c4fd53513e6c644ee99da5d1a7a7e5790ae742648cd1b10",
+  "seed": 20261021,
+  "iteration": 10000,
+  "direction": "prone",
+  "selection": "first environment per direction, inherited from preregistered renderer; no success selection",
+  "duration_s": 20,
+  "playback_speed": 1,
+  "layout": [
+    "C20_full",
+    "C20_no_geometry",
+    "C20_no_Q",
+    "C20_no_L"
+  ]
+}

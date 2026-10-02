@@ -1,0 +1,29 @@
+{
+  "arms": [
+    "C20_full",
+    "C20_no_geometry",
+    "C20_no_Q",
+    "C20_no_L"
+  ],
+  "seeds": [
+    20261021,
+    20261022,
+    20261023
+  ],
+  "updates": 20000,
+  "num_envs": 4096,
+  "actor_parent": "R2_9000",
+  "alpha": 1.0,
+  "save_interval": 500,
+  "evaluation_updates": [
+    5000,
+    10000,
+    15000,
+    19999
+  ],
+  "eval_seed": 20261013,
+  "evaluation_note": "10k/final: 2048 rollouts per suite; nominal and upper130; fixed validation, not held-out.",
+  "training_branch": "codex/a6-alpha1-confirmatory-20k",
+  "source_script_sha256": "d2cefcc821955e59262c892808d2346bda71ef843ec65b5b146dc9a48901c967",
+  "training_commit": "9becb38"
+}

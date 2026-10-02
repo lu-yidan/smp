@@ -1,0 +1,220 @@
+{
+  "jobs": [
+    {
+      "arm": "C20_full",
+      "seed": 20261021,
+      "state": "running",
+      "gpu": 0,
+      "pid": 1097840,
+      "out": "/mnt/workspace/user/luyidan/smp-a6-paper/logs/rsl_rl/a6_confirmatory/formal_20261001_20k/seed20261021/C20_full",
+      "args": [
+        ".venv/bin/python",
+        "-u",
+        "scripts/train_a6_confirmatory.py",
+        "--arm",
+        "C20_full",
+        "--seed",
+        "20261021",
+        "--out",
+        "/mnt/workspace/user/luyidan/smp-a6-paper/logs/rsl_rl/a6_confirmatory/formal_20261001_20k/seed20261021/C20_full",
+        "--num-envs",
+        "4096",
+        "--updates",
+        "20000",
+        "--eval-gpu",
+        "7",
+        "--eval-seed",
+        "20261013"
+      ]
+    },
+    {
+      "arm": "C20_no_geometry",
+      "seed": 20261021,
+      "state": "running",
+      "gpu": 1,
+      "pid": 1097841,
+      "out": "/mnt/workspace/user/luyidan/smp-a6-paper/logs/rsl_rl/a6_confirmatory/formal_20261001_20k/seed20261021/C20_no_geometry",
+      "args": [
+        ".venv/bin/python",
+        "-u",
+        "scripts/train_a6_confirmatory.py",
+        "--arm",
+        "C20_no_geometry",
+        "--seed",
+        "20261021",
+        "--out",
+        "/mnt/workspace/user/luyidan/smp-a6-paper/logs/rsl_rl/a6_confirmatory/formal_20261001_20k/seed20261021/C20_no_geometry",
+        "--num-envs",
+        "4096",
+        "--updates",
+        "20000",
+        "--eval-gpu",
+        "7",
+        "--eval-seed",
+        "20261013"
+      ]
+    },
+    {
+      "arm": "C20_no_Q",
+      "seed": 20261021,
+      "state": "running",
+      "gpu": 2,
+      "pid": 1097842,
+      "out": "/mnt/workspace/user/luyidan/smp-a6-paper/logs/rsl_rl/a6_confirmatory/formal_20261001_20k/seed20261021/C20_no_Q",
+      "args": [
+        ".venv/bin/python",
+        "-u",
+        "scripts/train_a6_confirmatory.py",
+        "--arm",
+        "C20_no_Q",
+        "--seed",
+        "20261021",
+        "--out",
+        "/mnt/workspace/user/luyidan/smp-a6-paper/logs/rsl_rl/a6_confirmatory/formal_20261001_20k/seed20261021/C20_no_Q",
+        "--num-envs",
+        "4096",
+        "--updates",
+        "20000",
+        "--eval-gpu",
+        "7",
+        "--eval-seed",
+        "20261013"
+      ]
+    },
+    {
+      "arm": "C20_no_L",
+      "seed": 20261021,
+      "state": "running",
+      "gpu": 3,
+      "pid": 1097843,
+      "out": "/mnt/workspace/user/luyidan/smp-a6-paper/logs/rsl_rl/a6_confirmatory/formal_20261001_20k/seed20261021/C20_no_L",
+      "args": [
+        ".venv/bin/python",
+        "-u",
+        "scripts/train_a6_confirmatory.py",
+        "--arm",
+        "C20_no_L",
+        "--seed",
+        "20261021",
+        "--out",
+        "/mnt/workspace/user/luyidan/smp-a6-paper/logs/rsl_rl/a6_confirmatory/formal_20261001_20k/seed20261021/C20_no_L",
+        "--num-envs",
+        "4096",
+        "--updates",
+        "20000",
+        "--eval-gpu",
+        "7",
+        "--eval-seed",
+        "20261013"
+      ]
+    },
+    {
+      "arm": "C20_full",
+      "seed": 20261022,
+      "state": "running",
+      "gpu": 4,
+      "pid": 1097850,
+      "out": "/mnt/workspace/user/luyidan/smp-a6-paper/logs/rsl_rl/a6_confirmatory/formal_20261001_20k/seed20261022/C20_full",
+      "args": [
+        ".venv/bin/python",
+        "-u",
+        "scripts/train_a6_confirmatory.py",
+        "--arm",
+        "C20_full",
+        "--seed",
+        "20261022",
+        "--out",
+        "/mnt/workspace/user/luyidan/smp-a6-paper/logs/rsl_rl/a6_confirmatory/formal_20261001_20k/seed20261022/C20_full",
+        "--num-envs",
+        "4096",
+        "--updates",
+        "20000",
+        "--eval-gpu",
+        "7",
+        "--eval-seed",
+        "20261013"
+      ]
+    },
+    {
+      "arm": "C20_no_geometry",
+      "seed": 20261022,
+      "state": "running",
+      "gpu": 5,
+      "pid": 1097854,
+      "out": "/mnt/workspace/user/luyidan/smp-a6-paper/logs/rsl_rl/a6_confirmatory/formal_20261001_20k/seed20261022/C20_no_geometry",
+      "args": [
+        ".venv/bin/python",
+        "-u",
+        "scripts/train_a6_confirmatory.py",
+        "--arm",
+        "C20_no_geometry",
+        "--seed",
+        "20261022",
+        "--out",
+        "/mnt/workspace/user/luyidan/smp-a6-paper/logs/rsl_rl/a6_confirmatory/formal_20261001_20k/seed20261022/C20_no_geometry",
+        "--num-envs",
+        "4096",
+        "--updates",
+        "20000",
+        "--eval-gpu",
+        "7",
+        "--eval-seed",
+        "20261013"
+      ]
+    },
+    {
+      "arm": "C20_no_Q",
+      "seed": 20261022,
+      "state": "running",
+      "gpu": 6,
+      "pid": 1097858,
+      "out": "/mnt/workspace/user/luyidan/smp-a6-paper/logs/rsl_rl/a6_confirmatory/formal_20261001_20k/seed20261022/C20_no_Q",
+      "args": [
+        ".venv/bin/python",
+        "-u",
+        "scripts/train_a6_confirmatory.py",
+        "--arm",
+        "C20_no_Q",
+        "--seed",
+        "20261022",
+        "--out",
+        "/mnt/workspace/user/luyidan/smp-a6-paper/logs/rsl_rl/a6_confirmatory/formal_20261001_20k/seed20261022/C20_no_Q",
+        "--num-envs",
+        "4096",
+        "--updates",
+        "20000",
+        "--eval-gpu",
+        "7",
+        "--eval-seed",
+        "20261013"
+      ]
+    },
+    {
+      "arm": "C20_no_L",
+      "seed": 20261022,
+      "state": "queued"
+    },
+    {
+      "arm": "C20_full",
+      "seed": 20261023,
+      "state": "queued"
+    },
+    {
+      "arm": "C20_no_geometry",
+      "seed": 20261023,
+      "state": "queued"
+    },
+    {
+      "arm": "C20_no_Q",
+      "seed": 20261023,
+      "state": "queued"
+    },
+    {
+      "arm": "C20_no_L",
+      "seed": 20261023,
+      "state": "queued"
+    }
+  ],
+  "controller_pid": 1097839,
+  "updated_unix": 1790945392.7267063
+}
