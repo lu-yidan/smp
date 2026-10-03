@@ -1,0 +1,89 @@
+{
+  "checked_unix": 1791040069.6191378,
+  "checks": [
+    {
+      "seed": 20261021,
+      "arm": "C20_full",
+      "checkpoint_sha256": "51739f5818af591d45e805eb8fcd4105445d27e6c949c9ce95e52305238735d5",
+      "suites_match": {
+        "nominal": true,
+        "upper130": true
+      },
+      "completed": {
+        "iteration": 19999
+      }
+    },
+    {
+      "seed": 20261021,
+      "arm": "C20_no_geometry",
+      "checkpoint_sha256": "7d1dde360a93cf3604332b3d3196cf36d9c4f8c255fe6a0a683637612dfc30f2",
+      "suites_match": {
+        "nominal": true,
+        "upper130": true
+      },
+      "completed": {
+        "iteration": 19999
+      }
+    },
+    {
+      "seed": 20261021,
+      "arm": "C20_no_Q",
+      "checkpoint_sha256": "1f1392d3b793c0fdf450dbacf7895861d95520ff3743d55e90746b4906993322",
+      "suites_match": {
+        "nominal": true,
+        "upper130": true
+      },
+      "completed": {
+        "iteration": 19999
+      }
+    },
+    {
+      "seed": 20261021,
+      "arm": "C20_no_L",
+      "checkpoint_sha256": "974cda05e8c0bbc4b388ac9e1e960dd2a34efc52a27a857003463e5ccdbc06a0",
+      "suites_match": {
+        "nominal": true,
+        "upper130": true
+      },
+      "completed": {
+        "iteration": 19999
+      }
+    },
+    {
+      "seed": 20261022,
+      "arm": "C20_full",
+      "checkpoint_sha256": "6765700bb91cdddb19a1721b230fe5906bc4b976ce56666e466976edc4d2a3c3",
+      "suites_match": {
+        "nominal": true,
+        "upper130": true
+      },
+      "completed": {
+        "iteration": 19999
+      }
+    },
+    {
+      "seed": 20261022,
+      "arm": "C20_no_geometry",
+      "checkpoint_sha256": "f77593145755d4f1d87309c76afc38e5c031ce3de13251756f1057a0375bc013",
+      "suites_match": {
+        "nominal": true,
+        "upper130": true
+      },
+      "completed": {
+        "iteration": 19999
+      }
+    },
+    {
+      "seed": 20261022,
+      "arm": "C20_no_Q",
+      "checkpoint_sha256": "3d400fb0f64c362a19bc6685b263b43d7ca32d8b3ca388b78dbe83166f51beb1",
+      "suites_match": {
+        "nominal": true,
+        "upper130": true
+      },
+      "completed": {
+        "iteration": 19999
+      }
+    }
+  ]
+}

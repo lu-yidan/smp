@@ -1,0 +1,16 @@
+{
+  "final_checkpoint_hashes_match": true,
+  "legacy_10k_analysis_unchanged_within_float_tolerance": true,
+  "historical_selected_policy_initial_states_match": true,
+  "full_seed1_nominal": {
+    "n": 2048,
+    "best_hold_max": 0.0,
+    "near_time_max": 0.0,
+    "all_peaks_finite": true,
+    "terminated": 0
+  },
+  "videos": {
+    "full_seed1_flat_20k.mp4": "0ed517a59a178659a6fd0942adf2aea655554fa593df7895f27f11178733bd32",
+    "full_seed1_guided_20k.mp4": "ab95d49757e34afe3fccc99db9457ed577e3629d8416999a38ba4b63f57ab751"
+  }
+}
