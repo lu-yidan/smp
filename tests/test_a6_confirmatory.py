@@ -8,7 +8,7 @@ from train_a6_alpha_convergence import build_config as ac_config
 
 class Contracts(unittest.TestCase):
     def test_isolated_interventions(self):
-        for seed in (20261021, 20261022, 20261023):
+        for seed in (20261021, 20261022, 20261023, 20261024, 20261025):
             base, agent = build_config(4096, 'C20_full', seed=seed)
             old, oldagent = ac_config(4096, 'AC3_a100', seed=seed)
             self.assertEqual(differences(asdict(base), asdict(old)), set())
