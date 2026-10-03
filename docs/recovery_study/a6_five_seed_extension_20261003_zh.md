@@ -34,3 +34,10 @@
 - W&B：project `tabletennis/smp`，group `a6_alpha1_confirmatory_extension_20261003`。
 - 新队列复用已通过的四组4096环境32步预检；配置差异测试扩展覆盖五个seed。队列启动后产生registration.json、queue_status.json，实际启动信息另存证据。
 - 队列只可启动一次，已有输出目录会拒绝覆盖。每次派发前检查目标GPU内存，避免占用其他任务正在使用的卡。
+
+## 已启动核对
+
+新增seed20261024完整组与去几何组已在GPU1/2进入PPO训练，另外六组排队。已核对实际actor、critic、初始qpos及reset计数相同，仅三项几何权重不同；初始化与完整五seed配置差异测试通过。启动证据见 `evidence/a6_five_seed_extension_20261003/launch_audit.json`。
+
+- C20_full: https://wandb.ai/tabletennis/smp/runs/28cfa2o7
+- C20_no_geometry: https://wandb.ai/tabletennis/smp/runs/r64qpk48
