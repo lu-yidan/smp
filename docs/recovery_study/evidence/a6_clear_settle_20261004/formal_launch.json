@@ -1,0 +1,929 @@
+{
+  "captured_unix": 1791045025.779173,
+  "registration": {
+    "arms": [
+      "CS_a020_base",
+      "CS_a020_settle",
+      "CS_a050_base",
+      "CS_a050_settle",
+      "CS_a100_base",
+      "CS_a100_settle"
+    ],
+    "seeds": [
+      20261026,
+      20261027
+    ],
+    "updates": 20000,
+    "num_envs": 4096,
+    "actor_parent": "R2_9000",
+    "alpha_values": [
+      0.2,
+      0.5,
+      1.0
+    ],
+    "save_interval": 500,
+    "training_gpus": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "evaluation_gpu": 6,
+    "extension_note": "Post-hoc 3x2 alpha/settling study, two fixed new seeds; report all 12 runs. Historical-seed replay cancelled before any launch per user steering.",
+    "original_run": "historical_alpha_sweep_and_A6_no_alpha",
+    "new_seeds": [
+      20261026,
+      20261027
+    ],
+    "settling": {
+      "free_radius_m": 0.35,
+      "transition_m": 0.5,
+      "cost_cap": 4.0,
+      "weight": -0.05,
+      "head_gate": [
+        0.95,
+        1.15
+      ],
+      "upright_gate": [
+        0.8,
+        0.93
+      ],
+      "plate_only": true
+    },
+    "primary_checkpoint": 19999,
+    "secondary_checkpoint": 10000,
+    "success_metric": "SR10 within the unchanged 20s evaluation horizon",
+    "evaluation_updates": [
+      5000,
+      9500,
+      10000,
+      15000,
+      19999
+    ],
+    "eval_seed": 20261013,
+    "evaluation_note": "9.5k/10k/final: 2048 rollouts per suite; nominal and upper130; fixed validation, not held-out.",
+    "training_branch": "codex/a6-alpha1-confirmatory-20k",
+    "source_script_sha256": "c26f76f75f58ff6db9671f5c7bebd821cb69e9058060e4d47e019b1275d365b1"
+  },
+  "queue_status": {
+    "jobs": [
+      {
+        "arm": "CS_a020_base",
+        "seed": 20261026,
+        "state": "running",
+        "gpu": 0,
+        "pid": 7316,
+        "out": "/root/workspace/smp-a6-paper/logs/rsl_rl/a6_clear_settle/formal_20261004_20k/seed20261026/CS_a020_base",
+        "args": [
+          ".venv/bin/python",
+          "-u",
+          "scripts/train_a6_clear_settle.py",
+          "--arm",
+          "CS_a020_base",
+          "--seed",
+          "20261026",
+          "--out",
+          "/root/workspace/smp-a6-paper/logs/rsl_rl/a6_clear_settle/formal_20261004_20k/seed20261026/CS_a020_base",
+          "--num-envs",
+          "4096",
+          "--updates",
+          "20000",
+          "--eval-gpu",
+          "6",
+          "--eval-seed",
+          "20261013"
+        ]
+      },
+      {
+        "arm": "CS_a020_settle",
+        "seed": 20261026,
+        "state": "running",
+        "gpu": 1,
+        "pid": 7324,
+        "out": "/root/workspace/smp-a6-paper/logs/rsl_rl/a6_clear_settle/formal_20261004_20k/seed20261026/CS_a020_settle",
+        "args": [
+          ".venv/bin/python",
+          "-u",
+          "scripts/train_a6_clear_settle.py",
+          "--arm",
+          "CS_a020_settle",
+          "--seed",
+          "20261026",
+          "--out",
+          "/root/workspace/smp-a6-paper/logs/rsl_rl/a6_clear_settle/formal_20261004_20k/seed20261026/CS_a020_settle",
+          "--num-envs",
+          "4096",
+          "--updates",
+          "20000",
+          "--eval-gpu",
+          "6",
+          "--eval-seed",
+          "20261013"
+        ]
+      },
+      {
+        "arm": "CS_a050_base",
+        "seed": 20261026,
+        "state": "running",
+        "gpu": 2,
+        "pid": 7330,
+        "out": "/root/workspace/smp-a6-paper/logs/rsl_rl/a6_clear_settle/formal_20261004_20k/seed20261026/CS_a050_base",
+        "args": [
+          ".venv/bin/python",
+          "-u",
+          "scripts/train_a6_clear_settle.py",
+          "--arm",
+          "CS_a050_base",
+          "--seed",
+          "20261026",
+          "--out",
+          "/root/workspace/smp-a6-paper/logs/rsl_rl/a6_clear_settle/formal_20261004_20k/seed20261026/CS_a050_base",
+          "--num-envs",
+          "4096",
+          "--updates",
+          "20000",
+          "--eval-gpu",
+          "6",
+          "--eval-seed",
+          "20261013"
+        ]
+      },
+      {
+        "arm": "CS_a050_settle",
+        "seed": 20261026,
+        "state": "running",
+        "gpu": 3,
+        "pid": 7345,
+        "out": "/root/workspace/smp-a6-paper/logs/rsl_rl/a6_clear_settle/formal_20261004_20k/seed20261026/CS_a050_settle",
+        "args": [
+          ".venv/bin/python",
+          "-u",
+          "scripts/train_a6_clear_settle.py",
+          "--arm",
+          "CS_a050_settle",
+          "--seed",
+          "20261026",
+          "--out",
+          "/root/workspace/smp-a6-paper/logs/rsl_rl/a6_clear_settle/formal_20261004_20k/seed20261026/CS_a050_settle",
+          "--num-envs",
+          "4096",
+          "--updates",
+          "20000",
+          "--eval-gpu",
+          "6",
+          "--eval-seed",
+          "20261013"
+        ]
+      },
+      {
+        "arm": "CS_a100_base",
+        "seed": 20261026,
+        "state": "running",
+        "gpu": 4,
+        "pid": 7353,
+        "out": "/root/workspace/smp-a6-paper/logs/rsl_rl/a6_clear_settle/formal_20261004_20k/seed20261026/CS_a100_base",
+        "args": [
+          ".venv/bin/python",
+          "-u",
+          "scripts/train_a6_clear_settle.py",
+          "--arm",
+          "CS_a100_base",
+          "--seed",
+          "20261026",
+          "--out",
+          "/root/workspace/smp-a6-paper/logs/rsl_rl/a6_clear_settle/formal_20261004_20k/seed20261026/CS_a100_base",
+          "--num-envs",
+          "4096",
+          "--updates",
+          "20000",
+          "--eval-gpu",
+          "6",
+          "--eval-seed",
+          "20261013"
+        ]
+      },
+      {
+        "arm": "CS_a100_settle",
+        "seed": 20261026,
+        "state": "running",
+        "gpu": 5,
+        "pid": 7359,
+        "out": "/root/workspace/smp-a6-paper/logs/rsl_rl/a6_clear_settle/formal_20261004_20k/seed20261026/CS_a100_settle",
+        "args": [
+          ".venv/bin/python",
+          "-u",
+          "scripts/train_a6_clear_settle.py",
+          "--arm",
+          "CS_a100_settle",
+          "--seed",
+          "20261026",
+          "--out",
+          "/root/workspace/smp-a6-paper/logs/rsl_rl/a6_clear_settle/formal_20261004_20k/seed20261026/CS_a100_settle",
+          "--num-envs",
+          "4096",
+          "--updates",
+          "20000",
+          "--eval-gpu",
+          "6",
+          "--eval-seed",
+          "20261013"
+        ]
+      },
+      {
+        "arm": "CS_a020_base",
+        "seed": 20261027,
+        "state": "queued"
+      },
+      {
+        "arm": "CS_a020_settle",
+        "seed": 20261027,
+        "state": "queued"
+      },
+      {
+        "arm": "CS_a050_base",
+        "seed": 20261027,
+        "state": "queued"
+      },
+      {
+        "arm": "CS_a050_settle",
+        "seed": 20261027,
+        "state": "queued"
+      },
+      {
+        "arm": "CS_a100_base",
+        "seed": 20261027,
+        "state": "queued"
+      },
+      {
+        "arm": "CS_a100_settle",
+        "seed": 20261027,
+        "state": "queued"
+      }
+    ],
+    "controller_pid": 7311,
+    "updated_unix": 1791045025.4733698
+  },
+  "runs": {
+    "CS_a020_base": {
+      "gpu": 0,
+      "iteration": 8,
+      "wandb": "https://wandb.ai/tabletennis/smp/runs/71aoro69"
+    },
+    "CS_a020_settle": {
+      "gpu": 1,
+      "iteration": 9,
+      "wandb": "https://wandb.ai/tabletennis/smp/runs/k5aurqze"
+    },
+    "CS_a050_base": {
+      "gpu": 2,
+      "iteration": 9,
+      "wandb": "https://wandb.ai/tabletennis/smp/runs/ikxyi313"
+    },
+    "CS_a050_settle": {
+      "gpu": 3,
+      "iteration": 9,
+      "wandb": "https://wandb.ai/tabletennis/smp/runs/yaoazy8p"
+    },
+    "CS_a100_base": {
+      "gpu": 4,
+      "iteration": 9,
+      "wandb": "https://wandb.ai/tabletennis/smp/runs/1j90ysrn"
+    },
+    "CS_a100_settle": {
+      "gpu": 5,
+      "iteration": 8,
+      "wandb": "https://wandb.ai/tabletennis/smp/runs/ciid0ow3"
+    }
+  },
+  "launches": {
+    "CS_a020_base": {
+      "arm": "CS_a020_base",
+      "historical_base_commit": "1b6d7e61ddbcd2caf9ea17b02160dd1cf0d119d2",
+      "code_sha256": "24bfbaa26edce6e904d25869802ac45e6fff57407ce124c92c42cf4116dc200c",
+      "checkpoint_sha256": "8b4889f80c6b7cc675f6e9b1e98f2d4a1886a15e372f86070f63c329ba9ca5d1",
+      "reference_sha256": "870a1f7110d4cfd58a3d81d45e2ec728abbec7335a781032aedf3e36309e7df8",
+      "assets": {
+        "outputs/multiterrain_bank/train.npz": "287eae8e8840c1b3281e7010a84182b824fefacd34439c4f993e9f130af1027a",
+        "outputs/multiterrain_bank/validation.npz": "d0c4755474df9626a20167843eb453d00e76420771d29f34cd35d5a3a8d29b45",
+        "datasets/reset_banks/natural_curriculum_v1/train.npz": "e9f94540520d7927dee01150a0f0bae39ad2aad5ae008b1c7c71f521650e44b9",
+        "datasets/reset_banks/procedural_low_v1/train.npz": "e289bed8d1c93e87fbdcf969fc5fc741f2d8500a0908ed145d2a4e02e7fe116d"
+      },
+      "actor_exact": true,
+      "fresh_critic": true,
+      "fresh_optimizer": true,
+      "actor_sha": "7dad6931ee3badde16e14a3a4d6193b230f60b874a0932af53603b18022da98e",
+      "critic_sha": "e3c5761727a07d175bb1a1f60cd70cc3f2878c75d0cf1287d5cb0da210320932",
+      "initial_qpos_sha": "8511efb2a8d5b3634fa345b76e0795cd42186a1f789883b4d258cd80ca9d1251",
+      "seed": 20261026,
+      "updates": 20000,
+      "num_envs": 4096,
+      "episode_s": 10.0,
+      "counts": {
+        "scene": [
+          2048,
+          1024,
+          1024,
+          0
+        ],
+        "stratum": [
+          2048,
+          1024,
+          1024,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "kind_low_middle_late": [
+          2868,
+          820,
+          408
+        ],
+        "natural_procedural": [
+          3380,
+          716
+        ],
+        "group": [
+          408,
+          820,
+          717,
+          717,
+          717,
+          717
+        ]
+      },
+      "events": [
+        "init_smp_state",
+        "gsi_reset",
+        "push_robot",
+        "foot_friction",
+        "encoder_bias",
+        "base_com",
+        "reset_stand_counter",
+        "deployment_pair_friction",
+        "v33_stage_reset",
+        "multiterrain_phase"
+      ],
+      "actor_noise": true,
+      "weights": {
+        "task_smp_product": 1.0,
+        "quiet_stand": 0.0,
+        "effort_top3": 0.0,
+        "speed_top3": 0.0,
+        "target_slew": 0.0,
+        "head_impact": 0.0,
+        "v33_action_rate": -0.0015,
+        "v33_action_acc": -0.0012,
+        "v33_joint_acc": -5e-08,
+        "v33_torque": -1e-06,
+        "v33_joint_speed": -0.02,
+        "v33_joint_power": -2e-06,
+        "v33_head_overspeed": -1.0,
+        "v33_sustained_effort": -0.05,
+        "v33_joint_limits": -0.1,
+        "plate_geometry_progress": 0.45,
+        "plate_clearance": 0.08,
+        "plate_completion": 0.6,
+        "plate_force": -0.03,
+        "plate_separation": 0.01,
+        "path_quiet_feet": -0.03,
+        "path_joint_stall": -0.2
+      },
+      "intervention": {
+        "blocked_alpha": 0.2,
+        "close": false,
+        "anchor": false
+      },
+      "hand_gate_disabled": false,
+      "preflight": false,
+      "evaluation": false
+    },
+    "CS_a020_settle": {
+      "arm": "CS_a020_settle",
+      "historical_base_commit": "1b6d7e61ddbcd2caf9ea17b02160dd1cf0d119d2",
+      "code_sha256": "24bfbaa26edce6e904d25869802ac45e6fff57407ce124c92c42cf4116dc200c",
+      "checkpoint_sha256": "8b4889f80c6b7cc675f6e9b1e98f2d4a1886a15e372f86070f63c329ba9ca5d1",
+      "reference_sha256": "870a1f7110d4cfd58a3d81d45e2ec728abbec7335a781032aedf3e36309e7df8",
+      "assets": {
+        "outputs/multiterrain_bank/train.npz": "287eae8e8840c1b3281e7010a84182b824fefacd34439c4f993e9f130af1027a",
+        "outputs/multiterrain_bank/validation.npz": "d0c4755474df9626a20167843eb453d00e76420771d29f34cd35d5a3a8d29b45",
+        "datasets/reset_banks/natural_curriculum_v1/train.npz": "e9f94540520d7927dee01150a0f0bae39ad2aad5ae008b1c7c71f521650e44b9",
+        "datasets/reset_banks/procedural_low_v1/train.npz": "e289bed8d1c93e87fbdcf969fc5fc741f2d8500a0908ed145d2a4e02e7fe116d"
+      },
+      "actor_exact": true,
+      "fresh_critic": true,
+      "fresh_optimizer": true,
+      "actor_sha": "7dad6931ee3badde16e14a3a4d6193b230f60b874a0932af53603b18022da98e",
+      "critic_sha": "e3c5761727a07d175bb1a1f60cd70cc3f2878c75d0cf1287d5cb0da210320932",
+      "initial_qpos_sha": "8511efb2a8d5b3634fa345b76e0795cd42186a1f789883b4d258cd80ca9d1251",
+      "seed": 20261026,
+      "updates": 20000,
+      "num_envs": 4096,
+      "episode_s": 10.0,
+      "counts": {
+        "scene": [
+          2048,
+          1024,
+          1024,
+          0
+        ],
+        "stratum": [
+          2048,
+          1024,
+          1024,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "kind_low_middle_late": [
+          2868,
+          820,
+          408
+        ],
+        "natural_procedural": [
+          3380,
+          716
+        ],
+        "group": [
+          408,
+          820,
+          717,
+          717,
+          717,
+          717
+        ]
+      },
+      "events": [
+        "init_smp_state",
+        "gsi_reset",
+        "push_robot",
+        "foot_friction",
+        "encoder_bias",
+        "base_com",
+        "reset_stand_counter",
+        "deployment_pair_friction",
+        "v33_stage_reset",
+        "multiterrain_phase"
+      ],
+      "actor_noise": true,
+      "weights": {
+        "task_smp_product": 1.0,
+        "quiet_stand": 0.0,
+        "effort_top3": 0.0,
+        "speed_top3": 0.0,
+        "target_slew": 0.0,
+        "head_impact": 0.0,
+        "v33_action_rate": -0.0015,
+        "v33_action_acc": -0.0012,
+        "v33_joint_acc": -5e-08,
+        "v33_torque": -1e-06,
+        "v33_joint_speed": -0.02,
+        "v33_joint_power": -2e-06,
+        "v33_head_overspeed": -1.0,
+        "v33_sustained_effort": -0.05,
+        "v33_joint_limits": -0.1,
+        "plate_geometry_progress": 0.45,
+        "plate_clearance": 0.08,
+        "plate_completion": 0.6,
+        "plate_force": -0.03,
+        "plate_separation": 0.01,
+        "path_quiet_feet": -0.03,
+        "path_joint_stall": -0.2,
+        "post_clear_anchor": -0.05
+      },
+      "intervention": {
+        "blocked_alpha": 0.2,
+        "close": true,
+        "anchor": true
+      },
+      "hand_gate_disabled": false,
+      "preflight": false,
+      "evaluation": false
+    },
+    "CS_a050_base": {
+      "arm": "CS_a050_base",
+      "historical_base_commit": "1b6d7e61ddbcd2caf9ea17b02160dd1cf0d119d2",
+      "code_sha256": "24bfbaa26edce6e904d25869802ac45e6fff57407ce124c92c42cf4116dc200c",
+      "checkpoint_sha256": "8b4889f80c6b7cc675f6e9b1e98f2d4a1886a15e372f86070f63c329ba9ca5d1",
+      "reference_sha256": "870a1f7110d4cfd58a3d81d45e2ec728abbec7335a781032aedf3e36309e7df8",
+      "assets": {
+        "outputs/multiterrain_bank/train.npz": "287eae8e8840c1b3281e7010a84182b824fefacd34439c4f993e9f130af1027a",
+        "outputs/multiterrain_bank/validation.npz": "d0c4755474df9626a20167843eb453d00e76420771d29f34cd35d5a3a8d29b45",
+        "datasets/reset_banks/natural_curriculum_v1/train.npz": "e9f94540520d7927dee01150a0f0bae39ad2aad5ae008b1c7c71f521650e44b9",
+        "datasets/reset_banks/procedural_low_v1/train.npz": "e289bed8d1c93e87fbdcf969fc5fc741f2d8500a0908ed145d2a4e02e7fe116d"
+      },
+      "actor_exact": true,
+      "fresh_critic": true,
+      "fresh_optimizer": true,
+      "actor_sha": "7dad6931ee3badde16e14a3a4d6193b230f60b874a0932af53603b18022da98e",
+      "critic_sha": "e3c5761727a07d175bb1a1f60cd70cc3f2878c75d0cf1287d5cb0da210320932",
+      "initial_qpos_sha": "8511efb2a8d5b3634fa345b76e0795cd42186a1f789883b4d258cd80ca9d1251",
+      "seed": 20261026,
+      "updates": 20000,
+      "num_envs": 4096,
+      "episode_s": 10.0,
+      "counts": {
+        "scene": [
+          2048,
+          1024,
+          1024,
+          0
+        ],
+        "stratum": [
+          2048,
+          1024,
+          1024,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "kind_low_middle_late": [
+          2868,
+          820,
+          408
+        ],
+        "natural_procedural": [
+          3380,
+          716
+        ],
+        "group": [
+          408,
+          820,
+          717,
+          717,
+          717,
+          717
+        ]
+      },
+      "events": [
+        "init_smp_state",
+        "gsi_reset",
+        "push_robot",
+        "foot_friction",
+        "encoder_bias",
+        "base_com",
+        "reset_stand_counter",
+        "deployment_pair_friction",
+        "v33_stage_reset",
+        "multiterrain_phase"
+      ],
+      "actor_noise": true,
+      "weights": {
+        "task_smp_product": 1.0,
+        "quiet_stand": 0.0,
+        "effort_top3": 0.0,
+        "speed_top3": 0.0,
+        "target_slew": 0.0,
+        "head_impact": 0.0,
+        "v33_action_rate": -0.0015,
+        "v33_action_acc": -0.0012,
+        "v33_joint_acc": -5e-08,
+        "v33_torque": -1e-06,
+        "v33_joint_speed": -0.02,
+        "v33_joint_power": -2e-06,
+        "v33_head_overspeed": -1.0,
+        "v33_sustained_effort": -0.05,
+        "v33_joint_limits": -0.1,
+        "plate_geometry_progress": 0.45,
+        "plate_clearance": 0.08,
+        "plate_completion": 0.6,
+        "plate_force": -0.03,
+        "plate_separation": 0.01,
+        "path_quiet_feet": -0.03,
+        "path_joint_stall": -0.2
+      },
+      "intervention": {
+        "blocked_alpha": 0.5,
+        "close": false,
+        "anchor": false
+      },
+      "hand_gate_disabled": false,
+      "preflight": false,
+      "evaluation": false
+    },
+    "CS_a050_settle": {
+      "arm": "CS_a050_settle",
+      "historical_base_commit": "1b6d7e61ddbcd2caf9ea17b02160dd1cf0d119d2",
+      "code_sha256": "24bfbaa26edce6e904d25869802ac45e6fff57407ce124c92c42cf4116dc200c",
+      "checkpoint_sha256": "8b4889f80c6b7cc675f6e9b1e98f2d4a1886a15e372f86070f63c329ba9ca5d1",
+      "reference_sha256": "870a1f7110d4cfd58a3d81d45e2ec728abbec7335a781032aedf3e36309e7df8",
+      "assets": {
+        "outputs/multiterrain_bank/train.npz": "287eae8e8840c1b3281e7010a84182b824fefacd34439c4f993e9f130af1027a",
+        "outputs/multiterrain_bank/validation.npz": "d0c4755474df9626a20167843eb453d00e76420771d29f34cd35d5a3a8d29b45",
+        "datasets/reset_banks/natural_curriculum_v1/train.npz": "e9f94540520d7927dee01150a0f0bae39ad2aad5ae008b1c7c71f521650e44b9",
+        "datasets/reset_banks/procedural_low_v1/train.npz": "e289bed8d1c93e87fbdcf969fc5fc741f2d8500a0908ed145d2a4e02e7fe116d"
+      },
+      "actor_exact": true,
+      "fresh_critic": true,
+      "fresh_optimizer": true,
+      "actor_sha": "7dad6931ee3badde16e14a3a4d6193b230f60b874a0932af53603b18022da98e",
+      "critic_sha": "e3c5761727a07d175bb1a1f60cd70cc3f2878c75d0cf1287d5cb0da210320932",
+      "initial_qpos_sha": "8511efb2a8d5b3634fa345b76e0795cd42186a1f789883b4d258cd80ca9d1251",
+      "seed": 20261026,
+      "updates": 20000,
+      "num_envs": 4096,
+      "episode_s": 10.0,
+      "counts": {
+        "scene": [
+          2048,
+          1024,
+          1024,
+          0
+        ],
+        "stratum": [
+          2048,
+          1024,
+          1024,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "kind_low_middle_late": [
+          2868,
+          820,
+          408
+        ],
+        "natural_procedural": [
+          3380,
+          716
+        ],
+        "group": [
+          408,
+          820,
+          717,
+          717,
+          717,
+          717
+        ]
+      },
+      "events": [
+        "init_smp_state",
+        "gsi_reset",
+        "push_robot",
+        "foot_friction",
+        "encoder_bias",
+        "base_com",
+        "reset_stand_counter",
+        "deployment_pair_friction",
+        "v33_stage_reset",
+        "multiterrain_phase"
+      ],
+      "actor_noise": true,
+      "weights": {
+        "task_smp_product": 1.0,
+        "quiet_stand": 0.0,
+        "effort_top3": 0.0,
+        "speed_top3": 0.0,
+        "target_slew": 0.0,
+        "head_impact": 0.0,
+        "v33_action_rate": -0.0015,
+        "v33_action_acc": -0.0012,
+        "v33_joint_acc": -5e-08,
+        "v33_torque": -1e-06,
+        "v33_joint_speed": -0.02,
+        "v33_joint_power": -2e-06,
+        "v33_head_overspeed": -1.0,
+        "v33_sustained_effort": -0.05,
+        "v33_joint_limits": -0.1,
+        "plate_geometry_progress": 0.45,
+        "plate_clearance": 0.08,
+        "plate_completion": 0.6,
+        "plate_force": -0.03,
+        "plate_separation": 0.01,
+        "path_quiet_feet": -0.03,
+        "path_joint_stall": -0.2,
+        "post_clear_anchor": -0.05
+      },
+      "intervention": {
+        "blocked_alpha": 0.5,
+        "close": true,
+        "anchor": true
+      },
+      "hand_gate_disabled": false,
+      "preflight": false,
+      "evaluation": false
+    },
+    "CS_a100_base": {
+      "arm": "CS_a100_base",
+      "historical_base_commit": "1b6d7e61ddbcd2caf9ea17b02160dd1cf0d119d2",
+      "code_sha256": "24bfbaa26edce6e904d25869802ac45e6fff57407ce124c92c42cf4116dc200c",
+      "checkpoint_sha256": "8b4889f80c6b7cc675f6e9b1e98f2d4a1886a15e372f86070f63c329ba9ca5d1",
+      "reference_sha256": "870a1f7110d4cfd58a3d81d45e2ec728abbec7335a781032aedf3e36309e7df8",
+      "assets": {
+        "outputs/multiterrain_bank/train.npz": "287eae8e8840c1b3281e7010a84182b824fefacd34439c4f993e9f130af1027a",
+        "outputs/multiterrain_bank/validation.npz": "d0c4755474df9626a20167843eb453d00e76420771d29f34cd35d5a3a8d29b45",
+        "datasets/reset_banks/natural_curriculum_v1/train.npz": "e9f94540520d7927dee01150a0f0bae39ad2aad5ae008b1c7c71f521650e44b9",
+        "datasets/reset_banks/procedural_low_v1/train.npz": "e289bed8d1c93e87fbdcf969fc5fc741f2d8500a0908ed145d2a4e02e7fe116d"
+      },
+      "actor_exact": true,
+      "fresh_critic": true,
+      "fresh_optimizer": true,
+      "actor_sha": "7dad6931ee3badde16e14a3a4d6193b230f60b874a0932af53603b18022da98e",
+      "critic_sha": "e3c5761727a07d175bb1a1f60cd70cc3f2878c75d0cf1287d5cb0da210320932",
+      "initial_qpos_sha": "8511efb2a8d5b3634fa345b76e0795cd42186a1f789883b4d258cd80ca9d1251",
+      "seed": 20261026,
+      "updates": 20000,
+      "num_envs": 4096,
+      "episode_s": 10.0,
+      "counts": {
+        "scene": [
+          2048,
+          1024,
+          1024,
+          0
+        ],
+        "stratum": [
+          2048,
+          1024,
+          1024,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "kind_low_middle_late": [
+          2868,
+          820,
+          408
+        ],
+        "natural_procedural": [
+          3380,
+          716
+        ],
+        "group": [
+          408,
+          820,
+          717,
+          717,
+          717,
+          717
+        ]
+      },
+      "events": [
+        "init_smp_state",
+        "gsi_reset",
+        "push_robot",
+        "foot_friction",
+        "encoder_bias",
+        "base_com",
+        "reset_stand_counter",
+        "deployment_pair_friction",
+        "v33_stage_reset",
+        "multiterrain_phase"
+      ],
+      "actor_noise": true,
+      "weights": {
+        "task_smp_product": 1.0,
+        "quiet_stand": 0.0,
+        "effort_top3": 0.0,
+        "speed_top3": 0.0,
+        "target_slew": 0.0,
+        "head_impact": 0.0,
+        "v33_action_rate": -0.0015,
+        "v33_action_acc": -0.0012,
+        "v33_joint_acc": -5e-08,
+        "v33_torque": -1e-06,
+        "v33_joint_speed": -0.02,
+        "v33_joint_power": -2e-06,
+        "v33_head_overspeed": -1.0,
+        "v33_sustained_effort": -0.05,
+        "v33_joint_limits": -0.1,
+        "plate_geometry_progress": 0.45,
+        "plate_clearance": 0.08,
+        "plate_completion": 0.6,
+        "plate_force": -0.03,
+        "plate_separation": 0.01,
+        "path_quiet_feet": -0.03,
+        "path_joint_stall": -0.2
+      },
+      "intervention": {
+        "blocked_alpha": 1.0,
+        "close": false,
+        "anchor": false
+      },
+      "hand_gate_disabled": false,
+      "preflight": false,
+      "evaluation": false
+    },
+    "CS_a100_settle": {
+      "arm": "CS_a100_settle",
+      "historical_base_commit": "1b6d7e61ddbcd2caf9ea17b02160dd1cf0d119d2",
+      "code_sha256": "24bfbaa26edce6e904d25869802ac45e6fff57407ce124c92c42cf4116dc200c",
+      "checkpoint_sha256": "8b4889f80c6b7cc675f6e9b1e98f2d4a1886a15e372f86070f63c329ba9ca5d1",
+      "reference_sha256": "870a1f7110d4cfd58a3d81d45e2ec728abbec7335a781032aedf3e36309e7df8",
+      "assets": {
+        "outputs/multiterrain_bank/train.npz": "287eae8e8840c1b3281e7010a84182b824fefacd34439c4f993e9f130af1027a",
+        "outputs/multiterrain_bank/validation.npz": "d0c4755474df9626a20167843eb453d00e76420771d29f34cd35d5a3a8d29b45",
+        "datasets/reset_banks/natural_curriculum_v1/train.npz": "e9f94540520d7927dee01150a0f0bae39ad2aad5ae008b1c7c71f521650e44b9",
+        "datasets/reset_banks/procedural_low_v1/train.npz": "e289bed8d1c93e87fbdcf969fc5fc741f2d8500a0908ed145d2a4e02e7fe116d"
+      },
+      "actor_exact": true,
+      "fresh_critic": true,
+      "fresh_optimizer": true,
+      "actor_sha": "7dad6931ee3badde16e14a3a4d6193b230f60b874a0932af53603b18022da98e",
+      "critic_sha": "e3c5761727a07d175bb1a1f60cd70cc3f2878c75d0cf1287d5cb0da210320932",
+      "initial_qpos_sha": "8511efb2a8d5b3634fa345b76e0795cd42186a1f789883b4d258cd80ca9d1251",
+      "seed": 20261026,
+      "updates": 20000,
+      "num_envs": 4096,
+      "episode_s": 10.0,
+      "counts": {
+        "scene": [
+          2048,
+          1024,
+          1024,
+          0
+        ],
+        "stratum": [
+          2048,
+          1024,
+          1024,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "kind_low_middle_late": [
+          2868,
+          820,
+          408
+        ],
+        "natural_procedural": [
+          3380,
+          716
+        ],
+        "group": [
+          408,
+          820,
+          717,
+          717,
+          717,
+          717
+        ]
+      },
+      "events": [
+        "init_smp_state",
+        "gsi_reset",
+        "push_robot",
+        "foot_friction",
+        "encoder_bias",
+        "base_com",
+        "reset_stand_counter",
+        "deployment_pair_friction",
+        "v33_stage_reset",
+        "multiterrain_phase"
+      ],
+      "actor_noise": true,
+      "weights": {
+        "task_smp_product": 1.0,
+        "quiet_stand": 0.0,
+        "effort_top3": 0.0,
+        "speed_top3": 0.0,
+        "target_slew": 0.0,
+        "head_impact": 0.0,
+        "v33_action_rate": -0.0015,
+        "v33_action_acc": -0.0012,
+        "v33_joint_acc": -5e-08,
+        "v33_torque": -1e-06,
+        "v33_joint_speed": -0.02,
+        "v33_joint_power": -2e-06,
+        "v33_head_overspeed": -1.0,
+        "v33_sustained_effort": -0.05,
+        "v33_joint_limits": -0.1,
+        "plate_geometry_progress": 0.45,
+        "plate_clearance": 0.08,
+        "plate_completion": 0.6,
+        "plate_force": -0.03,
+        "plate_separation": 0.01,
+        "path_quiet_feet": -0.03,
+        "path_joint_stall": -0.2,
+        "post_clear_anchor": -0.05
+      },
+      "intervention": {
+        "blocked_alpha": 1.0,
+        "close": true,
+        "anchor": true
+      },
+      "hand_gate_disabled": false,
+      "preflight": false,
+      "evaluation": false
+    }
+  },
+  "paired_initialization_pass": true,
+  "source_sha256": {
+    "scripts/train_a6_clear_settle.py": "c26f76f75f58ff6db9671f5c7bebd821cb69e9058060e4d47e019b1275d365b1",
+    "scripts/queue_a6_clear_settle.py": "41538204fe6c99eb451b78467312aa5aa8d62f2603e9aadf0e87476fb1a9c21c",
+    "src/smp/rl/tasks/getup/a6_clear_settle.py": "6fc85184f17780a14c59dc9a4f1a20b5c0a5fb19a66eb8690fa7ed6b1cf3c617"
+  }
+}

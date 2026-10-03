@@ -1,0 +1,47 @@
+{
+  "alphas": [
+    0.2,
+    0.5,
+    1.0
+  ],
+  "seeds": [
+    20261026,
+    20261027
+  ],
+  "variants": [
+    "base",
+    "settle"
+  ],
+  "updates": 20000,
+  "num_envs": 4096,
+  "save_interval": 500,
+  "evaluation_checkpoints": [
+    5000,
+    9500,
+    10000,
+    15000,
+    19999
+  ],
+  "primary_metric": "SR10",
+  "episode_s": 10,
+  "eval_horizon_s": 20,
+  "parent": "R2_9000",
+  "new_cost": {
+    "weight": -0.05,
+    "free_radius_m": 0.35,
+    "transition_m": 0.5,
+    "max_unweighted": 4.0,
+    "head_gate_m": [
+      0.95,
+      1.15
+    ],
+    "upright_gate": [
+      0.8,
+      0.93
+    ],
+    "plate_only": true
+  },
+  "scope": "Alpha x closure/position-cost package; cannot isolate closure from position cost",
+  "historical_seed_replay_cancelled_before_launch": true,
+  "config_and_cost_unit_tests_pass": true
+}

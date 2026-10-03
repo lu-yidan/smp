@@ -53,3 +53,20 @@
 - 队列 `scripts/queue_a6_clear_settle.py`，正式目录 `logs/rsl_rl/a6_clear_settle/formal_20261004_20k`。
 - W&B group `a6_clear_settle_4090_20261004`，project `tabletennis/smp`。
 - 先完成配置差异/成本边界测试、各组4096环境32更新预检及部分reset隔离检查，再启动正式训练。
+
+## 新机预检与历史策略复测
+
+六组各4096环境、32更新预检全部完成；配置隔离、奖励表达式及部分reset检查通过。Python为新机3.12.3，全部锁定包版本与DSW相同，EGL渲染通过。SMP f2s2 prior SHA256为9439d9d9f58940f5472015a57da27c72e2305aafbd29cfd9be44f93da675cc59，两机一致。
+
+同一个历史A6_no_alpha@9999、完全相同初态的2048条标称评测：新4090的压板SR10为65.5%，旧DSW为69.7%；脱困后3秒位移P95分别0.521m、0.530m。跨硬件/运行环境存在结果波动，不能把新旧成绩差直接归因于奖励。新CS配对结果统一在4090上比较，论文历史69.7%保留原始来源，不换成新机结果，也不将这次复测当成新的独立训练seed。对照记录见 evidence/a6_clear_settle_20261004/runtime_checkpoint_comparison.json。
+
+## 正式启动
+
+seed20261026六组已在GPU0–5进入正式PPO训练，seed20261027六组排队；GPU6保留评测。六组实际actor/critic/初始qpos/reset计数核对一致。运行证据见 `evidence/a6_clear_settle_20261004/formal_launch.json`。
+
+- CS_a020_base: https://wandb.ai/tabletennis/smp/runs/71aoro69
+- CS_a020_settle: https://wandb.ai/tabletennis/smp/runs/k5aurqze
+- CS_a050_base: https://wandb.ai/tabletennis/smp/runs/ikxyi313
+- CS_a050_settle: https://wandb.ai/tabletennis/smp/runs/yaoazy8p
+- CS_a100_base: https://wandb.ai/tabletennis/smp/runs/1j90ysrn
+- CS_a100_settle: https://wandb.ai/tabletennis/smp/runs/ciid0ow3

@@ -1,0 +1,749 @@
+{
+  "CS_a020_base": {
+    "launch.json": {
+      "arm": "CS_a020_base",
+      "historical_base_commit": "1b6d7e61ddbcd2caf9ea17b02160dd1cf0d119d2",
+      "code_sha256": "24bfbaa26edce6e904d25869802ac45e6fff57407ce124c92c42cf4116dc200c",
+      "checkpoint_sha256": "8b4889f80c6b7cc675f6e9b1e98f2d4a1886a15e372f86070f63c329ba9ca5d1",
+      "reference_sha256": "870a1f7110d4cfd58a3d81d45e2ec728abbec7335a781032aedf3e36309e7df8",
+      "assets": {
+        "outputs/multiterrain_bank/train.npz": "287eae8e8840c1b3281e7010a84182b824fefacd34439c4f993e9f130af1027a",
+        "outputs/multiterrain_bank/validation.npz": "d0c4755474df9626a20167843eb453d00e76420771d29f34cd35d5a3a8d29b45",
+        "datasets/reset_banks/natural_curriculum_v1/train.npz": "e9f94540520d7927dee01150a0f0bae39ad2aad5ae008b1c7c71f521650e44b9",
+        "datasets/reset_banks/procedural_low_v1/train.npz": "e289bed8d1c93e87fbdcf969fc5fc741f2d8500a0908ed145d2a4e02e7fe116d"
+      },
+      "actor_exact": true,
+      "fresh_critic": true,
+      "fresh_optimizer": true,
+      "actor_sha": "7dad6931ee3badde16e14a3a4d6193b230f60b874a0932af53603b18022da98e",
+      "critic_sha": "e3c5761727a07d175bb1a1f60cd70cc3f2878c75d0cf1287d5cb0da210320932",
+      "initial_qpos_sha": "9c8736398fb61763c2979b27e816e033f6fd1a31d7c483fd04f4d3d3dc956f09",
+      "seed": 20261026,
+      "updates": 32,
+      "num_envs": 4096,
+      "episode_s": 10.0,
+      "counts": {
+        "scene": [
+          2048,
+          1024,
+          1024,
+          0
+        ],
+        "stratum": [
+          2048,
+          1024,
+          1024,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "kind_low_middle_late": [
+          2868,
+          820,
+          408
+        ],
+        "natural_procedural": [
+          3380,
+          716
+        ],
+        "group": [
+          408,
+          820,
+          717,
+          717,
+          717,
+          717
+        ]
+      },
+      "events": [
+        "init_smp_state",
+        "gsi_reset",
+        "push_robot",
+        "foot_friction",
+        "encoder_bias",
+        "base_com",
+        "reset_stand_counter",
+        "deployment_pair_friction",
+        "v33_stage_reset",
+        "multiterrain_phase"
+      ],
+      "actor_noise": true,
+      "weights": {
+        "task_smp_product": 1.0,
+        "quiet_stand": 0.0,
+        "effort_top3": 0.0,
+        "speed_top3": 0.0,
+        "target_slew": 0.0,
+        "head_impact": 0.0,
+        "v33_action_rate": -0.0015,
+        "v33_action_acc": -0.0012,
+        "v33_joint_acc": -5e-08,
+        "v33_torque": -1e-06,
+        "v33_joint_speed": -0.02,
+        "v33_joint_power": -2e-06,
+        "v33_head_overspeed": -1.0,
+        "v33_sustained_effort": -0.05,
+        "v33_joint_limits": -0.1,
+        "plate_geometry_progress": 0.45,
+        "plate_clearance": 0.08,
+        "plate_completion": 0.6,
+        "plate_force": -0.03,
+        "plate_separation": 0.01,
+        "path_quiet_feet": -0.03,
+        "path_joint_stall": -0.2
+      },
+      "intervention": {
+        "blocked_alpha": 0.2,
+        "close": false,
+        "anchor": false
+      },
+      "hand_gate_disabled": false,
+      "preflight": true,
+      "evaluation": false
+    },
+    "reward_contract.json": {
+      "pass": true,
+      "arm": "CS_a020_base",
+      "blocked_alpha": 0.2,
+      "close": false,
+      "anchor": false
+    },
+    "partial_reset_pass.json": {
+      "pass": true
+    },
+    "completed.json": {
+      "iteration": 31
+    },
+    "dynamics_audit.json": {
+      "model_mass_inertia_verified": true,
+      "actuator_gain_verified": true,
+      "effort_caps_unchanged": true,
+      "delay_0_and_10ms_verified": true
+    }
+  },
+  "CS_a020_settle": {
+    "launch.json": {
+      "arm": "CS_a020_settle",
+      "historical_base_commit": "1b6d7e61ddbcd2caf9ea17b02160dd1cf0d119d2",
+      "code_sha256": "24bfbaa26edce6e904d25869802ac45e6fff57407ce124c92c42cf4116dc200c",
+      "checkpoint_sha256": "8b4889f80c6b7cc675f6e9b1e98f2d4a1886a15e372f86070f63c329ba9ca5d1",
+      "reference_sha256": "870a1f7110d4cfd58a3d81d45e2ec728abbec7335a781032aedf3e36309e7df8",
+      "assets": {
+        "outputs/multiterrain_bank/train.npz": "287eae8e8840c1b3281e7010a84182b824fefacd34439c4f993e9f130af1027a",
+        "outputs/multiterrain_bank/validation.npz": "d0c4755474df9626a20167843eb453d00e76420771d29f34cd35d5a3a8d29b45",
+        "datasets/reset_banks/natural_curriculum_v1/train.npz": "e9f94540520d7927dee01150a0f0bae39ad2aad5ae008b1c7c71f521650e44b9",
+        "datasets/reset_banks/procedural_low_v1/train.npz": "e289bed8d1c93e87fbdcf969fc5fc741f2d8500a0908ed145d2a4e02e7fe116d"
+      },
+      "actor_exact": true,
+      "fresh_critic": true,
+      "fresh_optimizer": true,
+      "actor_sha": "7dad6931ee3badde16e14a3a4d6193b230f60b874a0932af53603b18022da98e",
+      "critic_sha": "e3c5761727a07d175bb1a1f60cd70cc3f2878c75d0cf1287d5cb0da210320932",
+      "initial_qpos_sha": "9c8736398fb61763c2979b27e816e033f6fd1a31d7c483fd04f4d3d3dc956f09",
+      "seed": 20261026,
+      "updates": 32,
+      "num_envs": 4096,
+      "episode_s": 10.0,
+      "counts": {
+        "scene": [
+          2048,
+          1024,
+          1024,
+          0
+        ],
+        "stratum": [
+          2048,
+          1024,
+          1024,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "kind_low_middle_late": [
+          2868,
+          820,
+          408
+        ],
+        "natural_procedural": [
+          3380,
+          716
+        ],
+        "group": [
+          408,
+          820,
+          717,
+          717,
+          717,
+          717
+        ]
+      },
+      "events": [
+        "init_smp_state",
+        "gsi_reset",
+        "push_robot",
+        "foot_friction",
+        "encoder_bias",
+        "base_com",
+        "reset_stand_counter",
+        "deployment_pair_friction",
+        "v33_stage_reset",
+        "multiterrain_phase"
+      ],
+      "actor_noise": true,
+      "weights": {
+        "task_smp_product": 1.0,
+        "quiet_stand": 0.0,
+        "effort_top3": 0.0,
+        "speed_top3": 0.0,
+        "target_slew": 0.0,
+        "head_impact": 0.0,
+        "v33_action_rate": -0.0015,
+        "v33_action_acc": -0.0012,
+        "v33_joint_acc": -5e-08,
+        "v33_torque": -1e-06,
+        "v33_joint_speed": -0.02,
+        "v33_joint_power": -2e-06,
+        "v33_head_overspeed": -1.0,
+        "v33_sustained_effort": -0.05,
+        "v33_joint_limits": -0.1,
+        "plate_geometry_progress": 0.45,
+        "plate_clearance": 0.08,
+        "plate_completion": 0.6,
+        "plate_force": -0.03,
+        "plate_separation": 0.01,
+        "path_quiet_feet": -0.03,
+        "path_joint_stall": -0.2,
+        "post_clear_anchor": -0.05
+      },
+      "intervention": {
+        "blocked_alpha": 0.2,
+        "close": true,
+        "anchor": true
+      },
+      "hand_gate_disabled": false,
+      "preflight": true,
+      "evaluation": false
+    },
+    "reward_contract.json": {
+      "pass": true,
+      "arm": "CS_a020_settle",
+      "blocked_alpha": 0.2,
+      "close": true,
+      "anchor": true
+    },
+    "partial_reset_pass.json": {
+      "pass": true
+    },
+    "completed.json": {
+      "iteration": 31
+    },
+    "dynamics_audit.json": {
+      "model_mass_inertia_verified": true,
+      "actuator_gain_verified": true,
+      "effort_caps_unchanged": true,
+      "delay_0_and_10ms_verified": true
+    }
+  },
+  "CS_a050_base": {
+    "launch.json": {
+      "arm": "CS_a050_base",
+      "historical_base_commit": "1b6d7e61ddbcd2caf9ea17b02160dd1cf0d119d2",
+      "code_sha256": "24bfbaa26edce6e904d25869802ac45e6fff57407ce124c92c42cf4116dc200c",
+      "checkpoint_sha256": "8b4889f80c6b7cc675f6e9b1e98f2d4a1886a15e372f86070f63c329ba9ca5d1",
+      "reference_sha256": "870a1f7110d4cfd58a3d81d45e2ec728abbec7335a781032aedf3e36309e7df8",
+      "assets": {
+        "outputs/multiterrain_bank/train.npz": "287eae8e8840c1b3281e7010a84182b824fefacd34439c4f993e9f130af1027a",
+        "outputs/multiterrain_bank/validation.npz": "d0c4755474df9626a20167843eb453d00e76420771d29f34cd35d5a3a8d29b45",
+        "datasets/reset_banks/natural_curriculum_v1/train.npz": "e9f94540520d7927dee01150a0f0bae39ad2aad5ae008b1c7c71f521650e44b9",
+        "datasets/reset_banks/procedural_low_v1/train.npz": "e289bed8d1c93e87fbdcf969fc5fc741f2d8500a0908ed145d2a4e02e7fe116d"
+      },
+      "actor_exact": true,
+      "fresh_critic": true,
+      "fresh_optimizer": true,
+      "actor_sha": "7dad6931ee3badde16e14a3a4d6193b230f60b874a0932af53603b18022da98e",
+      "critic_sha": "e3c5761727a07d175bb1a1f60cd70cc3f2878c75d0cf1287d5cb0da210320932",
+      "initial_qpos_sha": "9c8736398fb61763c2979b27e816e033f6fd1a31d7c483fd04f4d3d3dc956f09",
+      "seed": 20261026,
+      "updates": 32,
+      "num_envs": 4096,
+      "episode_s": 10.0,
+      "counts": {
+        "scene": [
+          2048,
+          1024,
+          1024,
+          0
+        ],
+        "stratum": [
+          2048,
+          1024,
+          1024,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "kind_low_middle_late": [
+          2868,
+          820,
+          408
+        ],
+        "natural_procedural": [
+          3380,
+          716
+        ],
+        "group": [
+          408,
+          820,
+          717,
+          717,
+          717,
+          717
+        ]
+      },
+      "events": [
+        "init_smp_state",
+        "gsi_reset",
+        "push_robot",
+        "foot_friction",
+        "encoder_bias",
+        "base_com",
+        "reset_stand_counter",
+        "deployment_pair_friction",
+        "v33_stage_reset",
+        "multiterrain_phase"
+      ],
+      "actor_noise": true,
+      "weights": {
+        "task_smp_product": 1.0,
+        "quiet_stand": 0.0,
+        "effort_top3": 0.0,
+        "speed_top3": 0.0,
+        "target_slew": 0.0,
+        "head_impact": 0.0,
+        "v33_action_rate": -0.0015,
+        "v33_action_acc": -0.0012,
+        "v33_joint_acc": -5e-08,
+        "v33_torque": -1e-06,
+        "v33_joint_speed": -0.02,
+        "v33_joint_power": -2e-06,
+        "v33_head_overspeed": -1.0,
+        "v33_sustained_effort": -0.05,
+        "v33_joint_limits": -0.1,
+        "plate_geometry_progress": 0.45,
+        "plate_clearance": 0.08,
+        "plate_completion": 0.6,
+        "plate_force": -0.03,
+        "plate_separation": 0.01,
+        "path_quiet_feet": -0.03,
+        "path_joint_stall": -0.2
+      },
+      "intervention": {
+        "blocked_alpha": 0.5,
+        "close": false,
+        "anchor": false
+      },
+      "hand_gate_disabled": false,
+      "preflight": true,
+      "evaluation": false
+    },
+    "reward_contract.json": {
+      "pass": true,
+      "arm": "CS_a050_base",
+      "blocked_alpha": 0.5,
+      "close": false,
+      "anchor": false
+    },
+    "partial_reset_pass.json": {
+      "pass": true
+    },
+    "completed.json": {
+      "iteration": 31
+    },
+    "dynamics_audit.json": {
+      "model_mass_inertia_verified": true,
+      "actuator_gain_verified": true,
+      "effort_caps_unchanged": true,
+      "delay_0_and_10ms_verified": true
+    }
+  },
+  "CS_a050_settle": {
+    "launch.json": {
+      "arm": "CS_a050_settle",
+      "historical_base_commit": "1b6d7e61ddbcd2caf9ea17b02160dd1cf0d119d2",
+      "code_sha256": "24bfbaa26edce6e904d25869802ac45e6fff57407ce124c92c42cf4116dc200c",
+      "checkpoint_sha256": "8b4889f80c6b7cc675f6e9b1e98f2d4a1886a15e372f86070f63c329ba9ca5d1",
+      "reference_sha256": "870a1f7110d4cfd58a3d81d45e2ec728abbec7335a781032aedf3e36309e7df8",
+      "assets": {
+        "outputs/multiterrain_bank/train.npz": "287eae8e8840c1b3281e7010a84182b824fefacd34439c4f993e9f130af1027a",
+        "outputs/multiterrain_bank/validation.npz": "d0c4755474df9626a20167843eb453d00e76420771d29f34cd35d5a3a8d29b45",
+        "datasets/reset_banks/natural_curriculum_v1/train.npz": "e9f94540520d7927dee01150a0f0bae39ad2aad5ae008b1c7c71f521650e44b9",
+        "datasets/reset_banks/procedural_low_v1/train.npz": "e289bed8d1c93e87fbdcf969fc5fc741f2d8500a0908ed145d2a4e02e7fe116d"
+      },
+      "actor_exact": true,
+      "fresh_critic": true,
+      "fresh_optimizer": true,
+      "actor_sha": "7dad6931ee3badde16e14a3a4d6193b230f60b874a0932af53603b18022da98e",
+      "critic_sha": "e3c5761727a07d175bb1a1f60cd70cc3f2878c75d0cf1287d5cb0da210320932",
+      "initial_qpos_sha": "9c8736398fb61763c2979b27e816e033f6fd1a31d7c483fd04f4d3d3dc956f09",
+      "seed": 20261026,
+      "updates": 32,
+      "num_envs": 4096,
+      "episode_s": 10.0,
+      "counts": {
+        "scene": [
+          2048,
+          1024,
+          1024,
+          0
+        ],
+        "stratum": [
+          2048,
+          1024,
+          1024,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "kind_low_middle_late": [
+          2868,
+          820,
+          408
+        ],
+        "natural_procedural": [
+          3380,
+          716
+        ],
+        "group": [
+          408,
+          820,
+          717,
+          717,
+          717,
+          717
+        ]
+      },
+      "events": [
+        "init_smp_state",
+        "gsi_reset",
+        "push_robot",
+        "foot_friction",
+        "encoder_bias",
+        "base_com",
+        "reset_stand_counter",
+        "deployment_pair_friction",
+        "v33_stage_reset",
+        "multiterrain_phase"
+      ],
+      "actor_noise": true,
+      "weights": {
+        "task_smp_product": 1.0,
+        "quiet_stand": 0.0,
+        "effort_top3": 0.0,
+        "speed_top3": 0.0,
+        "target_slew": 0.0,
+        "head_impact": 0.0,
+        "v33_action_rate": -0.0015,
+        "v33_action_acc": -0.0012,
+        "v33_joint_acc": -5e-08,
+        "v33_torque": -1e-06,
+        "v33_joint_speed": -0.02,
+        "v33_joint_power": -2e-06,
+        "v33_head_overspeed": -1.0,
+        "v33_sustained_effort": -0.05,
+        "v33_joint_limits": -0.1,
+        "plate_geometry_progress": 0.45,
+        "plate_clearance": 0.08,
+        "plate_completion": 0.6,
+        "plate_force": -0.03,
+        "plate_separation": 0.01,
+        "path_quiet_feet": -0.03,
+        "path_joint_stall": -0.2,
+        "post_clear_anchor": -0.05
+      },
+      "intervention": {
+        "blocked_alpha": 0.5,
+        "close": true,
+        "anchor": true
+      },
+      "hand_gate_disabled": false,
+      "preflight": true,
+      "evaluation": false
+    },
+    "reward_contract.json": {
+      "pass": true,
+      "arm": "CS_a050_settle",
+      "blocked_alpha": 0.5,
+      "close": true,
+      "anchor": true
+    },
+    "partial_reset_pass.json": {
+      "pass": true
+    },
+    "completed.json": {
+      "iteration": 31
+    },
+    "dynamics_audit.json": {
+      "model_mass_inertia_verified": true,
+      "actuator_gain_verified": true,
+      "effort_caps_unchanged": true,
+      "delay_0_and_10ms_verified": true
+    }
+  },
+  "CS_a100_base": {
+    "launch.json": {
+      "arm": "CS_a100_base",
+      "historical_base_commit": "1b6d7e61ddbcd2caf9ea17b02160dd1cf0d119d2",
+      "code_sha256": "24bfbaa26edce6e904d25869802ac45e6fff57407ce124c92c42cf4116dc200c",
+      "checkpoint_sha256": "8b4889f80c6b7cc675f6e9b1e98f2d4a1886a15e372f86070f63c329ba9ca5d1",
+      "reference_sha256": "870a1f7110d4cfd58a3d81d45e2ec728abbec7335a781032aedf3e36309e7df8",
+      "assets": {
+        "outputs/multiterrain_bank/train.npz": "287eae8e8840c1b3281e7010a84182b824fefacd34439c4f993e9f130af1027a",
+        "outputs/multiterrain_bank/validation.npz": "d0c4755474df9626a20167843eb453d00e76420771d29f34cd35d5a3a8d29b45",
+        "datasets/reset_banks/natural_curriculum_v1/train.npz": "e9f94540520d7927dee01150a0f0bae39ad2aad5ae008b1c7c71f521650e44b9",
+        "datasets/reset_banks/procedural_low_v1/train.npz": "e289bed8d1c93e87fbdcf969fc5fc741f2d8500a0908ed145d2a4e02e7fe116d"
+      },
+      "actor_exact": true,
+      "fresh_critic": true,
+      "fresh_optimizer": true,
+      "actor_sha": "7dad6931ee3badde16e14a3a4d6193b230f60b874a0932af53603b18022da98e",
+      "critic_sha": "e3c5761727a07d175bb1a1f60cd70cc3f2878c75d0cf1287d5cb0da210320932",
+      "initial_qpos_sha": "9c8736398fb61763c2979b27e816e033f6fd1a31d7c483fd04f4d3d3dc956f09",
+      "seed": 20261026,
+      "updates": 32,
+      "num_envs": 4096,
+      "episode_s": 10.0,
+      "counts": {
+        "scene": [
+          2048,
+          1024,
+          1024,
+          0
+        ],
+        "stratum": [
+          2048,
+          1024,
+          1024,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "kind_low_middle_late": [
+          2868,
+          820,
+          408
+        ],
+        "natural_procedural": [
+          3380,
+          716
+        ],
+        "group": [
+          408,
+          820,
+          717,
+          717,
+          717,
+          717
+        ]
+      },
+      "events": [
+        "init_smp_state",
+        "gsi_reset",
+        "push_robot",
+        "foot_friction",
+        "encoder_bias",
+        "base_com",
+        "reset_stand_counter",
+        "deployment_pair_friction",
+        "v33_stage_reset",
+        "multiterrain_phase"
+      ],
+      "actor_noise": true,
+      "weights": {
+        "task_smp_product": 1.0,
+        "quiet_stand": 0.0,
+        "effort_top3": 0.0,
+        "speed_top3": 0.0,
+        "target_slew": 0.0,
+        "head_impact": 0.0,
+        "v33_action_rate": -0.0015,
+        "v33_action_acc": -0.0012,
+        "v33_joint_acc": -5e-08,
+        "v33_torque": -1e-06,
+        "v33_joint_speed": -0.02,
+        "v33_joint_power": -2e-06,
+        "v33_head_overspeed": -1.0,
+        "v33_sustained_effort": -0.05,
+        "v33_joint_limits": -0.1,
+        "plate_geometry_progress": 0.45,
+        "plate_clearance": 0.08,
+        "plate_completion": 0.6,
+        "plate_force": -0.03,
+        "plate_separation": 0.01,
+        "path_quiet_feet": -0.03,
+        "path_joint_stall": -0.2
+      },
+      "intervention": {
+        "blocked_alpha": 1.0,
+        "close": false,
+        "anchor": false
+      },
+      "hand_gate_disabled": false,
+      "preflight": true,
+      "evaluation": false
+    },
+    "reward_contract.json": {
+      "pass": true,
+      "arm": "CS_a100_base",
+      "blocked_alpha": 1.0,
+      "close": false,
+      "anchor": false
+    },
+    "partial_reset_pass.json": {
+      "pass": true
+    },
+    "completed.json": {
+      "iteration": 31
+    },
+    "dynamics_audit.json": {
+      "model_mass_inertia_verified": true,
+      "actuator_gain_verified": true,
+      "effort_caps_unchanged": true,
+      "delay_0_and_10ms_verified": true
+    }
+  },
+  "CS_a100_settle": {
+    "launch.json": {
+      "arm": "CS_a100_settle",
+      "historical_base_commit": "1b6d7e61ddbcd2caf9ea17b02160dd1cf0d119d2",
+      "code_sha256": "24bfbaa26edce6e904d25869802ac45e6fff57407ce124c92c42cf4116dc200c",
+      "checkpoint_sha256": "8b4889f80c6b7cc675f6e9b1e98f2d4a1886a15e372f86070f63c329ba9ca5d1",
+      "reference_sha256": "870a1f7110d4cfd58a3d81d45e2ec728abbec7335a781032aedf3e36309e7df8",
+      "assets": {
+        "outputs/multiterrain_bank/train.npz": "287eae8e8840c1b3281e7010a84182b824fefacd34439c4f993e9f130af1027a",
+        "outputs/multiterrain_bank/validation.npz": "d0c4755474df9626a20167843eb453d00e76420771d29f34cd35d5a3a8d29b45",
+        "datasets/reset_banks/natural_curriculum_v1/train.npz": "e9f94540520d7927dee01150a0f0bae39ad2aad5ae008b1c7c71f521650e44b9",
+        "datasets/reset_banks/procedural_low_v1/train.npz": "e289bed8d1c93e87fbdcf969fc5fc741f2d8500a0908ed145d2a4e02e7fe116d"
+      },
+      "actor_exact": true,
+      "fresh_critic": true,
+      "fresh_optimizer": true,
+      "actor_sha": "7dad6931ee3badde16e14a3a4d6193b230f60b874a0932af53603b18022da98e",
+      "critic_sha": "e3c5761727a07d175bb1a1f60cd70cc3f2878c75d0cf1287d5cb0da210320932",
+      "initial_qpos_sha": "9c8736398fb61763c2979b27e816e033f6fd1a31d7c483fd04f4d3d3dc956f09",
+      "seed": 20261026,
+      "updates": 32,
+      "num_envs": 4096,
+      "episode_s": 10.0,
+      "counts": {
+        "scene": [
+          2048,
+          1024,
+          1024,
+          0
+        ],
+        "stratum": [
+          2048,
+          1024,
+          1024,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "kind_low_middle_late": [
+          2868,
+          820,
+          408
+        ],
+        "natural_procedural": [
+          3380,
+          716
+        ],
+        "group": [
+          408,
+          820,
+          717,
+          717,
+          717,
+          717
+        ]
+      },
+      "events": [
+        "init_smp_state",
+        "gsi_reset",
+        "push_robot",
+        "foot_friction",
+        "encoder_bias",
+        "base_com",
+        "reset_stand_counter",
+        "deployment_pair_friction",
+        "v33_stage_reset",
+        "multiterrain_phase"
+      ],
+      "actor_noise": true,
+      "weights": {
+        "task_smp_product": 1.0,
+        "quiet_stand": 0.0,
+        "effort_top3": 0.0,
+        "speed_top3": 0.0,
+        "target_slew": 0.0,
+        "head_impact": 0.0,
+        "v33_action_rate": -0.0015,
+        "v33_action_acc": -0.0012,
+        "v33_joint_acc": -5e-08,
+        "v33_torque": -1e-06,
+        "v33_joint_speed": -0.02,
+        "v33_joint_power": -2e-06,
+        "v33_head_overspeed": -1.0,
+        "v33_sustained_effort": -0.05,
+        "v33_joint_limits": -0.1,
+        "plate_geometry_progress": 0.45,
+        "plate_clearance": 0.08,
+        "plate_completion": 0.6,
+        "plate_force": -0.03,
+        "plate_separation": 0.01,
+        "path_quiet_feet": -0.03,
+        "path_joint_stall": -0.2,
+        "post_clear_anchor": -0.05
+      },
+      "intervention": {
+        "blocked_alpha": 1.0,
+        "close": true,
+        "anchor": true
+      },
+      "hand_gate_disabled": false,
+      "preflight": true,
+      "evaluation": false
+    },
+    "reward_contract.json": {
+      "pass": true,
+      "arm": "CS_a100_settle",
+      "blocked_alpha": 1.0,
+      "close": true,
+      "anchor": true
+    },
+    "partial_reset_pass.json": {
+      "pass": true
+    },
+    "completed.json": {
+      "iteration": 31
+    },
+    "dynamics_audit.json": {
+      "model_mass_inertia_verified": true,
+      "actuator_gain_verified": true,
+      "effort_caps_unchanged": true,
+      "delay_0_and_10ms_verified": true
+    }
+  }
+}
