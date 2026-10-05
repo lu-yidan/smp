@@ -50,3 +50,18 @@
 使用宁波服务器 `/root/workplace/smp-guidance-strengthening`，GPU4/5。SMP运行环境复用 `/root/workplace/smp-stage3/.venv`，不改他人的环境；Python3.12.3、torch2.10.0、mjlab1.3.0、MuJoCo3.8.1、MuJoCo-Warp3.8.0.2、RSL-RL5.2.0。每次launch记录资产和代码哈希。
 
 训练代码保留本地提交号与服务器快照提交号两份来源记录；二者可能不同，源码哈希和归档配置用于核对。
+
+## 实际启动记录
+
+两组已通过4096环境2次更新的预检；初始姿态与标签完全一致。排除观测归一化计数后，actor MLP参数最大变化分别约0.000765（off）和0.000730（on），均有限。代码配置比较确认只有三项核心权重不同。
+
+正式运行快照 `d7001e5`：
+
+- SG_off：GPU4，PID1120437，https://wandb.ai/tabletennis/smp-guidance-strengthening/runs/fk0hto2t
+- SG_on：GPU5，PID1120438，https://wandb.ai/tabletennis/smp-guidance-strengthening/runs/eau815u2
+- 服务器目录 `/root/workplace/smp-guidance-strengthening/logs/guidance_strengthening_20261006`。
+- 已确认两组完成首个优化更新，保存model_0.pt，W&B在线初始化成功。原AMP两组保持停止。
+
+运行快照的诊断字段 `actor_max_change` 包含观测归一化的计数变化，不能拿该字段大小判断网络学习幅度；后续源码已改成只统计MLP和动作分布参数。本次没有为这个诊断字段重启正式训练，其代码哈希仍以启动时记录为准。学习有效性通过实际checkpoint内MLP参数核对。
+
+历史评测仍在按固定队列进行；阶段性结果不自动替换论文表格。第一对seed20261021、5k的Guided/Free-R分别为：完整43.6%/94.1%，无核心几何引导5.5%/71.5%。这些只代表该种子和预算，不能用来代替三种子的汇总。

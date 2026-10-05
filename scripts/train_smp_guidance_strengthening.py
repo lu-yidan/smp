@@ -181,7 +181,8 @@ def main():
                 native_log(**kw)
                 losses={k:float(v) for k,v in kw['loss_dict'].items()}
                 assert all(np.isfinite(v) for v in losses.values()),losses
-                change=max(float((v-initial_actor[k]).abs().max()) for k,v in runner.alg.save()['actor_state_dict'].items())
+                change=max(float((v-initial_actor[k]).abs().max()) for k,v in runner.alg.save()['actor_state_dict'].items()
+                           if k.startswith(('mlp.', 'distribution.')))
                 base.atomic_json(a.out/'progress.json',dict(completed_updates=it+1,target_updates=a.updates,
                     elapsed_s=time.time()-runner.started,actor_max_change=change,losses=losses))
             else:
