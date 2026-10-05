@@ -1,0 +1,6 @@
+{
+  "model_mass_inertia_verified": true,
+  "actuator_gain_verified": true,
+  "effort_caps_unchanged": true,
+  "delay_0_and_10ms_verified": true
+}

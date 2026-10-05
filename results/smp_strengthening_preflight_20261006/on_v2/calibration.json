@@ -1,0 +1,29 @@
+{
+  "seconds": 10.0,
+  "weighted_term_integrals": {
+    "task_smp_product": 3.250553846359253,
+    "quiet_stand": 0.0,
+    "effort_top3": 0.0,
+    "speed_top3": 0.0,
+    "target_slew": 0.0,
+    "head_impact": 0.0,
+    "v33_action_rate": -0.01271193940192461,
+    "v33_action_acc": -0.011470537632703781,
+    "v33_joint_acc": -0.021770481020212173,
+    "v33_torque": -0.03078683838248253,
+    "v33_joint_speed": -0.0719202533364296,
+    "v33_joint_power": -0.0003743158304132521,
+    "v33_head_overspeed": -0.10326293855905533,
+    "v33_sustained_effort": -0.136661097407341,
+    "v33_joint_limits": -0.142891064286232,
+    "plate_geometry_progress": 0.049543753266334534,
+    "plate_clearance": 0.09768383949995041,
+    "plate_completion": 0.30196890234947205,
+    "plate_force": -0.016404064372181892,
+    "plate_separation": 0.0021129099186509848,
+    "path_quiet_feet": -0.11838351935148239,
+    "path_joint_stall": -0.4800899624824524,
+    "aux_plate_no_progress": -0.48787567019462585,
+    "aux_prone_lateral": 0.003778688609600067
+  }
+}

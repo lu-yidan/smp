@@ -1,0 +1,114 @@
+{
+  "arm": "on",
+  "seed": 20261006,
+  "updates": 2,
+  "num_envs": 128,
+  "checkpoint_sha256": "8b4889f80c6b7cc675f6e9b1e98f2d4a1886a15e372f86070f63c329ba9ca5d1",
+  "reference_sha256": "870a1f7110d4cfd58a3d81d45e2ec728abbec7335a781032aedf3e36309e7df8",
+  "actor_sha": "7dad6931ee3badde16e14a3a4d6193b230f60b874a0932af53603b18022da98e",
+  "critic_sha": "ac23af944da3fa4956bb488ba64b2680c201a42db83ac15904780093e068f697",
+  "actor_exact": true,
+  "fresh_critic": true,
+  "fresh_optimizer": true,
+  "scene_counts": [
+    40,
+    64,
+    24
+  ],
+  "scene_weights": [
+    0.3,
+    0.5,
+    0.2
+  ],
+  "counts": {
+    "scene": [
+      40,
+      64,
+      24,
+      0
+    ],
+    "stratum": [
+      40,
+      64,
+      24,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "kind_low_middle_late": [
+      104,
+      16,
+      8
+    ],
+    "natural_procedural": [
+      100,
+      28
+    ],
+    "group": [
+      8,
+      16,
+      26,
+      26,
+      26,
+      26
+    ]
+  },
+  "control_dt": 0.02,
+  "episode_s": 10.0,
+  "initial_qpos_sha": "9ace11bd0940481e51d010d3ef25a3d8228a9d6659c117c3afb8851bf3aa9e8d",
+  "events": [
+    "init_smp_state",
+    "gsi_reset",
+    "push_robot",
+    "foot_friction",
+    "encoder_bias",
+    "base_com",
+    "reset_stand_counter",
+    "deployment_pair_friction",
+    "v33_stage_reset",
+    "multiterrain_phase"
+  ],
+  "actor_noise": true,
+  "low_smp_termination": false,
+  "weights": {
+    "task_smp_product": 1.0,
+    "quiet_stand": 0.0,
+    "effort_top3": 0.0,
+    "speed_top3": 0.0,
+    "target_slew": 0.0,
+    "head_impact": 0.0,
+    "v33_action_rate": -0.0015,
+    "v33_action_acc": -0.0012,
+    "v33_joint_acc": -5e-08,
+    "v33_torque": -1e-06,
+    "v33_joint_speed": -0.02,
+    "v33_joint_power": -2e-06,
+    "v33_head_overspeed": -1.0,
+    "v33_sustained_effort": -0.05,
+    "v33_joint_limits": -0.1,
+    "plate_geometry_progress": 0.45,
+    "plate_clearance": 0.08,
+    "plate_completion": 0.6,
+    "plate_force": -0.03,
+    "plate_separation": 0.01,
+    "path_quiet_feet": -0.03,
+    "path_joint_stall": -0.2,
+    "aux_plate_no_progress": -0.15,
+    "aux_prone_lateral": 0.2
+  },
+  "core_geometry": true,
+  "shared_auxiliaries": true,
+  "alpha": 1.0,
+  "git_commit": "0c43eee92750b7c2a5ef09b044f43f53c8d35ddb",
+  "script_sha256": "530c49c78725c7f84e3734b9c4e23966b0930b982cd8b3739547ab1ac70a4bb4",
+  "auxiliary_sha256": "861fbb03c1938d7aec84290069f90fdc447158226948479d3d6528931660026c",
+  "packages": {
+    "torch": "2.10.0",
+    "mjlab": "1.3.0",
+    "mujoco": "3.8.1",
+    "mujoco-warp": "3.8.0.2",
+    "rsl-rl-lib": "5.2.0"
+  }
+}

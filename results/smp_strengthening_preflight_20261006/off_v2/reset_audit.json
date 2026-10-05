@@ -1,0 +1,39 @@
+{
+  "counts": {
+    "scene": [
+      40,
+      64,
+      24,
+      0
+    ],
+    "stratum": [
+      40,
+      64,
+      24,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "kind_low_middle_late": [
+      104,
+      16,
+      8
+    ],
+    "natural_procedural": [
+      100,
+      28
+    ],
+    "group": [
+      8,
+      16,
+      26,
+      26,
+      26,
+      26
+    ]
+  },
+  "minimum_contact_distance": -0.0016407055291937367,
+  "relaxed_upward_speed": true
+}
