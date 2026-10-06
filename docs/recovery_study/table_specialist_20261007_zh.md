@@ -75,3 +75,38 @@ CUDA_VISIBLE_DEVICES=0 PYTHONPATH=src:scripts:. .venv/bin/python -u scripts/trai
 运行路径 `logs/table_specialist_20261007/T0`（以及T1/T2）。T0短测位于 `outputs/preflight_T0_v2`；T1/T2加强短测位于 `outputs/preflight_T1_v2` 与 `outputs/preflight_T2_v2`。渲染管线用 `outputs/render_preflight_v2` 验证，仅2 s，**不是成功率评测结果**。
 
 注意：mjlab 的 checkpoint 加载会另外恢复环境步数；正式启动显式将 `common_step_counter` 置零，以重新开始桌子专项的动力学课程。短测在继承的满幅随机化下也通过，但不代表正式训练从满幅开始。
+
+## 追加：脱困后位移消融 T3–T5
+
+用户希望离开桌子后尽量不继续移动。本轮新增三组仍从相同 A6_no_alpha 父策略开始，不从已训练的 T2 接着微调。reset 池、随机化、种子、4096环境、10k预算、500保存均相同。
+
+| 组别 | 位移惩罚权重 | 生效门控 | 额外站立收敛 |
+|---|---:|---|---|
+| T1 | 0 | 无 | 无 |
+| T2（已有） | −0.08 | 近站立高度／直立度门控 | 有 |
+| T3 | −0.08 | 与T2相同 | 无 |
+| T4 | −0.08 | 首次脱困后0.5 s线性增至全强度，不依赖高度 | 无 |
+| T5 | −0.24 | 与T4相同 | 无 |
+
+对照关系：T1/T3测试位移项；T3/T2测试额外站立项；T3/T4测试激活是否太晚；T4/T5测试强度。
+
+令 `d=||base_xy−escape_anchor_xy||`，共同代价为 `min(10, (max(d−0.25,0)/0.30)^2)`。锚点在确认脱困时记录并保持，只有 episode reset 才重置。T4/T5 的激活系数为 `clip(time_since_escape/0.5,0,1)`。不惩罚竖直上升，不要求回到桌下原位置。25 cm 是免费区域而非硬上限；大权重可能使策略停在低位，必须联合成功率评估。
+
+每组课程采用同一门槛规则，但由自身验证表现触发，低净空占比可能随训练产生差别。因此课程分化后的结果是完整训练方案的对照，不能声称全程看到了完全相同的训练分布。最终使用相同验证池、类别比例、姿态与净空分层比较。
+
+验证新增：
+- `drift_escaped_p95`：只对已脱困episode统计其观察窗内的最大位移P95；未脱困者不以零位移混入。
+- `drift3_p95`：首次脱困后3 s内最大水平偏移的P95，只纳入有完整3 s观察的样本。
+- 同时报告 `n_escaped`、`n_post3`、SR3及脱困比例。窗口不足的样本不补零，也不能把低位停滞当作收敛。
+- 现有 `drift_p95` 保留兼容，但它混合未脱困样本，不用于单独判断位移改进。
+
+代码边界检查：`scripts/check_table_drift_contract.py` 验证脱困前零代价、25 cm免费区、低姿态也能启用新代价、0.5 s渐进，以及组间未改其他reward。T3/T4/T5还各跑128环境5 s rollout与2次PPO更新。
+
+新增GPU计划为T3=5、T4=6、T5=7。验证子进程与训练共享这些卡；显存有余量，但验证时吞吐会降低。GPU1/2原任务保留。已有T0/T1/T2进程继续运行；新评测脚本可以对全部组统一输出新增指标。
+
+追加三组已完成启动检查并进入正式PPO更新：
+- T3，GPU5：https://wandb.ai/tabletennis/smp/runs/mn798xl7
+- T4，GPU6：https://wandb.ai/tabletennis/smp/runs/j166cljk
+- T5，GPU7：https://wandb.ai/tabletennis/smp/runs/5wbgkka8
+
+新增评测指标通过 `outputs/drift_eval_smoke` 的5 s短测，能够正确输出条件位移和有效样本数；该短测不作为23 s完整评测结果。

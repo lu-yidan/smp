@@ -36,8 +36,9 @@ def config(n,arm,evaluation,seed):
  cfg.terminations.pop('invalid_plate',None);cfg.episode_length_s=1000 if evaluation else 20.
  cfg.rewards['plate_geometry_progress'].func=t.path_reward;cfg.rewards['plate_clearance'].func=t.path_reward
  for key in ('plate_completion','plate_force','plate_separation'):cfg.rewards[key].func=t.escape_reward
+ if arm in ('T2','T3','T4','T5'):
+  cfg.rewards['table_post_clear_position']=RewardTermCfg(func=t.post_clear_position,weight=-.24 if arm=='T5' else -.08,params={'activation':'after_clear' if arm in ('T4','T5') else 'standing'})
  if arm=='T2':
-  cfg.rewards['table_post_clear_position']=RewardTermCfg(func=t.post_clear_position,weight=-.08)
   for index,key,weight in [(0,'pose',.04),(1,'feet',-.01),(2,'body',-.01)]:cfg.rewards['table_stand_'+key]=RewardTermCfg(func=ra.reward,params={'index':index},weight=weight)
  cfg.sim.nconmax=384;cfg.sim.njmax=5000
  agent.algorithm.learning_rate=1e-5;agent.save_interval=500;agent.upload_model=False;agent.wandb_project='smp';agent.run_name='table_'+arm
@@ -73,7 +74,8 @@ class Runner(MjlabOnPolicyRunner):
   data=json.loads((out/'summary.json').read_text());high=[v['sr3'] for k,v in data.items() if k.endswith('/high')]
   if np.mean(high)>=.60 and min(high)>=.40:env._tb_low_fraction=min(.30,round(env._tb_low_fraction+.10,2))
   for key,value in data.items():
-   for metric in ['sr3','escaped','drift_p95']:self.logger.writer.add_scalar(f'Validation/{key}/{metric}',value[metric],it)
+   for metric in ['sr3','escaped','drift_p95','drift_escaped_p95','drift3_p95']:
+    if value.get(metric) is not None:self.logger.writer.add_scalar(f'Validation/{key}/{metric}',value[metric],it)
   write(self.args.out/'progress.json',dict(iteration=it,low_height_fraction=env._tb_low_fraction,validation=data))
 
 def audit(env,out):
@@ -95,7 +97,7 @@ def audit(env,out):
  np.savez_compressed(out/'initial.npz',qpos=q,mocap_pos=mp,mocap_quat=mq,bank_rows=env._tb_rows.cpu().numpy(),family=env._tb_family.cpu().numpy(),pose=env._tb_pose.cpu().numpy(),band=env._tb_band.cpu().numpy())
 
 def evaluate(env,w,policy,obs,a):
- live=torch.ones(env.num_envs,dtype=torch.bool,device=env.device);hold=torch.zeros(env.num_envs,device=env.device);passed=live.clone().fill_(False);escaped=passed.clone();peak=hold.clone();drift=hold.clone();initial_rows=env._tb_rows.clone()
+ live=torch.ones(env.num_envs,dtype=torch.bool,device=env.device);hold=torch.zeros(env.num_envs,device=env.device);passed=live.clone().fill_(False);escaped=passed.clone();peak=hold.clone();drift=hold.clone();initial_rows=env._tb_rows.clone();post_steps=hold.clone();drift3=hold.clone()
  selected=[]
  for f in range(3):
   for p in range(2):
@@ -112,6 +114,9 @@ def evaluate(env,w,policy,obs,a):
    with torch.inference_mode():obs,_,done,_=w.step(policy(obs))
    live &= ~done.bool();r=env.scene['robot'];good=(mt.height(env)>=1.15)&(-r.data.projected_gravity_b[:,2]>=.9)&(mt.ground_force(env,'quality_feet')[...,2].abs().amin(-1)>20)&live
    hold=torch.where(good,hold+1,0);passed|=(hold>=150)&((k+1-hold)<=1000);escaped|=env._tb_done&live;peak=torch.maximum(peak,torch.where(live,(r.data.qfrc_actuator*r.data.joint_vel).abs().amax(-1),0));drift=torch.maximum(drift,torch.where(live,env._tb_drift,0))
+   post_steps+=live&env._tb_done
+   current_dist=(r.data.root_link_pos_w[:,:2]-env._tb_anchor).norm(dim=-1)
+   drift3=torch.maximum(drift3,torch.where(live&env._tb_done&(post_steps<=150),current_dist,0))
    if writers and k%2==1:
     from PIL import Image,ImageDraw
     cam=env._offline_renderer._cam;cam.type=mujoco.mjtCamera.mjCAMERA_FREE;cam.azimuth=90;cam.elevation=0
@@ -127,12 +132,15 @@ def evaluate(env,w,policy,obs,a):
    for b,band in enumerate(('high','low')):
     m=(env._tb_family==f)&(env._tb_pose==p)&(env._tb_band==b);n=int(m.sum())
     if n:summary[f'{name}/{pose}/{band}']=dict(n=n,sr3=float(passed[m].float().mean()),escaped=float(escaped[m].float().mean()),drift_p95=float(torch.quantile(drift[m],.95)),power_peak_p95_50hz=float(torch.quantile(peak[m],.95)))
+    if n:
+     em=m&escaped;pm=m&(post_steps>=150)
+     summary[f'{name}/{pose}/{band}'].update(n_escaped=int(em.sum()),n_post3=int(pm.sum()),drift_escaped_p95=float(torch.quantile(drift[em],.95)) if em.any() else None,drift3_p95=float(torch.quantile(drift3[pm],.95)) if pm.any() else None)
  write(a.out/'summary.json',summary)
- np.savez_compressed(a.out/'per_trial.npz',sr3=passed.cpu(),escaped=escaped.cpu(),drift=drift.cpu(),family=env._tb_family.cpu(),pose=env._tb_pose.cpu(),band=env._tb_band.cpu(),bank_rows=initial_rows.cpu())
+ np.savez_compressed(a.out/'per_trial.npz',sr3=passed.cpu(),escaped=escaped.cpu(),drift=drift.cpu(),drift3=drift3.cpu(),post_steps=post_steps.cpu(),family=env._tb_family.cpu(),pose=env._tb_pose.cpu(),band=env._tb_band.cpu(),bank_rows=initial_rows.cpu())
  print('EVAL_COMPLETE',json.dumps(summary),flush=True)
 
 def main():
- p=argparse.ArgumentParser();p.add_argument('--arm',choices=['T0','T1','T2'],required=True);p.add_argument('--out',type=Path,required=True);p.add_argument('--checkpoint',type=Path,default=Path(DEFAULT_PARENT));p.add_argument('--num-envs',type=int,default=4096);p.add_argument('--updates',type=int,default=10000);p.add_argument('--seed',type=int,default=20261007);p.add_argument('--eval-gpu',default='7');p.add_argument('--eval',action='store_true');p.add_argument('--video',action='store_true');p.add_argument('--eval-steps',type=int,default=1150);p.add_argument('--preflight',action='store_true');a=p.parse_args();a.out=a.out.resolve();a.out.mkdir(parents=True,exist_ok=a.eval)
+ p=argparse.ArgumentParser();p.add_argument('--arm',choices=['T0','T1','T2','T3','T4','T5'],required=True);p.add_argument('--out',type=Path,required=True);p.add_argument('--checkpoint',type=Path,default=Path(DEFAULT_PARENT));p.add_argument('--num-envs',type=int,default=4096);p.add_argument('--updates',type=int,default=10000);p.add_argument('--seed',type=int,default=20261007);p.add_argument('--eval-gpu',default='7');p.add_argument('--eval',action='store_true');p.add_argument('--video',action='store_true');p.add_argument('--eval-steps',type=int,default=1150);p.add_argument('--preflight',action='store_true');a=p.parse_args();a.out=a.out.resolve();a.out.mkdir(parents=True,exist_ok=a.eval)
  if not a.eval:assert sha(a.checkpoint)==PARENT_SHA
  t.install();cfg,agent=config(a.num_envs,a.arm,a.eval,a.seed);agent.logger='tensorboard' if a.eval or a.preflight else 'wandb';agent.max_iterations=a.updates
  random.seed(a.seed);np.random.seed(a.seed);torch.manual_seed(a.seed)

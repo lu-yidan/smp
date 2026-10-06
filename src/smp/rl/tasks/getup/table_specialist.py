@@ -28,7 +28,7 @@ def setup(env):
  env._tb_gids=torch.stack([env.scene[name].indexing.geom_ids[0] for name in PARTS]).long()
  env._mt_plate_ids=[env._tb_gids[0],env._tb_gids[0]]
  env._tb_done=torch.zeros(n,dtype=torch.bool,device=dev);env._tb_anchor=torch.zeros(n,2,device=dev);env._tb_drift=torch.zeros(n,device=dev);env._tb_ever_stand=torch.zeros(n,dtype=torch.bool,device=dev)
- env._tb_hold=torch.zeros(n,device=dev);env._tb_episode_sr3=torch.zeros(n,dtype=torch.bool,device=dev)
+ env._tb_escape_age=torch.zeros(n,device=dev);env._tb_hold=torch.zeros(n,device=dev);env._tb_episode_sr3=torch.zeros(n,dtype=torch.bool,device=dev)
  env._tb_reset_counts=torch.zeros(3,2,device=dev);env._tb_validated=0
 
 def table_data_reset(env,env_ids=None,bank_path=None):
@@ -59,7 +59,7 @@ def table_data_reset(env,env_ids=None,bank_path=None):
  for name in ('separation_progress','force','clear_hold','progress'):getattr(env,'_mt_'+name)[ids]=0
  env._mt_ever_contact[ids]=True # Eligibility from verified initial entrapment, not requiring a deliberate collision.
  env._mt_escaped[ids]=False;env._mt_invalid[ids]=False
- env._tb_done[ids]=False;env._tb_anchor[ids]=r.data.root_link_pos_w[ids,:2];env._tb_drift[ids]=0;env._tb_hold[ids]=0;env._tb_episode_sr3[ids]=False
+ env._tb_escape_age[ids]=0;env._tb_done[ids]=False;env._tb_anchor[ids]=r.data.root_link_pos_w[ids,:2];env._tb_drift[ids]=0;env._tb_hold[ids]=0;env._tb_episode_sr3[ids]=False
  for f in range(3):
   for p in range(2):env._tb_reset_counts[f,p]+=((env._tb_family[ids]==f)&(env._tb_pose[ids]==p)).sum()
  prime_static_history(env,ids)
@@ -91,6 +91,7 @@ def update(env,env_ids=None):
  env._tb_clear_hold=torch.where(clear,env._tb_clear_hold+1,0)
  env._mt_escaped=env._tb_clear_hold>=15
  first=env._mt_escaped&~env._tb_done;r=env.scene['robot'];env._tb_anchor[first]=r.data.root_link_pos_w[first,:2];env._tb_done|=env._mt_escaped
+ env._tb_escape_age+=env._tb_done*env.step_dt
  drift=(r.data.root_link_pos_w[:,:2]-env._tb_anchor).norm(dim=-1);env._tb_drift=torch.maximum(env._tb_drift,torch.where(env._tb_done,drift,0))
  z=mt.height(env);u=-r.data.projected_gravity_b[:,2];feet=mt.ground_force(env,'quality_feet')[...,2].abs().amin(-1)
  good=(z>=1.15)&(u>=.90)&(feet>20);env._tb_hold=torch.where(good,env._tb_hold+env.step_dt,0);env._tb_episode_sr3|=env._tb_hold>=3
@@ -108,9 +109,14 @@ def escape_reward(env,index):
  if env._tb_arm!='T0' and index in (0,1,4):value=value*~env._tb_done
  return value
 
-def post_clear_position(env):
+def displacement_cost(dist):
+ return ((dist-.25).clamp_min(0)/.30).square().clamp_max(10)
+
+def post_clear_position(env,activation="standing"):
+ assert activation in ("standing","after_clear")
  r=env.scene['robot'];g=pa.quiet_gate(mt.height(env),-r.data.projected_gravity_b[:,2]);dist=(r.data.root_link_pos_w[:,:2]-env._tb_anchor).norm(dim=-1)
- return env._tb_done*g*((dist-.25).clamp_min(0)/.30).square().clamp_max(10)
+ if activation=="after_clear":g=(env._tb_escape_age/.5).clamp(0,1)
+ return env._tb_done*g*displacement_cost(dist)
 
 def install():
  mt.reset=table_data_reset
