@@ -15,14 +15,14 @@ def setup(env):
  n=env.num_envs;dev=env.device;b=np.load(env._tb_bank_path)
  env._tb_bank={k:torch.as_tensor(b[k],device=dev) for k in ('qpos','positions','sizes','dims','friction')}
  env._tb_pools={(f,p,s,h):torch.tensor(np.flatnonzero((b['family']==f)&(b['pose']==p)&(b['source']==s)&(b['band']==h)),device=dev) for f in range(3) for p in range(2) for s in range(2) for h in range(2)}
- assert all(len(x)>0 for x in env._tb_pools.values())
+ assert all(len(x)>0 for (f,p,s,h),x in env._tb_pools.items() if s==0 or not getattr(env,'_tb_natural_only',False))
  env._tb_rng=torch.Generator(device=dev).manual_seed(env.cfg.seed+37103)
  # Fixed environment strata keep family/pose/source quotas exact across resets.
  counts=[2*round(n*.35/2),2*round(n*.40/2)];counts+=[n-sum(counts)]
  env._tb_family=torch.repeat_interleave(torch.arange(3,device=dev),torch.tensor(counts,device=dev));env._tb_pose=torch.arange(n,device=dev)%2;env._tb_source=torch.zeros(n,device=dev,dtype=torch.long)
  for f in range(3):
   for p in range(2):
-   ids=torch.where((env._tb_family==f)&(env._tb_pose==p))[0];env._tb_source[ids[:round(len(ids)*.25)]]=1
+   ids=torch.where((env._tb_family==f)&(env._tb_pose==p))[0];env._tb_source[ids[:round(len(ids)*.25)]]=0 if getattr(env,'_tb_natural_only',False) else 1
  env._tb_band=torch.zeros(n,dtype=torch.long,device=dev);env._tb_rows=env._tb_band.clone()
  if env._tb_evaluation:env._tb_band=(torch.arange(n,device=dev)//2)%2
  env._tb_gids=torch.stack([env.scene[name].indexing.geom_ids[0] for name in PARTS]).long()
