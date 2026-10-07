@@ -1,0 +1,76 @@
+{
+  "seed": 20261008,
+  "pose_pools": [
+    {
+      "split": "train",
+      "pose": 0,
+      "source": 0,
+      "n": 128,
+      "attempts": 164,
+      "unique_source_indices": 111
+    },
+    {
+      "split": "train",
+      "pose": 0,
+      "source": 1,
+      "n": 256,
+      "attempts": 256,
+      "unique_source_indices": 256
+    },
+    {
+      "split": "train",
+      "pose": 1,
+      "source": 0,
+      "n": 128,
+      "attempts": 137,
+      "unique_source_indices": 50
+    },
+    {
+      "split": "train",
+      "pose": 1,
+      "source": 1,
+      "n": 256,
+      "attempts": 266,
+      "unique_source_indices": 256
+    },
+    {
+      "split": "validation",
+      "pose": 0,
+      "source": 0,
+      "n": 64,
+      "attempts": 80,
+      "unique_source_indices": 57
+    },
+    {
+      "split": "validation",
+      "pose": 0,
+      "source": 1,
+      "n": 128,
+      "attempts": 128,
+      "unique_source_indices": 128
+    },
+    {
+      "split": "validation",
+      "pose": 1,
+      "source": 0,
+      "n": 64,
+      "attempts": 64,
+      "unique_source_indices": 14
+    },
+    {
+      "split": "validation",
+      "pose": 1,
+      "source": 1,
+      "n": 128,
+      "attempts": 135,
+      "unique_source_indices": 128
+    }
+  ],
+  "height": "frozen first, stratified uniform 0.32..0.40m; no height rejection",
+  "settle": "0.6s nominal PD, then grounded 3mm; root speed<0.2m/s, joint speed<2rad/s; reset velocities zero",
+  "source_split": "natural source indices disjoint; procedural seeds disjoint; not a clip-disjoint claim",
+  "sha": {
+    "train": "bbad2910c6c59665f2528ee41e819d2576eb91050f8fee5e4f1d0cfd9f4f6bae",
+    "validation": "2bc342983c523f37629b2eb9add5eab1ea7d55382e049f16c3a03c395086fbf3"
+  }
+}
