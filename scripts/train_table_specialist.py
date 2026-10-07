@@ -108,7 +108,7 @@ def evaluate(env,w,policy,obs,a):
  if a.video:
   import imageio.v2 as imageio
   for j,f,p,b in selected:
-   if b==0:writers[j]=imageio.get_writer(str(a.out/f'{f}_{p}_{b}.mp4'),fps=25,codec='libx264',ffmpeg_params=['-threads','1'])
+   if b==0 or a.video_low:writers[j]=imageio.get_writer(str(a.out/f'{f}_{p}_{b}.mp4'),fps=25,codec='libx264',ffmpeg_params=['-threads','1'])
  try:
   for k in range(a.eval_steps):
    with torch.inference_mode():obs,_,done,_=w.step(policy(obs))
@@ -119,10 +119,10 @@ def evaluate(env,w,policy,obs,a):
    drift3=torch.maximum(drift3,torch.where(live&env._tb_done&(post_steps<=150),current_dist,0))
    if writers and k%2==1:
     from PIL import Image,ImageDraw
-    cam=env._offline_renderer._cam;cam.type=mujoco.mjtCamera.mjCAMERA_FREE;cam.azimuth=90;cam.elevation=0
+    cam=env._offline_renderer._cam;cam.type=mujoco.mjtCamera.mjCAMERA_FREE;cam.azimuth=a.camera_azimuth;cam.elevation=a.camera_elevation
     for j,f,p,b in selected:
      if j not in writers:continue
-     env.cfg.viewer.env_idx=j;root=r.data.root_link_pos_w[j].cpu().numpy();top=env.sim.data.geom_xpos[j,env._tb_gids[0]].cpu().numpy();cam.lookat[:]=[(root[0]+top[0])/2,(root[1]+top[1])/2,.32];cam.distance=3.6+.45*np.linalg.norm(root[:2]-top[:2]);im=Image.fromarray(env.render());draw=ImageDraw.Draw(im);draw.text((8,8),f'{a.arm} family={f} pose={p} low={b} t={(k+1)*.02:.2f}s SR3={int(passed[j])}',fill='white');writers[j].append_data(np.asarray(im))
+     env.cfg.viewer.env_idx=j;root=r.data.root_link_pos_w[j].cpu().numpy();top=env.sim.data.geom_xpos[j,env._tb_gids[0]].cpu().numpy();cam.lookat[:]=[(root[0]+top[0])/2,(root[1]+top[1])/2,.32];cam.distance=3.6+.45*np.linalg.norm(root[:2]-top[:2]);im=Image.fromarray(env.render());draw=ImageDraw.Draw(im);dims=env._tb_bank['dims'][initial_rows[j]].cpu().numpy();draw.text((8,28),f'L={dims[0]:.2f} W={dims[1]:.2f} underside H={dims[2]:.2f} m',fill='white');draw.text((8,8),f'{a.arm} family={f} pose={p} low={b} t={(k+1)*.02:.2f}s SR3={int(passed[j])}',fill='white');writers[j].append_data(np.asarray(im))
      if k==1:im.save(a.out/f'initial_{f}_{p}_{b}.png')
  finally:
   for v in writers.values():v.close()
@@ -140,7 +140,7 @@ def evaluate(env,w,policy,obs,a):
  print('EVAL_COMPLETE',json.dumps(summary),flush=True)
 
 def main():
- p=argparse.ArgumentParser();p.add_argument('--arm',choices=['T0','T1','T2','T3','T4','T5'],required=True);p.add_argument('--out',type=Path,required=True);p.add_argument('--checkpoint',type=Path,default=Path(DEFAULT_PARENT));p.add_argument('--num-envs',type=int,default=4096);p.add_argument('--updates',type=int,default=10000);p.add_argument('--seed',type=int,default=20261007);p.add_argument('--eval-gpu',default='7');p.add_argument('--eval',action='store_true');p.add_argument('--video',action='store_true');p.add_argument('--eval-steps',type=int,default=1150);p.add_argument('--preflight',action='store_true');a=p.parse_args();a.out=a.out.resolve();a.out.mkdir(parents=True,exist_ok=a.eval)
+ p=argparse.ArgumentParser();p.add_argument('--arm',choices=['T0','T1','T2','T3','T4','T5'],required=True);p.add_argument('--out',type=Path,required=True);p.add_argument('--checkpoint',type=Path,default=Path(DEFAULT_PARENT));p.add_argument('--num-envs',type=int,default=4096);p.add_argument('--updates',type=int,default=10000);p.add_argument('--seed',type=int,default=20261007);p.add_argument('--eval-gpu',default='7');p.add_argument('--eval',action='store_true');p.add_argument('--video',action='store_true');p.add_argument('--video-low',action='store_true');p.add_argument('--camera-azimuth',type=float,default=90);p.add_argument('--camera-elevation',type=float,default=0);p.add_argument('--eval-steps',type=int,default=1150);p.add_argument('--preflight',action='store_true');a=p.parse_args();a.out=a.out.resolve();a.out.mkdir(parents=True,exist_ok=a.eval)
  if not a.eval:assert sha(a.checkpoint)==PARENT_SHA
  t.install();cfg,agent=config(a.num_envs,a.arm,a.eval,a.seed);agent.logger='tensorboard' if a.eval or a.preflight else 'wandb';agent.max_iterations=a.updates
  random.seed(a.seed);np.random.seed(a.seed);torch.manual_seed(a.seed)
