@@ -1,4 +1,5 @@
 """V34 93D continuation: fixed tables / passive vertical plate / flat recovery."""
+import os
 import numpy as np
 import torch
 from smp.rl.tasks.getup import crawl_first as c, multiterrain as mt
@@ -33,7 +34,23 @@ def data_reset(env,env_ids=None,bank_path=None):
   pick=torch.randint(len(env._mix_middle_q),(len(middle),),generator=env._tb_rng,device=env.device);q=env._mix_middle_q[pick];state=r.data.default_root_state[middle].clone();state[:,:3]=q[:,:3]+env.scene.env_origins[middle];state[:,3:7]=q[:,3:7];state[:,7:]=0
   r.write_root_state_to_sim(state,env_ids=middle);r.write_joint_state_to_sim(q[:,7:],torch.zeros_like(q[:,7:]),env_ids=middle)
  env.sim.forward();pos,ext=mt.robot_bounds(env);gi=ids[env._mix_scene[ids]==2]
- if len(gi):
+ if len(gi) and os.environ.get('V34_MIX_RESET','bank')=='v34':
+  from smp.rl.tasks.getup import v34_reset_legacy as old
+  from smp.rl.tasks.getup.master_deployment_contract import COLLISION_PATTERN
+  # Archived poses require self-collision projection for the deployment robot.
+  if not hasattr(env,'_mix_v34_bank'):
+   bank=np.load('outputs/v34_deploy_reset/'+('validation' if env._tb_evaluation else 'train')+'.npz')
+   env._mix_v34_bank=[torch.tensor(bank['qpos'][bank['pose']==p],device=env.device) for p in (0,1)]
+   env._robust_reset_type=torch.zeros(env.num_envs,dtype=torch.long,device=env.device)
+  for label in (0,1):
+   group=gi[env._tb_pose[gi]==label];pool=env._mix_v34_bank[label]
+   if not len(group):continue
+   q=pool[torch.randint(len(pool),(len(group),),generator=env._tb_rng,device=env.device)]
+   state=r.data.default_root_state[group].clone();state[:,:3]=q[:,:3]+env.scene.env_origins[group];state[:,3:7]=q[:,3:7];state[:,7:]=0
+   r.write_root_state_to_sim(state,env_ids=group);r.write_joint_state_to_sim(q[:,7:],torch.zeros_like(q[:,7:]),env_ids=group);env._robust_reset_type[group]=2 if label==0 else 1
+  env.sim.forward()
+  old.reset_guided_escape_plate_curriculum(env,gi,obstacle_probability=1.,eligible_reset_types=(1,2),target_body_name='torso_link',xy_offset_range=.005,body_origin_clearance=.22,align_to_body=True,longitudinal_offset=-.10,support_ready_supine=False,support_arm_noise=0.,ground_clearance=.004,surface_gap=.001,plate_half_extents=(.45,.32,.035),collision_geom_pattern=COLLISION_PATTERN,longitudinal_offset_curriculum=(.18,.04),lateral_offset_curriculum=(.22,.05),overlap_curriculum_steps=100000,plate_mass_range=(4.,12.),initial_max_mass=6.,mass_curriculum_steps=100000)
+ elif len(gi):
   pose=torch.zeros((len(gi),7),device=env.device);pose[:,3]=1;pose[:,:2]=r.data.root_link_pos_w[gi,:2]
   covered=((pos[gi,:,:2]-pose[:,None,:2]).abs()<ext[gi,:,:2]+pose.new_tensor([.46,.33])).all(-1)
   pose[:,2]=torch.where(covered,pos[gi,:,2]+ext[gi,:,2],-torch.inf).amax(-1)+.035+.002
