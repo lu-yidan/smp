@@ -7,9 +7,9 @@ import argparse,json,random,os,sys,subprocess
 import torch,numpy as np
 from mjlab.sensor.contact_sensor import ContactMatch
 from tensordict import TensorDict
-PARENT='/mnt/workspace/user/luyidan/smp-v38-unified/logs/rsl_rl/smp_getup_escape_plate_v34_93d_g1/2026-09-02_18-09-07_v34_93d_ablation_12k_seed20261701_offline/model_6000.pt'
+PARENT=os.environ.get('V34_PARENT','/mnt/workspace/user/luyidan/smp-v38-unified/logs/rsl_rl/smp_getup_escape_plate_v34_93d_g1/2026-09-02_18-09-07_v34_93d_ablation_12k_seed20261701_offline/model_6000.pt')
 PARENT_SHA='471fb41444a5d8f2bce1f93b0e2d65a613e86c1d417ef4cba36ba48b9779474b'
-ONNX='/mnt/workspace/user/luyidan/smp-a6-paper/outputs/smp_v34_escape_gate6000_93d.onnx'
+ONNX=os.environ.get('V34_ONNX','/mnt/workspace/user/luyidan/smp-a6-paper/outputs/smp_v34_escape_gate6000_93d.onnx')
 
 def config(n,evaluation,seed):
  cfg,agent=base.config(n,'CF0',evaluation,seed)
@@ -26,6 +26,8 @@ class Wrapper(base.Wrapper):
   obs,r,d,e=super().step(actions);env=self.unwrapped;log=e['log']
   for s,name in [(0,'flat'),(1,'table'),(2,'guided')]:
    m=env._mix_scene==s;log['Mix/'+name+'/SR3_episode']=env._tb_episode_sr3[m].float().mean();log['Mix/'+name+'/escape']=env._tb_done[m].float().mean()
+  log['Mix/blocked_rise_scale']=torch.tensor(getattr(env,'_cr_rise_floor',0.),device=env.device)
+  log['Mix/execution_cost_ramp']=torch.tensor(base.v.ramp(env),device=env.device)
   return obs,r,d,e
 
 
@@ -73,12 +75,12 @@ def audit_cpu(env,out):
 class Runner(base.Runner):
  def save(self,path,infos=None):
   # Do not use crawl-only validation/absolute guards for a new mixture.
-  base.MjlabOnPolicyRunner.save(self,path,infos={**(infos or {}),'mix':dict(smp_mean=self.env.unwrapped._smp_normalizer.mean.cpu(),smp_count=self.env.unwrapped._smp_normalizer.count.cpu())})
+  base.MjlabOnPolicyRunner.save(self,path,infos={**(infos or {}),'mix':dict(smp_mean=self.env.unwrapped._smp_normalizer.mean.cpu(),smp_count=self.env.unwrapped._smp_normalizer.count.cpu(),rise_floor=self.args.rise_floor,cost_ramp=self.args.cost_ramp)})
   if not self.active:return
   it=self.current_learning_iteration;base.write(self.args.out/'progress.json',dict(iteration=it))
   if it==0 or it%500:return
   out=self.args.out/'validation'/str(it);out.mkdir(parents=True,exist_ok=True)
-  cmd=[sys.executable,'-u',__file__,'--eval','--checkpoint',str(Path(path).resolve()),'--out',str(out),'--num-envs','256','--seed','20261071']
+  cmd=[sys.executable,'-u',__file__,'--eval','--checkpoint',str(Path(path).resolve()),'--out',str(out),'--num-envs','256','--seed','20261071','--rise-floor',str(self.args.rise_floor),'--cost-ramp',str(self.args.cost_ramp)]
   if it%1000==0:cmd+=['--video']
   with open(out/'eval.log','w') as f:subprocess.run(cmd,env=dict(os.environ,CUDA_VISIBLE_DEVICES=self.args.eval_gpu,MUJOCO_EGL_DEVICE_ID=self.args.eval_gpu),stdout=f,stderr=subprocess.STDOUT,check=True)
   d=json.loads((out/'summary.json').read_text());b=json.loads((self.args.out/'baseline/summary.json').read_text())
@@ -89,7 +91,7 @@ class Runner(base.Runner):
 
 
 def main():
- p=argparse.ArgumentParser();p.add_argument('--out',type=Path,required=True);p.add_argument('--reset-protocol',choices=['bank','v34'],default='bank');p.add_argument('--eval-gpu',default='0');p.add_argument('--num-envs',type=int,default=4096);p.add_argument('--updates',type=int,default=10000);p.add_argument('--seed',type=int,default=20261008);p.add_argument('--checkpoint',type=Path,default=Path(PARENT));p.add_argument('--preflight',action='store_true');p.add_argument('--eval',action='store_true');p.add_argument('--video',action='store_true');p.add_argument('--baseline',type=Path);p.add_argument('--retention-bank',type=Path);a=p.parse_args();a.out=a.out.resolve();a.out.mkdir(parents=True,exist_ok=a.eval)
+ p=argparse.ArgumentParser();p.add_argument('--out',type=Path,required=True);p.add_argument('--reset-protocol',choices=['bank','v34'],default='bank');p.add_argument('--eval-gpu',default='0');p.add_argument('--rise-floor',type=float,default=0.);p.add_argument('--cost-ramp',type=int,default=500);p.add_argument('--num-envs',type=int,default=4096);p.add_argument('--updates',type=int,default=10000);p.add_argument('--seed',type=int,default=20261008);p.add_argument('--checkpoint',type=Path,default=Path(PARENT));p.add_argument('--preflight',action='store_true');p.add_argument('--eval',action='store_true');p.add_argument('--video',action='store_true');p.add_argument('--baseline',type=Path);p.add_argument('--retention-bank',type=Path);a=p.parse_args();assert 0<=a.rise_floor<=1 and a.cost_ramp>0;a.out=a.out.resolve();a.out.mkdir(parents=True,exist_ok=a.eval)
  if not a.eval:assert base.sha(a.checkpoint)==PARENT_SHA
  random.seed(a.seed);np.random.seed(a.seed);torch.manual_seed(a.seed);torch.set_float32_matmul_precision('highest');torch.backends.cuda.matmul.allow_tf32=False;os.environ['V34_MIX_RESET']=a.reset_protocol;mix.install();cfg,agent=config(a.num_envs,a.eval,a.seed);agent.logger='tensorboard' if a.eval or a.preflight else 'wandb';agent.max_iterations=a.updates;agent.run_name='V34M_'+a.reset_protocol+'_6000'
  base.dump_yaml(a.out/'env.yaml',asdict(cfg));base.dump_yaml(a.out/'agent.yaml',asdict(agent))
@@ -98,7 +100,7 @@ def main():
   env=base.ManagerBasedRlEnv(cfg,device='cuda:0',render_mode='rgb_array' if a.video else None);torch.set_float32_matmul_precision('highest');torch.backends.cuda.matmul.allow_tf32=False;w=Wrapper(env,clip_actions=agent.clip_actions);runner=Runner(w,asdict(agent),str(a.out),'cuda:0');runner.args=a
   runner.load(str(a.checkpoint),load_cfg={'actor':True,'critic':False,'optimizer':False,'iteration':False});parent=torch.load(a.checkpoint,weights_only=False,map_location='cpu');base.verify_nested(parent['actor_state_dict'],runner.alg.save()['actor_state_dict']);runner.alg.actor.update_normalization=lambda obs:None
   if not a.eval:env.common_step_counter=0
-  obs,_=env.reset();env._v_start_counter=0;env._v_ramp_updates=500
+  obs,_=env.reset();env._v_start_counter=0;env._v_ramp_updates=a.cost_ramp;env._cr_rise_floor=a.rise_floor
   if a.eval and 'mix' in (parent.get('infos') or {}):
    ref=parent['infos']['mix'];env._smp_normalizer.mean.copy_(ref['smp_mean'].to(env.device));env._smp_normalizer.count.copy_(ref['smp_count'].to(env.device))
   assert obs['actor'].shape[-1]==93
@@ -111,7 +113,7 @@ def main():
    raw=obs['actor'][:16].cpu().numpy();expected=np.concatenate([session.run(None,{'obs':x[None]})[0] for x in raw]);error=float(np.max(np.abs(actual-expected)));assert error<1e-4,error
    base.write(a.out/'onnx_parity.json',dict(max_abs_error=error,checkpoint_sha=base.sha(a.checkpoint)))
   counts={str(i):int((env._mix_scene==i).sum()) for i in range(3)}
-  base.write(a.out/'launch.json',dict(parent=str(a.checkpoint),parent_sha=base.sha(a.checkpoint),code_sha=base.sha(Path(__file__)),reset_code_sha=base.sha(Path(mix.__file__)),reset_protocol=a.reset_protocol,retention_stop=False,counts=counts,flat_middle=int(env._mix_middle.sum()),num_envs=a.num_envs,updates=a.updates,seed=a.seed,prior='V7',smp_ws=4.,smp_reference='fresh running estimator; no f2s2 statistics reused',actor_noise=cfg.observations['actor'].enable_corruption,events=list(cfg.events),terminations=list(cfg.terminations),weights={k:v.weight for k,v in cfg.rewards.items()},lr=3e-6,critic_warmup=50,normalizer_frozen=True))
+  base.write(a.out/'launch.json',dict(parent=str(a.checkpoint),parent_sha=base.sha(a.checkpoint),code_sha=base.sha(Path(__file__)),reset_code_sha=base.sha(Path(mix.__file__)),reward_code_sha=base.sha(Path(base.t.__file__)),rise_floor=a.rise_floor,cost_ramp=a.cost_ramp,reset_protocol=a.reset_protocol,retention_stop=False,counts=counts,flat_middle=int(env._mix_middle.sum()),num_envs=a.num_envs,updates=a.updates,seed=a.seed,prior='V7',smp_ws=4.,smp_reference='fresh running estimator; no f2s2 statistics reused',actor_noise=cfg.observations['actor'].enable_corruption,events=list(cfg.events),terminations=list(cfg.terminations),weights={k:v.weight for k,v in cfg.rewards.items()},lr=3e-6,critic_warmup=50,normalizer_frozen=True))
   # Initial clearance uses all robot collision bounds for both plate and table.
   pos,ext=base.mt.robot_bounds(env);nonflat=env._mix_scene!=0;gids=torch.stack(env._mt_plate_ids)[(env._mix_scene==2).long()];rows=torch.arange(env.num_envs,device=env.device);pp=env.sim.data.geom_xpos[rows,gids];ss=env.sim.model.geom_size[rows,gids]
   gap=((pos-pp[:,None]).abs()-ext-ss[:,None]).amax(-1).amin(-1)

@@ -122,7 +122,8 @@ def components(env):
  v.init(env);env._v_stage[blocked]=0;env._v_hold[blocked]=0
  result=ORIGINAL_COMPONENTS(env)
  env._v_stage[blocked]=0;env._v_hold[blocked]=0
- result[:,:4]*=env._cr_beta[:,None]
+ floor=getattr(env,'_cr_rise_floor',0.)
+ result[:,:4]*=(floor+(1-floor)*env._cr_beta[:,None])
  env._cr_component_tick=env.common_step_counter
  return result
 
