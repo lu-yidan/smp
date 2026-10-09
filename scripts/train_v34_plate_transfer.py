@@ -66,7 +66,7 @@ def main():
  random.seed(a.seed);np.random.seed(a.seed);torch.manual_seed(a.seed)
  cfg=adapt.configure(load_env_cfg('Smp-Getup-Escape-Plate-V34-93D-G1',play=False),a.eval);cfg.scene.num_envs=a.num_envs;cfg.seed=a.seed;cfg.viewer.width=640;cfg.viewer.height=480;cfg.viewer.max_extra_envs=0
  if a.eval:cfg.episode_length_s=1000
- cfg.scene.sensors=tuple(cfg.scene.sensors)+tuple(ContactSensorCfg(name='sr3_'+side,primary=ContactMatch(mode='geom',pattern='^'+side+'_foot[1-7]_collision$',entity='robot'),secondary=ContactMatch(mode='body',pattern='terrain'),fields=('found','force'),reduce='maxforce',num_slots=1) for side in ['left','right'])
+ cfg.scene.sensors=tuple(cfg.scene.sensors)+tuple(ContactSensorCfg(name='sr3_'+side,primary=ContactMatch(mode='geom',pattern='^'+side+'_foot[1-7]_collision$',entity='robot'),secondary=ContactMatch(mode='body',pattern='terrain'),fields=('found','force','normal','tangent'),reduce='maxforce',num_slots=1,global_frame=True) for side in ['left','right'])
  agent=load_rl_cfg('Smp-Getup-Escape-Plate-V34-93D-G1');agent.seed=a.seed;agent.max_iterations=a.updates;agent.save_interval=500;agent.algorithm.learning_rate=1e-5;agent.algorithm.schedule='fixed';agent.logger='tensorboard' if a.preflight or a.eval else 'wandb';agent.run_name='V34P0_deploy_plate_6000'
  dump_yaml(a.out/'env.yaml',asdict(cfg));dump_yaml(a.out/'agent.yaml',asdict(agent));env=None
  try:

@@ -1,0 +1,35 @@
+# V34 奖励迁移：R0 / R1 / R2
+
+目的：在部署模型上保住 V34 的上下板及平地恢复能力。不是从已退化的 P0 续训；三组均从 V34 93D gate6000 初始化 actor（SHA256 `471fb41444a5d8f2bce1f93b0e2d65a613e86c1d417ef4cba36ba48b9779474b`），冻结 actor 观测归一化，新 critic、新优化器。
+
+| 组别 | 奖励 | GPU / 评测GPU |
+|---|---|---|
+| R0 | V34原奖励，受阻任务系数改为1 | 0 / 3 |
+| R1 | A6 no alpha奖励，包括Q、L | 1 / 4 |
+| R2 | 同R1，Q、L权重置零 | 2 / 5 |
+
+三组统一历史 A6 的 f2s2 prior（SHA256 `9439d9d9f58940f5472015a57da27c72e2305aafbd29cfd9be44f93da675cc59`）、ws=6及冻结归一化参考（`configs/a6_paper/smp_reward_reference_v1.json`，SHA256 `870a1f7110d4cfd58a3d81d45e2ec728abbec7335a781032aedf3e36309e7df8`）。不沿用P0的V7及新估计器；没有低SMP提前终止。**R0与旧P0也改变了prior及critic初始化，不能把两者差异全部归因于alpha。**本轮三组间SMP设置一致。
+
+## 保持一致的条件
+
+4096环境；6000更新；seed20261008；LR1e-5固定；gamma .99；初始探索std .3；20s episode；每500更新保存和评测，每1000录像。训练actor噪声开启，评测标称动力学，无push/观测噪声。不因500次的早期低成功率自动终止。
+
+reset继承P0的碰撞投影bank：上下板仰卧1843、伏卧1843；平地仰卧205、伏卧205。没有桌子、侧卧、LAFAN中间态或在线失败回放。板尺寸、质量课程、纵横偏移沿用P0。部署XML/PD/动作缩放、质量惯量分组随机化、Kp/Kd、0–10ms延迟、push、摩擦和编码器偏差均沿用P0。
+
+## 奖励移植范围
+
+A6 no alpha 的reward字典由 `export_a6_reward_bundle.py` 在A6源码环境导出；核心v33_reward_transfer、v33_path_ablation、r2_ablation、multiterrain与历史1b6d7e6无差异。保留权重及函数，包括几何进展.45、clearance .08、separation .01、completion .60、force -.03、Q -.03、L -.20。执行成本从开始完整启用，A6放宽上升速度设置开启。
+
+这不是完整A6实验复制：机器人/控制、场景reset、训练时长、优化器参数及接触终止采用本轮V34迁移协议。桥接代码只创建A6奖励所需的状态缓冲和传感器；单一平地场景不额外叠加terrain支撑力。A6几何有效性门控仍在其reward内部；终止仍按P0保留穿透和仿真不稳定。R0保留V34几何函数，R1/R2使用A6几何函数，因此R0与R1比较的是奖励结构整体，不是单一系数。
+
+## 评测与证据
+
+固定seed20261071，512环境（230/230/26/26）；SR3为20秒内开始连续站立3秒、观察23秒。头高1.15m、直立度.9、双足最强接触的世界竖直力各>20N。已修复旧P0接触坐标系错误。同步记录几何脱困、最高头高和无足力条件的姿态保持时间；几何脱困不等于恢复成功。保留每类第一个环境的视频，不筛选成功样本。
+
+服务器目录 `/root/workplace/smp-v34-reward-repair`。历史src以P0归档为底，补入A6奖励依赖；不覆盖已有P0/M实验。入口 `scripts/train_v34_reward_repair.py` 和 `scripts/v34_reward_repair.py`。生成bundle必须在A6当前源码环境执行export入口，再交给归档V34环境使用。
+
+## 启动记录
+
+2026-10-09，三组4096环境各3次PPO预检通过，初始qpos SHA256均为`4823ffe9e53c5f0e5083422e79092ea557765e8fa836e596e74f059dad371393`，分组哈希一致，CPU抽检128环境无>1.1mm穿透，部署ONNX最大动作误差1.43e-6。质量惯量和Kp/Kd张量断言通过。
+
+正式目录为`logs/V34Reward_R0_6000_20261009`、`logs/V34Reward_R1_6000_20261009`、`logs/V34Reward_R2_6000_20261009`。初始PID分别5244、5245、5246；父策略同协议评测另在`logs/parent_R0`、`parent_R1`、`parent_R2`运行，不将其混为训练结果。进程记录位于各目录旁的`.process.json`。
