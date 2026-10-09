@@ -49,7 +49,7 @@ def evaluate(env,w,policy,obs,out,video=False):
     from PIL import Image,ImageDraw
     for j,writer in writers.items():
      env.cfg.viewer.env_idx=j;cam=env._offline_renderer._cam;root=r.data.root_link_pos_w[j].cpu().numpy();cam.lookat[:]=[root[0],root[1],max(.4,float(root[2])*.5+.2)];cam.azimuth=55;cam.elevation=-12;cam.distance=3.5
-     im=Image.fromarray(env.render());draw=ImageDraw.Draw(im);draw.text((8,8),f'V34M0 scene={int(sc[j])} pose={int(po[j])} t={(k+1)*.02:.2f}s SR3={int(passed[j])}',fill='white');writer.append_data(np.asarray(im))
+     im=Image.fromarray(env.render());draw=ImageDraw.Draw(im);draw.text((8,8),f'{getattr(env, "_recording_label", "V34M0")} scene={int(sc[j])} pose={int(po[j])} t={(k+1)*.02:.2f}s SR3={int(passed[j])}',fill='white');writer.append_data(np.asarray(im))
  finally:
   for writer in writers.values():writer.close()
  result={}
