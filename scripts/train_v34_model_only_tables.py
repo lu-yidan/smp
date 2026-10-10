@@ -98,10 +98,12 @@ def audit_reset(env,out):
  env._reset_idx(ids);assert torch.equal(before,env.sim.data.qpos[mask]),'partial reset changed other environments'
 
 def main():
- p=argparse.ArgumentParser();p.add_argument('--out',type=Path,required=True);p.add_argument('--checkpoint',default=PARENT);p.add_argument('--model',choices=['original','deploy'],default='deploy');p.add_argument('--num-envs',type=int,default=4096);p.add_argument('--updates',type=int,default=6000);p.add_argument('--seed',type=int,default=20261008);p.add_argument('--eval',action='store_true');p.add_argument('--video',action='store_true');p.add_argument('--preflight',action='store_true');a=p.parse_args();a.out=a.out.resolve();a.out.mkdir(parents=True,exist_ok=a.eval)
+ p=argparse.ArgumentParser();p.add_argument('--out',type=Path,required=True);p.add_argument('--checkpoint',default=PARENT);p.add_argument('--model',choices=['original','deploy'],default='deploy');p.add_argument('--num-envs',type=int,default=4096);p.add_argument('--updates',type=int,default=6000);p.add_argument('--seed',type=int,default=20261008);p.add_argument('--eval',action='store_true');p.add_argument('--video',action='store_true');p.add_argument('--preflight',action='store_true');p.add_argument('--scene-ratios',type=float,nargs=4,default=[.3,.3,.2,.2],metavar=('FLAT','GUIDED','TABLE','ROOF'));a=p.parse_args();a.out=a.out.resolve();a.out.mkdir(parents=True,exist_ok=a.eval)
+ assert all(x>0 for x in a.scene_ratios) and abs(sum(a.scene_ratios)-1)<1e-6
+ tables.TRAIN_RATIOS=tuple(a.scene_ratios)
  assert Path(a.checkpoint).is_file()
  random.seed(a.seed);np.random.seed(a.seed);torch.manual_seed(a.seed)
- cfg=configure(a.num_envs,a.seed,a.model,a.eval);agent=load_rl_cfg(TASK);agent.seed=a.seed;agent.max_iterations=a.updates;agent.save_interval=500;agent.upload_model=False;agent.logger='tensorboard' if a.eval or a.preflight else 'wandb';agent.run_name='V34MO_TableRoof_30_30_20_20';agent.algorithm.learning_rate=3e-5;agent.algorithm.schedule='fixed'
+ cfg=configure(a.num_envs,a.seed,a.model,a.eval);agent=load_rl_cfg(TASK);agent.seed=a.seed;agent.max_iterations=a.updates;agent.save_interval=500;agent.upload_model=False;agent.logger='tensorboard' if a.eval or a.preflight else 'wandb';agent.run_name='V34MO_TableRoof_'+'_'.join(str(round(x*100)) for x in a.scene_ratios);agent.algorithm.learning_rate=3e-5;agent.algorithm.schedule='fixed'
  # Preserve archived PPO settings; this is not the 1e-5 A6 fine-tune recipe.
  dump_yaml(a.out/'env.yaml',asdict(cfg));dump_yaml(a.out/'agent.yaml',asdict(agent));env=None
  try:
@@ -117,7 +119,7 @@ def main():
   # Continue archived curriculum age rather than silently restarting its easy phase.
   env.common_step_counter=int(ref['common_step_counter'] if ref else (parent.get('infos') or {}).get('env_state',{}).get('common_step_counter',0))
   obs,_=env.reset();assert obs['actor'].shape[-1]==93
-  write(a.out/'launch.json',dict(model=a.model,parent=a.checkpoint,parent_sha=hashlib.sha256(Path(a.checkpoint).read_bytes()).hexdigest(),seed=a.seed,updates=a.updates,lr=agent.algorithm.learning_rate,schedule=agent.algorithm.schedule,events=list(cfg.events),terminations=list(cfg.terminations),weights={k:v.weight for k,v in cfg.rewards.items()},normalizer='original update behavior; V7 statistic absent from historical checkpoint, freshly initialized',optimizer='fresh',curriculum_counter=env.common_step_counter,physics_dt=env.step_dt/cfg.decimation,control_dt=env.step_dt,pose_counts={str(i):int((env._robust_reset_type==i).sum()) for i in [1,2]}))
+  write(a.out/'launch.json',dict(training_scene_ratios=a.scene_ratios,evaluation_scene_ratios=tables.EVAL_RATIOS,model=a.model,parent=a.checkpoint,parent_sha=hashlib.sha256(Path(a.checkpoint).read_bytes()).hexdigest(),seed=a.seed,updates=a.updates,lr=agent.algorithm.learning_rate,schedule=agent.algorithm.schedule,events=list(cfg.events),terminations=list(cfg.terminations),weights={k:v.weight for k,v in cfg.rewards.items()},normalizer='SMP statistics restored from model_only checkpoint; actor observation statistics frozen',optimizer='fresh',curriculum_counter=env.common_step_counter,physics_dt=env.step_dt/cfg.decimation,control_dt=env.step_dt,pose_counts={str(i):int((env._robust_reset_type==i).sum()) for i in [1,2]}))
   write(a.out/'scene_counts.json',{name:int((env._mo_scene==i).sum()) for i,name in enumerate(['flat','guided','table','roof'])})
   if a.eval:evaluate(env,w,runner.get_inference_policy(),obs,a.out,a.video);return
   if a.preflight:

@@ -7,6 +7,8 @@ from mjlab.managers.event_manager import requires_model_fields,RecomputeLevel
 from mjlab.sensor.contact_sensor import ContactMatch
 from smp.rl.tasks.getup.mdp import events as old
 from smp.rl.tasks.getup.master_deployment_contract import COLLISION_PATTERN
+TRAIN_RATIOS=(.3,.3,.2,.2)
+EVAL_RATIOS=(.3,.3,.2,.2)
 PARTS=['mo_top']+['mo_leg'+str(i) for i in range(4)]
 BANKROOT=Path('/root/workplace/smp-v34-table-mix/outputs/crawl_bank_v1')
 def part_spec():
@@ -16,7 +18,9 @@ def init(env,evaluation=False):
  if hasattr(env,'_mo_scene'):return
  n=env.num_envs;dev=env.device
  # Even quotas allow exactly balanced poses within each scene.
- counts=[2*round(n*.3/2),2*round(n*.3/2),2*round(n*.2/2)];counts.append(n-sum(counts))
+ ratios=EVAL_RATIOS if evaluation else TRAIN_RATIOS
+ counts=[2*round(n*x/2) for x in ratios[:3]];counts.append(n-sum(counts))
+ assert all(x>0 and x%2==0 for x in counts),counts
  env._mo_scene=torch.repeat_interleave(torch.arange(4,device=dev),torch.tensor(counts,device=dev));env._mo_pose=torch.arange(n,device=dev)%2
  env._mo_rng=torch.Generator(device=dev).manual_seed(env.cfg.seed+1381)
  b=np.load(BANKROOT/('validation.npz' if evaluation else 'train.npz'))
