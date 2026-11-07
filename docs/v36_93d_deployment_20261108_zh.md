@@ -39,6 +39,7 @@
 - 正式GPU：4；配对评测GPU：1（遇占用则另选空闲卡）。
 - 4096环境，每更新24步，12,000次更新，每1,000保存。
 - 初始LR `1e-4`、adaptive KL、gamma .99，保留V34适配流程的PPO配置；seed `20261108`。
+- W&B：https://wandb.ai/tabletennis/smp/runs/a6xbab18 ，已实际进入PPO更新。
 - 日志：`run_control/train_20261108.log`；进程元数据：`run_control/train_20261108.process.json`。
 - 输出：`logs/V36_93D_from102000_12k_20261108`。
 - 64和4096环境各2次PPO预检通过，正式训练重新加载未训练的投影权重，不继承预检。
