@@ -1,0 +1,28 @@
+{
+  "all_tensors_finite": true,
+  "bias_reference_raw_base_lin_vel": [
+    0.0,
+    0.0,
+    0.0
+  ],
+  "critic_input_dim": 960,
+  "optimizer_discarded": true,
+  "projected_actor_input_dim": 93,
+  "projected_checkpoint": "/home/luyd/.codex/worktrees/v36-93d-deploy/smp/artifacts/v36_projected/model_102000_zero_velocity_93d.pt",
+  "projected_checkpoint_sha256": "71253d8706ad92bbc29bf784d9425cd91621ff3bd493c8382823027e764c28ac",
+  "removed_actor_indices": [
+    0,
+    1,
+    2
+  ],
+  "removed_actor_term": "base_lin_vel",
+  "schema_version": 1,
+  "source_actor_input_dim": 96,
+  "source_checkpoint": "/home/luyd/.codex/worktrees/v36-93d-deploy/smp/artifacts/v36_source/model_102000.pt",
+  "source_checkpoint_sha256": "2ebfa32eea590a40ebaec4bad237180c95d334fbe507ea7544e055ede70a2b55",
+  "source_iteration": 102000,
+  "status": "PROJECTED_SOURCE_READY_NOT_PERFORMANCE_EVIDENCE",
+  "tensor_count": 25,
+  "tensor_elements": 875668,
+  "zero_velocity_first_layer_max_abs_error": 3.814697265625e-06
+}

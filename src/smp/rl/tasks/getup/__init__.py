@@ -30,6 +30,9 @@ from smp.rl.tasks.getup.staged_env_cfg import g1_getup_robust_staged_smp_env_cfg
 from smp.rl.tasks.getup.terrain_v35_env_cfg import (
   g1_getup_terrain_v35_smp_env_cfg,
 )
+from smp.rl.tasks.getup.terrain_v36_93d_env_cfg import (
+  g1_getup_terrain_v36_93d_smp_env_cfg,
+)
 from smp.rl.tasks.getup.terrain_v36_env_cfg import (
   g1_getup_terrain_v36_smp_env_cfg,
 )
@@ -39,6 +42,7 @@ from smp.rl.tasks.getup.v6_env_cfg import (
 )
 from smp.rl.tasks.getup.v7_env_cfg import g1_getup_v7_route_smp_env_cfg
 from smp.rl.tasks.getup.v8_env_cfg import g1_getup_v8_natural_smp_env_cfg
+from smp.rl.warm_start_runner import SmpCurriculumWarmStartRunner
 
 _getup_rl = unitree_g1_smp_ppo_runner_cfg()
 _getup_rl.experiment_name = "smp_getup_g1"
@@ -273,3 +277,20 @@ __all__ = [
   "g1_getup_v7_route_smp_env_cfg",
   "g1_getup_v8_natural_smp_env_cfg",
 ]
+
+# Observation adaptation retains the original V36 scene/rewards/reset/terminations.
+
+_v36_93d_rl = unitree_g1_smp_ppo_runner_cfg()
+_v36_93d_rl.experiment_name = "smp_getup_terrain_v36_93d_g1"
+_v36_93d_rl.run_name = "v36_93d_from_102000"
+_v36_93d_rl.actor.distribution_cfg["class_name"] = "GaussianDistribution"
+_v36_93d_rl.algorithm.learning_rate = 1e-4
+_v36_93d_rl.max_iterations = 12000
+_v36_93d_rl.save_interval = 1000
+register_mjlab_task(
+  task_id="Smp-Getup-Terrain-V36-93D-G1",
+  env_cfg=g1_getup_terrain_v36_93d_smp_env_cfg(play=False),
+  play_env_cfg=g1_getup_terrain_v36_93d_smp_env_cfg(play=True),
+  rl_cfg=_v36_93d_rl,
+  runner_cls=SmpCurriculumWarmStartRunner,
+)
