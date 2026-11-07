@@ -56,6 +56,9 @@ def _run_case(
   if reset_mode not in RESET_POSE_WEIGHTS or reset_mode == "mixed":
     raise ValueError("reset_modes must contain prone, supine, left_side, or right_side")
 
+  multisite_stairs = cfg.task == "Smp-Getup-Stairs-V36-93D-G1"
+  if multisite_stairs and terrain_type not in ("flat", "stairs"):
+    raise ValueError("Multisite stair evaluation supports only flat or stairs")
   env_cfg = load_env_cfg(cfg.task, play=True)
   agent_cfg = load_rl_cfg(cfg.task)
   agent_cfg.actor.distribution_cfg["class_name"] = "GaussianDistribution"
@@ -66,12 +69,15 @@ def _run_case(
   env_cfg.metrics = {}
   env_cfg.scene.num_envs = cfg.num_envs
   env_cfg.seed = cfg.seed
-  env_cfg.scene.terrain.terrain_generator = terrain_generator_v35(
-    terrain_type, level, cfg.seed
-  )
-  env_cfg.events["ground_procedural_fall_on_terrain"].params["surface_normals"] = (
-    terrain_surface_normals_v35(terrain_type, level)
-  )
+  if multisite_stairs:
+    env_cfg.events["sample_stair_level"].params["fixed_level"] = level
+  else:
+    env_cfg.scene.terrain.terrain_generator = terrain_generator_v35(
+      terrain_type, level, cfg.seed
+    )
+    env_cfg.events["ground_procedural_fall_on_terrain"].params["surface_normals"] = (
+      terrain_surface_normals_v35(terrain_type, level)
+    )
   env_cfg.terminations = {}
   for event_name in (
     "stratified_post_stand_wrench",
@@ -87,6 +93,14 @@ def _run_case(
   )
 
   raw_env = ManagerBasedRlEnv(env_cfg, device=cfg.device)
+  if multisite_stairs:
+    # Use every rollout for the requested terrain, with equal tread-width counts.
+    terrain = raw_env.scene.terrain
+    terrain.terrain_types[:] = (
+      0
+      if terrain_type == "flat"
+      else 1 + torch.arange(cfg.num_envs, device=cfg.device) % 2
+    )
   env = RslRlVecEnvWrapper(raw_env, clip_actions=agent_cfg.clip_actions)
   runner_cls = MjlabOnPolicyRunner
   runner = runner_cls(env, asdict(agent_cfg), device=cfg.device)
@@ -102,6 +116,10 @@ def _run_case(
   robot = raw_env.scene["robot"]
   origins = raw_env.scene.env_origins
   root_xy_start = robot.data.root_link_pos_w[:, :2].clone()
+  regions = raw_env._stair_region.clone() if multisite_stairs else None
+  if multisite_stairs:
+    expected_level = level if terrain_type == "stairs" else 0
+    assert (raw_env.scene.terrain.terrain_levels == expected_level).all()
   foot_ids = robot.find_sites(["left_foot", "right_foot"], preserve_order=True)[0]
   head_idx = robot.find_sites(["head"], preserve_order=True)[0][0]
   max_planar_displacement = torch.zeros(cfg.num_envs, device=raw_env.device)
@@ -121,7 +139,9 @@ def _run_case(
   terrain_exit = torch.zeros_like(secondary_fall)
   invalid_dynamics = torch.zeros_like(secondary_fall)
   terrain_generator = raw_env.scene.terrain.cfg.terrain_generator
-  terrain_exit_radius = 0.5 * min(terrain_generator.size) - 0.5
+  terrain_exit_radius = (
+    1.5 if multisite_stairs else 0.5 * min(terrain_generator.size) - 0.5
+  )
 
   for step in range(cfg.steps):
     with torch.inference_mode():
@@ -140,11 +160,12 @@ def _run_case(
     active = ~terrain_exit
 
     head_z = robot.data.site_pos_w[:, head_idx, 2]
+    support_height = getattr(raw_env, "_recovery_support_height", origins[:, 2])
     upright = torch.clamp(-robot.data.projected_gravity_b[:, 2], 0.0, 1.0)
     linear_speed = torch.linalg.vector_norm(robot.data.root_link_lin_vel_w, dim=-1)
     angular_speed = torch.linalg.vector_norm(robot.data.root_link_ang_vel_w, dim=-1)
     standing = (
-      (head_z - origins[:, 2] >= 1.10)
+      (head_z - support_height >= 1.10)
       & (upright >= 0.85)
       & (linear_speed < 0.50)
       & (angular_speed < 1.0)
@@ -156,7 +177,7 @@ def _run_case(
     success3 |= active & (stand_hold >= 150) & (start_step <= 1000)
 
     fallen_after_success = (first_success >= 0) & (
-      ((head_z - origins[:, 2]) < 0.75) | (upright < 0.40)
+      ((head_z - support_height) < 0.75) | (upright < 0.40)
     )
     secondary_fall_hold = torch.where(
       fallen_after_success,
@@ -274,6 +295,29 @@ def _run_case(
     "max_torque_mean_nm": float(max_torque.mean()),
     "max_power_mean_w": float(max_power.mean()),
   }
+  if multisite_stairs:
+    local_success = success3 & (max_planar_displacement <= 0.75) & ~terrain_exit
+    result.update(
+      reset_protocol="collision-checked four-pose, multi-position stairs v1",
+      sr3_definition="standing onset by 20s, maintained 3s, observe to 23s; local-support head>=1.10m, upright>=.85, base speed<.5m/s, angular speed<1rad/s",
+      local_sr3=int(local_success.sum()) / cfg.num_envs,
+      local_sr3_definition="SR3 plus entire-rollout maximum reset-relative displacement<=0.75m; no local exit",
+      by_region={},
+    )
+    assert regions is not None
+    for i, name in enumerate(
+      ("upper_platform", "tread_riser", "bottom_approach", "corner")
+    ):
+      mask = regions == i
+      count = int(mask.sum())
+      result["by_region"][name] = {
+        "n": count,
+        "sr3_success": int(success3[mask].sum()),
+        "local_sr3_success": int(local_success[mask].sum()),
+        "max_displacement_p95_m": _quantile(max_planar_displacement[mask], 0.95)
+        if count
+        else None,
+      }
   raw_env.close()
   del policy, runner, env, raw_env
   if torch.cuda.is_available():

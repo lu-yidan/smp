@@ -1,0 +1,56 @@
+[
+  {
+    "mixture": "initial",
+    "terrain_min_m": 0.0,
+    "self_min_m": -0.0004908894135651903,
+    "bad_terrain_ids": [],
+    "bad_self_ids": [],
+    "aabb_min_gap_m": 0.005999542772769928,
+    "levels": [
+      151,
+      60,
+      34,
+      11
+    ],
+    "poses": [
+      0,
+      72,
+      52,
+      66,
+      66
+    ],
+    "regions": [
+      33,
+      114,
+      79,
+      30
+    ]
+  },
+  {
+    "mixture": "late",
+    "terrain_min_m": 0.0,
+    "self_min_m": -0.00044072275045428655,
+    "bad_terrain_ids": [],
+    "bad_self_ids": [],
+    "aabb_min_gap_m": 0.005999516695737839,
+    "levels": [
+      90,
+      51,
+      54,
+      61
+    ],
+    "poses": [
+      0,
+      70,
+      65,
+      51,
+      70
+    ],
+    "regions": [
+      39,
+      94,
+      76,
+      47
+    ]
+  }
+]

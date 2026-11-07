@@ -1266,7 +1266,10 @@ def _head_height_and_upright(
   )[0]
   head_z = robot.data.site_pos_w[env_ids, head_idx, 2]
   if relative_to_env_origin:
-    head_z = head_z - env.scene.env_origins[env_ids, 2]
+    head_z = (
+      head_z
+      - getattr(env, "_recovery_support_height", env.scene.env_origins[:, 2])[env_ids]
+    )
   head_vz = robot.data.site_lin_vel_w[env_ids, head_idx, 2]
   upright = torch.clamp(-robot.data.projected_gravity_b[env_ids, 2], 0.0, 1.0)
   knee_flexion = robot.data.joint_pos[env_ids][:, knee_ids].mean(dim=-1)

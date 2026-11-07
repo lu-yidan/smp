@@ -168,7 +168,9 @@ def prone_support_route(
   head_idx = robot.find_sites(["head"], preserve_order=True)[0][0]
   head_z = robot.data.site_pos_w[:, head_idx, 2]
   if relative_to_env_origin:
-    head_z = head_z - env.scene.env_origins[:, 2]
+    head_z = head_z - getattr(
+      env, "_recovery_support_height", env.scene.env_origins[:, 2]
+    )
   height = torch.clamp(
     (head_z - start_height) / max(waypoint_height - start_height, 1e-6),
     0.0,
@@ -206,7 +208,9 @@ def prone_leg_splay_excess_l2(
   head_idx = robot.find_sites(["head"], preserve_order=True)[0][0]
   head_z = robot.data.site_pos_w[:, head_idx, 2]
   if relative_to_env_origin:
-    head_z = head_z - env.scene.env_origins[:, 2]
+    head_z = head_z - getattr(
+      env, "_recovery_support_height", env.scene.env_origins[:, 2]
+    )
   low = head_z < max_head_height
   early = _recovery_stage(env) <= 1
   return _procedural_prone_mask(env).float() * low.float() * early.float() * excess
@@ -524,7 +528,9 @@ def staged_recovery_pose(
   )[0]
   head_z = robot.data.site_pos_w[:, head_idx, 2]
   if relative_to_env_origin:
-    head_z = head_z - env.scene.env_origins[:, 2]
+    head_z = head_z - getattr(
+      env, "_recovery_support_height", env.scene.env_origins[:, 2]
+    )
   knee_flexion = robot.data.joint_pos[:, knee_ids].mean(dim=-1)
   upright = upright_posture(env, power=1.0)
   stage = _recovery_stage(env)
@@ -552,7 +558,9 @@ def staged_head_velocity_profile(
   head_idx = robot.find_sites(["head"], preserve_order=True)[0][0]
   head_z = robot.data.site_pos_w[:, head_idx, 2]
   if relative_to_env_origin:
-    head_z = head_z - env.scene.env_origins[:, 2]
+    head_z = head_z - getattr(
+      env, "_recovery_support_height", env.scene.env_origins[:, 2]
+    )
   head_vz = robot.data.site_lin_vel_w[:, head_idx, 2]
   stage = _recovery_stage(env)
   target_height = head_z.new_tensor((0.62, 0.86, 1.15, 1.15))[stage]
@@ -617,7 +625,9 @@ def quiet_stance_gate(
   head_idx = robot.find_sites(["head"], preserve_order=True)[0][0]
   head_z = robot.data.site_pos_w[:, head_idx, 2]
   if relative_to_env_origin:
-    head_z = head_z - env.scene.env_origins[:, 2]
+    head_z = head_z - getattr(
+      env, "_recovery_support_height", env.scene.env_origins[:, 2]
+    )
   upright = upright_posture(env, power=1.0)
   height_width = max(head_height_full - head_height_start, 1e-6)
   upright_width = max(upright_full - upright_start, 1e-6)
@@ -802,7 +812,9 @@ def stable_stand_metric(
   head_idx = robot.find_sites(["head"], preserve_order=True)[0][0]
   head_z = robot.data.site_pos_w[:, head_idx, 2]
   if relative_to_env_origin:
-    head_z = head_z - env.scene.env_origins[:, 2]
+    head_z = head_z - getattr(
+      env, "_recovery_support_height", env.scene.env_origins[:, 2]
+    )
   lin_speed = torch.linalg.norm(robot.data.root_link_lin_vel_w, dim=-1)
   ang_speed = torch.linalg.norm(robot.data.root_link_ang_vel_w, dim=-1)
   upright = upright_posture(env, power=1.0)

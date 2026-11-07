@@ -27,6 +27,7 @@ from smp.rl.tasks.getup.robust_env_cfg import g1_getup_robust_smp_env_cfg
 from smp.rl.tasks.getup.safe_env_cfg import g1_getup_robust_safe_smp_env_cfg
 from smp.rl.tasks.getup.smooth_env_cfg import g1_getup_robust_smooth_smp_env_cfg
 from smp.rl.tasks.getup.staged_env_cfg import g1_getup_robust_staged_smp_env_cfg
+from smp.rl.tasks.getup.stair_recovery_93d_env_cfg import stair_recovery_93d_env_cfg
 from smp.rl.tasks.getup.terrain_v35_env_cfg import (
   g1_getup_terrain_v35_smp_env_cfg,
 )
@@ -292,5 +293,19 @@ register_mjlab_task(
   env_cfg=g1_getup_terrain_v36_93d_smp_env_cfg(play=False),
   play_env_cfg=g1_getup_terrain_v36_93d_smp_env_cfg(play=True),
   rl_cfg=_v36_93d_rl,
+  runner_cls=SmpCurriculumWarmStartRunner,
+)
+
+_stairs_93d_rl = unitree_g1_smp_ppo_runner_cfg()
+_stairs_93d_rl.actor.distribution_cfg["class_name"] = "GaussianDistribution"
+_stairs_93d_rl.experiment_name = "smp_stair_recovery_v36_93d"
+_stairs_93d_rl.algorithm.learning_rate = 3e-5
+_stairs_93d_rl.max_iterations = 12000
+_stairs_93d_rl.save_interval = 1000
+register_mjlab_task(
+  task_id="Smp-Getup-Stairs-V36-93D-G1",
+  env_cfg=stair_recovery_93d_env_cfg(False),
+  play_env_cfg=stair_recovery_93d_env_cfg(True),
+  rl_cfg=_stairs_93d_rl,
   runner_cls=SmpCurriculumWarmStartRunner,
 )

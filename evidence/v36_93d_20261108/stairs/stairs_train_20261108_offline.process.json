@@ -1,0 +1,21 @@
+{
+  "pid": 79874,
+  "gpu": 4,
+  "command": [
+    "/root/workplace/smp/.venv/bin/python",
+    "-u",
+    "scripts/train_v36_93d.py",
+    "--task",
+    "Smp-Getup-Stairs-V36-93D-G1",
+    "--num-envs",
+    "4096",
+    "--iterations",
+    "12000",
+    "--log-dir",
+    "logs/V36_93D_stairs_multipose_12k_20261108_offline"
+  ],
+  "log": "run_control/stairs_train_20261108_offline.log",
+  "started_utc": "2026-11-07T16:41:30.196406+00:00",
+  "wandb_mode": "offline",
+  "reason": "W&B run creation returned HTTP403 twice; preserve metrics offline without blocking PPO"
+}

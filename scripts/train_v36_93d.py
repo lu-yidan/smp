@@ -32,11 +32,12 @@ def main():
   p.add_argument("--iterations", type=int, default=12000)
   p.add_argument("--seed", type=int, default=20261108)
   p.add_argument("--smoke", action="store_true")
+  p.add_argument("--task", default="Smp-Getup-Terrain-V36-93D-G1")
   a = p.parse_args()
   if a.log_dir.exists():
     raise FileExistsError(a.log_dir)
   configure_torch_backends()
-  task = "Smp-Getup-Terrain-V36-93D-G1"
+  task = a.task
   cfg, rl = load_env_cfg(task), load_rl_cfg(task)
   cfg.seed = rl.seed = a.seed
   cfg.scene.num_envs = a.num_envs
@@ -84,6 +85,13 @@ def main():
     "physics_dt": cfg.sim.mujoco.timestep,
     "control_dt": cfg.sim.mujoco.timestep * cfg.decimation,
   }
+  if hasattr(env, "_stair_region"):
+    audit["region_counts"] = (
+      torch.bincount(env._stair_region, minlength=4).cpu().tolist()
+    )
+    audit["level_counts"] = (
+      torch.bincount(terrain.terrain_levels, minlength=4).cpu().tolist()
+    )
   (a.log_dir / "preflight.json").write_text(json.dumps(audit, indent=2))
   print("V36_93D_PREFLIGHT", json.dumps(audit), flush=True)
   runner.add_git_repo_to_log(__file__)

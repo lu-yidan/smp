@@ -1,0 +1,18 @@
+{
+  "pid": 74266,
+  "gpu": 4,
+  "command": [
+    "/root/workplace/smp/.venv/bin/python",
+    "-u",
+    "scripts/train_v36_93d.py",
+    "--num-envs",
+    "4096",
+    "--iterations",
+    "12000",
+    "--log-dir",
+    "logs/V36_93D_from102000_12k_20261108"
+  ],
+  "started_unix": 1794068975.613322,
+  "log": "/root/workplace/smp-v36-93d/run_control/train_20261108.log",
+  "stop_reason": "User requested difficult stair recovery with multi-position resets; replace matched low-level-only adaptation"
+}
