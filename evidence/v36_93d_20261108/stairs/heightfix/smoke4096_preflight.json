@@ -1,0 +1,45 @@
+{
+  "task": "Smp-Getup-Stairs-V36-93D-G1",
+  "source_checkpoint": "artifacts/v36_projected/model_102000_zero_velocity_93d.pt",
+  "source_sha256": "71253d8706ad92bbc29bf784d9425cd91621ff3bd493c8382823027e764c28ac",
+  "actor_dim": 93,
+  "critic_dim": 960,
+  "fresh_optimizer": true,
+  "source_weights_exact": true,
+  "num_envs": 4096,
+  "seed": 20261108,
+  "terrain_type_counts": [
+    410,
+    1843,
+    1843
+  ],
+  "reset_type_counts": [
+    0,
+    1023,
+    1001,
+    1030,
+    1042
+  ],
+  "terminations": [
+    "time_out",
+    "terrain_patch_exit",
+    "unstable_sim_state",
+    "local_recovery_exit"
+  ],
+  "physics_dt": 0.005,
+  "control_dt": 0.02,
+  "local_height_reference_exact": true,
+  "local_vs_platform_reference_max_m": 1.399999976158142,
+  "region_counts": [
+    635,
+    1633,
+    1195,
+    633
+  ],
+  "level_counts": [
+    2414,
+    980,
+    531,
+    171
+  ]
+}

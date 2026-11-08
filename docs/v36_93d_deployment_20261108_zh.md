@@ -2,6 +2,8 @@
 
 **当前方案已改为台阶专项续训。** 下文“原环境保持什么”和“初始匹配训练（已停止）”记录第一版匹配实验；该任务已按用户的新要求停止。正在使用的地形、reset、位移约束和评测见文末“台阶专项版本”。两者不能混用。
 
+**最新运行：高度参照修复版，从原投影重新训练。** 第一轮台阶专项任务已在9985更新停止；当前任务与自动评测路径见末尾“修复后重启”。
+
 ## 方法和来源
 
 沿用用户确认的 V34 gate6000 流程：去掉 actor 的三个基座线速度输入，折叠零速度对应的第一层偏置，再继续 PPO。这是投影热启动与强化学习适配，不是 teacher–student 动作蒸馏。
@@ -168,3 +170,17 @@ CUDA_VISIBLE_DEVICES=0 MUJOCO_GL=egl OMP_NUM_THREADS=6 PYTHONPATH=src /root/work
 ```
 
 输出旁的JSON保存权重SHA256、环境编号、位置标签、观测噪声设置和位移。屏幕的stand hold是当前连续站立时长，drift是当前相对reset的水平位移。视频越过1.5m后仍保留连续动作供观察，不像定量评测那样隔离越界样本。
+
+### 修复后重启
+
+用户确认修复后从原投影重新训练。旧任务PID79874已在9985更新通过SIGINT停止，保留全部checkpoint及停止记录。
+
+- 修复 `_head_height`：头高和起身启动奖励与阶段判断一样，使用局部支撑高度；无该字段的历史任务仍按原地形原点计算。
+- 不同时修改奖励权重、台阶课程、reset分配、位移半径或学习率，以便辨别修复作用。保持90%台阶/10%平地，四姿态均匀，多位置覆盖，20秒episode。
+- 从 `artifacts/v36_projected/model_102000_zero_velocity_93d.pt` 重新加载；SHA256为 `71253d8706ad92bbc29bf784d9425cd91621ff3bd493c8382823027e764c28ac`。不使用1000/9000版，也不继承预检权重；actor/critic逐张量一致性、空优化器、计数归零均在训练前断言验证。
+- 本地及服务器高度回归测试通过；4096环境2次PPO预检通过，模型参数有限。4096个环境的头高参照精确匹配局部支撑面；局部面与顶部原点最大相差约1.4m。
+- GPU4，4096环境，12000更新，每1000保存。新输出：`logs/V36_93D_stairs_heightfix_from_projection_12k_20261108`；进程/日志：`run_control/stairs_heightfix_train_20261108.process.json`、`run_control/stairs_heightfix_train_20261108.log`。继续使用离线W&B，未宣称网页已同步。
+- GPU1运行有限checkpoint评测队列 `scripts/watch_v36_stair_evaluation.py`：先评原投影，随后每1000更新和最终11999版。每个checkpoint使用相同seed，在4种高度×4种姿态中各测64次，总计1024次，保留多位置reset。
+- 评测输出：`logs/evaluation/stairs_heightfix_20261108/summary.jsonl`及各checkpoint的16组分项JSONL；包括SR3、局部SR3、区域成功数、位移与负载。日志：`run_control/stairs_heightfix_evaluation_20261108.log`。该进程只评测，不会自动挑最优、停止训练或替换部署策略。
+
+修复了一处明确的不一致，不等同于已经证明全部退化由它导致；仍需检查早期checkpoint能否保持恢复能力。

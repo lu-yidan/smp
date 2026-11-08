@@ -1,0 +1,21 @@
+{
+  "pid": 96778,
+  "gpu": 1,
+  "command": [
+    "/root/workplace/smp/.venv/bin/python",
+    "-u",
+    "scripts/watch_v36_stair_evaluation.py",
+    "--training-pid",
+    "96777",
+    "--training-dir",
+    "logs/V36_93D_stairs_heightfix_from_projection_12k_20261108",
+    "--output-dir",
+    "logs/evaluation/stairs_heightfix_20261108",
+    "--num-envs",
+    "64"
+  ],
+  "output_dir": "logs/evaluation/stairs_heightfix_20261108",
+  "training_pid": 96777,
+  "schedule": "projected baseline, each 1000 updates, final11999",
+  "trials_per_checkpoint": 1024
+}

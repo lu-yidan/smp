@@ -1,0 +1,7 @@
+{
+  "pid": 79874,
+  "signal": "SIGINT",
+  "reason": "User requested corrected stair training restarted from original 93D projection; preserve regressed checkpoints",
+  "last_logged_iteration": 9985,
+  "time_unix": 1794097487.2499363
+}

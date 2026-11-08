@@ -71,6 +71,9 @@ def main():
   assert not runner.alg.optimizer.state
   terrain = env.scene.terrain
   audit = {
+    "task": task,
+    "source_checkpoint": str(a.checkpoint),
+    "source_sha256": hashlib.sha256(a.checkpoint.read_bytes()).hexdigest(),
     "actor_dim": 93,
     "critic_dim": 960,
     "fresh_optimizer": True,
@@ -86,6 +89,18 @@ def main():
     "control_dt": cfg.sim.mujoco.timestep * cfg.decimation,
   }
   if hasattr(env, "_stair_region"):
+    from smp.rl.tasks.getup.mdp.rewards import _head_height
+
+    head = env.scene["robot"].find_sites(["head"], preserve_order=True)[0][0]
+    expected = (
+      env.scene["robot"].data.site_pos_w[:, head, 2] - env._recovery_support_height
+    )
+    actual = _head_height(env, relative_to_env_origin=True)
+    torch.testing.assert_close(actual, expected, rtol=0, atol=0)
+    audit["local_height_reference_exact"] = True
+    audit["local_vs_platform_reference_max_m"] = float(
+      (env._recovery_support_height - terrain.env_origins[:, 2]).abs().max()
+    )
     audit["region_counts"] = (
       torch.bincount(env._stair_region, minlength=4).cpu().tolist()
     )
