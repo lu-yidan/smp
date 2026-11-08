@@ -349,7 +349,9 @@ def _head_height(
   head_idx = robot.find_sites(["head"], preserve_order=True)[0][0]
   height = robot.data.site_pos_w[:, head_idx, 2]
   if relative_to_env_origin:
-    height = height - env.scene.env_origins[:, 2]
+    height = height - getattr(
+      env, "_recovery_support_height", env.scene.env_origins[:, 2]
+    )
   return height
 
 
