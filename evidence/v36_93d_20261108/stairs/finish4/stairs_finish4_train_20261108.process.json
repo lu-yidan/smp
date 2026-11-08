@@ -1,0 +1,22 @@
+{
+  "pid": 119411,
+  "gpu": 4,
+  "command": [
+    "/root/workplace/smp/.venv/bin/python",
+    "-u",
+    "scripts/train_v36_93d.py",
+    "--task",
+    "Smp-Getup-Stairs-V36-93D-Finish-G1",
+    "--checkpoint",
+    "artifacts/v36_projected/model_102000_zero_velocity_93d.pt",
+    "--num-envs",
+    "4096",
+    "--iterations",
+    "12000",
+    "--log-dir",
+    "logs/V36_93D_stairs_finish4_from_projection_12k_20261108"
+  ],
+  "started_unix": 1794122465.0038612,
+  "source_sha256": "71253d8706ad92bbc29bf784d9425cd91621ff3bd493c8382823027e764c28ac",
+  "wandb_mode": "offline"
+}

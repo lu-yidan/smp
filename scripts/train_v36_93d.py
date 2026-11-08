@@ -74,6 +74,11 @@ def main():
     "task": task,
     "source_checkpoint": str(a.checkpoint),
     "source_sha256": hashlib.sha256(a.checkpoint.read_bytes()).hexdigest(),
+    "reward_weights": {name: term.weight for name, term in cfg.rewards.items()},
+    "product_task_terms": [
+      {"function": fn.__name__, "weight": weight, "params": params}
+      for fn, weight, params in cfg.rewards["task_smp_product"].params["task_terms"]
+    ],
     "actor_dim": 93,
     "critic_dim": 960,
     "fresh_optimizer": True,

@@ -3,10 +3,19 @@
 import argparse
 import json
 import os
+import signal
 import subprocess
 import sys
 import time
 from pathlib import Path
+
+
+def significantly_regressed(current, best):
+  """Require a large drop in both recovery and local recovery, not small noise."""
+  return (
+    current["sr3"] < 0.75 * best["sr3"]
+    and current["local_sr3"] < 0.75 * best["local_sr3"]
+  )
 
 
 def main():
@@ -15,9 +24,13 @@ def main():
   parser.add_argument("--training-dir", type=Path, required=True)
   parser.add_argument("--output-dir", type=Path, required=True)
   parser.add_argument("--num-envs", type=int, default=64)
+  parser.add_argument("--task", default="Smp-Getup-Stairs-V36-93D-G1")
+  parser.add_argument("--stop-on-regression", action="store_true")
   args = parser.parse_args()
   args.output_dir.mkdir(parents=True, exist_ok=True)
   summary_path = args.output_dir / "summary.jsonl"
+  best = None
+  regression_streak = 0
   jobs = [
     (
       "projected_baseline",
@@ -49,7 +62,7 @@ def main():
       "-u",
       "scripts/evaluate_v36_93d.py",
       "--task",
-      "Smp-Getup-Stairs-V36-93D-G1",
+      args.task,
       "--checkpoint",
       str(checkpoint),
       "--terrain-types",
@@ -95,6 +108,38 @@ def main():
     with summary_path.open("a") as out:
       out.write(json.dumps(summary) + "\n")
     print("EVAL_RESULT", json.dumps(summary), flush=True)
+    if result.returncode == 0:
+      if best is None or summary["sr3"] > best["sr3"]:
+        best = summary
+        regression_streak = 0
+      elif significantly_regressed(summary, best):
+        regression_streak += 1
+      else:
+        regression_streak = 0
+      if args.stop_on_regression and regression_streak >= 2:
+        cmd_path = Path(f"/proc/{args.training_pid}/cmdline")
+        cmdline = cmd_path.read_bytes() if cmd_path.exists() else b""
+        matches = (
+          b"scripts/train_v36_93d.py" in cmdline
+          and str(args.training_dir).encode() in cmdline
+        )
+        guard = {
+          "reason": "Two consecutive checkpoints lost >25% relative SR3 and local SR3 versus best-SR3 checkpoint",
+          "best": best,
+          "current": summary,
+          "pid": args.training_pid,
+          "signal_sent": False,
+        }
+        guard_path = args.output_dir / "regression_guard.json"
+        guard_path.write_text(json.dumps(guard, indent=2))
+        if matches:
+          os.kill(args.training_pid, signal.SIGINT)
+          guard["signal_sent"] = True
+          guard_path.write_text(json.dumps(guard, indent=2))
+        print("REGRESSION_GUARD", json.dumps(guard), flush=True)
+        return
+    else:
+      regression_streak = 0
 
 
 if __name__ == "__main__":

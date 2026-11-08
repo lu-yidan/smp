@@ -1,5 +1,7 @@
 """SMP baseline and robust get-up task registrations."""
 
+from copy import deepcopy
+
 from mjlab.tasks.registry import register_mjlab_task
 
 from smp.rl.rl_cfg import unitree_g1_smp_ppo_runner_cfg
@@ -28,6 +30,9 @@ from smp.rl.tasks.getup.safe_env_cfg import g1_getup_robust_safe_smp_env_cfg
 from smp.rl.tasks.getup.smooth_env_cfg import g1_getup_robust_smooth_smp_env_cfg
 from smp.rl.tasks.getup.staged_env_cfg import g1_getup_robust_staged_smp_env_cfg
 from smp.rl.tasks.getup.stair_recovery_93d_env_cfg import stair_recovery_93d_env_cfg
+from smp.rl.tasks.getup.stair_recovery_finish_env_cfg import (
+  stair_recovery_finish_env_cfg,
+)
 from smp.rl.tasks.getup.terrain_v35_env_cfg import (
   g1_getup_terrain_v35_smp_env_cfg,
 )
@@ -307,5 +312,15 @@ register_mjlab_task(
   env_cfg=stair_recovery_93d_env_cfg(False),
   play_env_cfg=stair_recovery_93d_env_cfg(True),
   rl_cfg=_stairs_93d_rl,
+  runner_cls=SmpCurriculumWarmStartRunner,
+)
+
+_stairs_finish_rl = deepcopy(_stairs_93d_rl)
+_stairs_finish_rl.experiment_name = "smp_stair_recovery_v36_93d_finish"
+register_mjlab_task(
+  task_id="Smp-Getup-Stairs-V36-93D-Finish-G1",
+  env_cfg=stair_recovery_finish_env_cfg(False),
+  play_env_cfg=stair_recovery_finish_env_cfg(True),
+  rl_cfg=_stairs_finish_rl,
   runner_cls=SmpCurriculumWarmStartRunner,
 )

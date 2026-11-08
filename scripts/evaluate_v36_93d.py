@@ -56,7 +56,10 @@ def _run_case(
   if reset_mode not in RESET_POSE_WEIGHTS or reset_mode == "mixed":
     raise ValueError("reset_modes must contain prone, supine, left_side, or right_side")
 
-  multisite_stairs = cfg.task == "Smp-Getup-Stairs-V36-93D-G1"
+  multisite_stairs = cfg.task in (
+    "Smp-Getup-Stairs-V36-93D-G1",
+    "Smp-Getup-Stairs-V36-93D-Finish-G1",
+  )
   if multisite_stairs and terrain_type not in ("flat", "stairs"):
     raise ValueError("Multisite stair evaluation supports only flat or stairs")
   env_cfg = load_env_cfg(cfg.task, play=True)

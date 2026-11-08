@@ -1,0 +1,23 @@
+{
+  "pid": 119413,
+  "gpu": 2,
+  "command": [
+    "/root/workplace/smp/.venv/bin/python",
+    "-u",
+    "scripts/watch_v36_stair_evaluation.py",
+    "--task",
+    "Smp-Getup-Stairs-V36-93D-Finish-G1",
+    "--training-pid",
+    "119411",
+    "--training-dir",
+    "logs/V36_93D_stairs_finish4_from_projection_12k_20261108",
+    "--output-dir",
+    "logs/evaluation/stairs_finish4_20261108",
+    "--num-envs",
+    "64",
+    "--stop-on-regression"
+  ],
+  "training_pid": 119411,
+  "trials_per_checkpoint": 1024,
+  "stop_guard": "2 consecutive checkpoints lose >25% relative in both SR3 and local SR3 vs best-SR3 checkpoint"
+}
