@@ -154,3 +154,17 @@ CUDA_VISIBLE_DEVICES=1 MUJOCO_GL=egl PYTHONPATH=src /root/workplace/smp/.venv/bi
 检查发现代码遗漏：`_head_height`仍减去地形原点高度，导致`track_head_height`和`recovery_initiation_progress`未使用局部支撑高度，与已经修改的阶段判断不一致。已在本地修正并增加台阶底部高度奖励回归测试。**该修正未同步到正在运行的任务，也未重启训练；本次评测反映原运行版本。** 评测中的rewards为空，站立判定原本就使用局部支撑面，因此该修正不会改变上述已测成功数。
 
 建议停止依赖后期checkpoint，先修正一致性，再从原投影/早期权重做受控续训；不能以继续训练到12k替代问题排查。证据：`evidence/v36_93d_20261108/stairs/progress_10k/`。
+
+### 原始93D投影录像
+
+录制脚本 `scripts/record_v36_projected_stairs.py`。权重为 `model_102000_zero_velocity_93d.pt`，不含台阶专项续训更新。分别记录单级5cm和15cm台阶，23秒、25fps、原速、无自动reset，镜头跟随机器人。每段四格为伏卧踏面/边缘、仰卧上部平台、左侧卧底部、右侧卧转角。
+
+固定seed=20260818，在256个初始化环境中，按预先指定的姿态与区域选择第一个匹配环境；在动作执行前完成选择，不按成功与否挑选。视频使用新多位置初始化协议，不能当成历史中心reset的复现，也不能用四格示例替代成功率评测。
+
+```bash
+CUDA_VISIBLE_DEVICES=0 MUJOCO_GL=egl OMP_NUM_THREADS=6 PYTHONPATH=src /root/workplace/smp/.venv/bin/python scripts/record_v36_projected_stairs.py \
+  --level 0 --output outputs/v36_projected_videos/v36_projected_5cm.mp4
+# 15cm对应 --level 2；更换输出文件名。
+```
+
+输出旁的JSON保存权重SHA256、环境编号、位置标签、观测噪声设置和位移。屏幕的stand hold是当前连续站立时长，drift是当前相对reset的水平位移。视频越过1.5m后仍保留连续动作供观察，不像定量评测那样隔离越界样本。
