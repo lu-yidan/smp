@@ -23,12 +23,18 @@ def main():
   parser = argparse.ArgumentParser()
   parser.add_argument("--level", type=int, choices=range(4), required=True)
   parser.add_argument("--output", type=Path, required=True)
+  parser.add_argument("--label", default=None)
   parser.add_argument(
     "--checkpoint",
     type=Path,
     default=Path("artifacts/v36_projected/model_102000_zero_velocity_93d.pt"),
   )
   args = parser.parse_args()
+  label = args.label or (
+    "V36 original 93D projection"
+    if args.checkpoint.name == "model_102000_zero_velocity_93d.pt"
+    else f"V36 {args.checkpoint.stem}"
+  )
   if args.output.exists():
     raise FileExistsError(args.output)
   args.output.parent.mkdir(parents=True, exist_ok=True)
@@ -85,6 +91,7 @@ def main():
     font = ImageFont.load_default(size=21)
   height_cm = (5, 10, 15, 20)[args.level]
   metadata = {
+    "policy_label": label,
     "checkpoint": str(args.checkpoint),
     "sha256": hashlib.sha256(args.checkpoint.read_bytes()).hexdigest(),
     "seed": cfg.seed,
@@ -117,7 +124,7 @@ def main():
       draw = ImageDraw.Draw(canvas)
       draw.text(
         (16, 10),
-        f"V36 original 93D projection | {height_cm} cm stairs | 1x | t={step * 0.02:.2f}s",
+        f"{label} | {height_cm} cm stairs | 1x | t={step * 0.02:.2f}s",
         font=font,
         fill="white",
       )

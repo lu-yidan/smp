@@ -184,3 +184,11 @@ CUDA_VISIBLE_DEVICES=0 MUJOCO_GL=egl OMP_NUM_THREADS=6 PYTHONPATH=src /root/work
 - 评测输出：`logs/evaluation/stairs_heightfix_20261108/summary.jsonl`及各checkpoint的16组分项JSONL；包括SR3、局部SR3、区域成功数、位移与负载。日志：`run_control/stairs_heightfix_evaluation_20261108.log`。该进程只评测，不会自动挑最优、停止训练或替换部署策略。
 
 修复了一处明确的不一致，不等同于已经证明全部退化由它导致；仍需检查早期checkpoint能否保持恢复能力。
+
+### 1000 / 3000 / 5000 同初态录像
+
+使用 `record_v36_projected_stairs.py --checkpoint ... --label ...` 分别录制三版，每版5cm和15cm台阶各23秒。seed、四个env编号（2/29/13/10）、区域、镜头与原投影录像一致。三版初始场景区域像素逐一对比差异为零；不是重新挑选的成功样本。
+
+- 六段完整四格视频：`outputs/v36_heightfix{1000,3000,5000}_videos/heightfix{epoch}_{5,15}cm.mp4`，同名JSON保存权重hash与样本结果。
+- 同步对比：`outputs/v36_heightfix_comparison/supine15cm_1000_3000_5000.mp4`，从三段15cm四格视频中裁取相同仰卧格，左右依次1000/3000/5000，不改变速度或时间轴。
+- 本组5cm示例SR3依次4/4、3/4、0/4；15cm依次2/4、1/4、0/4。5000版在20秒画面中四个样本都停留在坐姿/低位。视频示例不能替代每版1024次评测。
