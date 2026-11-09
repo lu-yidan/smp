@@ -82,6 +82,9 @@ def main():
     "actor_dim": 93,
     "critic_dim": 960,
     "fresh_optimizer": True,
+    "learning_rate_schedule": rl.algorithm.schedule,
+    "configured_learning_rate": rl.algorithm.learning_rate,
+    "optimizer_learning_rates": [g["lr"] for g in runner.alg.optimizer.param_groups],
     "source_weights_exact": True,
     "num_envs": env.num_envs,
     "seed": a.seed,
@@ -116,6 +119,11 @@ def main():
   print("V36_93D_PREFLIGHT", json.dumps(audit), flush=True)
   runner.add_git_repo_to_log(__file__)
   runner.learn(num_learning_iterations=a.iterations, init_at_random_ep_len=True)
+  if rl.algorithm.schedule == "fixed":
+    assert all(
+      g["lr"] == rl.algorithm.learning_rate
+      for g in runner.alg.optimizer.param_groups
+    ), "Fixed learning rate changed during training"
   if not a.smoke:
     runner.export_policy_to_onnx(str(a.log_dir / "exported"), "v36_93d_final.onnx")
     from onnx.reference import ReferenceEvaluator

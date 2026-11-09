@@ -1,0 +1,16 @@
+{
+  "samples": 4096,
+  "archived_v34_speed_exact": true,
+  "local_height_translation_pass": true,
+  "changed_fields": [
+    "/rewards/task_smp_product/params/task_terms/1/0",
+    "/rewards/task_smp_product/params/task_terms/1/2/relative_to_env_origin",
+    "/rewards/head_vertical_overspeed/func",
+    "/rewards/head_vertical_overspeed/params/speed_limit",
+    "/rewards/joint_speed_excess/params/speed_limits/0",
+    "/rewards/joint_speed_excess/params/speed_limits/1",
+    "/rewards/joint_power_excess/params/power_limits/0",
+    "/rewards/joint_power_excess/params/power_limits/1"
+  ],
+  "v34_source_sha256": "51c48ae1dd0e22ba3a8e169f2fc901b3d7d3dbd0d9ad8cdc6c7222c5657f4b28"
+}

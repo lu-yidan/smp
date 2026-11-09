@@ -59,6 +59,8 @@ def _run_case(
   multisite_stairs = cfg.task in (
     "Smp-Getup-Stairs-V36-93D-G1",
     "Smp-Getup-Stairs-V36-93D-Finish-G1",
+    "Smp-Getup-Stairs-V36-93D-V34Speed-G1",
+    "Smp-Getup-Stairs-V36-93D-V34Speed-FixedLR-G1",
   )
   if multisite_stairs and terrain_type not in ("flat", "stairs"):
     raise ValueError("Multisite stair evaluation supports only flat or stairs")

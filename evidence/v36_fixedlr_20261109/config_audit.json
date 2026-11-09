@@ -1,0 +1,10 @@
+{
+  "smoke_environment_saved_config_equal": true,
+  "algorithm_changes": {
+    "schedule": [
+      "adaptive",
+      "fixed"
+    ]
+  },
+  "learning_rate": "3.0e-05"
+}
