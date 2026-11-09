@@ -1,0 +1,26 @@
+{
+  "branch": "lyd/v36-v34-balanced4-checkpoints",
+  "code_base_commit": "019a9ab6ab47abf0cebf04cd375eb17866f7c9d1",
+  "checkpoints": [
+    {
+      "path": "checkpoints/v36_original/model_102000.pt",
+      "sha256": "2ebfa32eea590a40ebaec4bad237180c95d334fbe507ea7544e055ede70a2b55",
+      "bytes": 10523795,
+      "actor_dim": 96,
+      "critic_dim": 960,
+      "action_dim": 29,
+      "iteration": 102000,
+      "format": "original complete PyTorch checkpoint"
+    },
+    {
+      "path": "checkpoints/v34_balanced4_hard19000/model_19000.pt",
+      "sha256": "78d4606f10dee868bba48ef8ffeee72f0b6df13b1b3919216545f441573ad740",
+      "bytes": 10525384,
+      "actor_dim": 93,
+      "critic_dim": 960,
+      "action_dim": 29,
+      "iteration": 19000,
+      "format": "original complete PyTorch checkpoint"
+    }
+  ]
+}
