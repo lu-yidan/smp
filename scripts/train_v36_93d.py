@@ -115,14 +115,21 @@ def main():
     audit["level_counts"] = (
       torch.bincount(terrain.terrain_levels, minlength=4).cpu().tolist()
     )
+  if hasattr(env, "_support_nominal_width"):
+    from smp.rl.tasks.getup.stair_support_env_cfg import support_values
+
+    values = support_values(env)
+    assert all(torch.isfinite(v).all() for v in values.values())
+    assert torch.all(values["ground_loss"] == 0)
+    audit["support_nominal_width_m"] = env._support_nominal_width
+    audit["support_initial_ground_loss_zero"] = True
   (a.log_dir / "preflight.json").write_text(json.dumps(audit, indent=2))
   print("V36_93D_PREFLIGHT", json.dumps(audit), flush=True)
   runner.add_git_repo_to_log(__file__)
   runner.learn(num_learning_iterations=a.iterations, init_at_random_ep_len=True)
   if rl.algorithm.schedule == "fixed":
     assert all(
-      g["lr"] == rl.algorithm.learning_rate
-      for g in runner.alg.optimizer.param_groups
+      g["lr"] == rl.algorithm.learning_rate for g in runner.alg.optimizer.param_groups
     ), "Fixed learning rate changed during training"
   if not a.smoke:
     runner.export_policy_to_onnx(str(a.log_dir / "exported"), "v36_93d_final.onnx")

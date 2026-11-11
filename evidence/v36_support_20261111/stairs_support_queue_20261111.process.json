@@ -1,0 +1,17 @@
+{
+  "pid": 5299,
+  "command": [
+    "/root/workplace/smp/.venv/bin/python",
+    "-u",
+    "scripts/queue_v36_support.py",
+    "--checkpoint",
+    "logs/V36_93D_stairs_v34speed_fixedlr_from_projection_12k_20261109/model_1000.pt",
+    "--output",
+    "logs/V36_stair_support_from_fixedlr1000_3k_20261111",
+    "--control-dir",
+    "run_control/stairs_support_20261111",
+    "--max-wait-hours",
+    "24"
+  ],
+  "time": 1794411283.0785277
+}

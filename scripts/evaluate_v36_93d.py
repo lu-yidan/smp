@@ -61,6 +61,7 @@ def _run_case(
     "Smp-Getup-Stairs-V36-93D-Finish-G1",
     "Smp-Getup-Stairs-V36-93D-V34Speed-G1",
     "Smp-Getup-Stairs-V36-93D-V34Speed-FixedLR-G1",
+    "Smp-Getup-Stairs-V36-93D-Support-G1",
   )
   if multisite_stairs and terrain_type not in ("flat", "stairs"):
     raise ValueError("Multisite stair evaluation supports only flat or stairs")
@@ -147,6 +148,16 @@ def _run_case(
   terrain_exit_radius = (
     1.5 if multisite_stairs else 0.5 * min(terrain_generator.size) - 0.5
   )
+  if multisite_stairs:
+    from smp.rl.tasks.getup.stair_recovery_93d_env_cfg import HEIGHTS, surface_height
+    from smp.rl.tasks.getup.stair_support_env_cfg import descending_support
+
+    all_ids = torch.arange(raw_env.num_envs, device=raw_env.device)
+    start_ground = surface_height(raw_env, all_ids, root_xy_start[:, None]).squeeze(-1)
+    step_height = start_ground.new_tensor(HEIGHTS)[raw_env.scene.terrain.terrain_levels]
+    dropped = torch.zeros_like(terrain_exit)
+    drop_hold = torch.zeros_like(stand_hold)
+    max_ground_loss = torch.zeros_like(max_planar_displacement)
 
   for step in range(cfg.steps):
     with torch.inference_mode():
@@ -163,6 +174,12 @@ def _run_case(
     invalid_dynamics |= ~finite
     terrain_exit |= (raw_displacement > terrain_exit_radius) | ~finite
     active = ~terrain_exit
+    if multisite_stairs:
+      ground = surface_height(raw_env, all_ids, raw_root_pos[:, None, :2]).squeeze(-1)
+      loss, below = descending_support(start_ground, ground, step_height)
+      drop_hold = torch.where(active & below, drop_hold + 1, 0)
+      dropped |= drop_hold >= 10
+      max_ground_loss = torch.maximum(max_ground_loss, torch.where(active, loss, 0.0))
 
     head_z = robot.data.site_pos_w[:, head_idx, 2]
     support_height = getattr(raw_env, "_recovery_support_height", origins[:, 2])
@@ -303,6 +320,11 @@ def _run_case(
   if multisite_stairs:
     local_success = success3 & (max_planar_displacement <= 0.75) & ~terrain_exit
     result.update(
+      terrain_retained_sr3_success=int((local_success & ~dropped).sum()),
+      terrain_retained_sr3=float((local_success & ~dropped).float().mean()),
+      terrain_drop_rate=float(dropped.float().mean()),
+      ground_elevation_loss_p95_m=_quantile(max_ground_loss, 0.95),
+      terrain_retained_sr3_definition="Local SR3, and ground under root XY never lower than reset by >max(half a stair, 2.5cm) for 0.2s throughout 23s; geometric retention proxy, not full support stability",
       reset_protocol="collision-checked four-pose, multi-position stairs v1",
       sr3_definition="standing onset by 20s, maintained 3s, observe to 23s; local-support head>=1.10m, upright>=.85, base speed<.5m/s, angular speed<1rad/s",
       local_sr3=int(local_success.sum()) / cfg.num_envs,

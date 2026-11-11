@@ -1,0 +1,144 @@
+{
+  "task": "Smp-Getup-Stairs-V36-93D-Support-G1",
+  "source_checkpoint": "outputs/v36_fixedlr_review_20261109/model_1000.pt",
+  "source_sha256": "68bb92060d870c5a10a7fcb8dfe8ba918579b6b2dd3069c685ad702456fc29bb",
+  "reward_weights": {
+    "task_smp_product": 4.0,
+    "action_rate_l2": -0.0015,
+    "action_acc_l2": -0.0012,
+    "joint_acc_l2": -5e-08,
+    "joint_pos_limits": -0.1,
+    "joint_torques_l2": -1e-06,
+    "head_vertical_overspeed": -1.0,
+    "joint_speed_excess": -0.02,
+    "joint_power_excess": -2e-06,
+    "recovery_initiation": 0.03,
+    "prone_support_route": 0.03,
+    "prone_leg_splay": -0.06,
+    "terrain_planar_displacement": -0.3,
+    "terrain_foot_slip": -0.02,
+    "standing_anchor_drift": -0.5,
+    "support_stance": -0.2,
+    "support_edge": -0.15,
+    "support_descent": -0.2
+  },
+  "product_task_terms": [
+    {
+      "function": "staged_recovery_pose",
+      "weight": 0.22,
+      "params": {
+        "relative_to_env_origin": true
+      }
+    },
+    {
+      "function": "v34_head_velocity",
+      "weight": 0.18,
+      "params": {}
+    },
+    {
+      "function": "track_head_height",
+      "weight": 0.1,
+      "params": {
+        "target_height": 1.15,
+        "scale": 2.0,
+        "relative_to_env_origin": true
+      }
+    },
+    {
+      "function": "upright_posture",
+      "weight": 0.15,
+      "params": {
+        "power": 2.0
+      }
+    },
+    {
+      "function": "feet_stationary_when_upright",
+      "weight": 0.08,
+      "params": {
+        "scale": 20.0,
+        "relative_to_env_origin": true
+      }
+    },
+    {
+      "function": "base_stationary_when_upright",
+      "weight": 0.07,
+      "params": {
+        "scale": 8.0,
+        "relative_to_env_origin": true
+      }
+    },
+    {
+      "function": "low_base_angular_velocity",
+      "weight": 0.07,
+      "params": {
+        "scale": 0.8
+      }
+    },
+    {
+      "function": "low_joint_velocity",
+      "weight": 0.06,
+      "params": {
+        "scale": 0.04
+      }
+    },
+    {
+      "function": "smooth_action",
+      "weight": 0.07,
+      "params": {
+        "scale": 4.0
+      }
+    },
+    {
+      "function": "final_posture_progress",
+      "weight": 0.5,
+      "params": {}
+    }
+  ],
+  "actor_dim": 93,
+  "critic_dim": 960,
+  "fresh_optimizer": true,
+  "learning_rate_schedule": "fixed",
+  "configured_learning_rate": 3e-05,
+  "optimizer_learning_rates": [
+    3e-05
+  ],
+  "source_weights_exact": true,
+  "num_envs": 64,
+  "seed": 20261108,
+  "terrain_type_counts": [
+    7,
+    29,
+    28
+  ],
+  "reset_type_counts": [
+    0,
+    16,
+    18,
+    16,
+    14
+  ],
+  "terminations": [
+    "time_out",
+    "terrain_patch_exit",
+    "unstable_sim_state",
+    "local_recovery_exit"
+  ],
+  "physics_dt": 0.005,
+  "control_dt": 0.02,
+  "local_height_reference_exact": true,
+  "local_vs_platform_reference_max_m": 0.8999999761581421,
+  "region_counts": [
+    7,
+    30,
+    13,
+    14
+  ],
+  "level_counts": [
+    41,
+    15,
+    5,
+    3
+  ],
+  "support_nominal_width_m": 0.23701291,
+  "support_initial_ground_loss_zero": true
+}

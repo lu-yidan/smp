@@ -26,6 +26,14 @@ def main():
   parser.add_argument("--num-envs", type=int, default=64)
   parser.add_argument("--task", default="Smp-Getup-Stairs-V36-93D-G1")
   parser.add_argument("--stop-on-regression", action="store_true")
+  parser.add_argument(
+    "--baseline",
+    type=Path,
+    default=Path("artifacts/v36_projected/model_102000_zero_velocity_93d.pt"),
+  )
+  parser.add_argument(
+    "--checkpoints", type=int, nargs="+", default=[*range(1000, 12000, 1000), 11999]
+  )
   args = parser.parse_args()
   args.output_dir.mkdir(parents=True, exist_ok=True)
   summary_path = args.output_dir / "summary.jsonl"
@@ -33,13 +41,12 @@ def main():
   regression_streak = 0
   jobs = [
     (
-      "projected_baseline",
-      Path("artifacts/v36_projected/model_102000_zero_velocity_93d.pt"),
+      "parent_baseline",
+      args.baseline,
     )
   ]
   jobs += [
-    (f"update_{i:05d}", args.training_dir / f"model_{i}.pt")
-    for i in [*range(1000, 12000, 1000), 11999]
+    (f"update_{i:05d}", args.training_dir / f"model_{i}.pt") for i in args.checkpoints
   ]
   for name, checkpoint in jobs:
     result_path = args.output_dir / f"{name}.jsonl"
@@ -103,6 +110,10 @@ def main():
         / sum(row["num_envs"] for row in rows),
         per_case=str(result_path),
       )
+      if all("terrain_retained_sr3_success" in row for row in rows):
+        summary["terrain_retained_sr3"] = (
+          sum(row["terrain_retained_sr3_success"] for row in rows) / summary["n"]
+        )
     else:
       summary["status"] = "evaluation_failed_see_log"
     with summary_path.open("a") as out:

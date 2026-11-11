@@ -36,6 +36,7 @@ from smp.rl.tasks.getup.stair_recovery_finish_env_cfg import (
 from smp.rl.tasks.getup.stair_recovery_v34_speed_env_cfg import (
   stair_recovery_v34_speed_env_cfg,
 )
+from smp.rl.tasks.getup.stair_support_env_cfg import stair_support_env_cfg
 from smp.rl.tasks.getup.terrain_v35_env_cfg import (
   g1_getup_terrain_v35_smp_env_cfg,
 )
@@ -349,5 +350,17 @@ register_mjlab_task(
   env_cfg=stair_recovery_v34_speed_env_cfg(False),
   play_env_cfg=stair_recovery_v34_speed_env_cfg(True),
   rl_cfg=_stairs_fixed_lr,
+  runner_cls=SmpCurriculumWarmStartRunner,
+)
+
+_stairs_support_rl = deepcopy(_stairs_fixed_lr)
+_stairs_support_rl.experiment_name = "smp_stair_support_refinement"
+_stairs_support_rl.max_iterations = 3000
+_stairs_support_rl.save_interval = 500
+register_mjlab_task(
+  task_id="Smp-Getup-Stairs-V36-93D-Support-G1",
+  env_cfg=stair_support_env_cfg(False),
+  play_env_cfg=stair_support_env_cfg(True),
+  rl_cfg=_stairs_support_rl,
   runner_cls=SmpCurriculumWarmStartRunner,
 )
